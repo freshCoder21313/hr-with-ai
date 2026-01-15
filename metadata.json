@@ -1,0 +1,7 @@
+{
+  "name": "HR-With-AI",
+  "description": "Offline-first AI Interview Practice tool using Google Gemini. Features role-specific interviews, real-time chat, and deep analytical feedback with Mermaid visualizations.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
