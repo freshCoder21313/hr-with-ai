@@ -39,6 +39,11 @@ export interface InterviewFeedback {
   }>;
   mermaidGraphCurrent: string;
   mermaidGraphPotential: string;
+  recommendedResources: Array<{
+    topic: string;
+    description: string;
+    searchQuery: string;
+  }>;
 }
 
 export interface SetupFormData {

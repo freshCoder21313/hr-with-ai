@@ -125,6 +125,8 @@ export async function* streamInterviewMessage(
       Respond as the Interviewer. 
       If code is provided, check for correctness.
       Keep response conversational, professional, and under 150 words.
+      
+      IMPORTANT: If you mention a specific technical term, library, or concept that is crucial for the candidate to know, wrap it in double brackets like [[React Fiber]] or [[CAP Theorem]]. This will create a clickable search link for them. Do this sparingly (1-2 times per message).
     `;
 
     if (config.baseUrl) {
@@ -253,7 +255,10 @@ export const generateInterviewFeedback = async (interview: Interview, configInpu
         { "question": string, "analysis": string, "improvement": string }
       ],
       "mermaidGraphCurrent": string (valid Mermaid graph TD definition),
-      "mermaidGraphPotential": string (valid Mermaid graph TD definition)
+      "mermaidGraphPotential": string (valid Mermaid graph TD definition),
+      "recommendedResources": [
+        { "topic": string, "description": string, "searchQuery": string }
+      ]
     }
   `;
 
@@ -295,9 +300,20 @@ export const generateInterviewFeedback = async (interview: Interview, configInpu
                 }
               },
               mermaidGraphCurrent: { type: Type.STRING, description: "Mermaid graph definition for current performance" },
-              mermaidGraphPotential: { type: Type.STRING, description: "Mermaid graph definition for improved potential performance" }
+              mermaidGraphPotential: { type: Type.STRING, description: "Mermaid graph definition for improved potential performance" },
+              recommendedResources: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    topic: { type: Type.STRING },
+                    description: { type: Type.STRING },
+                    searchQuery: { type: Type.STRING }
+                  }
+                }
+              }
             },
-            required: ["score", "summary", "strengths", "weaknesses", "keyQuestionAnalysis", "mermaidGraphCurrent", "mermaidGraphPotential"]
+            required: ["score", "summary", "strengths", "weaknesses", "keyQuestionAnalysis", "mermaidGraphCurrent", "mermaidGraphPotential", "recommendedResources"]
           }
         }
       });

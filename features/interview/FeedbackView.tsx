@@ -4,7 +4,7 @@ import mermaid from 'mermaid';
 import { db } from '../../lib/db';
 import { generateInterviewFeedback, getStoredAIConfig } from '../../services/geminiService';
 import { Interview, InterviewFeedback } from '../../types';
-import { CheckCircle2, AlertCircle, BarChart2 } from 'lucide-react';
+import { CheckCircle2, AlertCircle, BarChart2, BookOpen, ExternalLink } from 'lucide-react';
 
 const FeedbackView: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -150,6 +150,33 @@ const FeedbackView: React.FC = () => {
             </ul>
         </div>
       </div>
+
+      {/* Learning Resources */}
+      {feedback.recommendedResources && feedback.recommendedResources.length > 0 && (
+          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+            <div className="flex items-center gap-2 mb-4">
+                <BookOpen className="w-5 h-5 text-purple-600" />
+                <h3 className="text-lg font-bold text-slate-800">Recommended Learning Resources</h3>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {feedback.recommendedResources.map((res, idx) => (
+                    <a 
+                        key={idx}
+                        href={`https://www.google.com/search?q=${encodeURIComponent(res.searchQuery)}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="group block p-4 rounded-lg border border-slate-200 hover:border-purple-300 hover:bg-purple-50 transition-all"
+                    >
+                        <h4 className="font-semibold text-slate-800 mb-1 group-hover:text-purple-700 flex items-center justify-between">
+                            {res.topic}
+                            <ExternalLink size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </h4>
+                        <p className="text-xs text-slate-500 line-clamp-2">{res.description}</p>
+                    </a>
+                ))}
+            </div>
+          </div>
+      )}
 
       {/* Q&A Analysis */}
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">

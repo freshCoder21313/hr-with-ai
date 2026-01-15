@@ -3,12 +3,17 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { Search } from 'lucide-react';
 
 interface MarkdownRendererProps {
   content: string;
 }
 
 const MarkdownRenderer: React.FC<MarkdownRendererProps> = memo(({ content }) => {
+  // Pre-process content to convert [[Keyword]] to [Keyword](search:Keyword)
+  // This allows us to intercept the link and render a search chip
+  const processedContent = content.replace(/\[\[(.*?)\]\]/g, '[$1](search:$1)');
+
   return (
     <ReactMarkdown
       remarkPlugins={[remarkGfm]}
@@ -47,18 +52,36 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = memo(({ content }) => 
             {children}
           </blockquote>
         ),
-        a: ({ href, children }) => (
-          <a href={href} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline font-medium">
-            {children}
-          </a>
-        ),
+        a: ({ href, children }) => {
+          if (href?.startsWith('search:')) {
+            const term = href.replace('search:', '');
+            return (
+              <a 
+                href={`https://www.google.com/search?q=${encodeURIComponent(term)}`} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="inline-flex items-center gap-1 bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded-md text-[0.9em] font-medium border border-blue-100 hover:bg-blue-100 hover:text-blue-800 transition-colors mx-0.5 no-underline"
+                title={`Search for "${term}"`}
+                onClick={(e) => e.stopPropagation()} // Prevent bubbling if needed
+              >
+                <Search size={10} className="stroke-[3]" />
+                {children}
+              </a>
+            );
+          }
+          return (
+            <a href={href} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline font-medium">
+              {children}
+            </a>
+          );
+        },
         table: ({ children }) => <div className="overflow-x-auto my-4"><table className="min-w-full divide-y divide-slate-200 border border-slate-200 rounded-lg">{children}</table></div>,
         thead: ({ children }) => <thead className="bg-slate-50">{children}</thead>,
         th: ({ children }) => <th className="px-4 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider border-b">{children}</th>,
         td: ({ children }) => <td className="px-4 py-2 whitespace-nowrap text-sm border-b border-slate-100">{children}</td>,
       }}
     >
-      {content}
+      {processedContent}
     </ReactMarkdown>
   );
 });
