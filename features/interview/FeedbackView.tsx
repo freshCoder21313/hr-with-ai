@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import mermaid from 'mermaid';
 import { db } from '../../lib/db';
-import { generateInterviewFeedback } from '../../services/geminiService';
+import { generateInterviewFeedback, getStoredAIConfig } from '../../services/geminiService';
 import { Interview, InterviewFeedback } from '../../types';
 import { CheckCircle2, AlertCircle, BarChart2 } from 'lucide-react';
 
@@ -30,7 +30,8 @@ const FeedbackView: React.FC = () => {
         } else {
           // Generate new feedback
           try {
-            const newFeedback = await generateInterviewFeedback(data);
+            const aiConfig = getStoredAIConfig();
+            const newFeedback = await generateInterviewFeedback(data, aiConfig);
             await db.interviews.update(parseInt(id), { feedback: newFeedback });
             setFeedback(newFeedback);
           } catch (e) {

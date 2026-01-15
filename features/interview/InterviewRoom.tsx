@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Send, StopCircle, User, Bot, Mic, MicOff, Volume2, VolumeX, MessageSquare, Code2, PenTool, Image as ImageIcon } from 'lucide-react';
 import { db } from '../../lib/db';
 import { Interview, Message, InterviewStatus } from '../../types';
-import { startInterviewSession, streamInterviewMessage } from '../../services/geminiService';
+import { startInterviewSession, streamInterviewMessage, getStoredAIConfig } from '../../services/geminiService';
 import { useVoice } from '../../hooks/useVoice';
 import CodeEditor from './CodeEditor';
 import Whiteboard from './Whiteboard';
@@ -104,7 +104,8 @@ const InterviewRoom: React.FC = () => {
         // If new interview, start session
         if (data.messages.length === 0) {
           setIsTyping(true);
-          const initialGreeting = await startInterviewSession(data);
+          const aiConfig = getStoredAIConfig();
+          const initialGreeting = await startInterviewSession(data, aiConfig);
           const newMessage: Message = {
             role: 'model',
             content: initialGreeting,
@@ -190,13 +191,16 @@ const InterviewRoom: React.FC = () => {
     
     try {
       // Pass the code and image context to the AI
+      const aiConfig = getStoredAIConfig();
       const stream = streamInterviewMessage(
           tempMessages, 
           userMsg.content, 
           interview, 
+          aiConfig,
           code, 
           imageBase64
       );
+
       
       for await (const chunk of stream) {
         accumulatedText += chunk;

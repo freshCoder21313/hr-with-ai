@@ -6,10 +6,20 @@ import FeedbackView from './features/interview/FeedbackView';
 import LandingPage from './features/landing/LandingPage';
 import HistoryPage from './features/history/HistoryPage';
 
+import ApiKeyModal from './components/ApiKeyModal';
+
 const App: React.FC = () => {
+  const handleResetKey = () => {
+    if (window.confirm('Remove API Key and reload?')) {
+      localStorage.removeItem('gemini_api_key');
+      window.location.reload();
+    }
+  };
+
   return (
     <HashRouter>
       <div className="min-h-screen flex flex-col bg-gray-50 text-slate-900">
+        <ApiKeyModal />
         <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
           <div className="container mx-auto px-4 h-14 flex items-center justify-between">
             <div className="flex items-center gap-2 font-bold text-xl text-slate-900">
@@ -19,6 +29,9 @@ const App: React.FC = () => {
             <nav className="flex items-center gap-4 text-sm font-medium">
               <a href="#/" className="hover:text-blue-600 transition-colors">Home</a>
               <a href="#/history" className="hover:text-blue-600 transition-colors">History</a>
+              <button onClick={handleResetKey} className="text-slate-400 hover:text-red-500 transition-colors" title="Reset API Key">
+                Key
+              </button>
             </nav>
           </div>
         </header>

@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Tldraw, Editor, getSnapshot, loadSnapshot } from 'tldraw';
+import { Tldraw, Editor } from 'tldraw';
+import 'tldraw/tldraw.css';
 
 interface WhiteboardProps {
   initialData?: string;
@@ -17,7 +18,7 @@ const Whiteboard: React.FC<WhiteboardProps> = ({ initialData, onChange, onMount 
     if (initialData) {
       try {
         const snapshot = JSON.parse(initialData);
-        loadSnapshot(editorInstance.store, snapshot);
+        editorInstance.store.loadSnapshot(snapshot);
       } catch (e) {
         console.error("Failed to load whiteboard data", e);
       }
@@ -28,7 +29,7 @@ const Whiteboard: React.FC<WhiteboardProps> = ({ initialData, onChange, onMount 
         // Debounce or just save snapshot
         // We use a simple strategy: save snapshot on every change (might be heavy for very large boards, but ok for interview)
         // Optimization: In a real app, debounce this.
-        const snapshot = getSnapshot(editorInstance.store);
+        const snapshot = editorInstance.store.getSnapshot();
         onChange(JSON.stringify(snapshot));
     });
 
