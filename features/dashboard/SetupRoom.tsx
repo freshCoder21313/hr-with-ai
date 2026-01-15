@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { db } from '../../lib/db';
-import { InterviewStatus, SetupFormData } from '../../types';
+import { db } from '@/lib/db';
+import { InterviewStatus, SetupFormData } from '@/types';
 import { Upload, Loader2 } from 'lucide-react';
-import { parseResume } from '../../services/resumeParser';
+import { parseResume } from '@/services/resumeParser';
 
 const SetupRoom: React.FC = () => {
   const navigate = useNavigate();

@@ -1,5 +1,5 @@
 import Dexie, { Table } from 'dexie';
-import { Interview } from '../types';
+import { Interview } from '@/types';
 
 class HRDatabase extends Dexie {
   interviews!: Table<Interview, number>;

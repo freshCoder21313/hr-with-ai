@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { db } from '../../lib/db';
-import { Interview } from '../../types';
+import { db } from '@/lib/db';
+import { Interview } from '@/types';
 import { Calendar, Building, Briefcase, Download } from 'lucide-react';
 
 const HistoryPage: React.FC = () => {

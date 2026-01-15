@@ -1,14 +1,14 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Send, StopCircle, User, Bot, Mic, MicOff, Volume2, VolumeX, MessageSquare, Code2, PenTool, Image as ImageIcon } from 'lucide-react';
-import { db } from '../../lib/db';
-import { Interview, Message, InterviewStatus } from '../../types';
-import { startInterviewSession, streamInterviewMessage, getStoredAIConfig } from '../../services/geminiService';
-import { callN8nWebhook } from '../../services/n8nService';
-import { useVoice } from '../../hooks/useVoice';
+import { db } from '@/lib/db';
+import { Interview, Message, InterviewStatus } from '@/types';
+import { startInterviewSession, streamInterviewMessage, getStoredAIConfig } from '@/services/geminiService';
+import { callN8nWebhook } from '@/services/n8nService';
+import { useVoice } from '@/hooks/useVoice';
 import CodeEditor from './CodeEditor';
 import Whiteboard from './Whiteboard';
-import MarkdownRenderer from '../../components/MarkdownRenderer';
+import MarkdownRenderer from '@/components/MarkdownRenderer';
 
 // Helper to convert SVG to PNG Base64
 const svgToPngBase64 = (svg: SVGElement): Promise<string> => {

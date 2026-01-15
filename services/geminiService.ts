@@ -1,5 +1,5 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import { Interview, Message, InterviewFeedback } from "../types";
+import { Interview, Message, InterviewFeedback } from "@/types";
 
 export interface AIConfig {
   apiKey: string;

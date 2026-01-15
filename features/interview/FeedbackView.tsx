@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import mermaid from 'mermaid';
-import { db } from '../../lib/db';
-import { generateInterviewFeedback, getStoredAIConfig } from '../../services/geminiService';
-import { Interview, InterviewFeedback } from '../../types';
+import { db } from '@/lib/db';
+import { generateInterviewFeedback, getStoredAIConfig } from '@/services/geminiService';
+import { Interview, InterviewFeedback } from '@/types';
 import { CheckCircle2, AlertCircle, BarChart2, BookOpen, ExternalLink } from 'lucide-react';
 
 const FeedbackView: React.FC = () => {
