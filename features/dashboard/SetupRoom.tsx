@@ -2,10 +2,13 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../lib/db';
 import { InterviewStatus, SetupFormData } from '../../types';
+import { Upload, Loader2 } from 'lucide-react';
+import { parseResume } from '../../services/resumeParser';
 
 const SetupRoom: React.FC = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [isParsing, setIsParsing] = useState(false);
   const [formData, setFormData] = useState<SetupFormData>({
     company: 'Tech Corp',
     jobTitle: 'Senior Frontend Engineer',
@@ -42,6 +45,23 @@ const SetupRoom: React.FC = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsParsing(true);
+    try {
+        const text = await parseResume(file);
+        setFormData(prev => ({ ...prev, resumeText: text }));
+    } catch (error) {
+        alert("Failed to parse resume: " + (error as any).message);
+    } finally {
+        setIsParsing(false);
+        // Reset input value so same file can be selected again
+        e.target.value = ''; 
+    }
   };
 
   return (
@@ -117,7 +137,21 @@ const SetupRoom: React.FC = () => {
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium text-slate-700">Resume / CV Content</label>
+          <div className="flex justify-between items-center">
+            <label className="text-sm font-medium text-slate-700">Resume / CV Content</label>
+            <label className={`cursor-pointer text-xs flex items-center gap-1 px-3 py-1.5 rounded transition-colors border shadow-sm
+                ${isParsing ? 'bg-slate-100 text-slate-500 cursor-wait' : 'bg-white text-blue-600 border-blue-100 hover:bg-blue-50 hover:border-blue-200'}`}>
+                {isParsing ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
+                <span className="font-medium">{isParsing ? 'Reading PDF...' : 'Upload PDF/TXT'}</span>
+                <input 
+                    type="file" 
+                    accept=".pdf,.txt" 
+                    className="hidden" 
+                    onChange={handleFileUpload}
+                    disabled={isParsing}
+                />
+            </label>
+          </div>
           <textarea
             name="resumeText"
             value={formData.resumeText}
