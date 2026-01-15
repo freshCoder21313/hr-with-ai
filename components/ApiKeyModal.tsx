@@ -5,16 +5,19 @@ const ApiKeyModal: React.FC = () => {
   const [apiKey, setApiKey] = useState('');
   const [baseUrl, setBaseUrl] = useState('');
   const [modelId, setModelId] = useState('');
+  const [n8nUrl, setN8nUrl] = useState('');
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   useEffect(() => {
     const storedKey = localStorage.getItem('gemini_api_key');
     const storedBaseUrl = localStorage.getItem('custom_base_url');
     const storedModelId = localStorage.getItem('custom_model_id');
+    const storedN8nUrl = localStorage.getItem('n8n_webhook_url');
     
     if (storedKey) setApiKey(storedKey);
     if (storedBaseUrl) setBaseUrl(storedBaseUrl);
     if (storedModelId) setModelId(storedModelId);
+    if (storedN8nUrl) setN8nUrl(storedN8nUrl);
 
     if (!storedKey) {
       setIsOpen(true);
@@ -34,6 +37,12 @@ const ApiKeyModal: React.FC = () => {
         localStorage.setItem('custom_model_id', modelId.trim());
       } else {
         localStorage.removeItem('custom_model_id');
+      }
+
+      if (n8nUrl.trim()) {
+        localStorage.setItem('n8n_webhook_url', n8nUrl.trim());
+      } else {
+        localStorage.removeItem('n8n_webhook_url');
       }
 
       setIsOpen(false);
@@ -93,6 +102,17 @@ const ApiKeyModal: React.FC = () => {
                   placeholder="google/gemini-2.0-flash-exp"
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"
                 />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-slate-700 mb-1">n8n Webhook URL (Optional)</label>
+                <input
+                  type="text"
+                  value={n8nUrl}
+                  onChange={(e) => setN8nUrl(e.target.value)}
+                  placeholder="https://your-n8n.com/webhook/..."
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"
+                />
+                <p className="text-[10px] text-slate-400 mt-1">Connect to n8n workflow for custom processing.</p>
               </div>
             </div>
           )}

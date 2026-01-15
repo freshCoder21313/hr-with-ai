@@ -4,6 +4,7 @@ import { Send, StopCircle, User, Bot, Mic, MicOff, Volume2, VolumeX, MessageSqua
 import { db } from '../../lib/db';
 import { Interview, Message, InterviewStatus } from '../../types';
 import { startInterviewSession, streamInterviewMessage, getStoredAIConfig } from '../../services/geminiService';
+import { callN8nWebhook } from '../../services/n8nService';
 import { useVoice } from '../../hooks/useVoice';
 import CodeEditor from './CodeEditor';
 import Whiteboard from './Whiteboard';
@@ -62,6 +63,7 @@ const InterviewRoom: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'chat' | 'code' | 'whiteboard'>('chat');
   const [code, setCode] = useState<string>('// Type your solution here\nfunction solution() {\n  \n}');
   const [whiteboardData, setWhiteboardData] = useState<string>('');
+  const [isRunningCode, setIsRunningCode] = useState(false);
   
   // Tldraw Editor instance ref to capture snapshots
   const editorRef = useRef<any>(null);
@@ -281,6 +283,49 @@ const InterviewRoom: React.FC = () => {
     }
   };
 
+  const handleRunCode = async () => {
+    if (!code.trim() || !id || !interview) return;
+    
+    // Check if n8n is configured
+    const n8nUrl = localStorage.getItem('n8n_webhook_url');
+    if (!n8nUrl) {
+        alert("Please configure n8n Webhook URL in settings (Click 'Key' in header) to run code.");
+        return;
+    }
+
+    setIsRunningCode(true);
+    try {
+        const result = await callN8nWebhook({ 
+            action: 'run_code',
+            code: code,
+            language: 'javascript', 
+            interviewId: id,
+            context: interview
+        });
+        
+        // Show result in chat as a System/Bot message
+        const resultText = typeof result === 'string' ? result : JSON.stringify(result, null, 2);
+        const resultMsg: Message = {
+            role: 'model',
+            content: `**🏁 Code Execution Result:**\n\`\`\`\n${resultText}\n\`\`\``,
+            timestamp: Date.now()
+        };
+        
+        const newMessages = [...interview.messages, resultMsg];
+        setInterview({ ...interview, messages: newMessages });
+        await db.interviews.update(parseInt(id), { messages: newMessages });
+        
+        // Optional: Switch to chat to see result
+        setActiveTab('chat');
+        
+    } catch (e: any) {
+        console.error(e);
+        alert("Failed to run code: " + e.message);
+    } finally {
+        setIsRunningCode(false);
+    }
+  };
+
   if (!interview) return <div className="p-8 text-center">Loading room...</div>;
 
   return (
@@ -404,7 +449,9 @@ const InterviewRoom: React.FC = () => {
                 code={code} 
                 onChange={(val) => {
                     if (val !== undefined) setCode(val);
-                }} 
+                }}
+                onRun={handleRunCode}
+                isRunning={isRunningCode}
              />
         </div>
 
