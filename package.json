@@ -9,14 +9,18 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "react-dom": "^18.3.1",
-    "mermaid": "^11.12.2",
     "@google/genai": "^1.36.0",
+    "@monaco-editor/react": "^4.6.0",
+    "@types/react-syntax-highlighter": "^15.5.13",
     "dexie": "^4.2.1",
     "lucide-react": "^0.562.0",
+    "mermaid": "^11.12.2",
     "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-markdown": "^10.1.0",
     "react-router-dom": "^7.12.0",
-    "@monaco-editor/react": "^4.6.0",
+    "react-syntax-highlighter": "^16.1.0",
+    "remark-gfm": "^4.0.1",
     "tldraw": "2.1.0"
   },
   "devDependencies": {

@@ -7,6 +7,7 @@ import { startInterviewSession, streamInterviewMessage, getStoredAIConfig } from
 import { useVoice } from '../../hooks/useVoice';
 import CodeEditor from './CodeEditor';
 import Whiteboard from './Whiteboard';
+import MarkdownRenderer from '../../components/MarkdownRenderer';
 
 // Helper to convert SVG to PNG Base64
 const svgToPngBase64 = (svg: SVGElement): Promise<string> => {
@@ -362,13 +363,17 @@ const InterviewRoom: React.FC = () => {
                         </div>
                     )}
                     <div
-                        className={`p-4 rounded-2xl text-sm leading-relaxed shadow-sm whitespace-pre-wrap ${
+                        className={`p-4 rounded-2xl text-sm leading-relaxed shadow-sm ${
                         msg.role === 'user'
                             ? 'bg-blue-600 text-white rounded-tr-none'
                             : 'bg-white text-slate-800 border border-slate-100 rounded-tl-none'
                         }`}
                     >
-                        {msg.content}
+                        {msg.role === 'model' ? (
+                            <MarkdownRenderer content={msg.content} />
+                        ) : (
+                            <div className="whitespace-pre-wrap">{msg.content}</div>
+                        )}
                     </div>
                 </div>
                 </div>
