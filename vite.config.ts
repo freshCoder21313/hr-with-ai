@@ -21,6 +21,20 @@ export default defineConfig(({ mode }) => {
         alias: {
           '@': path.resolve(__dirname, './src'),
         }
+      },
+      build: {
+        rollupOptions: {
+          output: {
+            manualChunks: {
+              'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+              'ui-vendor': ['lucide-react', 'clsx', 'tailwind-merge', 'class-variance-authority'],
+              'editor-vendor': ['@monaco-editor/react', 'react-syntax-highlighter', 'react-markdown'],
+              'chart-vendor': ['mermaid', 'tldraw'],
+              'ai-vendor': ['@google/genai']
+            }
+          }
+        },
+        chunkSizeWarningLimit: 1000
       }
     };
 });

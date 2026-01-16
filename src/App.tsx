@@ -1,12 +1,20 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
-import SetupRoom from './features/dashboard/SetupRoom';
-import InterviewRoom from './features/interview/InterviewRoom';
-import FeedbackView from './features/interview/FeedbackView';
-import LandingPage from './features/landing/LandingPage';
-import HistoryPage from './features/history/HistoryPage';
-
 import ApiKeyModal from './components/ApiKeyModal';
+import { Loader2 } from 'lucide-react';
+
+// Lazy load features
+const SetupRoom = lazy(() => import('./features/dashboard/SetupRoom'));
+const InterviewRoom = lazy(() => import('./features/interview/InterviewRoom'));
+const FeedbackView = lazy(() => import('./features/interview/FeedbackView'));
+const LandingPage = lazy(() => import('./features/landing/LandingPage'));
+const HistoryPage = lazy(() => import('./features/history/HistoryPage'));
+
+const PageLoader = () => (
+  <div className="flex items-center justify-center min-h-[50vh]">
+    <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+  </div>
+);
 
 const App: React.FC = () => {
   const handleResetKey = () => {
@@ -37,14 +45,16 @@ const App: React.FC = () => {
         </header>
 
         <main className="flex-1 container mx-auto px-4 py-6">
-          <Routes>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/setup" element={<SetupRoom />} />
-            <Route path="/history" element={<HistoryPage />} />
-            <Route path="/interview/:id" element={<InterviewRoom />} />
-            <Route path="/feedback/:id" element={<FeedbackView />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/setup" element={<SetupRoom />} />
+              <Route path="/history" element={<HistoryPage />} />
+              <Route path="/interview/:id" element={<InterviewRoom />} />
+              <Route path="/feedback/:id" element={<FeedbackView />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </Suspense>
         </main>
       </div>
     </HashRouter>
