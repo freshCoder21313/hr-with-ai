@@ -53,7 +53,7 @@ const ApiKeyModal: React.FC = () => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm">
       <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md border border-slate-200">
         <h2 className="text-xl font-bold text-slate-900 mb-2">Configure AI Provider</h2>
         <p className="text-slate-500 text-sm mb-4">
@@ -92,6 +92,7 @@ const ApiKeyModal: React.FC = () => {
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"
                 />
                 <p className="text-[10px] text-slate-400 mt-1">Leave empty for default Google Gemini.</p>
+                <p className="text-[10px] text-orange-600 font-medium mt-1">⚠️ Security Warning: Only use URLs you trust. Your API Key will be sent here.</p>
               </div>
               <div>
                 <label className="block text-xs font-medium text-slate-700 mb-1">Model ID (Optional)</label>

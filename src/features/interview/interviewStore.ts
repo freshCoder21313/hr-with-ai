@@ -88,8 +88,11 @@ export const useInterviewStore = create<InterviewState>()(
     }),
     {
       name: 'interview-storage',
-      storage: createJSONStorage(() => localStorage), // Keep it simple with localStorage for now
-      partialize: (state) => ({ currentInterview: state.currentInterview }), // Only persist the interview data
+      storage: createJSONStorage(() => localStorage), 
+      // Optimization: Do NOT persist 'currentInterview' to localStorage.
+      // It contains heavy data (messages, whiteboard images) which will exceed 5MB quota.
+      // We rely on IndexedDB (Dexie) for persistence. The React components will load from DB on mount.
+      partialize: (state) => ({ }), 
     }
   )
 );

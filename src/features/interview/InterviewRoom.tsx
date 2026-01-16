@@ -165,6 +165,10 @@ const InterviewRoom: React.FC = () => {
   };
 
   const handleRunCode = async () => {
+    // Feature temporarily disabled
+    alert("This feature is coming soon! (Backend integration in progress)");
+    return;
+    /* 
     if (!currentInterview?.code?.trim() || !id) return;
     const n8nUrl = localStorage.getItem('n8n_webhook_url');
     if (!n8nUrl) {
@@ -194,6 +198,7 @@ const InterviewRoom: React.FC = () => {
     } finally {
         setIsRunningCode(false);
     }
+    */
   };
 
   if (!currentInterview) return <div className="h-screen flex items-center justify-center text-slate-500">Loading room...</div>;

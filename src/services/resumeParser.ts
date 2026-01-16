@@ -1,10 +1,8 @@
 import * as pdfjsLib from 'pdfjs-dist';
 
 // Cấu hình Worker cho PDF.js
-// Cách tối ưu cho Vite: Sử dụng dynamic import url hoặc trỏ về CDN khớp version.
-// Để đảm bảo chạy ổn định mà không cần config Vite phức tạp, ta dùng CDN cho worker.
-// pdfjsLib.version tự động lấy version của lib đang cài.
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+// Sử dụng file local trong thư mục public để hỗ trợ Offline hoàn toàn
+pdfjsLib.GlobalWorkerOptions.workerSrc = `/pdf.worker.min.mjs`;
 
 /**
  * Đọc nội dung text từ file PDF

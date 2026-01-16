@@ -16,13 +16,13 @@ LANGUAGE: ${interview.language === 'vi-VN' ? 'Vietnamese (Tiếng Việt)' : 'En
 CANDIDATE PROFILE
 ----------------
 RESUME SUMMARY:
-${interview.resumeText.slice(0, 1500)}
+${interview.resumeText}
 
 ----------------
 JOB CONTEXT
 ----------------
 DESCRIPTION:
-${interview.jobDescription.slice(0, 1500)}
+${interview.jobDescription}
 
 ${codeContext}
 
