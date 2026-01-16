@@ -117,3 +117,25 @@ MERMAID GRAPH GUIDELINES:
 - 'mermaidGraphPotential': Show the ideal flow. E.g., STAR Method -> Clear Impact -> High Score.
 - Do not use special characters that break JSON.
 `;
+
+export const getExtractJDInfoPrompt = (jobDescription: string) => `
+Analyze the following Job Description (JD) and extract 3 pieces of information:
+1. Target Company (The company hiring)
+2. Job Title (The position name)
+3. Interviewer Persona (A brief description of a suitable interviewer's style based on the JD. e.g., "A technical lead focused on performance", "A product manager interested in user-centric design").
+
+JOB DESCRIPTION:
+${jobDescription}
+
+OUTPUT FORMAT:
+Return a valid JSON object (NO MARKDOWN, NO \`\`\`json wrappers) matching exactly this schema:
+{
+  "company": "String",
+  "jobTitle": "String",
+  "interviewerPersona": "String"
+}
+
+If you cannot find the company name, use "Tech Company".
+If you cannot find the job title, use "Software Engineer".
+For the persona, create a professional and relevant one based on the seniority and requirements in the JD.
+`;

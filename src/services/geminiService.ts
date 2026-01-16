@@ -1,6 +1,6 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { Interview, Message, InterviewFeedback } from "@/types";
-import { getSystemPrompt, getStartPrompt, getFeedbackPrompt } from "@/features/interview/promptSystem";
+import { getSystemPrompt, getStartPrompt, getFeedbackPrompt, getExtractJDInfoPrompt } from "@/features/interview/promptSystem";
 
 export interface AIConfig {
   apiKey: string;
@@ -265,6 +265,38 @@ export const generateInterviewFeedback = async (interview: Interview, configInpu
 
   } catch (error) {
     console.error("Error generating feedback:", error);
+    throw error;
+  }
+};
+
+export const extractInfoFromJD = async (jobDescription: string, configInput: AIConfigInput): Promise<{ company: string, jobTitle: string, interviewerPersona: string }> => {
+  const config = resolveConfig(configInput);
+  const prompt = getExtractJDInfoPrompt(jobDescription);
+
+  try {
+    let jsonText = "";
+
+    if (config.baseUrl) {
+      const messages = [{ role: "user", content: prompt }];
+      const response = await callOpenAI(config, messages, "gpt-4o-mini");
+      const data = await response.json();
+      jsonText = data.choices?.[0]?.message?.content || "";
+    } else {
+      const ai = getGeminiClient(config.apiKey);
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.0-flash-exp',
+        contents: prompt,
+      });
+      jsonText = response.text || "";
+    }
+
+    if (!jsonText) throw new Error("No information extracted");
+    
+    jsonText = jsonText.replace(/```json\n?|\n?```/g, "").trim();
+    return JSON.parse(jsonText);
+
+  } catch (error) {
+    console.error("Error extracting info from JD:", error);
     throw error;
   }
 };

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { SetupFormData } from '@/types';
-import { Upload, Loader2, Play } from 'lucide-react';
+import { Upload, Loader2, Play, Sparkles } from 'lucide-react';
 import { parseResume } from '@/services/resumeParser';
+import { extractInfoFromJD, getStoredAIConfig } from '@/services/geminiService';
 import { useInterview } from '@/hooks/useInterview';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,6 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 const SetupRoom: React.FC = () => {
   const { startNewInterview, isLoading: isStarting } = useInterview();
   const [isParsing, setIsParsing] = useState(false);
+  const [isExtracting, setIsExtracting] = useState(false);
   const [formData, setFormData] = useState<SetupFormData>({
     company: 'Tech Corp',
     jobTitle: 'Senior Frontend Engineer',
@@ -28,6 +30,34 @@ const SetupRoom: React.FC = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleAutoFill = async () => {
+    if (!formData.jobDescription.trim()) {
+      alert("Please enter a Job Description first.");
+      return;
+    }
+
+    const config = getStoredAIConfig();
+    if (!config.apiKey) {
+      alert("Please set your API Key first.");
+      return;
+    }
+
+    setIsExtracting(true);
+    try {
+      const extracted = await extractInfoFromJD(formData.jobDescription, config);
+      setFormData(prev => ({
+        ...prev,
+        company: extracted.company,
+        jobTitle: extracted.jobTitle,
+        interviewerPersona: extracted.interviewerPersona
+      }));
+    } catch (error) {
+      alert("Failed to extract info: " + (error as any).message);
+    } finally {
+      setIsExtracting(false);
+    }
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -116,7 +146,24 @@ const SetupRoom: React.FC = () => {
             </div>
 
             <div className="space-y-3">
-              <Label htmlFor="jobDescription">Job Description</Label>
+              <div className="flex justify-between items-center">
+                <Label htmlFor="jobDescription">Job Description</Label>
+                <Button 
+                  type="button"
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleAutoFill}
+                  disabled={isExtracting || !formData.jobDescription.trim()}
+                  className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                >
+                  {isExtracting ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Sparkles className="mr-2 h-4 w-4" />
+                  )}
+                  Auto-fill from JD
+                </Button>
+              </div>
               <Textarea
                 id="jobDescription"
                 name="jobDescription"
