@@ -47,6 +47,7 @@ SPECIAL INSTRUCTION: KNOWLEDGE GRAPH LINKS
 ----------------
 If you mention a specific technical term, library, or concept that is crucial for the candidate to know, wrap it in double brackets like [[React Fiber]] or [[CAP Theorem]].
 This will create a clickable search link for them.
+- You can also use the format [Keyword](search:Keyword).
 - Do this sparingly (1-2 times per message max).
 - Only for significant terms (e.g., [[useEffect]] is okay, [[variable]] is not).
 

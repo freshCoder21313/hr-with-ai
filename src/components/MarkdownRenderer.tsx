@@ -11,12 +11,22 @@ interface MarkdownRendererProps {
 
 const MarkdownRenderer: React.FC<MarkdownRendererProps> = memo(({ content }) => {
   // Pre-process content to convert [[Keyword]] to [Keyword](search:Keyword)
-  // This allows us to intercept the link and render a search chip
-  const processedContent = content.replace(/\[\[(.*?)\]\]/g, '[$1](search:$1)');
+  // And also normalize any existing [Keyword](search:Keyword) to ensure it's handled consistently
+  // Especially handling spaces in search queries which can break markdown link parsing
+  const processedContent = content
+    .replace(/\[\[(.*?)\]\]/g, (_, term) => `[${term}](search:${term.replace(/\s+/g, '%20')})`)
+    .replace(/\[(.*?)\]\(search:(.*?)\)/g, (_, text, term) => `[${text}](search:${term.trim().replace(/\s+/g, '%20')})`)
+    ;
 
   return (
     <ReactMarkdown
       remarkPlugins={[remarkGfm]}
+      urlTransform={(url) => {
+        // Allow search: protocol
+        if (url.startsWith('search:')) return url;
+        // Default transform for other URLs
+        return url;
+      }}
       components={{
         code({ node, inline, className, children, ...props }: any) {
           const match = /language-(\w+)/.exec(className || '');
@@ -54,7 +64,8 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = memo(({ content }) => 
         ),
         a: ({ href, children }) => {
           if (href?.startsWith('search:')) {
-            const term = href.replace('search:', '');
+            // Decode the term because it might have been encoded in pre-processing (e.g. %20 for spaces)
+            const term = decodeURIComponent(href.replace('search:', ''));
             return (
               <a 
                 href={`https://www.google.com/search?q=${encodeURIComponent(term)}`} 
