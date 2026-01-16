@@ -1,6 +1,7 @@
 import React from 'react';
 import Editor from '@monaco-editor/react';
 import { Play, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface CodeEditorProps {
   code: string;
@@ -29,14 +30,15 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ code, onChange, language = 'jav
       />
       
       {onRun && (
-        <button
+        <Button
           onClick={onRun}
           disabled={isRunning}
-          className="absolute bottom-4 right-4 z-10 flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          variant="default" // Using default but overriding colors for 'Run' action usually green
+          className="absolute bottom-4 right-4 z-10 gap-2 bg-green-600 hover:bg-green-700 text-white shadow-lg disabled:opacity-50"
         >
           {isRunning ? <Loader2 size={16} className="animate-spin" /> : <Play size={16} fill="currentColor" />}
           Run Code
-        </button>
+        </Button>
       )}
     </div>
   );
