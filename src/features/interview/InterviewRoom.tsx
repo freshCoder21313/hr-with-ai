@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { StopCircle, User, Bot, Mic, MicOff, Volume2, VolumeX, MessageSquare, Code2, PenTool, Image as ImageIcon, Send } from 'lucide-react';
+import { StopCircle, User, Bot, Mic, MicOff, Volume2, VolumeX, MessageSquare, Code2, PenTool, Image as ImageIcon, Send, Loader2 } from 'lucide-react';
 import { db } from '@/lib/db';
 import { useInterview } from '@/hooks/useInterview';
 import { useVoice } from '@/hooks/useVoice';
@@ -66,6 +66,7 @@ const InterviewRoom: React.FC = () => {
   const [ttsEnabled, setTtsEnabled] = useState(true);
   const [activeTab, setActiveTab] = useState<'chat' | 'code' | 'whiteboard'>('chat');
   const [isRunningCode, setIsRunningCode] = useState(false);
+  const [isEndingSession, setIsEndingSession] = useState(false);
   
   const editorRef = useRef<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -151,8 +152,16 @@ const InterviewRoom: React.FC = () => {
   };
 
   const handleEndInterview = async () => {
-    cancelSpeech();
-    await endSession();
+    if (window.confirm("Are you sure you want to end this interview? AI will generate feedback for you.")) {
+        cancelSpeech();
+        setIsEndingSession(true);
+        try {
+            await endSession();
+        } catch (error) {
+            console.error("Failed to end session:", error);
+            setIsEndingSession(false);
+        }
+    }
   };
 
   const toggleVoice = () => {
@@ -204,7 +213,30 @@ const InterviewRoom: React.FC = () => {
   if (!currentInterview) return <div className="h-screen flex items-center justify-center text-slate-500">Loading room...</div>;
 
   return (
-    <div className="flex flex-col h-[calc(100vh-80px)] max-w-7xl mx-auto bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden my-4">
+    <div className="flex flex-col h-[calc(100vh-80px)] max-w-7xl mx-auto bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden my-4 relative">
+      {/* Loading Overlay for Session Ending */}
+      {isEndingSession && (
+        <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm transition-all animate-in fade-in duration-300">
+            <div className="bg-white p-8 rounded-2xl shadow-2xl border border-slate-100 flex flex-col items-center max-w-md text-center">
+                <div className="relative mb-6">
+                    <div className="absolute inset-0 rounded-full bg-blue-100 animate-ping opacity-25"></div>
+                    <div className="relative bg-blue-50 p-4 rounded-full border border-blue-100">
+                        <Loader2 className="w-12 h-12 text-blue-600 animate-spin" />
+                    </div>
+                </div>
+                <h3 className="text-xl font-bold text-slate-900 mb-2">Analyzing Interview</h3>
+                <p className="text-slate-500">
+                    Please wait a moment while the AI reviewer analyzes your performance and generates detailed feedback...
+                </p>
+                <div className="mt-8 flex gap-2 w-full">
+                    <div className="h-1.5 flex-1 bg-blue-600 rounded-full animate-pulse"></div>
+                    <div className="h-1.5 flex-1 bg-blue-600 rounded-full animate-pulse delay-75"></div>
+                    <div className="h-1.5 flex-1 bg-blue-600 rounded-full animate-pulse delay-150"></div>
+                </div>
+            </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="px-6 py-3 border-b border-slate-200 bg-slate-50 flex justify-between items-center h-16">
         <div>
