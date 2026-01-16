@@ -54,3 +54,18 @@ export interface SetupFormData {
   resumeText: string;
   language: 'vi-VN' | 'en-US';
 }
+
+export interface UserSettings {
+  id?: number;
+  apiKey?: string;
+  defaultModel?: string;
+  voiceEnabled?: boolean;
+}
+
+export interface Resume {
+  id?: number;
+  createdAt: number;
+  fileName: string;
+  rawText: string;
+  parsedData?: any;
+}
