@@ -1,7 +1,8 @@
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense, lazy, useState } from 'react';
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import ApiKeyModal from './components/ApiKeyModal';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Cloud } from 'lucide-react';
+import { CloudSyncModal } from './components/CloudSyncModal';
 
 // Lazy load features
 const SetupRoom = lazy(() => import('./features/dashboard/SetupRoom'));
@@ -17,6 +18,8 @@ const PageLoader = () => (
 );
 
 const App: React.FC = () => {
+  const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
+
   const handleResetKey = () => {
     if (window.confirm('Remove API Key and reload?')) {
       localStorage.removeItem('gemini_api_key');
@@ -28,6 +31,8 @@ const App: React.FC = () => {
     <HashRouter>
       <div className="min-h-[100dvh] flex flex-col bg-slate-50 text-slate-900">
         <ApiKeyModal />
+        <CloudSyncModal isOpen={isSyncModalOpen} onClose={() => setIsSyncModalOpen(false)} />
+        
         <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
           <div className="container mx-auto px-4 h-14 flex items-center justify-between">
             <div className="flex items-center gap-2 font-bold text-xl text-slate-900">
@@ -37,6 +42,14 @@ const App: React.FC = () => {
             <nav className="flex items-center gap-4 text-sm font-medium">
               <a href="#/" className="hover:text-blue-600 transition-colors">Home</a>
               <a href="#/history" className="hover:text-blue-600 transition-colors">History</a>
+              <button 
+                onClick={() => setIsSyncModalOpen(true)} 
+                className="hover:text-blue-600 transition-colors flex items-center gap-1"
+                title="Cloud Sync"
+              >
+                <Cloud className="w-4 h-4" />
+                <span className="hidden sm:inline">Sync</span>
+              </button>
               <button onClick={handleResetKey} className="text-slate-400 hover:text-red-500 transition-colors" title="Reset API Key">
                 Key
               </button>
