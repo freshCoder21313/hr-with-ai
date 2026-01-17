@@ -27,6 +27,7 @@
   - [🚀 Getting Started](#-getting-started)
     - [Prerequisites](#prerequisites)
     - [Installation](#installation)
+  - [📱 Mobile Development](#-mobile-development)
   - [📖 How to Use](#-how-to-use)
   - [🤝 Contributing](#-contributing)
   - [📄 License](#-license)
@@ -102,6 +103,30 @@
 
 5. **Open your browser:**
    Navigate to `http://localhost:5173`
+
+---
+
+## 📱 Mobile Development
+
+This project uses [Capacitor](https://capacitorjs.com/) to build native Android apps.
+
+### Prerequisites for Android
+- [Android Studio](https://developer.android.com/studio) installed and configured.
+- Android SDK platforms and tools installed via Android Studio.
+
+### Building the APK
+We have streamlined the process into a single command:
+
+```bash
+npm run android
+```
+
+This command will:
+1. Build the web application (`npm run build`).
+2. Sync the web assets to the native Android project (`npx cap sync`).
+3. Open the Android project in Android Studio (`npx cap open android`).
+
+From Android Studio, you can run the app on an emulator or a connected device, or build a signed APK/Bundle for release.
 
 ---
 
