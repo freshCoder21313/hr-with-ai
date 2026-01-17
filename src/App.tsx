@@ -26,7 +26,7 @@ const App: React.FC = () => {
 
   return (
     <HashRouter>
-      <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900">
+      <div className="min-h-[100dvh] flex flex-col bg-slate-50 text-slate-900">
         <ApiKeyModal />
         <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
           <div className="container mx-auto px-4 h-14 flex items-center justify-between">
@@ -42,11 +42,11 @@ const App: React.FC = () => {
               </button>
             </nav>
           </div>
-        </header>
+          </header>
 
-        <main className="flex-1 container mx-auto px-4 py-6">
-          <Suspense fallback={<PageLoader />}>
-            <Routes>
+          <main className="flex-1 container mx-auto px-0 md:px-4 py-0 md:py-6">
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
               <Route path="/" element={<LandingPage />} />
               <Route path="/setup" element={<SetupRoom />} />
               <Route path="/history" element={<HistoryPage />} />

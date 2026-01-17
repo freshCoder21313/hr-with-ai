@@ -6,12 +6,12 @@ const LandingPage: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="flex flex-col items-center justify-center py-12 space-y-12">
+    <div className="flex flex-col items-center justify-center py-8 md:py-12 space-y-8 md:space-y-12 px-4 md:px-0">
       <div className="text-center space-y-4 max-w-2xl">
-        <h1 className="text-5xl font-extrabold tracking-tight text-slate-900 sm:text-6xl">
+        <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900 sm:text-6xl">
           Master Your <span className="text-blue-600">Interview</span>
         </h1>
-        <p className="text-lg text-slate-600">
+        <p className="text-base md:text-lg text-slate-600">
           Practice with AI personas from top companies. Get instant feedback with structural visualizations. Offline-first & Privacy-focused.
         </p>
         <div className="pt-4">
