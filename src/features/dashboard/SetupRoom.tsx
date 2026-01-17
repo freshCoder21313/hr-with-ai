@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { SetupFormData } from '@/types';
+import { SetupFormData, Resume } from '@/types';
 import { Upload, Loader2, Play, Sparkles } from 'lucide-react';
 import { parseResume } from '@/services/resumeParser';
 import { extractInfoFromJD, getStoredAIConfig } from '@/services/geminiService';
@@ -9,11 +9,16 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { db } from '@/lib/db';
+import ResumeList from './ResumeList';
 
 const SetupRoom: React.FC = () => {
   const { startNewInterview, isLoading: isStarting } = useInterview();
   const [isParsing, setIsParsing] = useState(false);
   const [isExtracting, setIsExtracting] = useState(false);
+  const [savedResumes, setSavedResumes] = useState<Resume[]>([]);
+  const [selectedResumeId, setSelectedResumeId] = useState<number>();
+
   const [formData, setFormData] = useState<SetupFormData>({
     company: 'Tech Corp',
     jobTitle: 'Senior Frontend Engineer',
@@ -22,6 +27,47 @@ const SetupRoom: React.FC = () => {
     resumeText: '',
     language: 'en-US'
   });
+
+  // Load saved resumes on mount
+  React.useEffect(() => {
+    const loadResumes = async () => {
+      try {
+        const resumes = await db.resumes.toArray();
+        setSavedResumes(resumes.sort((a, b) => b.createdAt - a.createdAt));
+      } catch (error) {
+        console.error('Failed to load resumes:', error);
+      }
+    };
+    loadResumes();
+  }, []);
+
+  const handleResumeSelect = (resume: Resume) => {
+    if (selectedResumeId === resume.id) {
+        // Deselect
+        setSelectedResumeId(undefined);
+        setFormData(prev => ({ ...prev, resumeText: '' }));
+    } else {
+        // Select
+        setSelectedResumeId(resume.id);
+        setFormData(prev => ({ ...prev, resumeText: resume.rawText }));
+    }
+  };
+
+  const handleDeleteResume = async (id: number) => {
+    if (!confirm('Are you sure you want to delete this resume?')) return;
+    
+    try {
+        await db.resumes.delete(id);
+        setSavedResumes(prev => prev.filter(r => r.id !== id));
+        if (selectedResumeId === id) {
+            setSelectedResumeId(undefined);
+            setFormData(prev => ({ ...prev, resumeText: '' }));
+        }
+    } catch (error) {
+        console.error('Failed to delete resume:', error);
+        alert('Failed to delete resume');
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,7 +113,22 @@ const SetupRoom: React.FC = () => {
     setIsParsing(true);
     try {
         const text = await parseResume(file);
+        
+        // Save to DB
+        const newResume: Resume = {
+            createdAt: Date.now(),
+            fileName: file.name,
+            rawText: text
+        };
+        
+        const id = await db.resumes.add(newResume);
+        const savedResume = { ...newResume, id }; // id is correctly typed as number from Dexie add return
+
+        // Update state
+        setSavedResumes(prev => [savedResume, ...prev]);
+        setSelectedResumeId(id);
         setFormData(prev => ({ ...prev, resumeText: text }));
+        
     } catch (error) {
         alert("Failed to parse resume: " + (error as any).message);
     } finally {
@@ -190,6 +251,14 @@ const SetupRoom: React.FC = () => {
                     />
                 </label>
               </div>
+              
+              <ResumeList 
+                resumes={savedResumes}
+                selectedResumeId={selectedResumeId}
+                onSelect={handleResumeSelect}
+                onDelete={handleDeleteResume}
+              />
+
               <Textarea
                 id="resumeText"
                 name="resumeText"
