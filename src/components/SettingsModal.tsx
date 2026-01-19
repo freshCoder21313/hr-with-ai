@@ -24,6 +24,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onOpenChange, onSet
   const [settings, setSettings] = useState<UserSettings>({
     voiceEnabled: true,
     hintsEnabled: false,
+    autoFinishEnabled: false,
     apiKey: '',
     baseUrl: '',
     modelId: ''
@@ -83,6 +84,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onOpenChange, onSet
         const dbRecord = {
             voiceEnabled: settings.voiceEnabled,
             hintsEnabled: settings.hintsEnabled,
+            autoFinishEnabled: settings.autoFinishEnabled,
             apiKey: settings.apiKey,
             defaultModel: settings.modelId,
             // baseUrl: settings.baseUrl // Note: baseUrl not yet in UserSettings type strictly, but we can add or ignore
@@ -141,6 +143,18 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onOpenChange, onSet
                             id="hints-mode" 
                             checked={settings.hintsEnabled === true}
                             onCheckedChange={(c) => setSettings(s => ({ ...s, hintsEnabled: c }))}
+                        />
+                    </div>
+                    
+                    <div className="flex items-center justify-between space-x-2">
+                        <div className="flex flex-col space-y-1">
+                            <Label htmlFor="autofinish-mode" className="font-medium text-sm">AI Auto-Finish</Label>
+                            <span className="text-[11px] text-slate-500">Allow AI to decide when to end the interview.</span>
+                        </div>
+                        <Switch 
+                            id="autofinish-mode" 
+                            checked={settings.autoFinishEnabled === true}
+                            onCheckedChange={(c) => setSettings(s => ({ ...s, autoFinishEnabled: c }))}
                         />
                     </div>
                 </div>

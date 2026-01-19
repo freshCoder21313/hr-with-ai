@@ -100,17 +100,37 @@ export const useInterview = () => {
 
       // 3. Stream Response
       let fullResponse = '';
+      
+      // Get Auto-Finish Setting
+      let autoFinish = false;
+      try {
+        const settings = await db.userSettings.orderBy('id').first();
+        if (settings?.autoFinishEnabled) autoFinish = true;
+      } catch (e) {
+        console.warn("Failed to load settings for auto-finish check", e);
+      }
+
       const stream = streamInterviewMessage(
         [...currentInterview.messages, userMsg], // Current history + new user msg
         content,
         currentInterview,
         config,
         currentInterview.code,
-        image
+        image,
+        autoFinish
       );
+
+      let shouldAutoEnd = false;
 
       for await (const chunk of stream) {
         fullResponse += chunk;
+        
+        // Real-time check for token (optimization: check only last N chars)
+        if (fullResponse.includes('[[END_SESSION]]')) {
+            fullResponse = fullResponse.replace('[[END_SESSION]]', '').trim();
+            shouldAutoEnd = true;
+        }
+        
         updateLastMessage(fullResponse);
       }
 
@@ -128,6 +148,14 @@ export const useInterview = () => {
              code: currentInterview.code, // Save latest code too
              whiteboard: currentInterview.whiteboard // Save latest whiteboard
          });
+      }
+
+      // 5. Trigger Auto-End if detected
+      if (shouldAutoEnd) {
+          // Small delay to let the user read the final message before blocking UI
+          setTimeout(() => {
+              endSession();
+          }, 2000);
       }
 
     } catch (err: any) {

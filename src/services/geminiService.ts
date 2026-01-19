@@ -75,7 +75,8 @@ export async function* streamInterviewMessage(
   interviewContext: Interview, 
   configInput: AIConfigInput,
   currentCode?: string,
-  newImageBase64?: string
+  newImageBase64?: string,
+  autoFinishEnabled?: boolean
 ) {
   const config = resolveConfig(configInput);
 
@@ -91,7 +92,7 @@ export async function* streamInterviewMessage(
       `;
     }
 
-    const systemPrompt = getSystemPrompt(interviewContext, codeContext);
+    const systemPrompt = getSystemPrompt(interviewContext, codeContext, autoFinishEnabled);
 
     if (config.baseUrl) {
       // --- Custom/OpenAI Logic ---

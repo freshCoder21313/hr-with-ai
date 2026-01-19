@@ -61,6 +61,7 @@ export interface UserSettings {
   defaultModel?: string;
   voiceEnabled?: boolean;
   hintsEnabled?: boolean;
+  autoFinishEnabled?: boolean;
   baseUrl?: string;
   modelId?: string;
 }
