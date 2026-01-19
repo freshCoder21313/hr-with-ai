@@ -5,6 +5,7 @@ import { Interview } from '@/types';
 import { Calendar, Building, Briefcase, Download, Plus, ArrowRight } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import ProgressCharts from './ProgressCharts';
 
 const HistoryPage: React.FC = () => {
   const [interviews, setInterviews] = useState<Interview[]>([]);
@@ -43,6 +44,13 @@ const HistoryPage: React.FC = () => {
         </Button>
       </div>
       
+      {/* Progress Charts Section */}
+      {interviews.length > 0 && (
+        <div className="mb-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <ProgressCharts interviews={interviews} />
+        </div>
+      )}
+
       {interviews.length === 0 ? (
         <Card className="text-center py-12">
           <CardContent className="flex flex-col items-center gap-4">

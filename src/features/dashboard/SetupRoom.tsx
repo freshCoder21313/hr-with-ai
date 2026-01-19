@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { SetupFormData, Resume } from '@/types';
 import { Upload, Loader2, Play, Sparkles } from 'lucide-react';
 import { parseResume } from '@/services/resumeParser';
-import { extractInfoFromJD, getStoredAIConfig } from '@/services/geminiService';
+import { extractInfoFromJD, getStoredAIConfig, analyzeResume, ResumeAnalysis } from '@/services/geminiService';
 import { useInterview } from '@/hooks/useInterview';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,13 +11,16 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { db } from '@/lib/db';
 import ResumeList from './ResumeList';
+import ResumeAnalysisView from '@/features/resume-analysis/ResumeAnalysisView';
 
 const SetupRoom: React.FC = () => {
   const { startNewInterview, isLoading: isStarting } = useInterview();
   const [isParsing, setIsParsing] = useState(false);
   const [isExtracting, setIsExtracting] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [savedResumes, setSavedResumes] = useState<Resume[]>([]);
   const [selectedResumeId, setSelectedResumeId] = useState<number>();
+  const [resumeAnalysis, setResumeAnalysis] = useState<ResumeAnalysis | null>(null);
 
   const [formData, setFormData] = useState<SetupFormData>({
     company: 'Tech Corp',
@@ -112,33 +115,58 @@ const SetupRoom: React.FC = () => {
 
     setIsParsing(true);
     try {
-        const text = await parseResume(file);
-        
-        // Save to DB
-        const newResume: Resume = {
-            createdAt: Date.now(),
-            fileName: file.name,
-            rawText: text
-        };
-        
-        const id = await db.resumes.add(newResume);
-        const savedResume = { ...newResume, id }; // id is correctly typed as number from Dexie add return
+      const text = await parseResume(file);
+      
+      // Save to DB
+      const newResume: Resume = {
+          createdAt: Date.now(),
+          fileName: file.name,
+          rawText: text
+      };
+      
+      const id = await db.resumes.add(newResume);
+      const savedResume = { ...newResume, id }; // id is correctly typed as number from Dexie add return
 
-        // Update state
-        setSavedResumes(prev => [savedResume, ...prev]);
-        setSelectedResumeId(id);
-        setFormData(prev => ({ ...prev, resumeText: text }));
-        
+      // Update state
+      setSavedResumes(prev => [savedResume, ...prev]);
+      setSelectedResumeId(id);
+      setFormData(prev => ({ ...prev, resumeText: text }));
+      setResumeAnalysis(null); // Reset analysis on new upload
+      
     } catch (error) {
-        alert("Failed to parse resume: " + (error as any).message);
+      alert("Failed to parse resume: " + (error as any).message);
     } finally {
-        setIsParsing(false);
-        e.target.value = ''; 
+      setIsParsing(false);
+      e.target.value = ''; 
+    }
+  };
+
+  const handleAnalyzeResume = async () => {
+    if (!formData.resumeText || !formData.jobDescription) {
+      alert("Please provide both Resume content and Job Description.");
+      return;
+    }
+
+    const config = getStoredAIConfig();
+    if (!config.apiKey) {
+      alert("Please set your API Key first.");
+      return;
+    }
+
+    setIsAnalyzing(true);
+    try {
+      const analysis = await analyzeResume(formData.resumeText, formData.jobDescription, config);
+      setResumeAnalysis(analysis);
+    } catch (error) {
+      alert("Analysis failed: " + (error as any).message);
+    } finally {
+      setIsAnalyzing(false);
     }
   };
 
   return (
     <div className="max-w-4xl mx-auto p-4 md:p-8">
+
       <Card className="border-none shadow-xl bg-white/90 backdrop-blur-sm">
         <CardHeader className="text-center pb-6 md:pb-8 px-4 md:px-6">
           <CardTitle className="text-2xl md:text-3xl font-bold text-slate-900">Setup Interview Room</CardTitle>
@@ -268,6 +296,32 @@ const SetupRoom: React.FC = () => {
                 placeholder="Paste your resume text here..."
                 className="font-mono text-sm"
               />
+
+              {formData.resumeText && formData.jobDescription && (
+                <div className="pt-2">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={handleAnalyzeResume}
+                    disabled={isAnalyzing}
+                    className="w-full"
+                  >
+                    {isAnalyzing ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Analyzing Fit...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="mr-2 h-4 w-4 text-purple-500" />
+                        Analyze Resume Fit (AI)
+                      </>
+                    )}
+                  </Button>
+                </div>
+              )}
+
+              {resumeAnalysis && <ResumeAnalysisView analysis={resumeAnalysis} />}
             </div>
 
             <div className="pt-6">

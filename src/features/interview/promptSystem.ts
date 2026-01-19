@@ -140,3 +140,28 @@ If you cannot find the company name, use "Tech Company".
 If you cannot find the job title, use "Software Engineer".
 For the persona, create a professional and relevant one based on the seniority and requirements in the JD.
 `;
+
+export const getAnalyzeResumePrompt = (resumeText: string, jobDescription: string) => `
+You are an expert Talent Acquisition Specialist and Technical Recruiter.
+Analyze the following Candidate Resume against the Job Description (JD) and provide a "Pre-Interview Match Analysis".
+
+JOB DESCRIPTION:
+${jobDescription}
+
+RESUME:
+${resumeText}
+
+YOUR TASK:
+1. Calculate a **Match Score** (0-100) based on how well the resume fits the JD.
+2. Identify **Missing Keywords** or skills that are critical in the JD but missing in the Resume.
+3. Provide **Specific Improvements** to make the resume a better fit for this role.
+
+OUTPUT FORMAT:
+Return a valid JSON object (NO MARKDOWN, NO \`\`\`json wrappers) matching exactly this schema:
+{
+  "matchScore": number, // 0-100
+  "summary": "String. A brutally honest but constructive 2-3 sentence summary of the fit.",
+  "missingKeywords": ["String", "String", "String"], // Top 5 missing critical skills/terms
+  "improvements": ["String", "String", "String"] // Top 3 specific actionable advice to edit the resume
+}
+`;
