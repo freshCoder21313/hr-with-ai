@@ -1,18 +1,21 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { StopCircle, User, Bot, Mic, MicOff, Volume2, VolumeX, MessageSquare, Code2, PenTool, Image as ImageIcon, Send, Loader2 } from 'lucide-react';
+import { StopCircle, User, Bot, Mic, MicOff, Volume2, VolumeX, MessageSquare, Code2, PenTool, Image as ImageIcon, Send, Loader2, Lightbulb, Settings as SettingsIcon } from 'lucide-react';
 import { db } from '@/lib/db';
 import { useInterview } from '@/hooks/useInterview';
 import { useVoice } from '@/hooks/useVoice';
 import { callN8nWebhook } from '@/services/n8nService';
+import { generateInterviewHints, InterviewHints, getStoredAIConfig } from '@/services/geminiService';
 import CodeEditor from './CodeEditor';
 import Whiteboard from './Whiteboard';
 import MarkdownRenderer from '@/components/MarkdownRenderer';
 import { useInterviewStore } from './interviewStore';
-import { Message } from '@/types';
+import { Message, UserSettings } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
+import SettingsModal from '@/components/SettingsModal';
+import InterviewHintView from './InterviewHintView';
 
 // Helper to convert SVG to PNG Base64 (Same as before)
 const svgToPngBase64 = (svg: SVGElement): Promise<string> => {
@@ -67,6 +70,10 @@ const InterviewRoom: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'chat' | 'code' | 'whiteboard'>('chat');
   const [isRunningCode, setIsRunningCode] = useState(false);
   const [isEndingSession, setIsEndingSession] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [userSettings, setUserSettings] = useState<UserSettings>({ voiceEnabled: true, hintsEnabled: false });
+  const [hints, setHints] = useState<InterviewHints | null>(null);
+  const [isLoadingHints, setIsLoadingHints] = useState(false);
   
   const editorRef = useRef<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -114,9 +121,55 @@ const InterviewRoom: React.FC = () => {
     }
   }, [currentInterview?.messages, activeTab]);
 
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const stored = await db.userSettings.orderBy('id').first();
+        if (stored) {
+          setUserSettings(stored);
+        }
+      } catch (error) {
+        console.error("Failed to load settings:", error);
+      }
+    };
+    loadSettings();
+  }, [showSettings]); // Reload when settings modal closes/changes
+
+  const handleGetHints = async () => {
+    if (!currentInterview?.messages?.length) return;
+    
+    // Find the last question from the interviewer
+    const lastQuestion = [...currentInterview.messages].reverse().find(m => m.role === 'model');
+    if (!lastQuestion) {
+      alert("Wait for the interviewer to ask a question first!");
+      return;
+    }
+
+    const config = getStoredAIConfig();
+    if (!config.apiKey) {
+      alert("Please check your API Key settings.");
+      return;
+    }
+
+    setIsLoadingHints(true);
+    setHints(null);
+
+    try {
+      const context = `Role: ${currentInterview.jobTitle} at ${currentInterview.company}. Persona: ${currentInterview.interviewerPersona}`;
+      const result = await generateInterviewHints(lastQuestion.content, context, config);
+      setHints(result);
+    } catch (error) {
+      console.error(error);
+      alert("Failed to get hints. Please try again.");
+    } finally {
+      setIsLoadingHints(false);
+    }
+  };
+
   const handleSendMessage = async () => {
     if ((!inputValue.trim()) || !currentInterview) return;
 
+    setHints(null); // Clear hints on new message
     if (isListening) {
       stopListening();
       resetTranscript();
@@ -281,6 +334,15 @@ const InterviewRoom: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-1 md:gap-2 shrink-0">
+             <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setShowSettings(true)}
+                className="h-8 w-8 md:h-9 md:w-9 text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+                title="Settings"
+            >
+                <SettingsIcon size={18} />
+            </Button>
             <Button
                 variant="ghost"
                 size="icon"
@@ -369,7 +431,31 @@ const InterviewRoom: React.FC = () => {
 
       {/* Input Area (Always visible) */}
       <div className="p-2 md:p-4 bg-white border-t border-slate-200 z-10 shrink-0 safe-area-bottom">
+        {/* Hints View */}
+        {hints && (
+          <div className="max-w-5xl mx-auto mb-2">
+            <InterviewHintView hints={hints} onClose={() => setHints(null)} />
+          </div>
+        )}
+
         <div className="relative flex items-end gap-2 max-w-5xl mx-auto">
+          {/* Hints Button */}
+          {userSettings.hintsEnabled && (
+             <Button
+                variant="outline"
+                size="icon"
+                onClick={handleGetHints}
+                disabled={isLoadingHints}
+                className={cn(
+                  "h-[44px] w-[44px] md:h-[50px] md:w-[50px] rounded-xl shrink-0 border-amber-200 bg-amber-50 hover:bg-amber-100 text-amber-600",
+                  isLoadingHints ? "animate-pulse" : ""
+                )}
+                title="Get AI Hints"
+            >
+                {isLoadingHints ? <Loader2 size={20} className="animate-spin" /> : <Lightbulb size={20} />}
+            </Button>
+          )}
+
           <div className="relative flex-1">
             <Textarea
                 value={inputValue}
@@ -411,6 +497,11 @@ const InterviewRoom: React.FC = () => {
             <span className="opacity-70 hidden md:inline">{isListening ? 'Speak now...' : 'Press Enter to send'}</span>
         </p>
       </div>
+      <SettingsModal 
+        open={showSettings} 
+        onOpenChange={setShowSettings} 
+        onSettingsChanged={setUserSettings}
+      />
     </div>
   );
 };

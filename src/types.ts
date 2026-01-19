@@ -60,6 +60,9 @@ export interface UserSettings {
   apiKey?: string;
   defaultModel?: string;
   voiceEnabled?: boolean;
+  hintsEnabled?: boolean;
+  baseUrl?: string;
+  modelId?: string;
 }
 
 export interface Resume {

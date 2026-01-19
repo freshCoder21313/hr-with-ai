@@ -165,3 +165,26 @@ Return a valid JSON object (NO MARKDOWN, NO \`\`\`json wrappers) matching exactl
   "improvements": ["String", "String", "String"] // Top 3 specific actionable advice to edit the resume
 }
 `;
+
+export const getHintPrompt = (lastQuestion: string, context: string) => `
+You are a helpful Interview Coach. The candidate is stuck on the following question.
+Provide 3 levels of "Answer Hints" to help them.
+
+QUESTION: "${lastQuestion}"
+
+CONTEXT (Job & Role):
+${context}
+
+PROVIDE 3 HINTS:
+1. **Beginner/Attitude**: For someone with NO technical knowledge. Focus on showing a good learning attitude, honesty, and soft skills.
+2. **Intermediate/Creative**: For someone with SOME knowledge. Focus on a creative partial solution or logical guess.
+3. **Expert/Technical**: For someone with DEEP knowledge. Focus on the technically correct, optimized, or "perfect" answer.
+
+OUTPUT FORMAT:
+Return a valid JSON object (NO MARKDOWN, NO \`\`\`json wrappers):
+{
+  "level1": "String (Beginner hint...)",
+  "level2": "String (Intermediate hint...)",
+  "level3": "String (Expert hint...)"
+}
+`;

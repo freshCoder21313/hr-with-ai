@@ -1,14 +1,44 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #0f172a;
-  --color-secondary: #334155;
-  --color-accent: #2563eb;
+  /* Shadcn UI Color Tokens - Mapped to Slate/Blue theme */
+  --color-background: #ffffff;
+  --color-foreground: #0f172a; /* slate-900 */
 
+  --color-card: #ffffff;
+  --color-card-foreground: #0f172a;
+  
+  --color-popover: #ffffff;
+  --color-popover-foreground: #0f172a;
+  
+  --color-primary: #2563eb; /* blue-600 - Matches app accent */
+  --color-primary-foreground: #ffffff;
+  
+  --color-secondary: #f1f5f9; /* slate-100 */
+  --color-secondary-foreground: #0f172a;
+  
+  --color-muted: #f1f5f9;
+  --color-muted-foreground: #64748b; /* slate-500 */
+  
+  --color-accent: #f8fafc; /* slate-50 */
+  --color-accent-foreground: #0f172a;
+  
+  --color-destructive: #ef4444; /* red-500 */
+  --color-destructive-foreground: #ffffff;
+
+  --color-border: #e2e8f0; /* slate-200 */
+  --color-input: #e2e8f0;
+  --color-ring: #2563eb; /* blue-600 */
+
+  /* Radius defaults */
+  --radius-lg: 0.5rem;
+  --radius-md: calc(0.5rem - 2px);
+  --radius-sm: calc(0.5rem - 4px);
+
+  /* Legacy overrides/Explicit definitions */
   --color-white: #ffffff;
   --color-black: #000000;
 
-  /* Explicitly define slate colors to avoid oklch issues in some environments */
   --color-slate-50: #f8fafc;
   --color-slate-100: #f1f5f9;
   --color-slate-200: #e2e8f0;
@@ -44,5 +74,5 @@
 
 /* Base styles */
 body {
-  @apply bg-slate-50 text-slate-900 font-sans antialiased;
+  @apply bg-background text-foreground font-sans antialiased;
 }

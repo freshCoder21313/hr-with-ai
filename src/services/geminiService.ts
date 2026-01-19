@@ -1,6 +1,6 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { Interview, Message, InterviewFeedback } from "@/types";
-import { getSystemPrompt, getStartPrompt, getFeedbackPrompt, getExtractJDInfoPrompt, getAnalyzeResumePrompt } from "@/features/interview/promptSystem";
+import { getSystemPrompt, getStartPrompt, getFeedbackPrompt, getExtractJDInfoPrompt, getAnalyzeResumePrompt, getHintPrompt } from "@/features/interview/promptSystem";
 
 export interface AIConfig {
   apiKey: string;
@@ -349,6 +349,56 @@ export const analyzeResume = async (resumeText: string, jobDescription: string, 
 
   } catch (error) {
     console.error("Error analyzing resume:", error);
+    throw error;
+  }
+};
+
+export interface InterviewHints {
+  level1: string;
+  level2: string;
+  level3: string;
+}
+
+export const generateInterviewHints = async (lastQuestion: string, context: string, configInput: AIConfigInput): Promise<InterviewHints> => {
+  const config = resolveConfig(configInput);
+  const prompt = getHintPrompt(lastQuestion, context);
+
+  try {
+    let jsonText = "";
+
+    if (config.baseUrl) {
+      const messages = [{ role: "user", content: prompt }];
+      const response = await callOpenAI(config, messages, "gpt-4o-mini");
+      const data = await response.json();
+      jsonText = data.choices?.[0]?.message?.content || "";
+    } else {
+      const ai = getGeminiClient(config.apiKey);
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.0-flash-exp',
+        contents: prompt,
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              level1: { type: Type.STRING },
+              level2: { type: Type.STRING },
+              level3: { type: Type.STRING }
+            },
+            required: ["level1", "level2", "level3"]
+          }
+        }
+      });
+      jsonText = response.text || "";
+    }
+
+    if (!jsonText) throw new Error("No hints generated");
+    
+    jsonText = jsonText.replace(/```json\n?|\n?```/g, "").trim();
+    return JSON.parse(jsonText) as InterviewHints;
+
+  } catch (error) {
+    console.error("Error generating hints:", error);
     throw error;
   }
 };

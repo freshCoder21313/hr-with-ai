@@ -31,9 +31,9 @@ class HRDatabase extends Dexie {
     
     // Version 3 as per plan, just to be safe or if I want to match the number.
     // The previous code had version(1).
-    this.version(3).stores({
-        userSettings: "++id, apiKey, defaultModel, voiceEnabled",
-        interviews: "++id, createdAt, title, company, jobTitle, status", // Removed messages from index
+    this.version(4).stores({
+        userSettings: "++id, apiKey, defaultModel, voiceEnabled, hintsEnabled",
+        interviews: "++id, createdAt, title, company, jobTitle, status", 
         resumes: "++id, createdAt, fileName"
     });
   }
