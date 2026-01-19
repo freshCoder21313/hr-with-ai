@@ -1,7 +1,8 @@
 import React from 'react';
 import { Resume } from '@/types';
-import { FileText, Trash2, Check, Clock } from 'lucide-react';
+import { FileText, Trash2, Check, Clock, Edit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 
 interface ResumeListProps {
   resumes: Resume[];
@@ -16,6 +17,8 @@ const ResumeList: React.FC<ResumeListProps> = ({
   onSelect, 
   onDelete 
 }) => {
+  const navigate = useNavigate();
+
   if (resumes.length === 0) {
     return null;
   }
@@ -61,14 +64,30 @@ const ResumeList: React.FC<ResumeListProps> = ({
               </div>
 
               <div className="flex items-center gap-2 ml-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-slate-400 hover:text-blue-600 hover:bg-blue-50"
+                  onClick={(e) => {
+                    e.preventDefault(); // Prevent form submission
+                    e.stopPropagation();
+                    if (resume.id) navigate(`/resumes/${resume.id}/edit`);
+                  }}
+                  title="Edit Resume"
+                >
+                  <Edit className="w-4 h-4" />
+                </Button>
                 {selectedResumeId === resume.id && (
                   <Check className="w-4 h-4 text-blue-600" />
                 )}
                 <Button
+                  type="button"
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8 text-slate-400 hover:text-red-600 hover:bg-red-50"
                   onClick={(e) => {
+                    e.preventDefault(); // Prevent form submission
                     e.stopPropagation();
                     if (resume.id) onDelete(resume.id);
                   }}

@@ -31,10 +31,10 @@ class HRDatabase extends Dexie {
     
     // Version 3 as per plan, just to be safe or if I want to match the number.
     // The previous code had version(1).
-    this.version(5).stores({
+    this.version(6).stores({
         userSettings: "++id, apiKey, defaultModel, voiceEnabled, hintsEnabled, autoFinishEnabled",
         interviews: "++id, createdAt, title, company, jobTitle, status", 
-        resumes: "++id, createdAt, fileName"
+        resumes: "++id, createdAt, fileName, formatted" // Added formatted index
     });
   }
 }

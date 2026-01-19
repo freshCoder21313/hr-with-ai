@@ -131,26 +131,53 @@ MERMAID GRAPH GUIDELINES:
 - Do not use special characters that break JSON.
 `;
 
-export const getExtractJDInfoPrompt = (jobDescription: string) => `
-Analyze the following Job Description (JD) and extract 3 pieces of information:
-1. Target Company (The company hiring)
-2. Job Title (The position name)
-3. Interviewer Persona (A brief description of a suitable interviewer's style based on the JD. e.g., "A technical lead focused on performance", "A product manager interested in user-centric design").
+export const getParseResumePrompt = (rawText: string) => `
+You are an expert Data Parser. Convert the following Resume Text into a structured JSON object following the JSON Resume Schema.
 
-JOB DESCRIPTION:
-${jobDescription}
+RESUME TEXT:
+${rawText}
 
 OUTPUT FORMAT:
-Return a valid JSON object (NO MARKDOWN, NO \`\`\`json wrappers) matching exactly this schema:
+Return a valid JSON object (NO MARKDOWN, NO \`\`\`json wrappers) matching exactly this structure:
 {
-  "company": "String",
-  "jobTitle": "String",
-  "interviewerPersona": "String"
+  "basics": {
+    "name": "String",
+    "email": "String",
+    "phone": "String",
+    "label": "String (Job Title)",
+    "summary": "String (Profile/About)",
+    "location": { "city": "String", "countryCode": "String" },
+    "profiles": [{ "network": "String (LinkedIn/GitHub)", "url": "String", "username": "String" }]
+  },
+  "work": [{
+    "name": "String (Company)",
+    "position": "String",
+    "startDate": "String (YYYY-MM-DD or YYYY-MM)",
+    "endDate": "String (YYYY-MM-DD or YYYY-MM or Present)",
+    "summary": "String",
+    "highlights": ["String", "String"]
+  }],
+  "education": [{
+    "institution": "String",
+    "area": "String (Major)",
+    "studyType": "String (Degree)",
+    "startDate": "String",
+    "endDate": "String"
+  }],
+  "skills": [{
+    "name": "String (Category, e.g. Frontend)",
+    "keywords": ["String", "String"]
+  }],
+  "projects": [{
+    "name": "String",
+    "description": "String",
+    "highlights": ["String"],
+    "keywords": ["String"],
+    "url": "String"
+  }]
 }
 
-If you cannot find the company name, use "Tech Company".
-If you cannot find the job title, use "Software Engineer".
-For the persona, create a professional and relevant one based on the seniority and requirements in the JD.
+If a field is missing in the text, omit it or use empty strings. Do not invent data.
 `;
 
 export const getAnalyzeResumePrompt = (resumeText: string, jobDescription: string) => `
@@ -178,6 +205,27 @@ Return a valid JSON object (NO MARKDOWN, NO \`\`\`json wrappers) matching exactl
 }
 `;
 
+export const getAnalyzeSectionPrompt = (sectionName: string, sectionData: any) => `
+You are an expert Resume Writer and Career Coach.
+Analyze the following "${sectionName}" section from a candidate's resume and suggest improvements.
+
+CURRENT CONTENT (JSON):
+${JSON.stringify(sectionData, null, 2)}
+
+YOUR TASK:
+1. Identify weak verbs, vague statements, or formatting issues.
+2. Provide a specific, actionable critique.
+3. Rewrite 1-2 bullet points to show "Impact" (e.g. using numbers, results).
+
+OUTPUT FORMAT:
+Return a valid JSON object (NO MARKDOWN, NO \`\`\`json wrappers):
+{
+  "critique": "String (2-3 sentences)",
+  "suggestions": ["String", "String"],
+  "rewrittenExample": "String (A strong example of how this could look)"
+}
+`;
+
 export const getHintPrompt = (lastQuestion: string, context: string) => `
 You are a helpful Interview Coach. The candidate is stuck on the following question.
 Provide 3 levels of "Answer Hints" to help them.
@@ -199,4 +247,26 @@ Return a valid JSON object (NO MARKDOWN, NO \`\`\`json wrappers):
   "level2": "String (Intermediate hint...)",
   "level3": "String (Expert hint...)"
 }
+`;
+
+export const getExtractJDInfoPrompt = (jobDescription: string) => `
+Analyze the following Job Description (JD) and extract 3 pieces of information:
+1. Target Company (The company hiring)
+2. Job Title (The position name)
+3. Interviewer Persona (A brief description of a suitable interviewer's style based on the JD. e.g., "A technical lead focused on performance", "A product manager interested in user-centric design").
+
+JOB DESCRIPTION:
+${jobDescription}
+
+OUTPUT FORMAT:
+Return a valid JSON object (NO MARKDOWN, NO \`\`\`json wrappers) matching exactly this schema:
+{
+  "company": "String",
+  "jobTitle": "String",
+  "interviewerPersona": "String"
+}
+
+If you cannot find the company name, use "Tech Company".
+If you cannot find the job title, use "Software Engineer".
+For the persona, create a professional and relevant one based on the seniority and requirements in the JD.
 `;

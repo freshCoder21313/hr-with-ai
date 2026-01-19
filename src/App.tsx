@@ -8,6 +8,7 @@ import { CloudSyncModal } from './components/CloudSyncModal';
 const SetupRoom = lazy(() => import('./features/dashboard/SetupRoom'));
 const InterviewRoom = lazy(() => import('./features/interview/InterviewRoom'));
 const FeedbackView = lazy(() => import('./features/interview/FeedbackView'));
+const ResumeBuilder = lazy(() => import('./features/resume-builder/ResumeBuilder'));
 const LandingPage = lazy(() => import('./features/landing/LandingPage'));
 const HistoryPage = lazy(() => import('./features/history/HistoryPage'));
 
@@ -63,6 +64,7 @@ const App: React.FC = () => {
               <Route path="/" element={<LandingPage />} />
               <Route path="/setup" element={<SetupRoom />} />
               <Route path="/history" element={<HistoryPage />} />
+              <Route path="/resumes/:id/edit" element={<ResumeBuilder />} />
               <Route path="/interview/:id" element={<InterviewRoom />} />
               <Route path="/feedback/:id" element={<FeedbackView />} />
               <Route path="*" element={<Navigate to="/" replace />} />

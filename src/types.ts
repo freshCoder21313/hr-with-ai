@@ -1,3 +1,5 @@
+import { ResumeData } from './resume';
+
 export interface Message {
   role: 'user' | 'model';
   content: string;
@@ -71,5 +73,6 @@ export interface Resume {
   createdAt: number;
   fileName: string;
   rawText: string;
-  parsedData?: any;
+  parsedData?: ResumeData; // Structured JSON Resume
+  formatted?: boolean; // True if AI parsing is done
 }
