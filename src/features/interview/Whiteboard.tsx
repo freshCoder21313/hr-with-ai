@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { Tldraw, Editor } from 'tldraw';
 import 'tldraw/tldraw.css';
+import tldrawAssets from './tldrawAssets.json';
 
 interface WhiteboardProps {
   initialData?: string;
@@ -86,6 +87,7 @@ const Whiteboard: React.FC<WhiteboardProps> = ({ initialData, onChange, onMount,
                 return newActions;
             },
         }}
+        assetUrls={tldrawAssets}
        />
     </div>
   );

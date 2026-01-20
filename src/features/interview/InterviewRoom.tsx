@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, Suspense } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { StopCircle, User, Bot, Mic, MicOff, Volume2, VolumeX, MessageSquare, Code2, PenTool, Image as ImageIcon, Send, Loader2, Lightbulb, Settings as SettingsIcon, Briefcase } from 'lucide-react';
 import { db } from '@/lib/db';
@@ -7,7 +7,6 @@ import { useVoice } from '@/hooks/useVoice';
 import { callN8nWebhook } from '@/services/n8nService';
 import { generateInterviewHints, InterviewHints, getStoredAIConfig } from '@/services/geminiService';
 import CodeEditor from './CodeEditor';
-import Whiteboard from './Whiteboard';
 import MarkdownRenderer from '@/components/MarkdownRenderer';
 import { useInterviewStore } from './interviewStore';
 import { Message, UserSettings, Resume, JobRecommendation } from '@/types';
@@ -17,6 +16,9 @@ import { cn } from '@/lib/utils';
 import SettingsModal from '@/components/SettingsModal';
 import InterviewHintView from './InterviewHintView';
 import JobRecommendationModal from './JobRecommendationModal';
+
+// Lazy load Whiteboard to save resources if not used
+const Whiteboard = React.lazy(() => import('./Whiteboard'));
 
 // Helper to convert SVG to PNG Base64 (Same as before)
 const svgToPngBase64 = (svg: SVGElement): Promise<string> => {
@@ -457,11 +459,13 @@ const InterviewRoom: React.FC = () => {
 
         {/* Whiteboard Tab */}
         <div className={`flex-1 p-0 bg-white ${activeTab === 'whiteboard' ? 'block' : 'hidden'}`}>
-            <Whiteboard 
-                initialData={currentInterview.whiteboard}
-                onMount={(editor) => { editorRef.current = editor; }}
-                onChange={(data) => updateWhiteboard(data)}
-            />
+            <Suspense fallback={<div className="flex items-center justify-center h-full text-slate-400">Loading Whiteboard...</div>}>
+                <Whiteboard 
+                    initialData={currentInterview.whiteboard}
+                    onMount={(editor) => { editorRef.current = editor; }}
+                    onChange={(data) => updateWhiteboard(data)}
+                />
+            </Suspense>
         </div>
       </div>
 
