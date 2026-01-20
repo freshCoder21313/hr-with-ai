@@ -1,6 +1,6 @@
 import React from 'react';
 import { Resume } from '@/types';
-import { FileText, Trash2, Check, Clock, Edit } from 'lucide-react';
+import { FileText, Trash2, Check, Clock, Edit, Wand2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 
@@ -9,13 +9,15 @@ interface ResumeListProps {
   selectedResumeId?: number;
   onSelect: (resume: Resume) => void;
   onDelete: (id: number) => void;
+  onTailor?: (resume: Resume) => void;
 }
 
 const ResumeList: React.FC<ResumeListProps> = ({ 
   resumes, 
   selectedResumeId, 
   onSelect, 
-  onDelete 
+  onDelete,
+  onTailor
 }) => {
   const navigate = useNavigate();
 
@@ -64,6 +66,22 @@ const ResumeList: React.FC<ResumeListProps> = ({
               </div>
 
               <div className="flex items-center gap-2 ml-2">
+                {onTailor && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-slate-400 hover:text-purple-600 hover:bg-purple-50"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      onTailor(resume);
+                    }}
+                    title="Tailor to Job"
+                  >
+                    <Wand2 className="w-4 h-4" />
+                  </Button>
+                )}
                 <Button
                   type="button"
                   variant="ghost"

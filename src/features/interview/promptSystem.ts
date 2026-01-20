@@ -270,3 +270,37 @@ If you cannot find the company name, use "Tech Company".
 If you cannot find the job title, use "Software Engineer".
 For the persona, create a professional and relevant one based on the seniority and requirements in the JD.
 `;
+
+export const getTailorResumePrompt = (sourceResume: any, jobDescription: string) => `
+You are an expert Resume Strategist and Career Coach.
+Your task is to REWRITE and TAILOR the following Candidate Resume to specifically target the provided Job Description (JD).
+
+SOURCE RESUME (JSON):
+${JSON.stringify(sourceResume, null, 2)}
+
+TARGET JOB DESCRIPTION:
+${jobDescription}
+
+YOUR MISSION:
+1. **Analyze**: Identify the key skills, keywords, and qualifications required in the JD.
+2. **Reframe Summary**: Rewrite the "basics.summary" to bridge the candidate's past experience with the new role. Highlight relevant transferable skills.
+3. **Tailor Experience**:
+   - Keep the same companies and dates (do not invent employment history).
+   - Rewrite "summary" and "highlights" for each job to emphasize relevance to the new JD.
+   - Use keywords from the JD naturally.
+   - If a past role is irrelevant, minimize it (fewer bullets), but do not delete it if it leaves a gap.
+4. **Select Projects**:
+   - If the source resume has projects, select the most relevant ones.
+   - Rewrite descriptions to focus on the tech stack mentioned in the JD.
+5. **Optimize Skills**: Reorder or group skills to prioritize what the JD asks for.
+
+OUTPUT FORMAT:
+Return a valid JSON object (NO MARKDOWN, NO \`\`\`json wrappers) matching exactly the Resume JSON structure:
+{
+  "basics": { ... },
+  "work": [ ... ],
+  "education": [ ... ],
+  "skills": [ ... ],
+  "projects": [ ... ]
+}
+`;

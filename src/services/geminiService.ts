@@ -1,6 +1,6 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { Interview, Message, InterviewFeedback } from "@/types";
-import { getSystemPrompt, getStartPrompt, getFeedbackPrompt, getExtractJDInfoPrompt, getAnalyzeResumePrompt, getHintPrompt, getParseResumePrompt, getAnalyzeSectionPrompt } from "@/features/interview/promptSystem";
+import { getSystemPrompt, getStartPrompt, getFeedbackPrompt, getExtractJDInfoPrompt, getAnalyzeResumePrompt, getHintPrompt, getParseResumePrompt, getAnalyzeSectionPrompt, getTailorResumePrompt } from "@/features/interview/promptSystem";
 import { ResumeData } from "@/types/resume";
 
 export interface AIConfig {
@@ -480,6 +480,41 @@ export const analyzeResumeSection = async (sectionName: string, sectionData: any
 
   } catch (error) {
     console.error("Error analyzing section:", error);
+    throw error;
+  }
+};
+
+export const tailorResumeToJob = async (sourceResume: ResumeData, jobDescription: string, configInput: AIConfigInput): Promise<ResumeData> => {
+  const config = resolveConfig(configInput);
+  const prompt = getTailorResumePrompt(sourceResume, jobDescription);
+
+  try {
+    let jsonText = "";
+
+    if (config.baseUrl) {
+      const messages = [{ role: "user", content: prompt }];
+      const response = await callOpenAI(config, messages, "gpt-4o-mini");
+      const data = await response.json();
+      jsonText = data.choices?.[0]?.message?.content || "";
+    } else {
+      const ai = getGeminiClient(config.apiKey);
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.0-flash-exp',
+        contents: prompt,
+        config: {
+          responseMimeType: "application/json"
+        }
+      });
+      jsonText = response.text || "";
+    }
+
+    if (!jsonText) throw new Error("No tailored resume generated");
+    
+    jsonText = jsonText.replace(/```json\n?|\n?```/g, "").trim();
+    return JSON.parse(jsonText) as ResumeData;
+
+  } catch (error) {
+    console.error("Error tailoring resume:", error);
     throw error;
   }
 };

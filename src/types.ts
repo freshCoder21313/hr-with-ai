@@ -1,4 +1,4 @@
-import { ResumeData } from './resume';
+import { ResumeData } from './types/resume';
 
 export interface Message {
   role: 'user' | 'model';

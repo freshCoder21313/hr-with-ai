@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { SetupFormData, Resume } from '@/types';
 import { Upload, Loader2, Play, Sparkles } from 'lucide-react';
 import { parseResume } from '@/services/resumeParser';
-import { extractInfoFromJD, getStoredAIConfig, analyzeResume, ResumeAnalysis } from '@/services/geminiService';
+import { extractInfoFromJD, getStoredAIConfig, analyzeResume, ResumeAnalysis, tailorResumeToJob, parseResumeToJSON } from '@/services/geminiService';
 import { useInterview } from '@/hooks/useInterview';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,15 +12,22 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { db } from '@/lib/db';
 import ResumeList from './ResumeList';
 import ResumeAnalysisView from '@/features/resume-analysis/ResumeAnalysisView';
+import { TailorResumeModal } from './TailorResumeModal';
+import { useNavigate } from 'react-router-dom';
 
 const SetupRoom: React.FC = () => {
   const { startNewInterview, isLoading: isStarting } = useInterview();
+  const navigate = useNavigate();
   const [isParsing, setIsParsing] = useState(false);
   const [isExtracting, setIsExtracting] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [savedResumes, setSavedResumes] = useState<Resume[]>([]);
   const [selectedResumeId, setSelectedResumeId] = useState<number>();
   const [resumeAnalysis, setResumeAnalysis] = useState<ResumeAnalysis | null>(null);
+
+  // Tailor Resume State
+  const [isTailorModalOpen, setIsTailorModalOpen] = useState(false);
+  const [resumeToTailor, setResumeToTailor] = useState<Resume | null>(null);
 
   const [formData, setFormData] = useState<SetupFormData>({
     company: 'Tech Corp',
@@ -79,6 +86,54 @@ const SetupRoom: React.FC = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleTailorClick = (resume: Resume) => {
+    setResumeToTailor(resume);
+    setIsTailorModalOpen(true);
+  };
+
+  const handleGenerateTailoredResume = async (jobDescription: string) => {
+    if (!resumeToTailor) return;
+
+    const config = getStoredAIConfig();
+    if (!config.apiKey) {
+      alert("Please set your API Key first.");
+      return;
+    }
+
+    try {
+      // 1. Ensure we have structured data
+      let sourceData = resumeToTailor.parsedData;
+      if (!sourceData) {
+        // If not parsed yet, parse it on the fly
+        sourceData = await parseResumeToJSON(resumeToTailor.rawText, config);
+        // Optionally save this back to the original resume? Let's skip that to avoid side effects.
+      }
+
+      // 2. Generate Tailored Resume
+      const tailoredData = await tailorResumeToJob(sourceData, jobDescription, config);
+
+      // 3. Create New Resume Entry
+      const newFileName = `${resumeToTailor.fileName.replace(/\.pdf|\.txt/i, '')} - Tailored.pdf`; // Mocking filename
+      
+      const newResume: Resume = {
+        createdAt: Date.now(),
+        fileName: newFileName,
+        rawText: resumeToTailor.rawText, // Keep original text as backup? Or maybe empty since it's generated?
+        parsedData: tailoredData,
+        formatted: true
+      };
+
+      const newId = await db.resumes.add(newResume);
+      
+      // 4. Navigate to Editor
+      navigate(`/resumes/${newId}/edit`);
+
+    } catch (error) {
+      console.error(error);
+      alert("Failed to tailor resume: " + (error as any).message);
+    }
   };
 
   const handleAutoFill = async () => {
@@ -285,6 +340,7 @@ const SetupRoom: React.FC = () => {
                 selectedResumeId={selectedResumeId}
                 onSelect={handleResumeSelect}
                 onDelete={handleDeleteResume}
+                onTailor={handleTailorClick}
               />
 
               <Textarea
@@ -346,6 +402,13 @@ const SetupRoom: React.FC = () => {
           </form>
         </CardContent>
       </Card>
+
+      <TailorResumeModal 
+        isOpen={isTailorModalOpen}
+        onClose={() => setIsTailorModalOpen(false)}
+        sourceResume={resumeToTailor}
+        onGenerate={handleGenerateTailoredResume}
+      />
     </div>
   );
 };
