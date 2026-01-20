@@ -89,22 +89,24 @@ const ModernTemplate: React.FC<TemplateProps> = ({ data }) => {
       </aside>
 
       {/* Main Content (Right Column) */}
-      <main className="p-8">
+      <main className="p-10 bg-white">
         {/* Header */}
-        <header className="mb-8 border-b-2 border-slate-100 pb-6">
-          <div className="flex items-start gap-6">
+        <header className="mb-10 pb-8 border-b border-slate-200">
+          <div className="flex items-start gap-8">
             {basics.image && (
-                <img 
-                    src={basics.image} 
-                    alt={basics.name} 
-                    className="w-24 h-24 rounded-full object-cover border-2 border-white shadow-md shrink-0" 
-                />
+                <div className="relative shrink-0">
+                    <img 
+                        src={basics.image} 
+                        alt={basics.name} 
+                        className="w-32 h-32 rounded-full object-cover border-4 border-slate-50 shadow-lg" 
+                    />
+                </div>
             )}
-            <div className="flex-1 min-w-0">
-                <h1 className="text-4xl font-extrabold text-slate-900 uppercase tracking-tight leading-tight mb-2 break-words">{basics.name}</h1>
-                <p className="text-xl text-blue-600 font-medium">{basics.label}</p>
+            <div className="flex-1 min-w-0 pt-2">
+                <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight leading-none mb-3 break-words">{basics.name}</h1>
+                <p className="text-xl text-blue-600 font-semibold tracking-wide uppercase text-sm mb-4">{basics.label}</p>
                 {basics.summary && (
-                    <p className="text-slate-600 mt-4 text-sm leading-relaxed">
+                    <p className="text-slate-600 text-sm leading-relaxed max-w-prose">
                         {basics.summary}
                     </p>
                 )}
@@ -114,26 +116,30 @@ const ModernTemplate: React.FC<TemplateProps> = ({ data }) => {
 
         {/* Experience */}
         {work.length > 0 && (
-          <section className="mb-8">
-            <h2 className="text-lg font-bold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
-                <span className="w-1 h-5 bg-blue-600 rounded-sm"></span> Experience
+          <section className="mb-12">
+            <h2 className="text-sm font-bold text-slate-900 uppercase tracking-widest mb-6 flex items-center gap-3">
+                <span className="w-8 h-1 bg-blue-600 rounded-full"></span> Experience
             </h2>
-            <div className="space-y-6">
+            <div className="space-y-8 relative pl-2">
+              <div className="absolute left-[3px] top-2 bottom-2 w-[2px] bg-slate-100"></div>
               {work.map((job, i) => (
-                <div key={i} className="relative pl-4 border-l border-slate-200">
-                  <div className="absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full bg-slate-200 border-2 border-white"></div>
-                  <div className="flex justify-between items-start mb-1">
-                    <h3 className="font-bold text-slate-800">{job.position}</h3>
-                    <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full whitespace-nowrap">
+                <div key={i} className="relative pl-8 group">
+                  <div className="absolute -left-[5px] top-1.5 w-4 h-4 rounded-full bg-white border-4 border-slate-200 group-hover:border-blue-400 transition-colors"></div>
+                  <div className="flex justify-between items-baseline mb-2">
+                    <h3 className="font-bold text-slate-800 text-lg leading-tight">{job.position}</h3>
+                    <span className="text-xs font-semibold text-slate-500 bg-slate-100 px-3 py-1 rounded-full whitespace-nowrap">
                       {[job.startDate, job.endDate].filter(Boolean).join(' - ')}
                     </span>
                   </div>
-                  <p className="text-sm font-semibold text-slate-600 mb-2">{job.name}</p>
-                  <p className="text-sm text-slate-600 mb-2">{job.summary}</p>
+                  <p className="text-sm font-medium text-blue-600 mb-3">{job.name}</p>
+                  <p className="text-sm text-slate-600 mb-3 leading-relaxed">{job.summary}</p>
                   {job.highlights && job.highlights.length > 0 && (
-                    <ul className="list-disc ml-4 space-y-1">
+                    <ul className="space-y-2">
                       {job.highlights.map((highlight, idx) => (
-                        <li key={idx} className="text-sm text-slate-600 leading-relaxed">{highlight}</li>
+                        <li key={idx} className="text-sm text-slate-600 leading-relaxed flex items-start gap-2">
+                            <span className="text-blue-400 mt-1.5 text-[10px]">•</span>
+                            <span>{highlight}</span>
+                        </li>
                       ))}
                     </ul>
                   )}
@@ -146,30 +152,32 @@ const ModernTemplate: React.FC<TemplateProps> = ({ data }) => {
         {/* Projects */}
         {projects.length > 0 && (
           <section>
-            <h2 className="text-lg font-bold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
-                <span className="w-1 h-5 bg-blue-600 rounded-sm"></span> Projects
+            <h2 className="text-sm font-bold text-slate-900 uppercase tracking-widest mb-6 flex items-center gap-3">
+                <span className="w-8 h-1 bg-blue-600 rounded-full"></span> Projects
             </h2>
-            <div className="grid grid-cols-1 gap-4">
+            <div className="grid grid-cols-1 gap-6">
               {projects.map((project, i) => (
-                <div key={i} className="bg-slate-50 p-4 rounded-lg border border-slate-100">
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="font-bold text-slate-800 text-sm">
+                <div key={i} className="group">
+                  <div className="flex justify-between items-baseline mb-2">
+                    <h3 className="font-bold text-slate-800 text-base flex items-center gap-2">
                         {project.name}
                         {project.url && (
-                            <a href={project.url} target="_blank" rel="noreferrer" className="ml-2 text-blue-500 hover:underline font-normal text-xs">
-                                ↗
+                            <a href={project.url} target="_blank" rel="noreferrer" className="text-slate-400 hover:text-blue-600 transition-colors">
+                                <LinkIcon size={14} />
                             </a>
                         )}
                     </h3>
-                    <span className="text-xs text-slate-400">
+                    <span className="text-xs text-slate-400 font-medium">
                         {[project.startDate, project.endDate].filter(Boolean).join(' - ')}
                     </span>
                   </div>
-                  <p className="text-xs text-slate-600 mb-2">{project.description}</p>
+                  <p className="text-sm text-slate-600 mb-3 leading-relaxed">{project.description}</p>
                   {project.highlights && (
-                      <div className="flex flex-wrap gap-2 mt-2">
+                      <div className="flex flex-wrap gap-2">
                           {project.highlights.map((h, k) => (
-                              <span key={k} className="text-[10px] bg-white px-2 py-0.5 rounded border border-slate-200 text-slate-500">{h}</span>
+                              <span key={k} className="text-[11px] px-2.5 py-1 rounded-md bg-slate-50 text-slate-600 font-medium border border-slate-100">
+                                  {h}
+                              </span>
                           ))}
                       </div>
                   )}
