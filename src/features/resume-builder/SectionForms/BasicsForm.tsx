@@ -48,7 +48,12 @@ const BasicsForm: React.FC<BasicsFormProps> = ({ data, onChange }) => {
           </div>
         </div>
 
-        <div className="space-y-2">
+          <div className="space-y-2">
+            <Label htmlFor="image">Profile Image URL</Label>
+            <Input id="image" value={data.image || ''} onChange={e => handleChange('image', e.target.value)} placeholder="https://example.com/photo.jpg" />
+          </div>
+
+          <div className="space-y-2">
             <Label htmlFor="summary">Professional Summary</Label>
             <Textarea 
                 id="summary" 

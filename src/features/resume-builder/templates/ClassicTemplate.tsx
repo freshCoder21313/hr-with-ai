@@ -151,11 +151,11 @@ const ClassicTemplate: React.FC<TemplateProps> = ({ data }) => {
       {skills.length > 0 && (
         <section>
           <h2 className="text-lg font-bold uppercase border-b border-slate-300 mb-4 pb-1">Skills</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-2 gap-x-8">
+          <div className="grid grid-cols-1 gap-y-2 gap-x-8">
             {skills.map((skill, i) => (
-              <div key={i} className="flex flex-col sm:flex-row sm:items-baseline">
+              <div key={i} className="flex flex-col sm:items-baseline">
                 <span className="font-bold text-sm min-w-[120px]">{skill.name}:</span>
-                <span className="text-sm text-slate-600">{skill.keywords?.join(', ')}</span>
+                <p className="text-sm text-slate-600">{skill.keywords?.join(', ')}</p>
               </div>
             ))}
           </div>

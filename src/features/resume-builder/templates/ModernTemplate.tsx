@@ -70,7 +70,7 @@ const ModernTemplate: React.FC<TemplateProps> = ({ data }) => {
         {skills.length > 0 && (
           <section>
             <h3 className="text-white font-bold uppercase tracking-wider border-b border-slate-700 pb-2 mb-4 text-sm">Skills</h3>
-            <div className="space-y-4">
+            <div className="space-y-3">
               {skills.map((skill, i) => (
                 <div key={i}>
                   <h4 className="font-semibold text-xs text-slate-200 mb-1">{skill.name}</h4>
@@ -92,13 +92,24 @@ const ModernTemplate: React.FC<TemplateProps> = ({ data }) => {
       <main className="p-8">
         {/* Header */}
         <header className="mb-8 border-b-2 border-slate-100 pb-6">
-          <h1 className="text-4xl font-extrabold text-slate-900 uppercase tracking-tight leading-tight mb-2">{basics.name}</h1>
-          <p className="text-xl text-blue-600 font-medium">{basics.label}</p>
-          {basics.summary && (
-            <p className="text-slate-600 mt-4 text-sm leading-relaxed">
-                {basics.summary}
-            </p>
-          )}
+          <div className="flex items-start gap-6">
+            {basics.image && (
+                <img 
+                    src={basics.image} 
+                    alt={basics.name} 
+                    className="w-24 h-24 rounded-full object-cover border-2 border-white shadow-md shrink-0" 
+                />
+            )}
+            <div className="flex-1 min-w-0">
+                <h1 className="text-4xl font-extrabold text-slate-900 uppercase tracking-tight leading-tight mb-2 break-words">{basics.name}</h1>
+                <p className="text-xl text-blue-600 font-medium">{basics.label}</p>
+                {basics.summary && (
+                    <p className="text-slate-600 mt-4 text-sm leading-relaxed">
+                        {basics.summary}
+                    </p>
+                )}
+            </div>
+          </div>
         </header>
 
         {/* Experience */}
