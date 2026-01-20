@@ -1,10 +1,12 @@
 import Dexie, { Table } from 'dexie';
 import { Interview, UserSettings, Resume } from '@/types';
+import { DBJobRecommendation } from '@/services/jobRecommendationService';
 
 class HRDatabase extends Dexie {
   interviews!: Table<Interview, number>;
   userSettings!: Table<UserSettings, number>;
   resumes!: Table<Resume, number>;
+  job_recommendations!: Table<DBJobRecommendation, number>;
 
   constructor() {
     super('VietPhongDB');
@@ -34,7 +36,8 @@ class HRDatabase extends Dexie {
     this.version(6).stores({
         userSettings: "++id, apiKey, defaultModel, voiceEnabled, hintsEnabled, autoFinishEnabled",
         interviews: "++id, createdAt, title, company, jobTitle, status", 
-        resumes: "++id, createdAt, fileName, formatted" // Added formatted index
+        resumes: "++id, createdAt, fileName, formatted",
+        job_recommendations: "++id, interviewId, resumeId, title, company, matchScore, createdAt"
     });
   }
 }

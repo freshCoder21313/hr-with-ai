@@ -27,6 +27,8 @@ export interface Interview {
   code?: string;
   whiteboard?: string; // JSON string of tldraw store
   feedback?: InterviewFeedback;
+  resumeId?: number; // ID of the resume used for this interview
+  tailoredResume?: string; // Generated tailored resume text
 }
 
 export interface InterviewFeedback {
@@ -75,4 +77,28 @@ export interface Resume {
   rawText: string;
   parsedData?: ResumeData; // Structured JSON Resume
   formatted?: boolean; // True if AI parsing is done
+}
+
+// Job Recommendation Interface
+export interface JobRecommendation {
+  id: string;
+  title: string;
+  company: string;
+  industry: string;
+  location: string;
+  salaryRange: string;
+  keyRequirements: string[];
+  whyItFits: string; // Why this job fits the user's CV
+  matchScore: number; // 0-100
+  jobDescription: string;
+  tailoredResumeId?: number; // ID of the generated tailored resume
+}
+
+// Job Selection State (for Interview Room)
+export interface JobSelectionState {
+  selectedResumeId?: number;
+  recommendations: JobRecommendation[];
+  selectedJob?: JobRecommendation;
+  isGenerating: boolean;
+  status: 'idle' | 'analyzing' | 'generating' | 'completed';
 }

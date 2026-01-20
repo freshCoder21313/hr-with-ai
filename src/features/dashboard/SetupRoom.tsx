@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { SetupFormData, Resume } from '@/types';
-import { Upload, Loader2, Play, Sparkles } from 'lucide-react';
+import { Upload, Loader2, Play, Sparkles, Briefcase } from 'lucide-react';
 import { parseResume } from '@/services/resumeParser';
 import { extractInfoFromJD, getStoredAIConfig, analyzeResume, ResumeAnalysis, tailorResumeToJob, parseResumeToJSON } from '@/services/geminiService';
 import { useInterview } from '@/hooks/useInterview';
@@ -13,6 +13,7 @@ import { db } from '@/lib/db';
 import ResumeList from './ResumeList';
 import ResumeAnalysisView from '@/features/resume-analysis/ResumeAnalysisView';
 import { TailorResumeModal } from './TailorResumeModal';
+import JobRecommendationModal from '@/features/interview/JobRecommendationModal';
 import { useNavigate } from 'react-router-dom';
 
 const SetupRoom: React.FC = () => {
@@ -28,6 +29,9 @@ const SetupRoom: React.FC = () => {
   // Tailor Resume State
   const [isTailorModalOpen, setIsTailorModalOpen] = useState(false);
   const [resumeToTailor, setResumeToTailor] = useState<Resume | null>(null);
+
+  // Job Recommendation State
+  const [isJobModalOpen, setIsJobModalOpen] = useState(false);
 
   const [formData, setFormData] = useState<SetupFormData>({
     company: 'Tech Corp',
@@ -219,6 +223,20 @@ const SetupRoom: React.FC = () => {
     }
   };
 
+  const handleSelectJob = async (job: any, tailoredResumeText: string) => {
+    // Fill the form with selected job details
+    setFormData(prev => ({
+      ...prev,
+      company: job.company,
+      jobTitle: job.title,
+      jobDescription: job.jobDescription,
+      resumeText: tailoredResumeText || prev.resumeText // Use tailored resume if available
+    }));
+
+    // Close the modal
+    setIsJobModalOpen(false);
+  };
+
   return (
     <div className="max-w-4xl mx-auto p-4 md:p-8">
 
@@ -322,17 +340,29 @@ const SetupRoom: React.FC = () => {
             <div className="space-y-2 md:space-y-3">
               <div className="flex justify-between items-center">
                 <Label htmlFor="resumeText">Resume / CV Content</Label>
-                <label className={`cursor-pointer inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-white border border-slate-200 bg-white hover:bg-slate-100 hover:text-slate-900 h-9 px-4 py-2 ${isParsing ? 'opacity-70 cursor-wait' : ''}`}>
-                    {isParsing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
-                    <span>{isParsing ? 'Reading PDF...' : 'Upload PDF/TXT'}</span>
-                    <input 
-                        type="file" 
-                        accept=".pdf,.txt" 
-                        className="hidden" 
-                        onChange={handleFileUpload}
-                        disabled={isParsing}
-                    />
-                </label>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsJobModalOpen(true)}
+                    className="text-green-600 border-green-200 hover:bg-green-50"
+                  >
+                    <Briefcase className="mr-2 h-4 w-4" />
+                    Find Job with CV
+                  </Button>
+                  <label className={`cursor-pointer inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-white border border-slate-200 bg-white hover:bg-slate-100 hover:text-slate-900 h-9 px-4 py-2 ${isParsing ? 'opacity-70 cursor-wait' : ''}`}>
+                      {isParsing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
+                      <span>{isParsing ? 'Reading PDF...' : 'Upload PDF/TXT'}</span>
+                      <input
+                          type="file"
+                          accept=".pdf,.txt"
+                          className="hidden"
+                          onChange={handleFileUpload}
+                          disabled={isParsing}
+                      />
+                  </label>
+                </div>
               </div>
               
               <ResumeList 
@@ -403,11 +433,19 @@ const SetupRoom: React.FC = () => {
         </CardContent>
       </Card>
 
-      <TailorResumeModal 
+      <TailorResumeModal
         isOpen={isTailorModalOpen}
         onClose={() => setIsTailorModalOpen(false)}
         sourceResume={resumeToTailor}
         onGenerate={handleGenerateTailoredResume}
+      />
+
+      <JobRecommendationModal
+        isOpen={isJobModalOpen}
+        onClose={() => setIsJobModalOpen(false)}
+        onSelectJob={handleSelectJob}
+        existingResumeId={selectedResumeId}
+        availableResumes={savedResumes}
       />
     </div>
   );

@@ -1,6 +1,7 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import { Interview, Message, InterviewFeedback } from "@/types";
+import { Interview, Message, InterviewFeedback, UserSettings } from "@/types";
 import { getSystemPrompt, getStartPrompt, getFeedbackPrompt, getExtractJDInfoPrompt, getAnalyzeResumePrompt, getHintPrompt, getParseResumePrompt, getAnalyzeSectionPrompt, getTailorResumePrompt } from "@/features/interview/promptSystem";
+import { generateJobRecommendationsPrompt, generateTailoredResumePrompt } from "./jobPromptSystem";
 import { ResumeData } from "@/types/resume";
 
 export interface AIConfig {
@@ -525,4 +526,108 @@ export const getStoredAIConfig = (): AIConfig => {
     baseUrl: localStorage.getItem('custom_base_url') || undefined,
     modelId: localStorage.getItem('custom_model_id') || undefined
   };
+};
+
+// Generate job recommendations from resume data
+export const generateJobRecommendations = async (
+  resumeData: ResumeData,
+  language: string,
+  config: UserSettings
+): Promise<any[]> => {
+  const aiConfig = getStoredAIConfig();
+  const prompt = generateJobRecommendationsPrompt(resumeData, language);
+
+  try {
+    let jsonText = "";
+
+    if (aiConfig.baseUrl) {
+      // Custom Provider
+      const messages = [{ role: "user", content: prompt }];
+      const response = await callOpenAI(aiConfig, messages, "gpt-4o-mini");
+      const data = await response.json();
+      jsonText = data.choices?.[0]?.message?.content || "";
+    } else {
+      // Gemini
+      const ai = getGeminiClient(aiConfig.apiKey);
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.0-flash-exp',
+        contents: prompt,
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                title: { type: Type.STRING },
+                company: { type: Type.STRING },
+                industry: { type: Type.STRING },
+                location: { type: Type.STRING },
+                salaryRange: { type: Type.STRING },
+                keyRequirements: { type: Type.ARRAY, items: { type: Type.STRING } },
+                whyItFits: { type: Type.STRING },
+                matchScore: { type: Type.NUMBER },
+                jobDescription: { type: Type.STRING }
+              },
+              required: ["title", "company", "industry", "location", "salaryRange", "keyRequirements", "whyItFits", "matchScore", "jobDescription"]
+            }
+          }
+        }
+      });
+      jsonText = response.text || "";
+    }
+
+    if (!jsonText) throw new Error("No job recommendations generated");
+    
+    jsonText = jsonText.replace(/```json\n?|\n?```/g, "").trim();
+    const recommendations = JSON.parse(jsonText);
+    return recommendations.map((job: any, index: number) => ({
+      ...job,
+      id: `job-${Date.now()}-${index}`
+    }));
+
+  } catch (error) {
+    console.error("Error generating job recommendations:", error);
+    throw error;
+  }
+};
+
+// Generate tailored resume for specific job
+export const generateTailoredResumeForJob = async (
+  originalResumeData: ResumeData,
+  jobDescription: string,
+  config: UserSettings
+): Promise<ResumeData> => {
+  const aiConfig = getStoredAIConfig();
+  const prompt = generateTailoredResumePrompt(originalResumeData, jobDescription);
+
+  try {
+    let jsonText = "";
+
+    if (aiConfig.baseUrl) {
+      const messages = [{ role: "user", content: prompt }];
+      const response = await callOpenAI(aiConfig, messages, "gpt-4o-mini");
+      const data = await response.json();
+      jsonText = data.choices?.[0]?.message?.content || "";
+    } else {
+      const ai = getGeminiClient(aiConfig.apiKey);
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.0-flash-exp',
+        contents: prompt,
+        config: {
+          responseMimeType: "application/json"
+        }
+      });
+      jsonText = response.text || "";
+    }
+
+    if (!jsonText) throw new Error("No tailored resume generated");
+    
+    jsonText = jsonText.replace(/```json\n?|\n?```/g, "").trim();
+    return JSON.parse(jsonText) as ResumeData;
+
+  } catch (error) {
+    console.error("Error generating tailored resume:", error);
+    throw error;
+  }
 };

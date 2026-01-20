@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { StopCircle, User, Bot, Mic, MicOff, Volume2, VolumeX, MessageSquare, Code2, PenTool, Image as ImageIcon, Send, Loader2, Lightbulb, Settings as SettingsIcon } from 'lucide-react';
+import { StopCircle, User, Bot, Mic, MicOff, Volume2, VolumeX, MessageSquare, Code2, PenTool, Image as ImageIcon, Send, Loader2, Lightbulb, Settings as SettingsIcon, Briefcase } from 'lucide-react';
 import { db } from '@/lib/db';
 import { useInterview } from '@/hooks/useInterview';
 import { useVoice } from '@/hooks/useVoice';
@@ -10,12 +10,13 @@ import CodeEditor from './CodeEditor';
 import Whiteboard from './Whiteboard';
 import MarkdownRenderer from '@/components/MarkdownRenderer';
 import { useInterviewStore } from './interviewStore';
-import { Message, UserSettings } from '@/types';
+import { Message, UserSettings, Resume, JobRecommendation } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import SettingsModal from '@/components/SettingsModal';
 import InterviewHintView from './InterviewHintView';
+import JobRecommendationModal from './JobRecommendationModal';
 
 // Helper to convert SVG to PNG Base64 (Same as before)
 const svgToPngBase64 = (svg: SVGElement): Promise<string> => {
@@ -74,6 +75,8 @@ const InterviewRoom: React.FC = () => {
   const [userSettings, setUserSettings] = useState<UserSettings>({ voiceEnabled: true, hintsEnabled: false });
   const [hints, setHints] = useState<InterviewHints | null>(null);
   const [isLoadingHints, setIsLoadingHints] = useState(false);
+  const [showJobRecommendationModal, setShowJobRecommendationModal] = useState(false);
+  const [availableResumes, setAvailableResumes] = useState<Resume[]>([]);
   
   const editorRef = useRef<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -134,6 +137,18 @@ const InterviewRoom: React.FC = () => {
     };
     loadSettings();
   }, [showSettings]); // Reload when settings modal closes/changes
+
+  useEffect(() => {
+    const loadResumes = async () => {
+      try {
+        const resumes = await db.resumes.toArray();
+        setAvailableResumes(resumes);
+      } catch (error) {
+        console.error("Failed to load resumes:", error);
+      }
+    };
+    loadResumes();
+  }, []);
 
   const handleGetHints = async () => {
     if (!currentInterview?.messages?.length) return;
@@ -261,6 +276,27 @@ const InterviewRoom: React.FC = () => {
         setIsRunningCode(false);
     }
     */
+  };
+
+  const handleSelectJob = async (job: JobRecommendation, tailoredResumeText: string) => {
+    if (!currentInterview || !id) return;
+
+    // Update the current interview with job details
+    const updatedInterview = {
+      ...currentInterview,
+      jobTitle: job.title,
+      company: job.company,
+      jobDescription: job.jobDescription,
+      tailoredResume: tailoredResumeText
+      // language and interviewerPersona remain unchanged
+    };
+
+    // Save the updated interview
+    await db.interviews.put(updatedInterview, parseInt(id));
+    setInterview(updatedInterview);
+
+    // Close the modal
+    setShowJobRecommendationModal(false);
   };
 
   if (!currentInterview) return <div className="h-screen flex items-center justify-center text-slate-500">Loading room...</div>;
@@ -501,6 +537,14 @@ const InterviewRoom: React.FC = () => {
         open={showSettings} 
         onOpenChange={setShowSettings} 
         onSettingsChanged={setUserSettings}
+      />
+      <JobRecommendationModal
+        isOpen={showJobRecommendationModal}
+        onClose={() => setShowJobRecommendationModal(false)}
+        onSelectJob={handleSelectJob}
+        existingResumeId={currentInterview.resumeId} // Pass current resume ID if available
+        availableResumes={availableResumes}
+        currentInterviewId={currentInterview.id}
       />
     </div>
   );
