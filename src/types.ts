@@ -22,6 +22,9 @@ export interface Interview {
   jobDescription: string;
   resumeText: string;
   language: 'vi-VN' | 'en-US';
+  difficulty?: 'easy' | 'medium' | 'hard' | 'hardcore';
+  companyStatus?: string;
+  interviewContext?: string;
   status: InterviewStatus;
   messages: Message[];
   code?: string;
@@ -57,6 +60,9 @@ export interface SetupFormData {
   jobDescription: string;
   resumeText: string;
   language: 'vi-VN' | 'en-US';
+  difficulty: 'easy' | 'medium' | 'hard' | 'hardcore';
+  companyStatus: string;
+  interviewContext: string;
 }
 
 export interface UserSettings {

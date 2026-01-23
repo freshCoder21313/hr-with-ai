@@ -39,7 +39,10 @@ const SetupRoom: React.FC = () => {
     interviewerPersona: 'Alex, a strict Engineering Manager who focuses on system design and edge cases.',
     jobDescription: '',
     resumeText: '',
-    language: 'en-US'
+    language: 'en-US',
+    difficulty: 'medium',
+    companyStatus: 'Hiring for growth',
+    interviewContext: 'Modern day video call'
   });
 
   // Load saved resumes on mount
@@ -304,6 +307,48 @@ const SetupRoom: React.FC = () => {
                     <option value="vi-VN">Tiếng Việt</option>
                   </select>
                 </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
+              <div className="space-y-2 md:space-y-3">
+                <Label htmlFor="difficulty">Difficulty Level</Label>
+                <div className="relative">
+                  <select
+                    id="difficulty"
+                    name="difficulty"
+                    value={formData.difficulty}
+                    onChange={handleChange}
+                    className="flex h-11 w-full items-center justify-between rounded-md border border-slate-200 bg-white px-3 py-2 text-sm ring-offset-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-950 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <option value="easy">Easy (Friendly)</option>
+                    <option value="medium">Medium (Standard)</option>
+                    <option value="hard">Hard (Strict)</option>
+                    <option value="hardcore">Hardcore (Pressure)</option>
+                  </select>
+                </div>
+              </div>
+              <div className="space-y-2 md:space-y-3">
+                <Label htmlFor="companyStatus">Company Status</Label>
+                <Input
+                  id="companyStatus"
+                  name="companyStatus"
+                  value={formData.companyStatus}
+                  onChange={handleChange}
+                  placeholder="e.g. Hiring urgently, Exploring, Startup mode..."
+                  className="h-11"
+                />
+              </div>
+              <div className="space-y-2 md:space-y-3">
+                <Label htmlFor="interviewContext">Interview Context</Label>
+                <Input
+                  id="interviewContext"
+                  name="interviewContext"
+                  value={formData.interviewContext}
+                  onChange={handleChange}
+                  placeholder="e.g. Modern Video Call, On-site, Future..."
+                  className="h-11"
+                />
               </div>
             </div>
 
