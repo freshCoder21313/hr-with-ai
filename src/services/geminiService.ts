@@ -1,5 +1,6 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import { Interview, Message, InterviewFeedback, UserSettings } from "@/types";
+import { Interview, Message, InterviewFeedback, UserSettings, ResumeAnalysis } from "@/types";
+import { db } from "@/lib/db";
 import { getSystemPrompt, getStartPrompt, getFeedbackPrompt, getExtractJDInfoPrompt, getAnalyzeResumePrompt, getHintPrompt, getParseResumePrompt, getAnalyzeSectionPrompt, getTailorResumePrompt } from "@/features/interview/promptSystem";
 import { generateJobRecommendationsPrompt, generateTailoredResumePrompt } from "./jobPromptSystem";
 import { ResumeData } from "@/types/resume";
@@ -313,15 +314,22 @@ export const extractInfoFromJD = async (jobDescription: string, configInput: AIC
   }
 };
 
-export interface ResumeAnalysis {
-  matchScore: number;
-  summary: string;
-  missingKeywords: string[];
-  improvements: string[];
-}
-
-export const analyzeResume = async (resumeText: string, jobDescription: string, configInput: AIConfigInput): Promise<ResumeAnalysis> => {
+export const analyzeResume = async (resumeText: string, jobDescription: string, configInput: AIConfigInput, resumeId?: number): Promise<ResumeAnalysis> => {
   const config = resolveConfig(configInput);
+
+  // Check Cache
+  if (resumeId) {
+    try {
+      const cachedResume = await db.resumes.get(resumeId);
+      if (cachedResume && cachedResume.analysisResult && cachedResume.analyzedJobDescription === jobDescription) {
+        console.log("Using cached resume analysis");
+        return cachedResume.analysisResult;
+      }
+    } catch (e) {
+      console.warn("Failed to check cache:", e);
+    }
+  }
+
   const prompt = getAnalyzeResumePrompt(resumeText, jobDescription);
 
   try {
@@ -357,7 +365,17 @@ export const analyzeResume = async (resumeText: string, jobDescription: string, 
     if (!jsonText) throw new Error("No analysis generated");
     
     jsonText = jsonText.replace(/```json\n?|\n?```/g, "").trim();
-    return JSON.parse(jsonText) as ResumeAnalysis;
+    const result = JSON.parse(jsonText) as ResumeAnalysis;
+
+    // Save to Cache
+    if (resumeId) {
+      db.resumes.update(resumeId, {
+        analysisResult: result,
+        analyzedJobDescription: jobDescription
+      }).catch(e => console.warn("Failed to cache analysis:", e));
+    }
+
+    return result;
 
   } catch (error) {
     console.error("Error analyzing resume:", error);
@@ -541,9 +559,31 @@ export const getStoredAIConfig = (): AIConfig => {
 export const generateJobRecommendations = async (
   resumeData: ResumeData,
   language: string,
-  config: UserSettings
+  config: UserSettings,
+  resumeId?: number
 ): Promise<any[]> => {
   const aiConfig = getStoredAIConfig();
+
+  // Check Cache
+  if (resumeId) {
+    try {
+      const cachedJobs = await db.job_recommendations
+        .where('resumeId')
+        .equals(resumeId)
+        .toArray();
+      
+      if (cachedJobs && cachedJobs.length > 0) {
+        console.log("Using cached job recommendations");
+        return cachedJobs.map(job => ({
+           ...job,
+           id: `job-${job.createdAt}-${job.id}`
+        }));
+      }
+    } catch (e) {
+      console.warn("Failed to check job cache:", e);
+    }
+  }
+
   const prompt = generateJobRecommendationsPrompt(resumeData, language);
 
   try {
@@ -590,10 +630,28 @@ export const generateJobRecommendations = async (
     
     jsonText = jsonText.replace(/```json\n?|\n?```/g, "").trim();
     const recommendations = JSON.parse(jsonText);
-    return recommendations.map((job: any, index: number) => ({
+    
+    const mappedRecommendations = recommendations.map((job: any, index: number) => ({
       ...job,
       id: `job-${Date.now()}-${index}`
     }));
+
+    // Cache Results
+    if (resumeId) {
+      db.transaction('rw', db.job_recommendations, async () => {
+        await db.job_recommendations.where('resumeId').equals(resumeId).delete();
+        const dbJobs = mappedRecommendations.map((job: any) => ({
+           ...job,
+           resumeId,
+           createdAt: Date.now(),
+           // Remove the temporary string ID to let Dexie auto-increment ID
+           id: undefined 
+        }));
+        await db.job_recommendations.bulkAdd(dbJobs);
+      }).catch(e => console.warn("Failed to cache jobs:", e));
+    }
+
+    return mappedRecommendations;
 
   } catch (error) {
     console.error("Error generating job recommendations:", error);

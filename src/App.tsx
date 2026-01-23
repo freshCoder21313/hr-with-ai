@@ -30,7 +30,7 @@ const App: React.FC = () => {
 
   return (
     <HashRouter>
-      <div className="min-h-[100dvh] flex flex-col bg-slate-50 text-slate-900">
+      <div className="min-h-[100dvh] flex flex-col bg-slate-50 text-slate-900 pt-[var(--safe-top)] pb-[var(--safe-bottom)] pl-[var(--safe-left)] pr-[var(--safe-right)]">
         <ApiKeyModal />
         <CloudSyncModal isOpen={isSyncModalOpen} onClose={() => setIsSyncModalOpen(false)} />
         

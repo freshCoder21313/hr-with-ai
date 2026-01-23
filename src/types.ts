@@ -86,6 +86,15 @@ export interface Resume {
   rawText: string;
   parsedData?: ResumeData; // Structured JSON Resume
   formatted?: boolean; // True if AI parsing is done
+  analysisResult?: ResumeAnalysis;
+  analyzedJobDescription?: string;
+}
+
+export interface ResumeAnalysis {
+  matchScore: number;
+  summary: string;
+  missingKeywords: string[];
+  improvements: string[];
 }
 
 // Job Recommendation Interface

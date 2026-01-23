@@ -39,6 +39,11 @@ class HRDatabase extends Dexie {
         resumes: "++id, createdAt, fileName, formatted",
         job_recommendations: "++id, interviewId, resumeId, title, company, matchScore, createdAt"
     });
+    
+    // Version 7: Added analysis caching fields to Resume (not indexed, so no schema string change needed strictly, but bumping for tracking)
+    this.version(7).stores({
+      resumes: "++id, createdAt, fileName, formatted"
+    });
   }
 }
 

@@ -98,7 +98,8 @@ const JobRecommendationModal: React.FC<JobRecommendationModalProps> = ({
       const generatedJobs = await generateJobRecommendations(
         selectedResume.parsedData,
         'en-US', // Could be dynamic based on user settings
-        config
+        config,
+        selectedResume.id
       );
 
       clearInterval(progressInterval);

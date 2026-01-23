@@ -1,5 +1,5 @@
 import React from 'react';
-import { ResumeAnalysis } from '@/services/geminiService';
+import { ResumeAnalysis } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';

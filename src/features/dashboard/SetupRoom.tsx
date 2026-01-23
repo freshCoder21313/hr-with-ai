@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { SetupFormData, Resume } from '@/types';
+import { SetupFormData, Resume, ResumeAnalysis } from '@/types';
 import { Upload, Loader2, Play, Sparkles, Briefcase } from 'lucide-react';
 import { parseResume } from '@/services/resumeParser';
-import { extractInfoFromJD, getStoredAIConfig, analyzeResume, ResumeAnalysis, tailorResumeToJob, parseResumeToJSON } from '@/services/geminiService';
+import { extractInfoFromJD, getStoredAIConfig, analyzeResume, tailorResumeToJob, parseResumeToJSON } from '@/services/geminiService';
 import { useInterview } from '@/hooks/useInterview';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -217,7 +217,7 @@ const SetupRoom: React.FC = () => {
 
     setIsAnalyzing(true);
     try {
-      const analysis = await analyzeResume(formData.resumeText, formData.jobDescription, config);
+      const analysis = await analyzeResume(formData.resumeText, formData.jobDescription, config, selectedResumeId);
       setResumeAnalysis(analysis);
     } catch (error) {
       alert("Analysis failed: " + (error as any).message);
