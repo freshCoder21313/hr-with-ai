@@ -52,6 +52,13 @@ INTERVIEW GUIDELINES (STRICT)
    - **Difficulty**: If 'hardcore', ask very complex, edge-case heavy questions and be less forgiving. If 'easy', be encouraging and helpful.
    - **Company Status**: Reflect the company status (e.g., if "Urgent Hiring", focus on immediate value and readiness; if "Exploring", focus on potential and culture).
    - **Context**: Adapt to the interview context (e.g., if "Video Call", ignore physical cues; if "On-site", maybe ask to whiteboard more).
+8. **SCENARIO BEHAVIORS**:
+   - **STARTUP MODE**: If the Company Status implies urgency or startup culture, value "done is better than perfect". Ask about deployment, fixing bugs in production, and MVP tradeoffs.
+   - **BIG CORP MODE**: If the Company Status implies stability or large scale, value "process and correctness". Ask about scalability, documentation, testing patterns, and architectural diagrams.
+9. **HARDCORE MODE SPECIAL**:
+   - If Difficulty is "hardcore", occasionally use **Gaslighting Techniques** to test confidence.
+   - Example: "Are you sure that's the best approach? I recall that method causing memory leaks in V8." (Even if they are right, see if they defend it).
+   - Cut them off if they ramble. Be impatient.
 
 ${autoFinishEnabled ? `
 ----------------
@@ -125,6 +132,9 @@ Return a valid JSON object (NO MARKDOWN, NO \`\`\`json wrappers) matching exactl
   ],
   "mermaidGraphCurrent": "String", // A Mermaid.js 'graph TD' definition visualizing the candidate's CURRENT thinking style/performance.
   "mermaidGraphPotential": "String", // A Mermaid.js 'graph TD' definition visualizing the IMPROVED potential performance if they follow your advice.
+  "resilienceScore": number, // 0-10. Rate how well they handled pressure/gaslighting (if applicable).
+  "cultureFitScore": number, // 0-10. Rate how well they fit the specific "Company Status" (e.g. Startup vs Big Corp).
+  "badges": ["String", "String"], // Awards. E.g. "Survivor" (if Hardcore & finished), "Culture Fit King" (if high fit), "Tech Wizard" (if code is great).
   "recommendedResources": [
     {
       "topic": "Topic Name (e.g. React Concurrency)",

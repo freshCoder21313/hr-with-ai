@@ -78,7 +78,8 @@ export async function* streamInterviewMessage(
   configInput: AIConfigInput,
   currentCode?: string,
   newImageBase64?: string,
-  autoFinishEnabled?: boolean
+  autoFinishEnabled?: boolean,
+  systemInjection?: string | null // Added parameter
 ) {
   const config = resolveConfig(configInput);
 
@@ -94,7 +95,12 @@ export async function* streamInterviewMessage(
       `;
     }
 
-    const systemPrompt = getSystemPrompt(interviewContext, codeContext, autoFinishEnabled);
+    let systemPrompt = getSystemPrompt(interviewContext, codeContext, autoFinishEnabled);
+    
+    // Inject Hidden Scenario Instruction if present
+    if (systemInjection) {
+      systemPrompt += `\n\n${systemInjection}\n\n`;
+    }
 
     if (config.baseUrl) {
       // --- Custom/OpenAI Logic ---
@@ -241,6 +247,9 @@ export const generateInterviewFeedback = async (interview: Interview, configInpu
               },
               mermaidGraphCurrent: { type: Type.STRING, description: "Mermaid graph definition for current performance" },
               mermaidGraphPotential: { type: Type.STRING, description: "Mermaid graph definition for improved potential performance" },
+              resilienceScore: { type: Type.NUMBER, description: "Score 0-10 on ability to handle pressure/gaslighting (optional)" },
+              cultureFitScore: { type: Type.NUMBER, description: "Score 0-10 on fit for the specific Company Status (optional)" },
+              badges: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Awards like 'Survivor' (finished hardcore), 'Culture Fit King', 'Tech Wizard'" },
               recommendedResources: {
                 type: Type.ARRAY,
                 items: {
@@ -253,7 +262,7 @@ export const generateInterviewFeedback = async (interview: Interview, configInpu
                 }
               }
             },
-            required: ["score", "summary", "strengths", "weaknesses", "keyQuestionAnalysis", "mermaidGraphCurrent", "mermaidGraphPotential", "recommendedResources"]
+            required: ["score", "summary", "strengths", "weaknesses", "keyQuestionAnalysis", "mermaidGraphCurrent", "mermaidGraphPotential", "recommendedResources", "resilienceScore", "cultureFitScore", "badges"]
           }
         }
       });

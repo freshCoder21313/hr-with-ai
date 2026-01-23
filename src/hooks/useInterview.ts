@@ -4,6 +4,7 @@ import { useInterviewStore } from '../features/interview/interviewStore';
 import { startInterviewSession, streamInterviewMessage, generateInterviewFeedback, getStoredAIConfig } from '../services/geminiService';
 import { db } from '../lib/db';
 import { InterviewStatus, SetupFormData, Interview, Message } from '@/types';
+import { getActiveScenario } from '@/features/interview/scenarios';
 
 export const useInterview = () => {
   const navigate = useNavigate();
@@ -110,6 +111,18 @@ export const useInterview = () => {
         console.warn("Failed to load settings for auto-finish check", e);
       }
 
+      // --- HIDDEN SCENARIO CHECK ---
+      let systemInjection: string | null = null;
+      if (currentInterview.companyStatus) {
+         // Calculate turn count (user messages / 2 roughly)
+         const turnCount = Math.floor(currentInterview.messages.length / 2);
+         systemInjection = getActiveScenario(currentInterview.companyStatus, turnCount);
+         
+         if (systemInjection) {
+             console.log("🎲 [SCENARIO TRIGGERED]", systemInjection);
+         }
+      }
+
       const stream = streamInterviewMessage(
         [...currentInterview.messages, userMsg], // Current history + new user msg
         content,
@@ -117,7 +130,8 @@ export const useInterview = () => {
         config,
         currentInterview.code,
         image,
-        autoFinish
+        autoFinish,
+        systemInjection // Pass the hidden injection
       );
 
       let shouldAutoEnd = false;

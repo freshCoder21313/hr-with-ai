@@ -9,9 +9,10 @@ interface CodeEditorProps {
   language?: string;
   onRun?: () => void;
   isRunning?: boolean;
+  isHardcore?: boolean;
 }
 
-const CodeEditor: React.FC<CodeEditorProps> = ({ code, onChange, language = 'javascript', onRun, isRunning }) => {
+const CodeEditor: React.FC<CodeEditorProps> = ({ code, onChange, language = 'javascript', onRun, isRunning, isHardcore = false }) => {
   return (
     <div className="h-full w-full border border-slate-700 rounded-xl overflow-hidden shadow-sm bg-[#1e1e1e] relative group">
       <Editor
@@ -26,6 +27,14 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ code, onChange, language = 'jav
           scrollBeyondLastLine: false,
           automaticLayout: true,
           padding: { top: 16, bottom: 16 },
+          // Hardcore mode options
+          quickSuggestions: !isHardcore,
+          parameterHints: { enabled: !isHardcore },
+          suggestOnTriggerCharacters: !isHardcore,
+          acceptSuggestionOnEnter: isHardcore ? 'off' : 'on',
+          tabCompletion: isHardcore ? 'off' : 'on',
+          wordBasedSuggestions: isHardcore ? 'off' : 'currentDocument',
+          hover: { enabled: !isHardcore },
         }}
       />
       

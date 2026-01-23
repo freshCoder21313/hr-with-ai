@@ -79,6 +79,10 @@ const InterviewRoom: React.FC = () => {
   const [isLoadingHints, setIsLoadingHints] = useState(false);
   const [showJobRecommendationModal, setShowJobRecommendationModal] = useState(false);
   const [availableResumes, setAvailableResumes] = useState<Resume[]>([]);
+
+  // Hardcore Mode Timer
+  const [timer, setTimer] = useState<number>(0);
+  const [isTimerActive, setIsTimerActive] = useState(false);
   
   const editorRef = useRef<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -93,6 +97,30 @@ const InterviewRoom: React.FC = () => {
     cancelSpeech,
     isSpeaking 
   } = useVoice({ language: currentInterview?.language || 'en-US' });
+
+  useEffect(() => {
+    // Timer Logic for Hardcore Mode
+    let interval: NodeJS.Timeout;
+    if (isTimerActive && timer > 0) {
+      interval = setInterval(() => {
+        setTimer((prev) => prev - 1);
+      }, 1000);
+    } else if (timer === 0 && isTimerActive) {
+      // Time is up! 
+      handleSendMessage(); // Auto-send what is currently typed
+    }
+    return () => clearInterval(interval);
+  }, [isTimerActive, timer]);
+
+  useEffect(() => {
+    // Reset/Start Timer when AI finishes processing (User's turn starts)
+    if (!isProcessing && currentInterview?.difficulty === 'hardcore') {
+      setTimer(60); // 60 Seconds limit
+      setIsTimerActive(true);
+    } else if (isProcessing) {
+      setIsTimerActive(false); // Stop timer while AI is thinking
+    }
+  }, [isProcessing, currentInterview?.difficulty]);
 
   useEffect(() => {
     if (isListening) {
@@ -211,6 +239,7 @@ const InterviewRoom: React.FC = () => {
 
     const contentToSend = inputValue;
     setInputValue(''); 
+    setIsTimerActive(false); // Stop timer on send
     await sendMessage(contentToSend, imageBase64);
   };
 
@@ -336,6 +365,15 @@ const InterviewRoom: React.FC = () => {
             <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 border border-slate-300 shrink-0">
                 {currentInterview.language === 'vi-VN' ? 'VI' : 'EN'}
             </span>
+            {currentInterview.difficulty === 'hardcore' && (
+               <div className={cn(
+                 "flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-mono font-bold transition-all",
+                 timer <= 10 ? "bg-red-100 text-red-600 border-red-200 animate-pulse" : "bg-slate-100 text-slate-700 border-slate-200"
+               )}>
+                 <div className={cn("w-2 h-2 rounded-full", timer <= 10 ? "bg-red-500" : "bg-slate-400")}></div>
+                 {timer}s
+               </div>
+            )}
           </div>
           <p className="text-[10px] md:text-xs text-slate-500 uppercase tracking-wide font-medium truncate max-w-[100px] sm:max-w-[140px] md:max-w-[200px]">{currentInterview.jobTitle}</p>
         </div>
@@ -454,6 +492,7 @@ const InterviewRoom: React.FC = () => {
                 }}
                 onRun={handleRunCode}
                 isRunning={isRunningCode}
+                isHardcore={currentInterview.difficulty === 'hardcore'}
              />
         </div>
 

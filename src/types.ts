@@ -51,6 +51,9 @@ export interface InterviewFeedback {
     description: string;
     searchQuery: string;
   }>;
+  resilienceScore?: number; // 0-10 for Hardcore mode
+  cultureFitScore?: number; // 0-10 based on Company Status
+  badges?: string[]; // E.g., "Survivor", "Culture Fit King"
 }
 
 export interface SetupFormData {
