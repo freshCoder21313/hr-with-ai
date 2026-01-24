@@ -8,6 +8,7 @@ export const useVoice = ({ language = 'en-US' }: UseVoiceProps = {}) => {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isSupported, setIsSupported] = useState(true); // Track browser support
   const recognitionRef = useRef<any>(null);
   const synthesisRef = useRef<SpeechSynthesis>(window.speechSynthesis);
 
@@ -15,40 +16,32 @@ export const useVoice = ({ language = 'en-US' }: UseVoiceProps = {}) => {
     if (typeof window !== 'undefined') {
       const SpeechRecognition =
         (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      
       if (SpeechRecognition) {
         recognitionRef.current = new SpeechRecognition();
         recognitionRef.current.continuous = true;
         recognitionRef.current.interimResults = true;
         recognitionRef.current.lang = language;
+        setIsSupported(true);
+      } else {
+        setIsSupported(false);
+        console.warn('Speech Recognition API not supported in this browser.');
       }
     }
   }, [language]);
 
   const startListening = useCallback(() => {
-    if (recognitionRef.current) {
+    if (recognitionRef.current && isSupported) {
       setTranscript('');
       setIsListening(true);
-      recognitionRef.current.start();
+      try {
+        recognitionRef.current.start();
+      } catch (e) {
+        console.error("Failed to start recognition:", e);
+        setIsListening(false);
+      }
 
       recognitionRef.current.onresult = (event: any) => {
-        let finalTranscript = '';
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
-          if (event.results[i].isFinal) {
-            finalTranscript += event.results[i][0].transcript;
-          } else {
-            // For interim results, we could update state if we wanted "live" typing effect in input
-            // but for now we focus on final results or accumulated interim
-            // Ideally, we want to update transcript live
-            const interim = event.results[i][0].transcript;
-            setTranscript((prev) => {
-              // simple hack to avoid duplicating interim if appended blindly
-              // usually we just replace 'transcript' with the current full buffer from 0
-              return interim;
-            });
-          }
-        }
-        // Actually, 'results' contains everything from start if continuous is true?
-        // Let's grab the latest result logic more simply for this MVP:
         const current = Array.from(event.results)
           .map((result: any) => result[0].transcript)
           .join('');
@@ -57,16 +50,25 @@ export const useVoice = ({ language = 'en-US' }: UseVoiceProps = {}) => {
 
       recognitionRef.current.onerror = (event: any) => {
         console.error('Speech recognition error', event.error);
-        setIsListening(false);
+        if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+           setIsListening(false);
+           alert("Microphone access denied or not supported.");
+        }
+        // Don't stop listening immediately for 'no-speech' errors in continuous mode
+        if (event.error !== 'no-speech') {
+             setIsListening(false);
+        }
       };
 
       recognitionRef.current.onend = () => {
+        // In continuous mode, sometimes it stops. We might want to restart?
+        // For now, let's just update state.
         setIsListening(false);
       };
     } else {
-      console.warn('Speech Recognition not supported in this browser.');
+      console.warn('Speech Recognition not supported or not initialized.');
     }
-  }, []);
+  }, [isSupported]);
 
   const stopListening = useCallback(() => {
     if (recognitionRef.current) {
@@ -109,6 +111,7 @@ export const useVoice = ({ language = 'en-US' }: UseVoiceProps = {}) => {
     speak,
     cancelSpeech,
     isSpeaking,
+    isSupported, // Export this
     resetTranscript: () => setTranscript(''),
   };
 };

@@ -105,6 +105,7 @@ const InterviewRoom: React.FC = () => {
 
   const editorRef = useRef<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const lastSpokenTimestampRef = useRef<number>(0);
 
   const {
     isListening,
@@ -115,6 +116,7 @@ const InterviewRoom: React.FC = () => {
     speak,
     cancelSpeech,
     isSpeaking,
+    isSupported, // Destructure isSupported
   } = useVoice({ language: currentInterview?.language || 'en-US' });
 
   useEffect(() => {
@@ -146,6 +148,26 @@ const InterviewRoom: React.FC = () => {
       setInputValue(transcript);
     }
   }, [transcript, isListening]);
+
+  // TTS Trigger
+  useEffect(() => {
+    if (
+      !isProcessing &&
+      ttsEnabled &&
+      userSettings.voiceEnabled &&
+      currentInterview?.messages?.length
+    ) {
+      const lastMsg = currentInterview.messages[currentInterview.messages.length - 1];
+      // Speak only if it's a new message from the model
+      if (lastMsg.role === 'model' && lastMsg.timestamp > lastSpokenTimestampRef.current) {
+        lastSpokenTimestampRef.current = lastMsg.timestamp;
+        // Strip markdown symbols for cleaner speech if needed, but basic TTS usually handles them okay.
+        // Let's strip code blocks to avoid reading raw code syntax excessively.
+        const cleanText = lastMsg.content.replace(/```[\s\S]*?```/g, 'Code block omitted.').trim();
+        speak(cleanText);
+      }
+    }
+  }, [isProcessing, ttsEnabled, userSettings.voiceEnabled, currentInterview?.messages, speak]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -636,11 +658,13 @@ const InterviewRoom: React.FC = () => {
               variant={isListening ? 'destructive' : 'ghost'}
               size="icon"
               onClick={toggleVoice}
+              disabled={!isSupported}
               className={cn(
                 'absolute right-1 md:right-2 top-1 md:top-1.5 h-8 w-8 md:h-9 md:w-9 transition-all',
-                isListening ? 'animate-pulse' : 'text-slate-400 hover:text-slate-600'
+                isListening ? 'animate-pulse' : 'text-slate-400 hover:text-slate-600',
+                !isSupported && 'opacity-50 cursor-not-allowed'
               )}
-              title="Toggle Voice Input"
+              title={isSupported ? "Toggle Voice Input" : "Voice Input not supported in this browser"}
             >
               {isListening ? <MicOff size={16} /> : <Mic size={16} />}
             </Button>

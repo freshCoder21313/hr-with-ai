@@ -88,6 +88,7 @@ export const useInterview = () => {
       if (!currentInterview) return;
 
       try {
+        setLoading(true); // Start loading
         const config = getStoredAIConfig();
 
         // 1. Add User Message
@@ -182,9 +183,11 @@ export const useInterview = () => {
       } catch (err: any) {
         console.error('Error sending message:', err);
         // Optionally add an error message to chat
+      } finally {
+        setLoading(false); // Stop loading
       }
     },
-    [currentInterview, addMessage, updateLastMessage]
+    [currentInterview, addMessage, updateLastMessage, setLoading] // Added setLoading dependency
   );
 
   const endSession = useCallback(async () => {
