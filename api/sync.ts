@@ -9,7 +9,7 @@ import bcrypt from 'bcryptjs';
 const sql = neon(process.env.DATABASE_URL!);
 
 // Helper for CORS
-const allowCors = (fn: any) => async (req: VercelRequest, res: VercelResponse) => {
+const allowCors = (fn: (req: VercelRequest, res: VercelResponse) => Promise<void>) => async (req: VercelRequest, res: VercelResponse) => {
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
@@ -24,7 +24,7 @@ const allowCors = (fn: any) => async (req: VercelRequest, res: VercelResponse) =
   return await fn(req, res);
 };
 
-const handler = async (req: VercelRequest, res: VercelResponse) => {
+const handler = async (req: VercelRequest, res: VercelResponse): Promise<void> => {
   const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
   const syncId = req.headers['x-sync-id'] as string || req.query.id as string;
 
@@ -33,7 +33,8 @@ const handler = async (req: VercelRequest, res: VercelResponse) => {
   try {
      const rateCheck = await sql`SELECT COUNT(*) FROM rate_limits WHERE ip = ${ip} AND timestamp > NOW() - INTERVAL '1 hour'`;
      if (parseInt(rateCheck[0].count) > 100) { // High limit for dev, strict for prod (e.g., 10)
-         return res.status(429).json({ error: 'Rate limit exceeded' });
+         res.status(429).json({ error: 'Rate limit exceeded' });
+         return;
      }
      // Log action
      await sql`INSERT INTO rate_limits (ip, action) VALUES (${ip}, ${req.method})`;
@@ -44,24 +45,31 @@ const handler = async (req: VercelRequest, res: VercelResponse) => {
 
   // 1. GET (Download)
   if (req.method === 'GET') {
-      if (!syncId) return res.status(400).json({ error: 'Missing ID' });
+      if (!syncId) {
+        res.status(400).json({ error: 'Missing ID' });
+        return;
+      }
 
       // Validate ID format
       if (!/^[a-zA-Z0-9]{16}$/.test(syncId)) {
-          return res.status(400).json({ error: 'Invalid ID format' });
+          res.status(400).json({ error: 'Invalid ID format' });
+          return;
       }
 
       try {
           const result = await sql`SELECT data FROM backups WHERE id = ${syncId}`;
 
           if (result.length === 0) {
-              return res.status(404).json({ error: 'Backup not found' });
+              res.status(404).json({ error: 'Backup not found' });
+              return;
           }
 
-          return res.status(200).json({ data: result[0].data });
+          res.status(200).json({ data: result[0].data });
+          return;
       } catch (err) {
           console.error(err);
-          return res.status(500).json({ error: 'Database error' });
+          res.status(500).json({ error: 'Database error' });
+          return;
       }
   }
 
@@ -70,12 +78,14 @@ const handler = async (req: VercelRequest, res: VercelResponse) => {
       const { password, data: backupData } = req.body;
 
       if (!syncId || !password || !backupData) {
-          return res.status(400).json({ error: 'Missing required fields' });
+          res.status(400).json({ error: 'Missing required fields' });
+          return;
       }
 
        // Validate ID format
       if (!/^[a-zA-Z0-9]{16}$/.test(syncId)) {
-          return res.status(400).json({ error: 'Invalid ID format' });
+          res.status(400).json({ error: 'Invalid ID format' });
+          return;
       }
 
       try {
@@ -86,25 +96,29 @@ const handler = async (req: VercelRequest, res: VercelResponse) => {
               // Update existing
               const isValid = await bcrypt.compare(password, existing[0].password_hash);
               if (!isValid) {
-                  return res.status(401).json({ error: 'Invalid password' });
+                  res.status(401).json({ error: 'Invalid password' });
+                  return;
               }
 
               await sql`UPDATE backups SET data = ${backupData}, updated_at = NOW(), last_ip = ${ip} WHERE id = ${syncId}`;
-              return res.status(200).json({ success: true, message: 'Updated successfully' });
+              res.status(200).json({ success: true, message: 'Updated successfully' });
+              return;
 
           } else {
               // Insert new
               const hash = await bcrypt.hash(password, 10);
               await sql`INSERT INTO backups (id, password_hash, data, last_ip) VALUES (${syncId}, ${hash}, ${backupData}, ${ip})`;
-              return res.status(201).json({ success: true, message: 'Created successfully' });
+              res.status(201).json({ success: true, message: 'Created successfully' });
+              return;
           }
       } catch (err) {
           console.error(err);
-          return res.status(500).json({ error: 'Database error' });
+          res.status(500).json({ error: 'Database error' });
+          return;
       }
   }
 
-  return res.status(405).json({ error: 'Method not allowed' });
+  res.status(405).json({ error: 'Method not allowed' });
 };
 
 export default allowCors(handler);

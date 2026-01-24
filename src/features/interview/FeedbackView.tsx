@@ -11,12 +11,11 @@ import {
   BookOpen,
   ExternalLink,
   Loader2,
-  Award,
   Zap,
   Building2,
   Medal,
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   ResponsiveContainer,
   RadarChart,
@@ -24,7 +23,6 @@ import {
   PolarAngleAxis,
   PolarRadiusAxis,
   Radar,
-  Tooltip,
 } from 'recharts';
 
 const FeedbackView: React.FC = () => {

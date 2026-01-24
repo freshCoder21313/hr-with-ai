@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Work } from '@/types/resume';
-import { Plus, Trash2, Wand2, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
+import { Plus, Trash2, Wand2, Loader2 } from 'lucide-react';
 import { analyzeResumeSection, getStoredAIConfig } from '@/services/geminiService';
 
 interface WorkFormProps {
@@ -28,6 +28,7 @@ const WorkForm: React.FC<WorkFormProps> = ({ data, onChange }) => {
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleChange = (index: number, field: keyof Work, value: any) => {
     const newData = [...data];
     newData[index] = { ...newData[index], [field]: value };
@@ -51,6 +52,7 @@ const WorkForm: React.FC<WorkFormProps> = ({ data, onChange }) => {
     try {
       const result = await analyzeResumeSection('Work Experience Entry', entry, config);
       alert(`AI Critique:\n${result.critique}\n\nRewritten Example:\n${result.rewrittenExample}`);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
       alert('Analysis failed: ' + e.message);
     } finally {

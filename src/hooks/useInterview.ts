@@ -21,7 +21,6 @@ export const useInterview = () => {
     updateStatus,
     setLoading,
     setError,
-    clearInterview,
   } = useInterviewStore();
 
   const startNewInterview = useCallback(
@@ -73,6 +72,7 @@ export const useInterview = () => {
 
         // 4. Navigate
         navigate(`/interview/${id}`);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {
         setError(err.message || 'Failed to start interview');
         console.error(err);
@@ -82,6 +82,33 @@ export const useInterview = () => {
     },
     [setInterview, setLoading, setError, navigate]
   );
+
+  const endSession = useCallback(async () => {
+    if (!currentInterview || !currentInterview.id) return;
+
+    try {
+      setLoading(true);
+      updateStatus(InterviewStatus.COMPLETED);
+
+      const config = getStoredAIConfig();
+      const feedback = await generateInterviewFeedback(currentInterview, config);
+
+      // Update DB with feedback and status
+      await db.interviews.update(currentInterview.id, {
+        status: InterviewStatus.COMPLETED,
+        feedback,
+      });
+
+      // Update store (though we might just navigate away)
+      // We can navigate to feedback view
+      navigate(`/feedback/${currentInterview.id}`);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [currentInterview, updateStatus, navigate, setLoading, setError]);
 
   const sendMessage = useCallback(
     async (content: string, image?: string) => {
@@ -180,6 +207,7 @@ export const useInterview = () => {
             endSession();
           }, 2000);
         }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {
         console.error('Error sending message:', err);
         // Optionally add an error message to chat
@@ -187,34 +215,8 @@ export const useInterview = () => {
         setLoading(false); // Stop loading
       }
     },
-    [currentInterview, addMessage, updateLastMessage, setLoading] // Added setLoading dependency
+    [currentInterview, addMessage, updateLastMessage, setLoading, endSession] // Added setLoading dependency
   );
-
-  const endSession = useCallback(async () => {
-    if (!currentInterview || !currentInterview.id) return;
-
-    try {
-      setLoading(true);
-      updateStatus(InterviewStatus.COMPLETED);
-
-      const config = getStoredAIConfig();
-      const feedback = await generateInterviewFeedback(currentInterview, config);
-
-      // Update DB with feedback and status
-      await db.interviews.update(currentInterview.id, {
-        status: InterviewStatus.COMPLETED,
-        feedback,
-      });
-
-      // Update store (though we might just navigate away)
-      // We can navigate to feedback view
-      navigate(`/feedback/${currentInterview.id}`);
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  }, [currentInterview, updateStatus, navigate, setLoading, setError]);
 
   return {
     startNewInterview,

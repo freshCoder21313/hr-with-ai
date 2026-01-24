@@ -37,18 +37,16 @@ export interface ButtonProps
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, ...props }, ref) => {
-    // Note: I'm not installing @radix-ui/react-slot just yet to save time/complexity.
-    // If asChild is true, we might need it, but for now I'll force it to false or just render button.
-    // To support asChild properly I'd need the package.
-    // I will fallback to standard button if Comp is missing, or just ignore asChild for this MVP step
-    // unless I install the package.
-    // Let's install it to be safe, it's small.
-    const Comp = 'button';
+    const Comp = asChild ? Slot : 'button';
     return (
-      <Comp className={cn(buttonVariants({ variant, size, className }))} ref={ref} {...props} />
+      <Comp
+        className={cn(buttonVariants({ variant, size, className }))}
+        ref={ref}
+        {...props}
+      />
     );
   }
 );
 Button.displayName = 'Button';
 
-export { Button, buttonVariants };
+export { Button };

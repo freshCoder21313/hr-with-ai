@@ -7,7 +7,7 @@ import { getStoredAIConfig, parseResumeToJSON } from '@/services/geminiService';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Loader2, Wand2, ChevronLeft, Save, Eye, LayoutTemplate, Printer } from 'lucide-react';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ResumePreview from './ResumePreview';
 
 // Import Section Forms
@@ -35,8 +35,10 @@ const ResumeBuilder: React.FC = () => {
       try {
         const doc = await db.resumes.get(parseInt(id));
         if (doc) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           setResume(doc as any);
           if (doc.parsedData) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             setData(doc.parsedData as any);
             // Load preferred template if saved
             if (doc.parsedData.meta?.template) {
@@ -84,6 +86,7 @@ const ResumeBuilder: React.FC = () => {
       setResume((prev) => (prev ? { ...prev, formatted: true } : null));
     } catch (error) {
       console.error(error);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       alert('Failed to format resume: ' + (error as any).message);
     } finally {
       setIsProcessing(false);
@@ -115,6 +118,7 @@ const ResumeBuilder: React.FC = () => {
     window.print();
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const updateSection = (section: keyof ResumeData, value: any) => {
     setData((prev) => (prev ? { ...prev, [section]: value } : null));
   };

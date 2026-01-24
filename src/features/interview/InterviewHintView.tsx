@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { X, Lightbulb, Sparkles, BookOpen } from 'lucide-react';
+import { X, Lightbulb } from 'lucide-react';
 import { InterviewHints } from '@/services/geminiService';
 
 interface InterviewHintViewProps {

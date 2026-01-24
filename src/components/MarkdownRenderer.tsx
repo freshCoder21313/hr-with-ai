@@ -29,11 +29,12 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = memo(({ content }) => 
         return url;
       }}
       components={{
-        code({ node, inline, className, children, ...props }: any) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+        code({ node: _node, inline, className, children, ...props }: any) {
           const match = /language-(\w+)/.exec(className || '');
           return !inline && match ? (
             <SyntaxHighlighter
-              style={vscDarkPlus}
+              style={vscDarkPlus as any}
               language={match[1]}
               PreTag="div"
               className="rounded-lg !my-4 !bg-[#1e1e1e] border border-slate-700 shadow-sm"

@@ -147,6 +147,7 @@ const SetupRoom: React.FC = () => {
       navigate(`/resumes/${newId}/edit`);
     } catch (error) {
       console.error(error);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
       alert('Failed to tailor resume: ' + (error as any).message);
     }
   };
@@ -176,6 +177,7 @@ const SetupRoom: React.FC = () => {
         interviewContext: extracted.interviewContext || prev.interviewContext,
       }));
     } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       alert('Failed to extract info: ' + (error as any).message);
     } finally {
       setIsExtracting(false);
@@ -206,6 +208,7 @@ const SetupRoom: React.FC = () => {
       setFormData((prev) => ({ ...prev, resumeText: text }));
       setResumeAnalysis(null); // Reset analysis on new upload
     } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       alert('Failed to parse resume: ' + (error as any).message);
     } finally {
       setIsParsing(false);
@@ -235,12 +238,14 @@ const SetupRoom: React.FC = () => {
       );
       setResumeAnalysis(analysis);
     } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       alert('Analysis failed: ' + (error as any).message);
     } finally {
       setIsAnalyzing(false);
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleSelectJob = async (job: any, tailoredResumeText: string) => {
     // Fill the form with selected job details
     setFormData((prev) => ({

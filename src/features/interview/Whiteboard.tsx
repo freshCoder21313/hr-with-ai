@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState, useRef } from 'react';
+import React, { useCallback, useRef } from 'react';
 import { Tldraw, Editor } from 'tldraw';
 import 'tldraw/tldraw.css';
 import tldrawAssets from './tldrawAssets.json';
@@ -11,10 +11,12 @@ interface WhiteboardProps {
 }
 
 // Debounce helper
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const useDebouncedCallback = (callback: (...args: any[]) => void, delay: number) => {
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   return useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (...args: any[]) => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
@@ -33,16 +35,15 @@ const Whiteboard: React.FC<WhiteboardProps> = ({
   onMount,
   readOnly = false,
 }) => {
-  const [editor, setEditor] = useState<Editor | null>(null);
   const isInitialLoad = useRef(true);
 
   // Debounce the save to DB to avoid performance hits
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const debouncedOnChange = useDebouncedCallback((snapshot: any) => {
     onChange(JSON.stringify(snapshot));
   }, 1000);
 
   const handleMount = (editorInstance: Editor) => {
-    setEditor(editorInstance);
     if (onMount) onMount(editorInstance);
 
     // Load initial data if provided and it's the first mount
@@ -85,7 +86,7 @@ const Whiteboard: React.FC<WhiteboardProps> = ({
         hideUi={readOnly} // Hide UI if reviewing history
         overrides={{
           // Customize the UI to remove unnecessary menu items
-          actions: (editor, actions) => {
+          actions: (_editor, actions) => {
             const newActions = { ...actions };
             // Remove file operations since we handle saving
             delete newActions['open-file'];

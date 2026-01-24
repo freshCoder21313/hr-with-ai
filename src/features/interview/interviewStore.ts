@@ -97,7 +97,7 @@ export const useInterviewStore = create<InterviewState>()(
       // Optimization: Do NOT persist 'currentInterview' to localStorage.
       // It contains heavy data (messages, whiteboard images) which will exceed 5MB quota.
       // We rely on IndexedDB (Dexie) for persistence. The React components will load from DB on mount.
-      partialize: (state) => ({}),
+      partialize: (_state) => ({}),
     }
   )
 );

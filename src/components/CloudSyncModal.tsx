@@ -15,8 +15,6 @@ import {
   RefreshCw,
   Eye,
   EyeOff,
-  ShieldCheck,
-  History,
   Info,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -45,7 +43,7 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({ isOpen, onClose 
     if (isOpen && activeTab === 'upload' && !uploadId) {
       generateNewId();
     }
-  }, [isOpen, activeTab]);
+  }, [isOpen, activeTab, uploadId]);
 
   const generateNewId = () => {
     const newId = syncService.generateId();
@@ -84,7 +82,7 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({ isOpen, onClose 
       } else {
         setError(result.message || 'Upload failed');
       }
-    } catch (err) {
+    } catch {
       setError('An unexpected error occurred.');
     } finally {
       setIsLoading(false);
@@ -109,7 +107,7 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({ isOpen, onClose 
       } else {
         setError(result.message || 'Download failed');
       }
-    } catch (err) {
+    } catch {
       setError('An unexpected error occurred.');
     } finally {
       setIsLoading(false);
@@ -163,8 +161,8 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({ isOpen, onClose 
 
         <Tabs
           value={activeTab}
-          onValueChange={(v) => {
-            setActiveTab(v as any);
+          onValueChange={(v: string) => {
+            setActiveTab(v as 'upload' | 'download');
             resetStatus();
           }}
           className="w-full"

@@ -36,26 +36,26 @@ class HRDatabase extends Dexie {
     });
 
     // Add hooks to auto-update updatedAt
-    this.interviews.hook('creating', (primKey, obj) => {
+    this.interviews.hook('creating', (_primKey, obj) => {
       obj.updatedAt = Date.now();
       if (!obj.createdAt) obj.createdAt = Date.now();
     });
-    this.interviews.hook('updating', (mods, primKey, obj, trans) => {
+    this.interviews.hook('updating', (_mods, _primKey, _obj, _trans) => {
       return { updatedAt: Date.now() };
     });
 
-    this.resumes.hook('creating', (primKey, obj) => {
+    this.resumes.hook('creating', (_primKey, obj) => {
       obj.updatedAt = Date.now();
       if (!obj.createdAt) obj.createdAt = Date.now();
     });
-    this.resumes.hook('updating', (mods, primKey, obj, trans) => {
+    this.resumes.hook('updating', (_mods, _primKey, _obj, _trans) => {
       return { updatedAt: Date.now() };
     });
 
-    this.userSettings.hook('creating', (primKey, obj) => {
+    this.userSettings.hook('creating', (_primKey, obj) => {
       obj.updatedAt = Date.now();
     });
-    this.userSettings.hook('updating', (mods, primKey, obj, trans) => {
+    this.userSettings.hook('updating', (_mods, _primKey, _obj, _trans) => {
       return { updatedAt: Date.now() };
     });
   }

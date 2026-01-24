@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { db } from '@/lib/db';
 import { Interview } from '@/types';
 import { Calendar, Building, Briefcase, Download, Plus, ArrowRight } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import ProgressCharts from './ProgressCharts';
 

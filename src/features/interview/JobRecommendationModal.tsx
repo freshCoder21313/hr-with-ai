@@ -4,7 +4,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogClose,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -40,7 +39,7 @@ const JobRecommendationModal: React.FC<JobRecommendationModalProps> = ({
   onSelectJob,
   existingResumeId,
   availableResumes = [],
-  currentInterviewId,
+  currentInterviewId: _currentInterviewId,
 }) => {
   const [step, setStep] = useState<'select-resume' | 'analyzing' | 'results' | 'completed'>(
     'select-resume'
@@ -51,7 +50,7 @@ const JobRecommendationModal: React.FC<JobRecommendationModalProps> = ({
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
-  const [tailoredResumeText, setTailoredResumeText] = useState('');
+  const [, setTailoredResumeText] = useState('');
 
   // Auto-select resume if one is provided
   useEffect(() => {

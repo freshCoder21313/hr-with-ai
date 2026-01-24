@@ -58,9 +58,9 @@ const toDBJobRecommendation = (
 
 // Generate job recommendations from resume data
 export async function generateJobRecommendations(
-  resumeData: ResumeData,
-  language: string,
-  config: UserSettings
+  _resumeData: ResumeData,
+  _language: string,
+  _config: UserSettings
 ): Promise<JobRecommendation[]> {
   // This would normally call an AI service
   // For now, return mock data
@@ -127,7 +127,7 @@ export async function getJobRecommendations(interviewId: number): Promise<JobRec
 export async function generateTailoredResumeForJob(
   originalResumeData: ResumeData,
   jobDescription: string,
-  config: UserSettings
+  _config: UserSettings
 ): Promise<ResumeData> {
   // This would normally call an AI service to tailor the resume
   // For now, return the original data with minor modifications

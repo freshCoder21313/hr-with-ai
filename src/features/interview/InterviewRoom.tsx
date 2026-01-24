@@ -16,12 +16,10 @@ import {
   Loader2,
   Lightbulb,
   Settings as SettingsIcon,
-  Briefcase,
 } from 'lucide-react';
 import { db } from '@/lib/db';
 import { useInterview } from '@/hooks/useInterview';
 import { useVoice } from '@/hooks/useVoice';
-import { callN8nWebhook } from '@/services/n8nService';
 import {
   generateInterviewHints,
   InterviewHints,
@@ -30,7 +28,7 @@ import {
 import CodeEditor from './CodeEditor';
 import MarkdownRenderer from '@/components/MarkdownRenderer';
 import { useInterviewStore } from './interviewStore';
-import { Message, UserSettings, Resume, JobRecommendation } from '@/types';
+import { UserSettings, Resume, JobRecommendation } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
@@ -43,7 +41,7 @@ const Whiteboard = React.lazy(() => import('./Whiteboard'));
 
 // Helper to convert SVG to PNG Base64 (Same as before)
 const svgToPngBase64 = (svg: SVGElement): Promise<string> => {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     try {
       const svgStr = new XMLSerializer().serializeToString(svg);
       const canvas = document.createElement('canvas');
@@ -82,12 +80,12 @@ const InterviewRoom: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { currentInterview, sendMessage, endSession, isLoading: isProcessing } = useInterview();
-  const { setInterview, updateCode, updateWhiteboard, addMessage } = useInterviewStore();
+  const { setInterview, updateCode, updateWhiteboard } = useInterviewStore();
 
   const [inputValue, setInputValue] = useState('');
   const [ttsEnabled, setTtsEnabled] = useState(true);
   const [activeTab, setActiveTab] = useState<'chat' | 'code' | 'whiteboard'>('chat');
-  const [isRunningCode, setIsRunningCode] = useState(false);
+  const [, setIsRunningCode] = useState(false);
   const [isEndingSession, setIsEndingSession] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [userSettings, setUserSettings] = useState<UserSettings>({
@@ -103,6 +101,7 @@ const InterviewRoom: React.FC = () => {
   const [timer, setTimer] = useState<number>(0);
   const [isTimerActive, setIsTimerActive] = useState(false);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const editorRef = useRef<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const lastSpokenTimestampRef = useRef<number>(0);
@@ -131,6 +130,7 @@ const InterviewRoom: React.FC = () => {
       handleSendMessage(); // Auto-send what is currently typed
     }
     return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isTimerActive, timer]);
 
   useEffect(() => {
@@ -264,6 +264,7 @@ const InterviewRoom: React.FC = () => {
     let imageBase64: string | undefined = undefined;
     if (activeTab === 'whiteboard' && editorRef.current) {
       try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const shapeIds = Array.from(editorRef.current.getCurrentPageShapeIds()) as any[];
         if (shapeIds.length > 0) {
           const svg = await editorRef.current.getSvg(shapeIds, { background: true });
@@ -320,37 +321,6 @@ const InterviewRoom: React.FC = () => {
     // Feature temporarily disabled
     alert('This feature is coming soon! (Backend integration in progress)');
     return;
-    /* 
-    if (!currentInterview?.code?.trim() || !id) return;
-    const n8nUrl = localStorage.getItem('n8n_webhook_url');
-    if (!n8nUrl) {
-        alert("Please configure n8n Webhook URL in settings to run code.");
-        return;
-    }
-    setIsRunningCode(true);
-    try {
-        const result = await callN8nWebhook({ 
-            action: 'run_code',
-            code: currentInterview.code,
-            language: 'javascript', 
-            interviewId: id,
-            context: currentInterview
-        });
-        const resultText = typeof result === 'string' ? result : JSON.stringify(result, null, 2);
-        const resultMsg: Message = {
-            role: 'model',
-            content: `**🏁 Code Execution Result:**\n\`\`\`\n${resultText}\n\`\`\``,
-            timestamp: Date.now()
-        };
-        addMessage(resultMsg);
-        setActiveTab('chat');
-    } catch (e: any) {
-        console.error(e);
-        alert("Failed to run code: " + e.message);
-    } finally {
-        setIsRunningCode(false);
-    }
-    */
   };
 
   const handleSelectJob = async (job: JobRecommendation, tailoredResumeText: string) => {
@@ -584,7 +554,7 @@ const InterviewRoom: React.FC = () => {
               if (val !== undefined) updateCode(val);
             }}
             onRun={handleRunCode}
-            isRunning={isRunningCode}
+            isRunning={false}
             isHardcore={currentInterview.difficulty === 'hardcore'}
           />
         </div>

@@ -643,8 +643,9 @@ export const getStoredAIConfig = (): AIConfig => {
 export const generateJobRecommendations = async (
   resumeData: ResumeData,
   language: string,
-  config: UserSettings,
+  _config: UserSettings,
   resumeId?: number
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<any[]> => {
   const aiConfig = getStoredAIConfig();
 
@@ -722,6 +723,7 @@ export const generateJobRecommendations = async (
     jsonText = jsonText.replace(/```json\n?|\n?```/g, '').trim();
     const recommendations = JSON.parse(jsonText);
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const mappedRecommendations = recommendations.map((job: any, index: number) => ({
       ...job,
       id: `job-${Date.now()}-${index}`,
@@ -731,6 +733,7 @@ export const generateJobRecommendations = async (
     if (resumeId) {
       db.transaction('rw', db.job_recommendations, async () => {
         await db.job_recommendations.where('resumeId').equals(resumeId).delete();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const dbJobs = mappedRecommendations.map((job: any) => ({
           ...job,
           resumeId,
@@ -753,7 +756,7 @@ export const generateJobRecommendations = async (
 export const generateTailoredResumeForJob = async (
   originalResumeData: ResumeData,
   jobDescription: string,
-  config: UserSettings
+  _config: UserSettings
 ): Promise<ResumeData> => {
   const aiConfig = getStoredAIConfig();
   const prompt = generateTailoredResumePrompt(originalResumeData, jobDescription);

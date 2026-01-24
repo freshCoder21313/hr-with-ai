@@ -1,34 +1,36 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 
 interface UseVoiceProps {
   language?: 'en-US' | 'vi-VN';
 }
 
 export const useVoice = ({ language = 'en-US' }: UseVoiceProps = {}) => {
+  const SpeechRecognition = useMemo(() => {
+    if (typeof window !== 'undefined') {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    }
+    return null;
+  }, []);
+
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [isSupported, setIsSupported] = useState(true); // Track browser support
+  const [isSupported, _setIsSupported] = useState(!!SpeechRecognition);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null);
   const synthesisRef = useRef<SpeechSynthesis>(window.speechSynthesis);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const SpeechRecognition =
-        (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-      
-      if (SpeechRecognition) {
-        recognitionRef.current = new SpeechRecognition();
-        recognitionRef.current.continuous = true;
-        recognitionRef.current.interimResults = true;
-        recognitionRef.current.lang = language;
-        setIsSupported(true);
-      } else {
-        setIsSupported(false);
-        console.warn('Speech Recognition API not supported in this browser.');
-      }
+    if (isSupported && SpeechRecognition) {
+      recognitionRef.current = new SpeechRecognition();
+      recognitionRef.current.continuous = true;
+      recognitionRef.current.interimResults = true;
+      recognitionRef.current.lang = language;
+    } else {
+      console.warn('Speech Recognition API not supported in this browser.');
     }
-  }, [language]);
+  }, [language, isSupported, SpeechRecognition]);
 
   const startListening = useCallback(() => {
     if (recognitionRef.current && isSupported) {
@@ -41,13 +43,16 @@ export const useVoice = ({ language = 'en-US' }: UseVoiceProps = {}) => {
         setIsListening(false);
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       recognitionRef.current.onresult = (event: any) => {
         const current = Array.from(event.results)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           .map((result: any) => result[0].transcript)
           .join('');
         setTranscript(current);
       };
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       recognitionRef.current.onerror = (event: any) => {
         console.error('Speech recognition error', event.error);
         if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {

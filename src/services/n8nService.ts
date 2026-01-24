@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const callN8nWebhook = async (payload: any) => {
   const url = localStorage.getItem('n8n_webhook_url');
   if (!url) throw new Error('n8n Webhook URL is not configured');

@@ -28,6 +28,7 @@ const ProjectsForm: React.FC<ProjectsFormProps> = ({ data, onChange }) => {
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleChange = (index: number, field: keyof Project, value: any) => {
     const newData = [...data];
     newData[index] = { ...newData[index], [field]: value };
@@ -51,6 +52,7 @@ const ProjectsForm: React.FC<ProjectsFormProps> = ({ data, onChange }) => {
     try {
       const result = await analyzeResumeSection('Project Entry', entry, config);
       alert(`AI Critique:\n${result.critique}\n\nRewritten Example:\n${result.rewrittenExample}`);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
       alert('Analysis failed: ' + e.message);
     } finally {

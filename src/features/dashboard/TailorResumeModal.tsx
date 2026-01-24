@@ -47,7 +47,7 @@ export const TailorResumeModal: React.FC<TailorResumeModalProps> = ({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !isProcessing && onClose()}>
+    <Dialog open={isOpen} onOpenChange={(_open) => !isProcessing && onClose()}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">

@@ -30,6 +30,7 @@ const parsePDF = async (file: File): Promise<string> => {
     const textContent = await page.getTextContent();
 
     // Nối các item text lại với nhau
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const pageText = textContent.items.map((item: any) => item.str).join(' ');
 
     fullText += pageText + '\n\n';

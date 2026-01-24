@@ -27,6 +27,7 @@ const EducationForm: React.FC<EducationFormProps> = ({ data, onChange }) => {
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleChange = (index: number, field: keyof Education, value: any) => {
     const newData = [...data];
     newData[index] = { ...newData[index], [field]: value };
@@ -46,6 +47,7 @@ const EducationForm: React.FC<EducationFormProps> = ({ data, onChange }) => {
     try {
       const result = await analyzeResumeSection('Education Entry', entry, config);
       alert(`AI Critique:\n${result.critique}\n\nSuggestion:\n${result.suggestions.join('\n- ')}`);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
       alert('Analysis failed: ' + e.message);
     } finally {
