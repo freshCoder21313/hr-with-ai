@@ -13,7 +13,8 @@ export const useVoice = ({ language = 'en-US' }: UseVoiceProps = {}) => {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      const SpeechRecognition =
+        (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
       if (SpeechRecognition) {
         recognitionRef.current = new SpeechRecognition();
         recognitionRef.current.continuous = true;
@@ -35,15 +36,15 @@ export const useVoice = ({ language = 'en-US' }: UseVoiceProps = {}) => {
           if (event.results[i].isFinal) {
             finalTranscript += event.results[i][0].transcript;
           } else {
-             // For interim results, we could update state if we wanted "live" typing effect in input
-             // but for now we focus on final results or accumulated interim
-             // Ideally, we want to update transcript live
-             const interim = event.results[i][0].transcript;
-             setTranscript(prev => {
-                // simple hack to avoid duplicating interim if appended blindly
-                // usually we just replace 'transcript' with the current full buffer from 0
-                return interim; 
-             });
+            // For interim results, we could update state if we wanted "live" typing effect in input
+            // but for now we focus on final results or accumulated interim
+            // Ideally, we want to update transcript live
+            const interim = event.results[i][0].transcript;
+            setTranscript((prev) => {
+              // simple hack to avoid duplicating interim if appended blindly
+              // usually we just replace 'transcript' with the current full buffer from 0
+              return interim;
+            });
           }
         }
         // Actually, 'results' contains everything from start if continuous is true?
@@ -63,7 +64,7 @@ export const useVoice = ({ language = 'en-US' }: UseVoiceProps = {}) => {
         setIsListening(false);
       };
     } else {
-      console.warn("Speech Recognition not supported in this browser.");
+      console.warn('Speech Recognition not supported in this browser.');
     }
   }, []);
 
@@ -74,21 +75,24 @@ export const useVoice = ({ language = 'en-US' }: UseVoiceProps = {}) => {
     }
   }, []);
 
-  const speak = useCallback((text: string) => {
-    if (synthesisRef.current) {
-      // Cancel previous speech
-      synthesisRef.current.cancel();
+  const speak = useCallback(
+    (text: string) => {
+      if (synthesisRef.current) {
+        // Cancel previous speech
+        synthesisRef.current.cancel();
 
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = language;
-      
-      utterance.onstart = () => setIsSpeaking(true);
-      utterance.onend = () => setIsSpeaking(false);
-      utterance.onerror = () => setIsSpeaking(false);
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = language;
 
-      synthesisRef.current.speak(utterance);
-    }
-  }, [language]);
+        utterance.onstart = () => setIsSpeaking(true);
+        utterance.onend = () => setIsSpeaking(false);
+        utterance.onerror = () => setIsSpeaking(false);
+
+        synthesisRef.current.speak(utterance);
+      }
+    },
+    [language]
+  );
 
   const cancelSpeech = useCallback(() => {
     if (synthesisRef.current) {
@@ -105,6 +109,6 @@ export const useVoice = ({ language = 'en-US' }: UseVoiceProps = {}) => {
     speak,
     cancelSpeech,
     isSpeaking,
-    resetTranscript: () => setTranscript('')
+    resetTranscript: () => setTranscript(''),
   };
 };

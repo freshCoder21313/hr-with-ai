@@ -10,7 +10,7 @@ export interface Message {
 export enum InterviewStatus {
   CREATED = 'created',
   IN_PROGRESS = 'in_progress',
-  COMPLETED = 'completed'
+  COMPLETED = 'completed',
 }
 
 export interface Interview {

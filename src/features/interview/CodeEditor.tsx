@@ -12,7 +12,14 @@ interface CodeEditorProps {
   isHardcore?: boolean;
 }
 
-const CodeEditor: React.FC<CodeEditorProps> = ({ code, onChange, language = 'javascript', onRun, isRunning, isHardcore = false }) => {
+const CodeEditor: React.FC<CodeEditorProps> = ({
+  code,
+  onChange,
+  language = 'javascript',
+  onRun,
+  isRunning,
+  isHardcore = false,
+}) => {
   return (
     <div className="h-full w-full border border-slate-700 rounded-xl overflow-hidden shadow-sm bg-[#1e1e1e] relative group">
       <Editor
@@ -37,7 +44,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ code, onChange, language = 'jav
           hover: { enabled: !isHardcore },
         }}
       />
-      
+
       {onRun && (
         <Button
           onClick={onRun}
@@ -45,7 +52,11 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ code, onChange, language = 'jav
           variant="default" // Using default but overriding colors for 'Run' action usually green
           className="absolute bottom-4 right-4 z-10 gap-2 bg-green-600 hover:bg-green-700 text-white shadow-lg disabled:opacity-50"
         >
-          {isRunning ? <Loader2 size={16} className="animate-spin" /> : <Play size={16} fill="currentColor" />}
+          {isRunning ? (
+            <Loader2 size={16} className="animate-spin" />
+          ) : (
+            <Play size={16} fill="currentColor" />
+          )}
           Run Code
         </Button>
       )}

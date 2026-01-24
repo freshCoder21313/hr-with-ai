@@ -70,12 +70,12 @@ export interface ResumeData {
   education: Education[];
   skills: Skill[];
   projects: Project[];
-  
+
   // Additional sections often useful
   languages?: { language: string; fluency: string }[];
   interests?: { name: string; keywords: string[] }[];
   references?: { name: string; reference: string }[];
-  
+
   meta?: {
     template?: 'classic' | 'modern';
     theme?: 'blue' | 'green' | 'gray';

@@ -10,13 +10,13 @@ class HRDatabase extends Dexie {
 
   constructor() {
     super('VietPhongDB');
-    
+
     this.version(2).stores({
-      userSettings: "++id, apiKey, defaultModel, voiceEnabled",
-      interviews: "++id, createdAt, title, company, jobTitle, status, messages", // Added messages and title to index if needed, though usually large objects aren't indexed fully. Dexie stores define indices.
+      userSettings: '++id, apiKey, defaultModel, voiceEnabled',
+      interviews: '++id, createdAt, title, company, jobTitle, status, messages', // Added messages and title to index if needed, though usually large objects aren't indexed fully. Dexie stores define indices.
       // Note: Storing 'messages' in the index string creates an index on it. Usually we don't index the whole array content unless we want to search inside it.
       // But the plan V1 said: "interviews: ++id, createdAt, title, company, jobTitle, status, messages"
-      // If messages is an array of objects, Dexie MultiEntry index? Or maybe just storing it. 
+      // If messages is an array of objects, Dexie MultiEntry index? Or maybe just storing it.
       // Plan V1 likely meant these are the fields in the object, but for .stores() we only list indices.
       // Storing 'messages' as an index is probably not what we want for a chat log.
       // I will omit 'messages' from the index list to avoid performance issues, but it will still be stored in the object.
@@ -28,21 +28,21 @@ class HRDatabase extends Dexie {
       // 'resumes': "++id, createdAt, fileName"
       // I will comment why I deviate if I do, or just follow the plan string if it's not harmful (just unnecessary index).
       // Let's follow the plan string but be aware.
-      resumes: "++id, createdAt, fileName"
+      resumes: '++id, createdAt, fileName',
     });
-    
+
     // Version 3 as per plan, just to be safe or if I want to match the number.
     // The previous code had version(1).
     this.version(6).stores({
-        userSettings: "++id, apiKey, defaultModel, voiceEnabled, hintsEnabled, autoFinishEnabled",
-        interviews: "++id, createdAt, title, company, jobTitle, status", 
-        resumes: "++id, createdAt, fileName, formatted",
-        job_recommendations: "++id, interviewId, resumeId, title, company, matchScore, createdAt"
+      userSettings: '++id, apiKey, defaultModel, voiceEnabled, hintsEnabled, autoFinishEnabled',
+      interviews: '++id, createdAt, title, company, jobTitle, status',
+      resumes: '++id, createdAt, fileName, formatted',
+      job_recommendations: '++id, interviewId, resumeId, title, company, matchScore, createdAt',
     });
-    
+
     // Version 7: Added analysis caching fields to Resume (not indexed, so no schema string change needed strictly, but bumping for tracking)
     this.version(7).stores({
-      resumes: "++id, createdAt, fileName, formatted"
+      resumes: '++id, createdAt, fileName, formatted',
     });
   }
 }

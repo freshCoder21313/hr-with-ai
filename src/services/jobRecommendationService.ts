@@ -36,7 +36,11 @@ const toJobRecommendation = (dbRec: DBJobRecommendation): JobRecommendation => (
 });
 
 // Convert from JobRecommendation interface to DB format
-const toDBJobRecommendation = (rec: Omit<JobRecommendation, 'id'>, interviewId: number, resumeId: number): Omit<DBJobRecommendation, 'id'> => ({
+const toDBJobRecommendation = (
+  rec: Omit<JobRecommendation, 'id'>,
+  interviewId: number,
+  resumeId: number
+): Omit<DBJobRecommendation, 'id'> => ({
   interviewId,
   resumeId,
   title: rec.title,
@@ -94,7 +98,7 @@ export async function saveJobRecommendations(
   resumeId: number,
   recommendations: JobRecommendation[]
 ): Promise<number[]> {
-  const dbRecommendations = recommendations.map(rec =>
+  const dbRecommendations = recommendations.map((rec) =>
     toDBJobRecommendation(rec, interviewId, resumeId)
   );
 
@@ -110,14 +114,12 @@ export async function saveJobRecommendations(
 }
 
 // Get job recommendations for an interview
-export async function getJobRecommendations(
-  interviewId: number
-): Promise<JobRecommendation[]> {
+export async function getJobRecommendations(interviewId: number): Promise<JobRecommendation[]> {
   const dbRecommendations = await db.job_recommendations
     .where('interviewId')
     .equals(interviewId)
     .toArray();
-  
+
   return dbRecommendations.map(toJobRecommendation);
 }
 
@@ -147,7 +149,7 @@ export async function saveTailoredResume(resumeData: ResumeData): Promise<number
     parsedData: resumeData,
     formatted: true,
   };
-  
+
   return await db.resumes.add(newResume);
 }
 

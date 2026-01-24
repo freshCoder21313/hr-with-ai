@@ -33,7 +33,7 @@ export const syncService = {
     return {
       interviews,
       userSettings,
-      resumes
+      resumes,
     };
   },
 
@@ -52,18 +52,22 @@ export const syncService = {
   },
 
   // Upload to Cloud
-  uploadToCloud: async (id: string, password: string, data: SyncData): Promise<{ success: boolean; message?: string }> => {
+  uploadToCloud: async (
+    id: string,
+    password: string,
+    data: SyncData
+  ): Promise<{ success: boolean; message?: string }> => {
     try {
       const response = await fetch('/api/sync', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-sync-id': id
+          'x-sync-id': id,
         },
         body: JSON.stringify({
           password,
-          data
-        })
+          data,
+        }),
       });
 
       if (!response.ok) {
@@ -71,7 +75,7 @@ export const syncService = {
           throw new Error('Rate limit exceeded. Please try again later.');
         }
         if (response.status === 401) {
-            throw new Error('Invalid password for this ID.');
+          throw new Error('Invalid password for this ID.');
         }
         throw new Error(`Upload failed: ${response.statusText}`);
       }
@@ -84,20 +88,22 @@ export const syncService = {
   },
 
   // Download from Cloud
-  downloadFromCloud: async (id: string): Promise<{ success: boolean; data?: SyncData; message?: string }> => {
+  downloadFromCloud: async (
+    id: string
+  ): Promise<{ success: boolean; data?: SyncData; message?: string }> => {
     try {
       const response = await fetch(`/api/sync?id=${id}`, {
         method: 'GET',
         headers: {
-          'Content-Type': 'application/json'
-        }
+          'Content-Type': 'application/json',
+        },
       });
 
       if (!response.ok) {
         if (response.status === 404) {
           throw new Error('Backup not found for this ID.');
         }
-         if (response.status === 429) {
+        if (response.status === 429) {
           throw new Error('Rate limit exceeded. Please try again later.');
         }
         throw new Error(`Download failed: ${response.statusText}`);
@@ -109,5 +115,5 @@ export const syncService = {
       console.error('Download error:', error);
       return { success: false, message: error instanceof Error ? error.message : 'Unknown error' };
     }
-  }
+  },
 };

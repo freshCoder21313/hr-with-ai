@@ -1,10 +1,7 @@
 import { ResumeData } from '@/types/resume';
 
 // Prompt for generating job recommendations from resume data
-export const generateJobRecommendationsPrompt = (
-  resumeData: ResumeData,
-  language: string
-) => `
+export const generateJobRecommendationsPrompt = (resumeData: ResumeData, language: string) => `
 Analyze the following resume and generate ${language === 'vi-VN' ? '3-5' : '3-5'} relevant job opportunities.
 
 Resume Data:

@@ -1,27 +1,15 @@
 import React, { useState, useEffect } from 'react';
 
 const ApiKeyModal: React.FC = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [apiKey, setApiKey] = useState('');
-  const [baseUrl, setBaseUrl] = useState('');
-  const [modelId, setModelId] = useState('');
-  const [n8nUrl, setN8nUrl] = useState('');
+  const [apiKey, setApiKey] = useState(() => localStorage.getItem('gemini_api_key') || '');
+  const [baseUrl, setBaseUrl] = useState(() => localStorage.getItem('custom_base_url') || '');
+  const [modelId, setModelId] = useState(() => localStorage.getItem('custom_model_id') || '');
+  const [n8nUrl, setN8nUrl] = useState(() => localStorage.getItem('n8n_webhook_url') || '');
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [isOpen, setIsOpen] = useState(() => !localStorage.getItem('gemini_api_key'));
 
   useEffect(() => {
-    const storedKey = localStorage.getItem('gemini_api_key');
-    const storedBaseUrl = localStorage.getItem('custom_base_url');
-    const storedModelId = localStorage.getItem('custom_model_id');
-    const storedN8nUrl = localStorage.getItem('n8n_webhook_url');
-    
-    if (storedKey) setApiKey(storedKey);
-    if (storedBaseUrl) setBaseUrl(storedBaseUrl);
-    if (storedModelId) setModelId(storedModelId);
-    if (storedN8nUrl) setN8nUrl(storedN8nUrl);
-
-    if (!storedKey) {
-      setIsOpen(true);
-    }
+    // Sync local state if storage changes (optional, but good for multi-tab)
   }, []);
 
   const handleSave = () => {
@@ -32,7 +20,7 @@ const ApiKeyModal: React.FC = () => {
       } else {
         localStorage.removeItem('custom_base_url');
       }
-      
+
       if (modelId.trim()) {
         localStorage.setItem('custom_model_id', modelId.trim());
       } else {
@@ -46,7 +34,7 @@ const ApiKeyModal: React.FC = () => {
       }
 
       setIsOpen(false);
-      window.location.reload(); 
+      window.location.reload();
     }
   };
 
@@ -59,10 +47,12 @@ const ApiKeyModal: React.FC = () => {
         <p className="text-slate-500 text-sm mb-4">
           Enter your API Key. Default is Google Gemini, or configure a custom provider below.
         </p>
-        
+
         <div className="space-y-4">
           <div>
-            <label className="block text-xs font-medium text-slate-700 mb-1">API Key <span className="text-red-500">*</span></label>
+            <label className="block text-xs font-medium text-slate-700 mb-1">
+              API Key <span className="text-red-500">*</span>
+            </label>
             <input
               type="password"
               value={apiKey}
@@ -72,7 +62,7 @@ const ApiKeyModal: React.FC = () => {
             />
           </div>
 
-          <button 
+          <button
             type="button"
             onClick={() => setShowAdvanced(!showAdvanced)}
             className="text-xs text-blue-600 hover:underline flex items-center gap-1"
@@ -83,7 +73,9 @@ const ApiKeyModal: React.FC = () => {
           {showAdvanced && (
             <div className="space-y-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">Base URL (Optional)</label>
+                <label className="block text-xs font-medium text-slate-700 mb-1">
+                  Base URL (Optional)
+                </label>
                 <input
                   type="text"
                   value={baseUrl}
@@ -91,11 +83,17 @@ const ApiKeyModal: React.FC = () => {
                   placeholder="https://openrouter.ai/api/v1"
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"
                 />
-                <p className="text-[10px] text-slate-400 mt-1">Leave empty for default Google Gemini.</p>
-                <p className="text-[10px] text-orange-600 font-medium mt-1">⚠️ Security Warning: Only use URLs you trust. Your API Key will be sent here.</p>
+                <p className="text-[10px] text-slate-400 mt-1">
+                  Leave empty for default Google Gemini.
+                </p>
+                <p className="text-[10px] text-orange-600 font-medium mt-1">
+                  ⚠️ Security Warning: Only use URLs you trust. Your API Key will be sent here.
+                </p>
               </div>
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">Model ID (Optional)</label>
+                <label className="block text-xs font-medium text-slate-700 mb-1">
+                  Model ID (Optional)
+                </label>
                 <input
                   type="text"
                   value={modelId}
@@ -105,7 +103,9 @@ const ApiKeyModal: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">n8n Webhook URL (Optional)</label>
+                <label className="block text-xs font-medium text-slate-700 mb-1">
+                  n8n Webhook URL (Optional)
+                </label>
                 <input
                   type="text"
                   value={n8nUrl}
@@ -113,11 +113,13 @@ const ApiKeyModal: React.FC = () => {
                   placeholder="https://your-n8n.com/webhook/..."
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"
                 />
-                <p className="text-[10px] text-slate-400 mt-1">Connect to n8n workflow for custom processing.</p>
+                <p className="text-[10px] text-slate-400 mt-1">
+                  Connect to n8n workflow for custom processing.
+                </p>
               </div>
             </div>
           )}
-          
+
           <button
             onClick={handleSave}
             disabled={!apiKey.trim()}
@@ -127,7 +129,15 @@ const ApiKeyModal: React.FC = () => {
           </button>
 
           <p className="text-xs text-center text-slate-400">
-            Get your key at <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noreferrer" className="text-blue-500 hover:underline">Google AI Studio</a>
+            Get your key at{' '}
+            <a
+              href="https://aistudio.google.com/app/apikey"
+              target="_blank"
+              rel="noreferrer"
+              className="text-blue-500 hover:underline"
+            >
+              Google AI Studio
+            </a>
           </p>
         </div>
       </div>

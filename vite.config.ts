@@ -45,7 +45,8 @@ export default defineConfig(({ mode }) => {
               'ui-vendor': ['lucide-react', 'clsx', 'tailwind-merge', 'class-variance-authority'],
               'editor-vendor': ['@monaco-editor/react', 'react-syntax-highlighter', 'react-markdown'],
               'chart-vendor': ['mermaid', 'tldraw'],
-              'ai-vendor': ['@google/genai']
+              'ai-vendor': ['@google/genai'],
+              'pdf-vendor': ['pdfjs-dist']
             }
           }
         },

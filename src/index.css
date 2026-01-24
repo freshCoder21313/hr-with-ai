@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @theme {
   /* Safe Area Variables */
@@ -13,22 +13,22 @@
 
   --color-card: #ffffff;
   --color-card-foreground: #0f172a;
-  
+
   --color-popover: #ffffff;
   --color-popover-foreground: #0f172a;
-  
+
   --color-primary: #2563eb; /* blue-600 - Matches app accent */
   --color-primary-foreground: #ffffff;
-  
+
   --color-secondary: #f1f5f9; /* slate-100 */
   --color-secondary-foreground: #0f172a;
-  
+
   --color-muted: #f1f5f9;
   --color-muted-foreground: #64748b; /* slate-500 */
-  
+
   --color-accent: #f8fafc; /* slate-50 */
   --color-accent-foreground: #0f172a;
-  
+
   --color-destructive: #ef4444; /* red-500 */
   --color-destructive-foreground: #ffffff;
 
@@ -56,17 +56,17 @@
   --color-slate-800: #1e293b;
   --color-slate-900: #0f172a;
   --color-slate-950: #020617;
-  
+
   --animate-pulse-slow: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 /* Custom scrollbar for chat area */
 .scrollbar-hide::-webkit-scrollbar {
-    display: none;
+  display: none;
 }
 .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 /* Tldraw overrides to fit container */

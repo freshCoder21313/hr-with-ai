@@ -1,31 +1,28 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
   DialogTitle,
-  DialogClose
+  DialogClose,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  Loader2, 
-  CheckCircle, 
-  Search, 
-  Briefcase, 
+import {
+  Loader2,
+  CheckCircle,
+  Search,
+  Briefcase,
   Building,
   MapPin,
   DollarSign,
   Target,
-  Sparkles
+  Sparkles,
 } from 'lucide-react';
 import { Resume, JobRecommendation } from '@/types';
-import { 
-  generateJobRecommendations, 
-  generateTailoredResumeForJob
-} from '@/services/geminiService';
+import { generateJobRecommendations, generateTailoredResumeForJob } from '@/services/geminiService';
 import { getStoredAIConfig } from '@/services/geminiService';
 
 interface JobRecommendationModalProps {
@@ -43,9 +40,11 @@ const JobRecommendationModal: React.FC<JobRecommendationModalProps> = ({
   onSelectJob,
   existingResumeId,
   availableResumes = [],
-  currentInterviewId
+  currentInterviewId,
 }) => {
-  const [step, setStep] = useState<'select-resume' | 'analyzing' | 'results' | 'completed'>('select-resume');
+  const [step, setStep] = useState<'select-resume' | 'analyzing' | 'results' | 'completed'>(
+    'select-resume'
+  );
   const [selectedResume, setSelectedResume] = useState<Resume | null>(null);
   const [jobs, setJobs] = useState<JobRecommendation[]>([]);
   const [selectedJob, setSelectedJob] = useState<JobRecommendation | null>(null);
@@ -57,7 +56,7 @@ const JobRecommendationModal: React.FC<JobRecommendationModalProps> = ({
   // Auto-select resume if one is provided
   useEffect(() => {
     if (isOpen && existingResumeId && availableResumes.length > 0) {
-      const resume = availableResumes.find(r => r.id === existingResumeId);
+      const resume = availableResumes.find((r) => r.id === existingResumeId);
       if (resume) {
         setSelectedResume(resume);
         // Auto-start if resume is already selected
@@ -81,7 +80,7 @@ const JobRecommendationModal: React.FC<JobRecommendationModalProps> = ({
     try {
       // Simulate progress
       const progressInterval = setInterval(() => {
-        setProgress(prev => {
+        setProgress((prev) => {
           if (prev >= 90) {
             clearInterval(progressInterval);
             return 90;
@@ -112,7 +111,6 @@ const JobRecommendationModal: React.FC<JobRecommendationModalProps> = ({
         setIsGenerating(false);
         setProgress(0);
       }, 500);
-
     } catch (err) {
       console.error('Error generating jobs:', err);
       setError(err instanceof Error ? err.message : 'Failed to generate job recommendations');
@@ -124,7 +122,7 @@ const JobRecommendationModal: React.FC<JobRecommendationModalProps> = ({
   const handleSelectJob = async (job: JobRecommendation) => {
     setSelectedJob(job);
     setStep('completed');
-    
+
     try {
       if (!selectedResume || !selectedResume.parsedData) {
         throw new Error('No resume selected');
@@ -139,19 +137,19 @@ const JobRecommendationModal: React.FC<JobRecommendationModalProps> = ({
 
       // Convert tailored resume back to text format
       // This is a simplified version - in a real app, you'd have a proper converter
-      const tailoredText = `Tailored Resume for ${job.title} @ ${job.company}\n\n` +
+      const tailoredText =
+        `Tailored Resume for ${job.title} @ ${job.company}\n\n` +
         `Professional Summary:\n${tailoredData.basics.summary}\n\n` +
-        `Skills: ${tailoredData.skills.map(s => s.name).join(', ')}\n\n` +
-        `Experience:\n${tailoredData.work.map(w => `- ${w.position} at ${w.name}`).join('\n')}`;
+        `Skills: ${tailoredData.skills.map((s) => s.name).join(', ')}\n\n` +
+        `Experience:\n${tailoredData.work.map((w) => `- ${w.position} at ${w.name}`).join('\n')}`;
 
       setTailoredResumeText(tailoredText);
-      
+
       // Auto-select after a delay
       setTimeout(() => {
         onSelectJob(job, tailoredText);
         onClose();
       }, 2000);
-
     } catch (err) {
       console.error('Error generating tailored resume:', err);
       setError('Failed to generate tailored resume. Please try selecting another job.');
@@ -205,17 +203,21 @@ const JobRecommendationModal: React.FC<JobRecommendationModalProps> = ({
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-full ${
-                          selectedResume?.id === resume.id 
-                            ? 'bg-blue-100 text-blue-600' 
-                            : 'bg-slate-100 text-slate-500'
-                        }`}>
+                        <div
+                          className={`p-2 rounded-full ${
+                            selectedResume?.id === resume.id
+                              ? 'bg-blue-100 text-blue-600'
+                              : 'bg-slate-100 text-slate-500'
+                          }`}
+                        >
                           <Briefcase className="w-4 h-4" />
                         </div>
                         <div>
                           <h4 className="font-medium">{resume.fileName}</h4>
                           <p className="text-sm text-slate-500">
-                            {resume.createdAt ? new Date(resume.createdAt).toLocaleDateString() : 'Unknown date'}
+                            {resume.createdAt
+                              ? new Date(resume.createdAt).toLocaleDateString()
+                              : 'Unknown date'}
                           </p>
                         </div>
                       </div>
@@ -233,10 +235,7 @@ const JobRecommendationModal: React.FC<JobRecommendationModalProps> = ({
                 <Button variant="outline" onClick={onClose}>
                   Cancel
                 </Button>
-                <Button 
-                  onClick={handleGenerateJobs}
-                  disabled={!selectedResume.parsedData}
-                >
+                <Button onClick={handleGenerateJobs} disabled={!selectedResume.parsedData}>
                   {isGenerating ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -367,7 +366,7 @@ const JobRecommendationModal: React.FC<JobRecommendationModalProps> = ({
 
                       <Button
                         className="w-full"
-                        variant={selectedJob?.id === job.id ? "default" : "outline"}
+                        variant={selectedJob?.id === job.id ? 'default' : 'outline'}
                       >
                         {selectedJob?.id === job.id ? (
                           <>

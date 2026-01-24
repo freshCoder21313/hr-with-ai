@@ -33,7 +33,7 @@ const App: React.FC = () => {
       <div className="min-h-[100dvh] flex flex-col bg-slate-50 text-slate-900 pt-[var(--safe-top)] pb-[var(--safe-bottom)] pl-[var(--safe-left)] pr-[var(--safe-right)]">
         <ApiKeyModal />
         <CloudSyncModal isOpen={isSyncModalOpen} onClose={() => setIsSyncModalOpen(false)} />
-        
+
         <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
           <div className="container mx-auto px-4 h-14 flex items-center justify-between">
             <div className="flex items-center gap-2 font-bold text-xl text-slate-900">
@@ -41,26 +41,34 @@ const App: React.FC = () => {
               <span>With-AI</span>
             </div>
             <nav className="flex items-center gap-4 text-sm font-medium">
-              <a href="#/" className="hover:text-blue-600 transition-colors">Home</a>
-              <a href="#/history" className="hover:text-blue-600 transition-colors">History</a>
-              <button 
-                onClick={() => setIsSyncModalOpen(true)} 
+              <a href="#/" className="hover:text-blue-600 transition-colors">
+                Home
+              </a>
+              <a href="#/history" className="hover:text-blue-600 transition-colors">
+                History
+              </a>
+              <button
+                onClick={() => setIsSyncModalOpen(true)}
                 className="hover:text-blue-600 transition-colors flex items-center gap-1"
                 title="Cloud Sync"
               >
                 <Cloud className="w-4 h-4" />
                 <span className="hidden sm:inline">Sync</span>
               </button>
-              <button onClick={handleResetKey} className="text-slate-400 hover:text-red-500 transition-colors" title="Reset API Key">
+              <button
+                onClick={handleResetKey}
+                className="text-slate-400 hover:text-red-500 transition-colors"
+                title="Reset API Key"
+              >
                 Key
               </button>
             </nav>
           </div>
-          </header>
+        </header>
 
-          <main className="flex-1 container mx-auto px-0 md:px-4 py-0 md:py-6">
-            <Suspense fallback={<PageLoader />}>
-              <Routes>
+        <main className="flex-1 container mx-auto px-0 md:px-4 py-0 md:py-6">
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
               <Route path="/" element={<LandingPage />} />
               <Route path="/setup" element={<SetupRoom />} />
               <Route path="/history" element={<HistoryPage />} />

@@ -1,5 +1,12 @@
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -17,7 +24,7 @@ export const TailorResumeModal: React.FC<TailorResumeModalProps> = ({
   isOpen,
   onClose,
   sourceResume,
-  onGenerate
+  onGenerate,
 }) => {
   const [jobDescription, setJobDescription] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -33,7 +40,7 @@ export const TailorResumeModal: React.FC<TailorResumeModalProps> = ({
       setJobDescription('');
       onClose();
     } catch (error) {
-      console.error("Failed to tailor resume:", error);
+      console.error('Failed to tailor resume:', error);
     } finally {
       setIsProcessing(false);
     }
@@ -48,7 +55,8 @@ export const TailorResumeModal: React.FC<TailorResumeModalProps> = ({
             Tailor Resume to Job
           </DialogTitle>
           <DialogDescription>
-            Create a specialized version of <strong>{sourceResume.fileName}</strong> optimized for a specific Job Description.
+            Create a specialized version of <strong>{sourceResume.fileName}</strong> optimized for a
+            specific Job Description.
           </DialogDescription>
         </DialogHeader>
 
@@ -69,8 +77,8 @@ export const TailorResumeModal: React.FC<TailorResumeModalProps> = ({
           <Button variant="outline" onClick={onClose} disabled={isProcessing}>
             Cancel
           </Button>
-          <Button 
-            onClick={handleGenerate} 
+          <Button
+            onClick={handleGenerate}
             disabled={!jobDescription.trim() || isProcessing}
             className="bg-purple-600 hover:bg-purple-700"
           >

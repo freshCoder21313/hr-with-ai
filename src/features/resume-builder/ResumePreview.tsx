@@ -11,12 +11,10 @@ interface ResumePreviewProps {
 
 const ResumePreview: React.FC<ResumePreviewProps> = ({ data, template = 'modern', className }) => {
   return (
-    <div className={`print:w-full print:h-full print:absolute print:top-0 print:left-0 print:z-50 print:bg-white ${className}`}>
-      {template === 'classic' ? (
-        <ClassicTemplate data={data} />
-      ) : (
-        <ModernTemplate data={data} />
-      )}
+    <div
+      className={`print:w-full print:h-full print:absolute print:top-0 print:left-0 print:z-50 print:bg-white ${className}`}
+    >
+      {template === 'classic' ? <ClassicTemplate data={data} /> : <ModernTemplate data={data} />}
     </div>
   );
 };

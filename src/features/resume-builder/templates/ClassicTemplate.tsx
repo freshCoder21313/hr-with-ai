@@ -15,7 +15,7 @@ const ClassicTemplate: React.FC<TemplateProps> = ({ data }) => {
       <header className="border-b-2 border-slate-800 pb-4 mb-6">
         <h1 className="text-4xl font-bold uppercase tracking-wide mb-2">{basics.name}</h1>
         <p className="text-xl text-slate-600 mb-4">{basics.label}</p>
-        
+
         <div className="flex flex-wrap gap-4 text-sm text-slate-600">
           {basics.email && (
             <div className="flex items-center gap-1">
@@ -29,7 +29,7 @@ const ClassicTemplate: React.FC<TemplateProps> = ({ data }) => {
           )}
           {basics.location && (
             <div className="flex items-center gap-1">
-              <MapPin size={14} /> 
+              <MapPin size={14} />
               {[basics.location.city, basics.location.countryCode].filter(Boolean).join(', ')}
             </div>
           )}
@@ -40,8 +40,13 @@ const ClassicTemplate: React.FC<TemplateProps> = ({ data }) => {
           )}
           {basics.profiles?.map((profile, i) => (
             <div key={i} className="flex items-center gap-1">
-              {profile.network.toLowerCase().includes('github') ? <Github size={14} /> : 
-               profile.network.toLowerCase().includes('linkedin') ? <Linkedin size={14} /> : <LinkIcon size={14} />}
+              {profile.network.toLowerCase().includes('github') ? (
+                <Github size={14} />
+              ) : profile.network.toLowerCase().includes('linkedin') ? (
+                <Linkedin size={14} />
+              ) : (
+                <LinkIcon size={14} />
+              )}
               {profile.url.replace(/^https?:\/\/(www\.)?/, '')}
             </div>
           ))}
@@ -51,17 +56,19 @@ const ClassicTemplate: React.FC<TemplateProps> = ({ data }) => {
       {/* Summary */}
       {basics.summary && (
         <section className="mb-6">
-          <h2 className="text-lg font-bold uppercase border-b border-slate-300 mb-3 pb-1">Professional Summary</h2>
-          <p className="text-slate-700 leading-relaxed text-sm text-justify">
-            {basics.summary}
-          </p>
+          <h2 className="text-lg font-bold uppercase border-b border-slate-300 mb-3 pb-1">
+            Professional Summary
+          </h2>
+          <p className="text-slate-700 leading-relaxed text-sm text-justify">{basics.summary}</p>
         </section>
       )}
 
       {/* Experience */}
       {work.length > 0 && (
         <section className="mb-6">
-          <h2 className="text-lg font-bold uppercase border-b border-slate-300 mb-4 pb-1">Experience</h2>
+          <h2 className="text-lg font-bold uppercase border-b border-slate-300 mb-4 pb-1">
+            Experience
+          </h2>
           <div className="space-y-5">
             {work.map((job, i) => (
               <div key={i}>
@@ -78,7 +85,9 @@ const ClassicTemplate: React.FC<TemplateProps> = ({ data }) => {
                 {job.highlights && job.highlights.length > 0 && (
                   <ul className="list-disc ml-5 space-y-1">
                     {job.highlights.map((highlight, idx) => (
-                      <li key={idx} className="text-sm text-slate-600">{highlight}</li>
+                      <li key={idx} className="text-sm text-slate-600">
+                        {highlight}
+                      </li>
                     ))}
                   </ul>
                 )}
@@ -91,7 +100,9 @@ const ClassicTemplate: React.FC<TemplateProps> = ({ data }) => {
       {/* Projects */}
       {projects.length > 0 && (
         <section className="mb-6">
-          <h2 className="text-lg font-bold uppercase border-b border-slate-300 mb-4 pb-1">Projects</h2>
+          <h2 className="text-lg font-bold uppercase border-b border-slate-300 mb-4 pb-1">
+            Projects
+          </h2>
           <div className="space-y-4">
             {projects.map((project, i) => (
               <div key={i}>
@@ -99,9 +110,14 @@ const ClassicTemplate: React.FC<TemplateProps> = ({ data }) => {
                   <h3 className="font-bold text-base">
                     {project.name}
                     {project.url && (
-                        <a href={project.url} target="_blank" rel="noreferrer" className="ml-2 text-xs font-normal text-blue-600 hover:underline">
-                            {project.url.replace(/^https?:\/\//, '')}
-                        </a>
+                      <a
+                        href={project.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="ml-2 text-xs font-normal text-blue-600 hover:underline"
+                      >
+                        {project.url.replace(/^https?:\/\//, '')}
+                      </a>
                     )}
                   </h3>
                   <span className="text-sm text-slate-500 italic">
@@ -112,7 +128,9 @@ const ClassicTemplate: React.FC<TemplateProps> = ({ data }) => {
                 {project.highlights && project.highlights.length > 0 && (
                   <ul className="list-disc ml-5 space-y-1">
                     {project.highlights.map((highlight, idx) => (
-                      <li key={idx} className="text-sm text-slate-600">{highlight}</li>
+                      <li key={idx} className="text-sm text-slate-600">
+                        {highlight}
+                      </li>
                     ))}
                   </ul>
                 )}
@@ -125,7 +143,9 @@ const ClassicTemplate: React.FC<TemplateProps> = ({ data }) => {
       {/* Education */}
       {education.length > 0 && (
         <section className="mb-6">
-          <h2 className="text-lg font-bold uppercase border-b border-slate-300 mb-4 pb-1">Education</h2>
+          <h2 className="text-lg font-bold uppercase border-b border-slate-300 mb-4 pb-1">
+            Education
+          </h2>
           <div className="space-y-3">
             {education.map((edu, i) => (
               <div key={i}>
@@ -136,10 +156,10 @@ const ClassicTemplate: React.FC<TemplateProps> = ({ data }) => {
                   </span>
                 </div>
                 <div className="flex justify-between">
-                    <p className="text-sm text-slate-700">
-                        {edu.studyType} in {edu.area}
-                    </p>
-                    {edu.score && <span className="text-sm text-slate-500">GPA: {edu.score}</span>}
+                  <p className="text-sm text-slate-700">
+                    {edu.studyType} in {edu.area}
+                  </p>
+                  {edu.score && <span className="text-sm text-slate-500">GPA: {edu.score}</span>}
                 </div>
               </div>
             ))}
@@ -150,7 +170,9 @@ const ClassicTemplate: React.FC<TemplateProps> = ({ data }) => {
       {/* Skills */}
       {skills.length > 0 && (
         <section>
-          <h2 className="text-lg font-bold uppercase border-b border-slate-300 mb-4 pb-1">Skills</h2>
+          <h2 className="text-lg font-bold uppercase border-b border-slate-300 mb-4 pb-1">
+            Skills
+          </h2>
           <div className="grid grid-cols-1 gap-y-2 gap-x-8">
             {skills.map((skill, i) => (
               <div key={i} className="flex flex-col sm:items-baseline">

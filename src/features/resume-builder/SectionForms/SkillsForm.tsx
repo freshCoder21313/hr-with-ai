@@ -59,7 +59,12 @@ const SkillsForm: React.FC<SkillsFormProps> = ({ data, onChange }) => {
         {data.map((category, index) => (
           <Card key={index} className="relative group">
             <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
-              <Button variant="ghost" size="sm" onClick={() => handleRemoveCategory(index)} className="h-8 w-8 text-red-500 hover:bg-red-50">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleRemoveCategory(index)}
+                className="h-8 w-8 text-red-500 hover:bg-red-50"
+              >
                 <Trash2 className="w-4 h-4" />
               </Button>
             </div>
@@ -68,9 +73,9 @@ const SkillsForm: React.FC<SkillsFormProps> = ({ data, onChange }) => {
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label>Category Name</Label>
-                  <Input 
-                    value={category.name} 
-                    onChange={e => handleNameChange(index, e.target.value)} 
+                  <Input
+                    value={category.name}
+                    onChange={(e) => handleNameChange(index, e.target.value)}
                     placeholder="e.g. Languages, Frameworks"
                     className="font-medium"
                   />
@@ -80,25 +85,28 @@ const SkillsForm: React.FC<SkillsFormProps> = ({ data, onChange }) => {
                   <Label>Keywords</Label>
                   <div className="flex flex-wrap gap-2 mb-2">
                     {category.keywords?.map((kw, kIndex) => (
-                      <span key={kIndex} className="bg-slate-100 text-slate-700 px-2 py-1 rounded text-sm flex items-center gap-1 border border-slate-200">
+                      <span
+                        key={kIndex}
+                        className="bg-slate-100 text-slate-700 px-2 py-1 rounded text-sm flex items-center gap-1 border border-slate-200"
+                      >
                         {kw}
-                        <button 
-                            onClick={() => handleRemoveKeyword(index, kIndex)}
-                            className="text-slate-400 hover:text-red-500"
+                        <button
+                          onClick={() => handleRemoveKeyword(index, kIndex)}
+                          className="text-slate-400 hover:text-red-500"
                         >
-                            <X size={12} />
+                          <X size={12} />
                         </button>
                       </span>
                     ))}
                   </div>
-                  <Input 
-                    placeholder="Type skill and press Enter..." 
+                  <Input
+                    placeholder="Type skill and press Enter..."
                     onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                            e.preventDefault();
-                            handleAddKeyword(index, e.currentTarget.value);
-                            e.currentTarget.value = '';
-                        }
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleAddKeyword(index, e.currentTarget.value);
+                        e.currentTarget.value = '';
+                      }
                     }}
                   />
                 </div>
@@ -107,7 +115,7 @@ const SkillsForm: React.FC<SkillsFormProps> = ({ data, onChange }) => {
           </Card>
         ))}
       </div>
-      
+
       {data.length === 0 && (
         <div className="text-center py-12 border-2 border-dashed rounded-lg text-slate-400">
           No skills added yet.

@@ -1,6 +1,10 @@
 // INTERVIEW PROMPT SYSTEM
 
-export const getSystemPrompt = (interview: any, codeContext: string, autoFinishEnabled: boolean = false) => `
+export const getSystemPrompt = (
+  interview: any,
+  codeContext: string,
+  autoFinishEnabled: boolean = false
+) => `
 You are an expert technical interviewer conducting a realistic mock interview.
 Your goal is to simulate a high-pressure, professional interview environment while being fair and constructive.
 
@@ -60,7 +64,9 @@ INTERVIEW GUIDELINES (STRICT)
    - Example: "Are you sure that's the best approach? I recall that method causing memory leaks in V8." (Even if they are right, see if they defend it).
    - Cut them off if they ramble. Be impatient.
 
-${autoFinishEnabled ? `
+${
+  autoFinishEnabled
+    ? `
 ----------------
 SESSION MANAGEMENT (AUTO-FINISH ENABLED)
 ----------------
@@ -70,7 +76,9 @@ You are responsible for managing the duration of this interview.
   1. Provide a polite closing statement (e.g., "Thank you for your time today...").
   2. APPEND the token [[END_SESSION]] at the very end of your message.
   3. Do NOT ask another question if you are ending the session.
-` : ''}
+`
+    : ''
+}
 
 ----------------
 SPECIAL INSTRUCTION: KNOWLEDGE GRAPH LINKS
@@ -104,7 +112,11 @@ Examples:
 Keep it under 100 words.
 `;
 
-export const getFeedbackPrompt = (interview: any, conversationHistory: string, codeContext: string) => `
+export const getFeedbackPrompt = (
+  interview: any,
+  conversationHistory: string,
+  codeContext: string
+) => `
 Analyze this interview transcript and provide detailed, actionable feedback.
 
 CONTEXT:

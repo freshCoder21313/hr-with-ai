@@ -2,7 +2,13 @@ import React, { useState } from 'react';
 import { SetupFormData, Resume, ResumeAnalysis } from '@/types';
 import { Upload, Loader2, Play, Sparkles, Briefcase } from 'lucide-react';
 import { parseResume } from '@/services/resumeParser';
-import { extractInfoFromJD, getStoredAIConfig, analyzeResume, tailorResumeToJob, parseResumeToJSON } from '@/services/geminiService';
+import {
+  extractInfoFromJD,
+  getStoredAIConfig,
+  analyzeResume,
+  tailorResumeToJob,
+  parseResumeToJSON,
+} from '@/services/geminiService';
 import { useInterview } from '@/hooks/useInterview';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -36,13 +42,14 @@ const SetupRoom: React.FC = () => {
   const [formData, setFormData] = useState<SetupFormData>({
     company: 'Tech Corp',
     jobTitle: 'Senior Frontend Engineer',
-    interviewerPersona: 'Alex, a strict Engineering Manager who focuses on system design and edge cases.',
+    interviewerPersona:
+      'Alex, a strict Engineering Manager who focuses on system design and edge cases.',
     jobDescription: '',
     resumeText: '',
     language: 'en-US',
     difficulty: 'medium',
     companyStatus: 'Hiring for growth',
-    interviewContext: 'Modern day video call'
+    interviewContext: 'Modern day video call',
   });
 
   // Load saved resumes on mount
@@ -60,29 +67,29 @@ const SetupRoom: React.FC = () => {
 
   const handleResumeSelect = (resume: Resume) => {
     if (selectedResumeId === resume.id) {
-        // Deselect
-        setSelectedResumeId(undefined);
-        setFormData(prev => ({ ...prev, resumeText: '' }));
+      // Deselect
+      setSelectedResumeId(undefined);
+      setFormData((prev) => ({ ...prev, resumeText: '' }));
     } else {
-        // Select
-        setSelectedResumeId(resume.id);
-        setFormData(prev => ({ ...prev, resumeText: resume.rawText }));
+      // Select
+      setSelectedResumeId(resume.id);
+      setFormData((prev) => ({ ...prev, resumeText: resume.rawText }));
     }
   };
 
   const handleDeleteResume = async (id: number) => {
     if (!confirm('Are you sure you want to delete this resume?')) return;
-    
+
     try {
-        await db.resumes.delete(id);
-        setSavedResumes(prev => prev.filter(r => r.id !== id));
-        if (selectedResumeId === id) {
-            setSelectedResumeId(undefined);
-            setFormData(prev => ({ ...prev, resumeText: '' }));
-        }
+      await db.resumes.delete(id);
+      setSavedResumes((prev) => prev.filter((r) => r.id !== id));
+      if (selectedResumeId === id) {
+        setSelectedResumeId(undefined);
+        setFormData((prev) => ({ ...prev, resumeText: '' }));
+      }
     } catch (error) {
-        console.error('Failed to delete resume:', error);
-        alert('Failed to delete resume');
+      console.error('Failed to delete resume:', error);
+      alert('Failed to delete resume');
     }
   };
 
@@ -91,7 +98,9 @@ const SetupRoom: React.FC = () => {
     await startNewInterview(formData);
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -105,7 +114,7 @@ const SetupRoom: React.FC = () => {
 
     const config = getStoredAIConfig();
     if (!config.apiKey) {
-      alert("Please set your API Key first.");
+      alert('Please set your API Key first.');
       return;
     }
 
@@ -123,49 +132,48 @@ const SetupRoom: React.FC = () => {
 
       // 3. Create New Resume Entry
       const newFileName = `${resumeToTailor.fileName.replace(/\.pdf|\.txt/i, '')} - Tailored.pdf`; // Mocking filename
-      
+
       const newResume: Resume = {
         createdAt: Date.now(),
         fileName: newFileName,
         rawText: resumeToTailor.rawText, // Keep original text as backup? Or maybe empty since it's generated?
         parsedData: tailoredData,
-        formatted: true
+        formatted: true,
       };
 
       const newId = await db.resumes.add(newResume);
-      
+
       // 4. Navigate to Editor
       navigate(`/resumes/${newId}/edit`);
-
     } catch (error) {
       console.error(error);
-      alert("Failed to tailor resume: " + (error as any).message);
+      alert('Failed to tailor resume: ' + (error as any).message);
     }
   };
 
   const handleAutoFill = async () => {
     if (!formData.jobDescription.trim()) {
-      alert("Please enter a Job Description first.");
+      alert('Please enter a Job Description first.');
       return;
     }
 
     const config = getStoredAIConfig();
     if (!config.apiKey) {
-      alert("Please set your API Key first.");
+      alert('Please set your API Key first.');
       return;
     }
 
     setIsExtracting(true);
     try {
       const extracted = await extractInfoFromJD(formData.jobDescription, config);
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         company: extracted.company,
         jobTitle: extracted.jobTitle,
-        interviewerPersona: extracted.interviewerPersona
+        interviewerPersona: extracted.interviewerPersona,
       }));
     } catch (error) {
-      alert("Failed to extract info: " + (error as any).message);
+      alert('Failed to extract info: ' + (error as any).message);
     } finally {
       setIsExtracting(false);
     }
@@ -178,49 +186,53 @@ const SetupRoom: React.FC = () => {
     setIsParsing(true);
     try {
       const text = await parseResume(file);
-      
+
       // Save to DB
       const newResume: Resume = {
-          createdAt: Date.now(),
-          fileName: file.name,
-          rawText: text
+        createdAt: Date.now(),
+        fileName: file.name,
+        rawText: text,
       };
-      
+
       const id = await db.resumes.add(newResume);
       const savedResume = { ...newResume, id }; // id is correctly typed as number from Dexie add return
 
       // Update state
-      setSavedResumes(prev => [savedResume, ...prev]);
+      setSavedResumes((prev) => [savedResume, ...prev]);
       setSelectedResumeId(id);
-      setFormData(prev => ({ ...prev, resumeText: text }));
+      setFormData((prev) => ({ ...prev, resumeText: text }));
       setResumeAnalysis(null); // Reset analysis on new upload
-      
     } catch (error) {
-      alert("Failed to parse resume: " + (error as any).message);
+      alert('Failed to parse resume: ' + (error as any).message);
     } finally {
       setIsParsing(false);
-      e.target.value = ''; 
+      e.target.value = '';
     }
   };
 
   const handleAnalyzeResume = async () => {
     if (!formData.resumeText || !formData.jobDescription) {
-      alert("Please provide both Resume content and Job Description.");
+      alert('Please provide both Resume content and Job Description.');
       return;
     }
 
     const config = getStoredAIConfig();
     if (!config.apiKey) {
-      alert("Please set your API Key first.");
+      alert('Please set your API Key first.');
       return;
     }
 
     setIsAnalyzing(true);
     try {
-      const analysis = await analyzeResume(formData.resumeText, formData.jobDescription, config, selectedResumeId);
+      const analysis = await analyzeResume(
+        formData.resumeText,
+        formData.jobDescription,
+        config,
+        selectedResumeId
+      );
       setResumeAnalysis(analysis);
     } catch (error) {
-      alert("Analysis failed: " + (error as any).message);
+      alert('Analysis failed: ' + (error as any).message);
     } finally {
       setIsAnalyzing(false);
     }
@@ -228,12 +240,12 @@ const SetupRoom: React.FC = () => {
 
   const handleSelectJob = async (job: any, tailoredResumeText: string) => {
     // Fill the form with selected job details
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       company: job.company,
       jobTitle: job.title,
       jobDescription: job.jobDescription,
-      resumeText: tailoredResumeText || prev.resumeText // Use tailored resume if available
+      resumeText: tailoredResumeText || prev.resumeText, // Use tailored resume if available
     }));
 
     // Close the modal
@@ -242,10 +254,11 @@ const SetupRoom: React.FC = () => {
 
   return (
     <div className="max-w-4xl mx-auto p-4 md:p-8">
-
       <Card className="border-none shadow-xl bg-white/90 backdrop-blur-sm">
         <CardHeader className="text-center pb-6 md:pb-8 px-4 md:px-6">
-          <CardTitle className="text-2xl md:text-3xl font-bold text-slate-900">Setup Interview Room</CardTitle>
+          <CardTitle className="text-2xl md:text-3xl font-bold text-slate-900">
+            Setup Interview Room
+          </CardTitle>
           <CardDescription className="text-sm md:text-lg text-slate-500 mt-2">
             Configure the AI persona and context for your realistic practice session.
           </CardDescription>
@@ -355,10 +368,10 @@ const SetupRoom: React.FC = () => {
             <div className="space-y-2 md:space-y-3">
               <div className="flex justify-between items-center">
                 <Label htmlFor="jobDescription">Job Description</Label>
-                <Button 
+                <Button
                   type="button"
-                  variant="outline" 
-                  size="sm" 
+                  variant="outline"
+                  size="sm"
                   onClick={handleAutoFill}
                   disabled={isExtracting || !formData.jobDescription.trim()}
                   className="text-blue-600 border-blue-200 hover:bg-blue-50"
@@ -396,21 +409,27 @@ const SetupRoom: React.FC = () => {
                     <Briefcase className="mr-2 h-4 w-4" />
                     Find Job with CV
                   </Button>
-                  <label className={`cursor-pointer inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-white border border-slate-200 bg-white hover:bg-slate-100 hover:text-slate-900 h-9 px-4 py-2 ${isParsing ? 'opacity-70 cursor-wait' : ''}`}>
-                      {isParsing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
-                      <span>{isParsing ? 'Reading PDF...' : 'Upload PDF/TXT'}</span>
-                      <input
-                          type="file"
-                          accept=".pdf,.txt"
-                          className="hidden"
-                          onChange={handleFileUpload}
-                          disabled={isParsing}
-                      />
+                  <label
+                    className={`cursor-pointer inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-white border border-slate-200 bg-white hover:bg-slate-100 hover:text-slate-900 h-9 px-4 py-2 ${isParsing ? 'opacity-70 cursor-wait' : ''}`}
+                  >
+                    {isParsing ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <Upload className="mr-2 h-4 w-4" />
+                    )}
+                    <span>{isParsing ? 'Reading PDF...' : 'Upload PDF/TXT'}</span>
+                    <input
+                      type="file"
+                      accept=".pdf,.txt"
+                      className="hidden"
+                      onChange={handleFileUpload}
+                      disabled={isParsing}
+                    />
                   </label>
                 </div>
               </div>
-              
-              <ResumeList 
+
+              <ResumeList
                 resumes={savedResumes}
                 selectedResumeId={selectedResumeId}
                 onSelect={handleResumeSelect}
@@ -462,15 +481,15 @@ const SetupRoom: React.FC = () => {
                 className="w-full h-14 text-lg bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all hover:scale-[1.01]"
               >
                 {isStarting ? (
-                    <>
-                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                        Setting up Room...
-                    </>
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    Setting up Room...
+                  </>
                 ) : (
-                    <>
-                        Enter Interview Room
-                        <Play className="ml-2 h-5 w-5 fill-current" />
-                    </>
+                  <>
+                    Enter Interview Room
+                    <Play className="ml-2 h-5 w-5 fill-current" />
+                  </>
                 )}
               </Button>
             </div>

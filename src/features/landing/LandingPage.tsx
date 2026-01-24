@@ -12,7 +12,8 @@ const LandingPage: React.FC = () => {
           Master Your <span className="text-blue-600">Interview</span>
         </h1>
         <p className="text-base md:text-lg text-slate-600">
-          Practice with AI personas from top companies. Get instant feedback with structural visualizations. Offline-first & Privacy-focused.
+          Practice with AI personas from top companies. Get instant feedback with structural
+          visualizations. Offline-first & Privacy-focused.
         </p>
         <div className="pt-4">
           <button
@@ -31,21 +32,27 @@ const LandingPage: React.FC = () => {
             <FileText className="h-8 w-8 text-blue-600" />
           </div>
           <h3 className="text-lg font-bold mb-2">Tailored Scenarios</h3>
-          <p className="text-slate-500 text-sm">Upload your resume and JD. The AI adapts its persona to your specific target role.</p>
+          <p className="text-slate-500 text-sm">
+            Upload your resume and JD. The AI adapts its persona to your specific target role.
+          </p>
         </div>
         <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex flex-col items-center text-center">
           <div className="p-3 bg-indigo-50 rounded-full mb-4">
             <MessageSquare className="h-8 w-8 text-indigo-600" />
           </div>
           <h3 className="text-lg font-bold mb-2">Real-time Chat</h3>
-          <p className="text-slate-500 text-sm">Experience a natural conversation flow. Handle behavioral and technical questions.</p>
+          <p className="text-slate-500 text-sm">
+            Experience a natural conversation flow. Handle behavioral and technical questions.
+          </p>
         </div>
         <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex flex-col items-center text-center">
           <div className="p-3 bg-emerald-50 rounded-full mb-4">
             <BarChart3 className="h-8 w-8 text-emerald-600" />
           </div>
           <h3 className="text-lg font-bold mb-2">Visual Feedback</h3>
-          <p className="text-slate-500 text-sm">Get deep insights and Mermaid charts analyzing your thought process structure.</p>
+          <p className="text-slate-500 text-sm">
+            Get deep insights and Mermaid charts analyzing your thought process structure.
+          </p>
         </div>
       </div>
     </div>
