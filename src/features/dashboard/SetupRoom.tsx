@@ -171,6 +171,9 @@ const SetupRoom: React.FC = () => {
         company: extracted.company,
         jobTitle: extracted.jobTitle,
         interviewerPersona: extracted.interviewerPersona,
+        difficulty: extracted.difficulty || prev.difficulty,
+        companyStatus: extracted.companyStatus || prev.companyStatus,
+        interviewContext: extracted.interviewContext || prev.interviewContext,
       }));
     } catch (error) {
       alert('Failed to extract info: ' + (error as any).message);

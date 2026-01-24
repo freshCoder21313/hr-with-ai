@@ -339,7 +339,14 @@ export const generateInterviewFeedback = async (
 export const extractInfoFromJD = async (
   jobDescription: string,
   configInput: AIConfigInput
-): Promise<{ company: string; jobTitle: string; interviewerPersona: string }> => {
+): Promise<{
+  company: string;
+  jobTitle: string;
+  interviewerPersona: string;
+  difficulty?: 'easy' | 'medium' | 'hard' | 'hardcore';
+  companyStatus?: string;
+  interviewContext?: string;
+}> => {
   const config = resolveConfig(configInput);
   const prompt = getExtractJDInfoPrompt(jobDescription);
 
