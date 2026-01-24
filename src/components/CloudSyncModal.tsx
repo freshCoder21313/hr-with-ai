@@ -310,8 +310,8 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({ isOpen, onClose 
                   Warning
                 </h3>
                 <p className="text-xs text-orange-800 leading-relaxed opacity-90">
-                  Restoring data is <span className="font-bold underline">irreversible</span>. All
-                  current local resumes and history will be replaced.
+                  Data will be <span className="font-bold">smartly merged</span>. Newer versions from
+                  cloud will update local records. Unique local data is preserved.
                 </p>
               </div>
             </div>
@@ -330,7 +330,7 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({ isOpen, onClose 
               ) : (
                 <>
                   <Download className="mr-2 h-5 w-5" />
-                  Confirm & Restore
+                  Confirm & Merge
                 </>
               )}
             </Button>

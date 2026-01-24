@@ -16,6 +16,7 @@ export enum InterviewStatus {
 export interface Interview {
   id?: number;
   createdAt: number;
+  updatedAt?: number; // Added for sync merging
   company: string;
   jobTitle: string;
   interviewerPersona: string;
@@ -70,6 +71,7 @@ export interface SetupFormData {
 
 export interface UserSettings {
   id?: number;
+  updatedAt?: number; // Added for sync merging
   apiKey?: string;
   defaultModel?: string;
   voiceEnabled?: boolean;
@@ -82,6 +84,7 @@ export interface UserSettings {
 export interface Resume {
   id?: number;
   createdAt: number;
+  updatedAt?: number; // Added for sync merging
   fileName: string;
   rawText: string;
   parsedData?: ResumeData; // Structured JSON Resume

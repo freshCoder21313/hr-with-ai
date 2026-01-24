@@ -1,10 +1,15 @@
 import { db } from '@/lib/db';
 import { Interview, UserSettings, Resume } from '@/types';
+import LZString from 'lz-string';
 
 interface SyncData {
   interviews: Interview[];
   userSettings: UserSettings[];
   resumes: Resume[];
+}
+
+interface CompressedSyncData {
+  compressed: string;
 }
 
 export const syncService = {
@@ -37,27 +42,87 @@ export const syncService = {
     };
   },
 
-  // Import data into Dexie (Overwrite or Merge logic can be refined)
-  // For now, we'll clear and restore to ensure exact sync
-  importData: async (data: SyncData): Promise<void> => {
+  // Merge Logic: Smartly merge cloud data into local DB
+  importData: async (cloudData: SyncData): Promise<void> => {
     await db.transaction('rw', db.interviews, db.userSettings, db.resumes, async () => {
-      await db.interviews.clear();
-      await db.userSettings.clear();
-      await db.resumes.clear();
+      
+      // 1. Merge User Settings (Usually singleton)
+      if (cloudData.userSettings?.length) {
+        const localSettings = await db.userSettings.toArray();
+        for (const cloudSetting of cloudData.userSettings) {
+          const localMatch = localSettings.find(l => l.id === cloudSetting.id);
+          
+          if (!localMatch) {
+            await db.userSettings.add(cloudSetting);
+          } else {
+            // Compare timestamps
+            const cloudTime = cloudSetting.updatedAt || 0;
+            const localTime = localMatch.updatedAt || 0;
+            if (cloudTime > localTime) {
+              await db.userSettings.put(cloudSetting); // Overwrite with newer cloud version
+            }
+          }
+        }
+      }
 
-      if (data.interviews?.length) await db.interviews.bulkAdd(data.interviews);
-      if (data.userSettings?.length) await db.userSettings.bulkAdd(data.userSettings);
-      if (data.resumes?.length) await db.resumes.bulkAdd(data.resumes);
+      // 2. Merge Interviews (Match by createdAt as proxy for unique ID)
+      if (cloudData.interviews?.length) {
+        const localInterviews = await db.interviews.toArray();
+        for (const cloudInterview of cloudData.interviews) {
+          // We use createdAt as a stable ID because local 'id' is auto-increment and changes per device
+          const localMatch = localInterviews.find(l => l.createdAt === cloudInterview.createdAt);
+
+          if (!localMatch) {
+            // New item, delete local 'id' to let Dexie auto-increment
+            const { id, ...dataToSave } = cloudInterview;
+            await db.interviews.add(dataToSave as Interview);
+          } else {
+            const cloudTime = cloudInterview.updatedAt || 0;
+            const localTime = localMatch.updatedAt || 0;
+            if (cloudTime > localTime) {
+              // Update existing record, preserving the LOCAL id
+              await db.interviews.put({ ...cloudInterview, id: localMatch.id });
+            }
+          }
+        }
+      }
+
+      // 3. Merge Resumes (Match by createdAt)
+      if (cloudData.resumes?.length) {
+        const localResumes = await db.resumes.toArray();
+        for (const cloudResume of cloudData.resumes) {
+          const localMatch = localResumes.find(l => l.createdAt === cloudResume.createdAt);
+
+          if (!localMatch) {
+            const { id, ...dataToSave } = cloudResume;
+            await db.resumes.add(dataToSave as Resume);
+          } else {
+            const cloudTime = cloudResume.updatedAt || 0;
+            const localTime = localMatch.updatedAt || 0;
+            if (cloudTime > localTime) {
+              await db.resumes.put({ ...cloudResume, id: localMatch.id });
+            }
+          }
+        }
+      }
     });
   },
 
-  // Upload to Cloud
+  // Upload to Cloud (Compressed)
   uploadToCloud: async (
     id: string,
     password: string,
     data: SyncData
   ): Promise<{ success: boolean; message?: string }> => {
     try {
+      // Compress data
+      const jsonString = JSON.stringify(data);
+      // Use Base64 which is safer for storage/transport than UTF16
+      const compressedString = LZString.compressToBase64(jsonString);
+      
+      // Wrap in object to satisfy JSONB if server requires it, or just consistency
+      const payload: CompressedSyncData = { compressed: compressedString };
+
       const response = await fetch('/api/sync', {
         method: 'POST',
         headers: {
@@ -66,7 +131,7 @@ export const syncService = {
         },
         body: JSON.stringify({
           password,
-          data,
+          data: payload, 
         }),
       });
 
@@ -87,7 +152,7 @@ export const syncService = {
     }
   },
 
-  // Download from Cloud
+  // Download from Cloud (Decompress)
   downloadFromCloud: async (
     id: string
   ): Promise<{ success: boolean; data?: SyncData; message?: string }> => {
@@ -110,7 +175,26 @@ export const syncService = {
       }
 
       const result = await response.json();
-      return { success: true, data: result.data };
+      const rawData = result.data;
+
+      // Check if data is compressed
+      let finalData: SyncData;
+      
+      if (rawData && typeof rawData === 'object' && rawData.compressed) {
+        // Decompress - Try Base64 first (new format), then UTF16 (legacy/fallback)
+        let decompressed = LZString.decompressFromBase64(rawData.compressed);
+        if (!decompressed) {
+          decompressed = LZString.decompressFromUTF16(rawData.compressed);
+        }
+        
+        if (!decompressed) throw new Error('Failed to decompress data');
+        finalData = JSON.parse(decompressed);
+      } else {
+        // Fallback for legacy uncompressed data
+        finalData = rawData;
+      }
+
+      return { success: true, data: finalData };
     } catch (error) {
       console.error('Download error:', error);
       return { success: false, message: error instanceof Error ? error.message : 'Unknown error' };

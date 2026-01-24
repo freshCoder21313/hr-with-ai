@@ -80,7 +80,7 @@ const Whiteboard: React.FC<WhiteboardProps> = ({
   return (
     <div className="tldraw-container relative w-full h-full border-0 bg-slate-50">
       <Tldraw
-        persistenceKey={null} // Disable internal persistence to avoid conflicts with our DB
+        persistenceKey={undefined} // Disable internal persistence to avoid conflicts with our DB
         onMount={handleMount}
         hideUi={readOnly} // Hide UI if reviewing history
         overrides={{
