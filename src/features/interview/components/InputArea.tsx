@@ -29,6 +29,8 @@ interface InputAreaProps {
   setHints: (hints: InterviewHints | null) => void;
   isLoadingHints: boolean;
   onGetHints: () => void;
+  hintsEnabled?: boolean;
+  voiceEnabled?: boolean;
 }
 
 export const InputArea: React.FC<InputAreaProps> = ({
@@ -48,6 +50,8 @@ export const InputArea: React.FC<InputAreaProps> = ({
   setHints,
   isLoadingHints,
   onGetHints,
+  hintsEnabled,
+  voiceEnabled,
 }) => {
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -92,23 +96,25 @@ export const InputArea: React.FC<InputAreaProps> = ({
 
       <div className="relative flex items-end gap-2 max-w-5xl mx-auto">
         {/* Hints Button */}
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={onGetHints}
-          disabled={isLoadingHints}
-          className={cn(
-            'h-[44px] w-[44px] md:h-[50px] md:w-[50px] rounded-xl shrink-0 border-amber-200 bg-amber-50 hover:bg-amber-100 text-amber-600',
-            isLoadingHints ? 'animate-pulse' : ''
-          )}
-          title="Get AI Hints"
-        >
-          {isLoadingHints ? (
-            <Loader2 size={20} className="animate-spin" />
-          ) : (
-            <Lightbulb size={20} />
-          )}
-        </Button>
+        {hintsEnabled !== false && (
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={onGetHints}
+            disabled={isLoadingHints}
+            className={cn(
+              'h-[44px] w-[44px] md:h-[50px] md:w-[50px] rounded-xl shrink-0 border-amber-200 bg-amber-50 hover:bg-amber-100 text-amber-600',
+              isLoadingHints ? 'animate-pulse' : ''
+            )}
+            title="Get AI Hints"
+          >
+            {isLoadingHints ? (
+              <Loader2 size={20} className="animate-spin" />
+            ) : (
+              <Lightbulb size={20} />
+            )}
+          </Button>
+        )}
 
         {/* Tools Group */}
         <div className="flex gap-1 mr-1">
@@ -158,7 +164,7 @@ export const InputArea: React.FC<InputAreaProps> = ({
             variant={isListening ? 'destructive' : 'ghost'}
             size="icon"
             onClick={onToggleVoice}
-            disabled={!isSupported}
+            disabled={!isSupported || voiceEnabled === false}
             className="absolute right-1 md:right-2 top-1 md:top-1.5 h-8 w-8 text-slate-400"
           >
             {isListening ? <MicOff size={16} /> : <Mic size={16} />}

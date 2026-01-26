@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { loadUserSettings, saveUserSettings } from '@/services/settingsService';
 
 const ApiKeyModal: React.FC = () => {
   const [apiKey, setApiKey] = useState(() => localStorage.getItem('gemini_api_key') || '');
@@ -8,26 +9,33 @@ const ApiKeyModal: React.FC = () => {
   const [isOpen, setIsOpen] = useState(() => !localStorage.getItem('gemini_api_key'));
 
   useEffect(() => {
-    // Sync local state if storage changes (optional, but good for multi-tab)
+    // Load full settings from DB on mount to ensure consistency
+    const loadSettings = async () => {
+      const settings = await loadUserSettings();
+      setApiKey(settings.apiKey || '');
+      setBaseUrl(settings.baseUrl || '');
+      setModelId(settings.defaultModel || '');
+    };
+    loadSettings();
   }, []);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (apiKey.trim()) {
-      localStorage.setItem('gemini_api_key', apiKey.trim());
-      if (baseUrl.trim()) {
-        localStorage.setItem('custom_base_url', baseUrl.trim());
-      } else {
-        localStorage.removeItem('custom_base_url');
-      }
+      try {
+        const currentSettings = await loadUserSettings();
+        await saveUserSettings({
+          ...currentSettings,
+          apiKey: apiKey.trim(),
+          baseUrl: baseUrl.trim(),
+          defaultModel: modelId.trim(),
+        });
 
-      if (modelId.trim()) {
-        localStorage.setItem('custom_model_id', modelId.trim());
-      } else {
-        localStorage.removeItem('custom_model_id');
+        setIsOpen(false);
+        window.location.reload();
+      } catch (error) {
+        console.error('Failed to save API key:', error);
+        alert('Failed to save settings. Please try again.');
       }
-
-      setIsOpen(false);
-      window.location.reload();
     }
   };
 

@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { db } from '@/lib/db';
+import { loadUserSettings, saveUserSettings } from '@/services/settingsService';
 import { UserSettings } from '@/types';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 
@@ -37,73 +37,49 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onOpenChange, onSet
     if (open) {
       const loadSettings = async () => {
         try {
-          // Load from DB first
-          const storedDB = await db.userSettings.orderBy('id').first();
-
-          // Fallback to localStorage for API keys (migration path or simplicity)
-          const localApiKey = localStorage.getItem('gemini_api_key') || '';
-          const localBaseUrl = localStorage.getItem('custom_base_url') || '';
-          const localModelId = localStorage.getItem('custom_model_id') || '';
-
-          if (storedDB) {
-            setSettings({
-              ...storedDB,
-              apiKey: storedDB.apiKey || localApiKey, // Prioritize DB but fallback
-              baseUrl: storedDB.baseUrl || localBaseUrl,
-              modelId: storedDB.defaultModel || localModelId,
-            });
-          } else {
-            // If no DB record, use defaults + localStorage
-            setSettings((prev) => ({
-              ...prev,
-              apiKey: localApiKey,
-              baseUrl: localBaseUrl,
-              modelId: localModelId,
-            }));
-          }
+          const stored = await loadUserSettings();
+          setSettings({
+            ...stored,
+            modelId: stored.defaultModel || '', // Map defaultModel to modelId for UI
+          });
         } catch (error) {
           console.error('Failed to load settings:', error);
         } finally {
           setIsLoading(false);
         }
       };
+      setIsLoading(true);
       loadSettings();
     }
   }, [open]);
 
   const handleSave = async () => {
     try {
-      // 1. Save critical keys to localStorage (legacy support & syncService compatibility)
-      if (settings.apiKey?.trim()) localStorage.setItem('gemini_api_key', settings.apiKey.trim());
-      if (settings.baseUrl?.trim())
-        localStorage.setItem('custom_base_url', settings.baseUrl.trim());
-      else localStorage.removeItem('custom_base_url');
-      if (settings.modelId?.trim())
-        localStorage.setItem('custom_model_id', settings.modelId.trim());
-      else localStorage.removeItem('custom_model_id');
-
-      // 2. Save to DB
-      const dbRecord = {
-        voiceEnabled: settings.voiceEnabled,
-        hintsEnabled: settings.hintsEnabled,
-        autoFinishEnabled: settings.autoFinishEnabled,
-        apiKey: settings.apiKey,
-        defaultModel: settings.modelId,
-        // baseUrl: settings.baseUrl // Note: baseUrl not yet in UserSettings type strictly, but we can add or ignore
+      // Prepare settings object for saving
+      const settingsToSave: UserSettings = {
+        id: settings.id,
+        voiceEnabled: settings.voiceEnabled ?? true,
+        hintsEnabled: settings.hintsEnabled ?? false,
+        autoFinishEnabled: settings.autoFinishEnabled ?? false,
+        apiKey: settings.apiKey || '',
+        baseUrl: settings.baseUrl || '',
+        defaultModel: settings.modelId || '', // Map UI modelId back to defaultModel
       };
 
-      if (settings.id) {
-        await db.userSettings.update(settings.id, dbRecord);
-      } else {
-        const id = await db.userSettings.add(dbRecord);
-        setSettings((prev) => ({ ...prev, id }));
-      }
+      // Save using centralized service
+      const savedSettings = await saveUserSettings(settingsToSave);
+      
+      // Update local state with saved settings (including ID if newly created)
+      setSettings({
+        ...savedSettings,
+        modelId: savedSettings.defaultModel || '',
+      });
 
-      if (onSettingsChanged) onSettingsChanged(settings);
+      if (onSettingsChanged) onSettingsChanged(savedSettings);
       onOpenChange(false); // Close modal
     } catch (error) {
       console.error('Failed to save settings:', error);
-      alert('Failed to save settings');
+      alert('Failed to save settings. Please try again.');
     }
   };
 

@@ -9,6 +9,7 @@ import {
   InterviewHints,
   getStoredAIConfig,
 } from '@/services/geminiService';
+import { loadUserSettings, saveUserSettings } from '@/services/settingsService';
 import { useInterviewStore } from './interviewStore';
 import { UserSettings, Resume, JobRecommendation } from '@/types';
 import SettingsModal from '@/components/SettingsModal';
@@ -79,6 +80,7 @@ const InterviewRoom: React.FC = () => {
     voiceEnabled: true,
     hintsEnabled: false,
   });
+  const [isSettingsLoaded, setIsSettingsLoaded] = useState(false);
   const [hints, setHints] = useState<InterviewHints | null>(null);
   const [isLoadingHints, setIsLoadingHints] = useState(false);
   const [showJobRecommendationModal, setShowJobRecommendationModal] = useState(false);
@@ -176,19 +178,46 @@ const InterviewRoom: React.FC = () => {
     loadInterview();
   }, [id, currentInterview, setInterview, navigate]);
 
+  // Load settings on mount and restore TTS preference
   useEffect(() => {
     const loadSettings = async () => {
       try {
-        const stored = await db.userSettings.orderBy('id').first();
-        if (stored) {
-          setUserSettings(stored);
+        const stored = await loadUserSettings();
+        setUserSettings(stored);
+        
+        // Restore TTS state from settings
+        if (stored.voiceEnabled !== undefined) {
+          setTtsEnabled(stored.voiceEnabled);
         }
+        
+        setIsSettingsLoaded(true);
       } catch (error) {
         console.error('Failed to load settings:', error);
+        setIsSettingsLoaded(true);
       }
     };
     loadSettings();
-  }, [showSettings]);
+  }, []);
+
+  // Reload settings when modal closes
+  useEffect(() => {
+    if (!showSettings && isSettingsLoaded) {
+      const reloadSettings = async () => {
+        try {
+          const stored = await loadUserSettings();
+          setUserSettings(stored);
+          
+          // Update TTS state if voice settings changed
+          if (stored.voiceEnabled !== undefined) {
+            setTtsEnabled(stored.voiceEnabled);
+          }
+        } catch (error) {
+          console.error('Failed to reload settings:', error);
+        }
+      };
+      reloadSettings();
+    }
+  }, [showSettings, isSettingsLoaded]);
 
   useEffect(() => {
     const loadResumes = async () => {
@@ -333,9 +362,21 @@ const InterviewRoom: React.FC = () => {
         interview={currentInterview}
         timer={timer}
         ttsEnabled={ttsEnabled}
-        onToggleTts={() => {
+        onToggleTts={async () => {
           if (isSpeaking) cancelSpeech();
-          setTtsEnabled(!ttsEnabled);
+          const newTtsState = !ttsEnabled;
+          setTtsEnabled(newTtsState);
+          
+          // Persist TTS preference
+          try {
+            const updatedSettings = await saveUserSettings({
+              ...userSettings,
+              voiceEnabled: newTtsState,
+            });
+            setUserSettings(updatedSettings); // Update local state with the saved settings
+          } catch (error) {
+            console.error('Failed to save TTS preference:', error);
+          }
         }}
         onOpenSettings={() => setShowSettings(true)}
         onEndSession={handleEndInterview}
@@ -362,6 +403,8 @@ const InterviewRoom: React.FC = () => {
         setHints={setHints}
         isLoadingHints={isLoadingHints}
         onGetHints={handleGetHints}
+        hintsEnabled={userSettings.hintsEnabled}
+        voiceEnabled={userSettings.voiceEnabled}
       />
 
       {/* Tool Modals */}
