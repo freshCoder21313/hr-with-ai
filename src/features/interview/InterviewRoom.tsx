@@ -25,7 +25,8 @@ import {
   InterviewHints,
   getStoredAIConfig,
 } from '@/services/geminiService';
-import CodeEditor from './CodeEditor';
+// Lazy load CodeEditor
+const CodeEditor = React.lazy(() => import('./CodeEditor'));
 import MarkdownRenderer from '@/components/MarkdownRenderer';
 import { useInterviewStore } from './interviewStore';
 import { UserSettings, Resume, JobRecommendation } from '@/types';
@@ -548,15 +549,23 @@ const InterviewRoom: React.FC = () => {
 
         {/* Code Tab */}
         <div className={`flex-1 p-0 bg-[#1e1e1e] ${activeTab === 'code' ? 'block' : 'hidden'}`}>
-          <CodeEditor
-            code={currentInterview.code || ''}
-            onChange={(val) => {
-              if (val !== undefined) updateCode(val);
-            }}
-            onRun={handleRunCode}
-            isRunning={false}
-            isHardcore={currentInterview.difficulty === 'hardcore'}
-          />
+          <Suspense
+            fallback={
+              <div className="flex items-center justify-center h-full text-slate-400">
+                Loading Editor...
+              </div>
+            }
+          >
+            <CodeEditor
+              code={currentInterview.code || ''}
+              onChange={(val) => {
+                if (val !== undefined) updateCode(val);
+              }}
+              onRun={handleRunCode}
+              isRunning={false}
+              isHardcore={currentInterview.difficulty === 'hardcore'}
+            />
+          </Suspense>
         </div>
 
         {/* Whiteboard Tab */}
@@ -634,7 +643,9 @@ const InterviewRoom: React.FC = () => {
                 isListening ? 'animate-pulse' : 'text-slate-400 hover:text-slate-600',
                 !isSupported && 'opacity-50 cursor-not-allowed'
               )}
-              title={isSupported ? "Toggle Voice Input" : "Voice Input not supported in this browser"}
+              title={
+                isSupported ? 'Toggle Voice Input' : 'Voice Input not supported in this browser'
+              }
             >
               {isListening ? <MicOff size={16} /> : <Mic size={16} />}
             </Button>
