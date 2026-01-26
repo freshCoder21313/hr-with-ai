@@ -1,0 +1,179 @@
+import React from 'react';
+import { Mic, MicOff, Code2, PenTool, Send, Loader2, Lightbulb, Sparkles } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { cn } from '@/lib/utils';
+import InterviewHintView from '../InterviewHintView';
+import { InterviewHints } from '@/services/geminiService';
+
+interface InputAreaProps {
+  inputValue: string;
+  setInputValue: (val: string) => void;
+  onSendMessage: () => void;
+  isListening: boolean;
+  isSupported: boolean;
+  onToggleVoice: () => void;
+
+  // Tools
+  isCodeOpen: boolean;
+  setIsCodeOpen: (open: boolean) => void;
+  isWhiteboardOpen: boolean;
+  setIsWhiteboardOpen: (open: boolean) => void;
+
+  // Smart Action
+  suggestedAction: 'code' | 'draw' | null;
+  isProcessing: boolean;
+
+  // Hints
+  hints: InterviewHints | null;
+  setHints: (hints: InterviewHints | null) => void;
+  isLoadingHints: boolean;
+  onGetHints: () => void;
+}
+
+export const InputArea: React.FC<InputAreaProps> = ({
+  inputValue,
+  setInputValue,
+  onSendMessage,
+  isListening,
+  isSupported,
+  onToggleVoice,
+  isCodeOpen,
+  setIsCodeOpen,
+  isWhiteboardOpen,
+  setIsWhiteboardOpen,
+  suggestedAction,
+  isProcessing,
+  hints,
+  setHints,
+  isLoadingHints,
+  onGetHints,
+}) => {
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      onSendMessage();
+    }
+  };
+
+  return (
+    <div className="p-2 md:p-4 bg-white border-t border-slate-200 z-10 shrink-0 safe-area-bottom">
+      {/* Suggested Action Chip */}
+      {suggestedAction && !isProcessing && (
+        <div className="absolute -top-12 left-0 w-full flex justify-center pointer-events-none">
+          <div className="pointer-events-auto animate-in slide-in-from-bottom-2 fade-in duration-300">
+            {suggestedAction === 'code' && (
+              <Button
+                onClick={() => setIsCodeOpen(true)}
+                className="rounded-full shadow-lg bg-indigo-600 hover:bg-indigo-700 text-white gap-2"
+                size="sm"
+              >
+                <Sparkles size={14} /> AI suggests: Open Code Editor
+              </Button>
+            )}
+            {suggestedAction === 'draw' && (
+              <Button
+                onClick={() => setIsWhiteboardOpen(true)}
+                className="rounded-full shadow-lg bg-emerald-600 hover:bg-emerald-700 text-white gap-2"
+                size="sm"
+              >
+                <Sparkles size={14} /> AI suggests: Use Whiteboard
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {hints && (
+        <div className="max-w-5xl mx-auto mb-2">
+          <InterviewHintView hints={hints} onClose={() => setHints(null)} />
+        </div>
+      )}
+
+      <div className="relative flex items-end gap-2 max-w-5xl mx-auto">
+        {/* Hints Button */}
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={onGetHints}
+          disabled={isLoadingHints}
+          className={cn(
+            'h-[44px] w-[44px] md:h-[50px] md:w-[50px] rounded-xl shrink-0 border-amber-200 bg-amber-50 hover:bg-amber-100 text-amber-600',
+            isLoadingHints ? 'animate-pulse' : ''
+          )}
+          title="Get AI Hints"
+        >
+          {isLoadingHints ? (
+            <Loader2 size={20} className="animate-spin" />
+          ) : (
+            <Lightbulb size={20} />
+          )}
+        </Button>
+
+        {/* Tools Group */}
+        <div className="flex gap-1 mr-1">
+          <Button
+            variant={isCodeOpen ? 'default' : 'outline'}
+            size="icon"
+            onClick={() => setIsCodeOpen(true)}
+            className={cn(
+              'h-[44px] w-[44px] md:h-[50px] md:w-[50px] rounded-xl shrink-0',
+              isCodeOpen
+                ? 'bg-indigo-600 text-white'
+                : 'text-indigo-600 bg-indigo-50 border-indigo-200'
+            )}
+            title="Open Code Editor"
+          >
+            <Code2 size={20} />
+          </Button>
+          <Button
+            variant={isWhiteboardOpen ? 'default' : 'outline'}
+            size="icon"
+            onClick={() => setIsWhiteboardOpen(true)}
+            className={cn(
+              'h-[44px] w-[44px] md:h-[50px] md:w-[50px] rounded-xl shrink-0',
+              isWhiteboardOpen
+                ? 'bg-emerald-600 text-white'
+                : 'text-emerald-600 bg-emerald-50 border-emerald-200'
+            )}
+            title="Open Whiteboard"
+          >
+            <PenTool size={20} />
+          </Button>
+        </div>
+
+        <div className="relative flex-1">
+          <Textarea
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyDown={handleKeyPress}
+            placeholder={isListening ? 'Listening...' : 'Type your answer...'}
+            className={cn(
+              'w-full min-h-[44px] max-h-[120px] resize-none pr-10 md:pr-12 py-2.5 md:py-3 shadow-sm text-sm md:text-base',
+              isListening ? 'border-red-400 ring-2 ring-red-100 bg-red-50' : ''
+            )}
+            rows={1}
+          />
+          <Button
+            variant={isListening ? 'destructive' : 'ghost'}
+            size="icon"
+            onClick={onToggleVoice}
+            disabled={!isSupported}
+            className="absolute right-1 md:right-2 top-1 md:top-1.5 h-8 w-8 text-slate-400"
+          >
+            {isListening ? <MicOff size={16} /> : <Mic size={16} />}
+          </Button>
+        </div>
+
+        <Button
+          onClick={onSendMessage}
+          disabled={!inputValue.trim() && !isListening}
+          className="h-[44px] w-[44px] md:h-[50px] md:w-[50px] rounded-xl shrink-0"
+          size="icon"
+        >
+          <Send size={18} />
+        </Button>
+      </div>
+    </div>
+  );
+};

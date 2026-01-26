@@ -37,8 +37,10 @@ const App: React.FC = () => {
         <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
           <div className="container mx-auto px-4 h-14 flex items-center justify-between">
             <div className="flex items-center gap-2 font-bold text-xl text-slate-900">
-              <span className="bg-slate-900 text-white p-1 rounded">HR</span>
-              <span>With-AI</span>
+              <a href="#">
+                <span className="bg-slate-900 text-white p-1 rounded">HR</span>
+                <span>With-AI</span>
+              </a>
             </div>
             <nav className="flex items-center gap-4 text-sm font-medium">
               <a href="#/" className="hover:text-blue-600 transition-colors">

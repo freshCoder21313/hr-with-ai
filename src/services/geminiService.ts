@@ -82,7 +82,7 @@ export const startInterviewSession = async (
       // Gemini
       const ai = getGeminiClient(config.apiKey);
       const response = await ai.models.generateContent({
-        model: 'gemini-2.0-flash-exp', // Updated model
+        model: 'gemini-2.5-flash', // Updated model
         contents: prompt,
       });
       return response.text || "Hello, let's start the interview. Can you introduce yourself?";
@@ -201,7 +201,7 @@ export async function* streamInterviewMessage(
       }
 
       const response = await ai.models.generateContentStream({
-        model: 'gemini-2.0-flash-exp',
+        model: 'gemini-2.5-flash',
         contents: [{ parts }],
       });
 
@@ -250,7 +250,7 @@ export const generateInterviewFeedback = async (
       // --- Gemini Logic ---
       const ai = getGeminiClient(config.apiKey);
       const response = await ai.models.generateContent({
-        model: 'gemini-2.0-flash-exp',
+        model: 'gemini-2.5-flash',
         contents: prompt,
         config: {
           responseMimeType: 'application/json',
@@ -361,7 +361,7 @@ export const extractInfoFromJD = async (
     } else {
       const ai = getGeminiClient(config.apiKey);
       const response = await ai.models.generateContent({
-        model: 'gemini-2.0-flash-exp',
+        model: 'gemini-2.5-flash',
         contents: prompt,
       });
       jsonText = response.text || '';
@@ -415,7 +415,7 @@ export const analyzeResume = async (
     } else {
       const ai = getGeminiClient(config.apiKey);
       const response = await ai.models.generateContent({
-        model: 'gemini-2.0-flash-exp',
+        model: 'gemini-2.5-flash',
         contents: prompt,
         config: {
           responseMimeType: 'application/json',
@@ -481,7 +481,7 @@ export const generateInterviewHints = async (
     } else {
       const ai = getGeminiClient(config.apiKey);
       const response = await ai.models.generateContent({
-        model: 'gemini-2.0-flash-exp',
+        model: 'gemini-2.5-flash',
         contents: prompt,
         config: {
           responseMimeType: 'application/json',
@@ -527,7 +527,7 @@ export const parseResumeToJSON = async (
     } else {
       const ai = getGeminiClient(config.apiKey);
       const response = await ai.models.generateContent({
-        model: 'gemini-2.0-flash-exp',
+        model: 'gemini-2.5-flash',
         contents: prompt,
         config: {
           responseMimeType: 'application/json',
@@ -565,7 +565,7 @@ export const analyzeResumeSection = async (
     } else {
       const ai = getGeminiClient(config.apiKey);
       const response = await ai.models.generateContent({
-        model: 'gemini-2.0-flash-exp',
+        model: 'gemini-2.5-flash',
         contents: prompt,
         config: {
           responseMimeType: 'application/json',
@@ -612,7 +612,7 @@ export const tailorResumeToJob = async (
     } else {
       const ai = getGeminiClient(config.apiKey);
       const response = await ai.models.generateContent({
-        model: 'gemini-2.0-flash-exp',
+        model: 'gemini-2.5-flash',
         contents: prompt,
         config: {
           responseMimeType: 'application/json',
@@ -645,7 +645,7 @@ export const generateJobRecommendations = async (
   language: string,
   _config: UserSettings,
   resumeId?: number
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<any[]> => {
   const aiConfig = getStoredAIConfig();
 
@@ -681,7 +681,7 @@ export const generateJobRecommendations = async (
       // Gemini
       const ai = getGeminiClient(aiConfig.apiKey);
       const response = await ai.models.generateContent({
-        model: 'gemini-2.0-flash-exp',
+        model: 'gemini-2.5-flash',
         contents: prompt,
         config: {
           responseMimeType: 'application/json',
@@ -772,7 +772,7 @@ export const generateTailoredResumeForJob = async (
     } else {
       const ai = getGeminiClient(aiConfig.apiKey);
       const response = await ai.models.generateContent({
-        model: 'gemini-2.0-flash-exp',
+        model: 'gemini-2.5-flash',
         contents: prompt,
         config: {
           responseMimeType: 'application/json',
