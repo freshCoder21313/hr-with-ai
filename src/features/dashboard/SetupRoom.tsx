@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { SetupFormData, Resume, ResumeAnalysis } from '@/types';
-import { Upload, Loader2, Play, Sparkles, Briefcase } from 'lucide-react';
+import { Upload, Play, Sparkles, Briefcase } from 'lucide-react';
 import { parseResume } from '@/services/resumeParser';
 import {
   extractInfoFromJD,
@@ -21,6 +21,7 @@ import ResumeAnalysisView from '@/features/resume-analysis/ResumeAnalysisView';
 import { TailorResumeModal } from './TailorResumeModal';
 import JobRecommendationModal from '@/features/interview/JobRecommendationModal';
 import { useNavigate } from 'react-router-dom';
+import { LoadingButton } from '@/components/ui/loading-button';
 
 const SetupRoom: React.FC = () => {
   const { startNewInterview, isLoading: isStarting } = useInterview();
@@ -388,21 +389,19 @@ const SetupRoom: React.FC = () => {
             <div className="space-y-2 md:space-y-3">
               <div className="flex justify-between items-center">
                 <Label htmlFor="jobDescription">Job Description</Label>
-                <Button
+                <LoadingButton
                   type="button"
                   variant="outline"
                   size="sm"
                   onClick={handleAutoFill}
                   disabled={isExtracting || !formData.jobDescription.trim()}
+                  isLoading={isExtracting}
+                  loadingText="Auto-fill from JD"
                   className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                  leftIcon={<Sparkles className="w-4 h-4" />}
                 >
-                  {isExtracting ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <Sparkles className="mr-2 h-4 w-4" />
-                  )}
                   Auto-fill from JD
-                </Button>
+                </LoadingButton>
               </div>
               <Textarea
                 id="jobDescription"
@@ -432,12 +431,19 @@ const SetupRoom: React.FC = () => {
                   <label
                     className={`cursor-pointer inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-white border border-slate-200 bg-white hover:bg-slate-100 hover:text-slate-900 h-9 px-4 py-2 ${isParsing ? 'opacity-70 cursor-wait' : ''}`}
                   >
-                    {isParsing ? (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : (
-                      <Upload className="mr-2 h-4 w-4" />
-                    )}
-                    <span>{isParsing ? 'Reading PDF...' : 'Upload PDF/TXT'}</span>
+                    <LoadingButton
+                      variant="ghost"
+                      size="sm"
+                      isLoading={isParsing}
+                      loadingText="Reading PDF..."
+                      className="p-0 h-auto hover:bg-transparent"
+                      asChild
+                    >
+                      <span>
+                        <Upload className="mr-2 h-4 w-4" />
+                        Upload PDF/TXT
+                      </span>
+                    </LoadingButton>
                     <input
                       type="file"
                       accept=".pdf,.txt"
@@ -470,25 +476,18 @@ const SetupRoom: React.FC = () => {
 
               {formData.resumeText && formData.jobDescription && (
                 <div className="pt-2">
-                  <Button
+                  <LoadingButton
                     type="button"
                     variant="secondary"
                     onClick={handleAnalyzeResume}
                     disabled={isAnalyzing}
+                    isLoading={isAnalyzing}
+                    loadingText="Analyzing Fit..."
                     className="w-full"
+                    leftIcon={<Sparkles className="w-4 h-4 text-purple-500" />}
                   >
-                    {isAnalyzing ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Analyzing Fit...
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="mr-2 h-4 w-4 text-purple-500" />
-                        Analyze Resume Fit (AI)
-                      </>
-                    )}
-                  </Button>
+                    Analyze Resume Fit (AI)
+                  </LoadingButton>
                 </div>
               )}
 
@@ -496,23 +495,16 @@ const SetupRoom: React.FC = () => {
             </div>
 
             <div className="pt-6">
-              <Button
+              <LoadingButton
                 type="submit"
                 disabled={isStarting}
+                isLoading={isStarting}
+                loadingText="Setting up Room..."
                 className="w-full h-14 text-lg bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all hover:scale-[1.01]"
               >
-                {isStarting ? (
-                  <>
-                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    Setting up Room...
-                  </>
-                ) : (
-                  <>
-                    Enter Interview Room
-                    <Play className="ml-2 h-5 w-5 fill-current" />
-                  </>
-                )}
-              </Button>
+                Enter Interview Room
+                <Play className="ml-2 h-5 w-5 fill-current" />
+              </LoadingButton>
             </div>
           </form>
         </CardContent>

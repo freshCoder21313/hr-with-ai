@@ -5,8 +5,9 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Project } from '@/types/resume';
-import { Plus, Trash2, Wand2, Loader2 } from 'lucide-react';
+import { Plus, Trash2, Wand2 } from 'lucide-react';
 import { analyzeResumeSection, getStoredAIConfig } from '@/services/geminiService';
+import { LoadingButton } from '@/components/ui/loading-button';
 
 interface ProjectsFormProps {
   data: Project[];
@@ -72,20 +73,18 @@ const ProjectsForm: React.FC<ProjectsFormProps> = ({ data, onChange }) => {
       {data.map((entry, index) => (
         <Card key={index} className="relative group">
           <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-            <Button
+            <LoadingButton
               variant="outline"
               size="sm"
               onClick={() => handleAnalyze(index)}
               disabled={analyzingIndex === index}
+              isLoading={analyzingIndex === index}
+              loadingText=""
               className="text-purple-600 border-purple-200 hover:bg-purple-50"
               title="AI Roast & Fix"
             >
-              {analyzingIndex === index ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Wand2 className="w-4 h-4" />
-              )}
-            </Button>
+              <Wand2 className="w-4 h-4" />
+            </LoadingButton>
             <Button variant="destructive" size="sm" onClick={() => handleRemove(index)}>
               <Trash2 className="w-4 h-4" />
             </Button>

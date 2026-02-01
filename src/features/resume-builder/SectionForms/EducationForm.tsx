@@ -4,8 +4,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Education } from '@/types/resume';
-import { Plus, Trash2, Wand2, Loader2 } from 'lucide-react';
+import { Plus, Trash2, Wand2 } from 'lucide-react';
 import { analyzeResumeSection, getStoredAIConfig } from '@/services/geminiService';
+import { LoadingButton } from '@/components/ui/loading-button';
 
 interface EducationFormProps {
   data: Education[];
@@ -67,20 +68,18 @@ const EducationForm: React.FC<EducationFormProps> = ({ data, onChange }) => {
       {data.map((entry, index) => (
         <Card key={index} className="relative group">
           <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-            <Button
+            <LoadingButton
               variant="outline"
               size="sm"
               onClick={() => handleAnalyze(index)}
               disabled={analyzingIndex === index}
+              isLoading={analyzingIndex === index}
+              loadingText=""
               className="text-purple-600 border-purple-200 hover:bg-purple-50"
               title="AI Check"
             >
-              {analyzingIndex === index ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Wand2 className="w-4 h-4" />
-              )}
-            </Button>
+              <Wand2 className="w-4 h-4" />
+            </LoadingButton>
             <Button variant="destructive" size="sm" onClick={() => handleRemove(index)}>
               <Trash2 className="w-4 h-4" />
             </Button>

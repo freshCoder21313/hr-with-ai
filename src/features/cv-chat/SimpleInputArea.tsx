@@ -1,7 +1,7 @@
 import React from 'react';
-import { Send, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Send } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
+import { LoadingButton } from '@/components/ui/loading-button';
 
 interface SimpleInputAreaProps {
   onSendMessage: (text: string) => void;
@@ -41,14 +41,15 @@ export const SimpleInputArea: React.FC<SimpleInputAreaProps> = ({
           className="w-full min-h-[44px] max-h-[120px] resize-none pr-12 py-3 shadow-sm"
           rows={1}
         />
-        <Button
+        <LoadingButton
           onClick={handleSend}
           disabled={!inputValue.trim() || disabled}
           className="h-[44px] w-[44px] rounded-xl shrink-0"
           size="icon"
+          isLoading={disabled}
         >
-          {disabled ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
-        </Button>
+          <Send size={18} />
+        </LoadingButton>
       </div>
     </div>
   );

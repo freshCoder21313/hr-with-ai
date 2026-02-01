@@ -10,8 +10,9 @@ import {
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Wand2, Loader2 } from 'lucide-react';
+import { Wand2 } from 'lucide-react';
 import { Resume } from '@/types';
+import { LoadingButton } from '@/components/ui/loading-button';
 
 interface TailorResumeModalProps {
   isOpen: boolean;
@@ -77,23 +78,16 @@ export const TailorResumeModal: React.FC<TailorResumeModalProps> = ({
           <Button variant="outline" onClick={onClose} disabled={isProcessing}>
             Cancel
           </Button>
-          <Button
+          <LoadingButton
             onClick={handleGenerate}
-            disabled={!jobDescription.trim() || isProcessing}
+            disabled={!jobDescription.trim()}
+            isLoading={isProcessing}
+            loadingText="Tailoring..."
             className="bg-purple-600 hover:bg-purple-700"
+            leftIcon={<Wand2 className="h-4 w-4" />}
           >
-            {isProcessing ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Tailoring...
-              </>
-            ) : (
-              <>
-                <Wand2 className="mr-2 h-4 w-4" />
-                Generate New CV
-              </>
-            )}
-          </Button>
+            Generate New CV
+          </LoadingButton>
         </DialogFooter>
       </DialogContent>
     </Dialog>

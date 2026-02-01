@@ -6,9 +6,10 @@ import { ResumeData } from '@/types/resume';
 import { getStoredAIConfig, parseResumeToJSON } from '@/services/geminiService';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Loader2, Wand2, ChevronLeft, Save, Eye, LayoutTemplate, Printer } from 'lucide-react';
+import { Wand2, ChevronLeft, Save, Eye, LayoutTemplate, Printer, Loader2 } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ResumePreview from './ResumePreview';
+import { LoadingButton } from '@/components/ui/loading-button';
 
 // Import Section Forms
 import BasicsForm from './SectionForms/BasicsForm';
@@ -200,18 +201,16 @@ const ResumeBuilder: React.FC = () => {
             )}
 
             {!resume.formatted && !showPreview && (
-              <Button
+              <LoadingButton
                 onClick={handleSmartFormat}
                 disabled={isProcessing}
+                isLoading={isProcessing}
+                loadingText=""
                 className="bg-purple-600 hover:bg-purple-700 text-white"
+                leftIcon={<Wand2 className="w-4 h-4" />}
               >
-                {isProcessing ? (
-                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                ) : (
-                  <Wand2 className="w-4 h-4 mr-2" />
-                )}
                 Smart Format
-              </Button>
+              </LoadingButton>
             )}
 
             <Button onClick={handleSave} className="gap-2">
@@ -267,14 +266,16 @@ const ResumeBuilder: React.FC = () => {
                         This resume seems to be raw text. Use &quot;Smart Format&quot; to
                         automatically structure it into fields using AI.
                       </p>
-                      <Button
+                      <LoadingButton
                         onClick={handleSmartFormat}
                         disabled={isProcessing}
+                        isLoading={isProcessing}
+                        loadingText="Formatting..."
                         size="sm"
                         variant="secondary"
                       >
                         Format Now
-                      </Button>
+                      </LoadingButton>
                     </Card>
                   )}
 

@@ -5,7 +5,14 @@ import { Label } from '@/components/ui/label';
 import { syncService } from '@/services/syncService';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-  Loader2,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
+import { LoadingButton } from '@/components/ui/loading-button';
+import {
   Cloud,
   Download,
   Upload,
@@ -114,29 +121,25 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({ isOpen, onClose 
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm"
-      onClick={onClose}
-    >
-      <div
-        className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-[460px] border border-slate-200"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center gap-3 mb-2">
-          <div className="p-2.5 bg-blue-50 rounded-xl">
-            <Cloud className="h-6 w-6 text-blue-600" />
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-[460px]">
+        <DialogHeader>
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2.5 bg-blue-50 rounded-xl">
+              <Cloud className="h-6 w-6 text-blue-600" />
+            </div>
+            <div>
+              <DialogTitle className="text-xl font-bold text-slate-900">Cloud Sync</DialogTitle>
+              <DialogDescription className="text-slate-500 text-sm">
+                Secure backup & cross-device recovery
+              </DialogDescription>
+            </div>
           </div>
-          <div>
-            <h2 className="text-xl font-bold text-slate-900">Cloud Sync</h2>
-            <p className="text-slate-500 text-sm">Secure backup & cross-device recovery</p>
-          </div>
-        </div>
+        </DialogHeader>
 
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-2xl flex items-start gap-3 animate-in fade-in slide-in-from-top-4 duration-300">
+          <div className="mb-2 p-4 bg-red-50 border border-red-100 rounded-2xl flex items-start gap-3 animate-in fade-in slide-in-from-top-4 duration-300">
             <div className="p-1.5 bg-red-100 rounded-full">
               <AlertCircle className="h-4 w-4 text-red-600" />
             </div>
@@ -148,7 +151,7 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({ isOpen, onClose 
         )}
 
         {success && (
-          <div className="mb-6 p-4 bg-emerald-50 border border-emerald-100 rounded-2xl flex items-start gap-3 animate-in fade-in slide-in-from-top-4 duration-300">
+          <div className="mb-2 p-4 bg-emerald-50 border border-emerald-100 rounded-2xl flex items-start gap-3 animate-in fade-in slide-in-from-top-4 duration-300">
             <div className="p-1.5 bg-emerald-100 rounded-full">
               <CheckCircle className="h-4 w-4 text-emerald-600" />
             </div>
@@ -205,15 +208,17 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({ isOpen, onClose 
                   className="h-14 pl-4 pr-24 bg-slate-50 border-slate-200 rounded-2xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-mono text-lg tracking-[0.2em] uppercase text-slate-900"
                 />
                 <div className="absolute right-2 flex gap-1">
-                  <Button
+                  <LoadingButton
                     variant="ghost"
                     size="icon"
                     onClick={generateNewId}
                     title="Regenerate"
                     className="h-10 w-10 rounded-xl hover:bg-white hover:text-blue-600 transition-colors"
+                    isLoading={isLoading}
+                    loadingText=""
                   >
                     <RefreshCw className={cn('h-5 w-5', isLoading && 'animate-spin')} />
-                  </Button>
+                  </LoadingButton>
                   <Button
                     variant="ghost"
                     size="icon"
@@ -262,23 +267,16 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({ isOpen, onClose 
               </p>
             </div>
 
-            <Button
+            <LoadingButton
               onClick={handleUpload}
               disabled={isLoading}
+              isLoading={isLoading}
+              loadingText="Syncing Data..."
               className="w-full h-14 bg-blue-600 hover:bg-blue-700 text-white font-bold text-base rounded-2xl shadow-[0_10px_20px_rgba(37,99,235,0.2)] disabled:opacity-50 disabled:shadow-none transition-all active:scale-[0.98]"
+              leftIcon={<Upload className="h-5 w-5" />}
             >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  Syncing Data...
-                </>
-              ) : (
-                <>
-                  <Upload className="mr-2 h-5 w-5" />
-                  Push to Cloud
-                </>
-              )}
-            </Button>
+              Push to Cloud
+            </LoadingButton>
           </TabsContent>
 
           <TabsContent
@@ -308,33 +306,26 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({ isOpen, onClose 
                   Warning
                 </h3>
                 <p className="text-xs text-orange-800 leading-relaxed opacity-90">
-                  Data will be <span className="font-bold">smartly merged</span>. Newer versions from
-                  cloud will update local records. Unique local data is preserved.
+                  Data will be <span className="font-bold">smartly merged</span>. Newer versions
+                  from cloud will update local records. Unique local data is preserved.
                 </p>
               </div>
             </div>
 
-            <Button
+            <LoadingButton
               onClick={handleDownload}
               disabled={isLoading}
               variant="secondary"
+              isLoading={isLoading}
+              loadingText="Restoring..."
               className="w-full h-14 bg-slate-900 hover:bg-slate-800 text-white font-bold text-base rounded-2xl transition-all active:scale-[0.98]"
+              leftIcon={<Download className="h-5 w-5" />}
             >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  Restoring...
-                </>
-              ) : (
-                <>
-                  <Download className="mr-2 h-5 w-5" />
-                  Confirm & Merge
-                </>
-              )}
-            </Button>
+              Confirm & Merge
+            </LoadingButton>
           </TabsContent>
         </Tabs>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };

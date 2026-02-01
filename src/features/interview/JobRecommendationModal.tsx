@@ -1,10 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
@@ -23,6 +18,7 @@ import {
 import { Resume, JobRecommendation } from '@/types';
 import { generateJobRecommendations, generateTailoredResumeForJob } from '@/services/geminiService';
 import { getStoredAIConfig } from '@/services/geminiService';
+import { LoadingButton } from '@/components/ui/loading-button';
 
 interface JobRecommendationModalProps {
   isOpen: boolean;
@@ -234,19 +230,15 @@ const JobRecommendationModal: React.FC<JobRecommendationModalProps> = ({
                 <Button variant="outline" onClick={onClose}>
                   Cancel
                 </Button>
-                <Button onClick={handleGenerateJobs} disabled={!selectedResume.parsedData}>
-                  {isGenerating ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Generating...
-                    </>
-                  ) : (
-                    <>
-                      <Search className="w-4 h-4 mr-2" />
-                      Generate Jobs
-                    </>
-                  )}
-                </Button>
+                <LoadingButton
+                  onClick={handleGenerateJobs}
+                  disabled={!selectedResume.parsedData}
+                  isLoading={isGenerating}
+                  loadingText="Generating..."
+                  leftIcon={<Search className="w-4 h-4" />}
+                >
+                  Generate Jobs
+                </LoadingButton>
               </div>
             )}
           </div>

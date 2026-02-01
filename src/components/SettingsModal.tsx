@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { loadUserSettings, saveUserSettings } from '@/services/settingsService';
 import { UserSettings } from '@/types';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { CollapsibleSection } from '@/components/ui/collapsible-section';
 
 interface SettingsModalProps {
   open: boolean;
@@ -29,7 +29,6 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onOpenChange, onSet
     baseUrl: '',
     modelId: '',
   });
-  const [showAdvanced, setShowAdvanced] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   // Load settings on open
@@ -68,7 +67,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onOpenChange, onSet
 
       // Save using centralized service
       const savedSettings = await saveUserSettings(settingsToSave);
-      
+
       // Update local state with saved settings (including ID if newly created)
       setSettings({
         ...savedSettings,
@@ -179,18 +178,16 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onOpenChange, onSet
                 </p>
               </div>
 
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowAdvanced(!showAdvanced)}
-                className="w-full justify-between text-xs text-slate-500 h-8"
+              <CollapsibleSection
+                title={
+                  <span className="text-xs text-slate-500">Advanced (Custom Model / URL)</span>
+                }
+                defaultOpen={false}
+                className="border-slate-100"
+                headerClassName="py-2 bg-transparent border-none hover:bg-slate-50"
+                contentClassName="pt-0"
               >
-                Advanced (Custom Model / URL)
-                {showAdvanced ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-              </Button>
-
-              {showAdvanced && (
-                <div className="space-y-3 bg-slate-50 p-3 rounded-lg border border-slate-100 animate-in slide-in-from-top-2 fade-in duration-200">
+                <div className="space-y-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
                   <div className="space-y-1">
                     <Label htmlFor="baseUrl" className="text-xs">
                       Base URL (Optional)
@@ -222,7 +219,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onOpenChange, onSet
                     />
                   </div>
                 </div>
-              )}
+              </CollapsibleSection>
             </div>
 
             <Button onClick={handleSave} className="w-full bg-blue-600 hover:bg-blue-700">

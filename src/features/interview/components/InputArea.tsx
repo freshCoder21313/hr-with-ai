@@ -1,10 +1,11 @@
 import React from 'react';
-import { Mic, MicOff, Code2, PenTool, Send, Loader2, Lightbulb, Sparkles } from 'lucide-react';
+import { Mic, MicOff, Code2, PenTool, Send, Lightbulb, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import InterviewHintView from '../InterviewHintView';
 import { InterviewHints } from '@/services/geminiService';
+import { LoadingButton } from '@/components/ui/loading-button';
 
 interface InputAreaProps {
   inputValue: string;
@@ -97,23 +98,20 @@ export const InputArea: React.FC<InputAreaProps> = ({
       <div className="relative flex items-end gap-2 max-w-5xl mx-auto">
         {/* Hints Button */}
         {hintsEnabled !== false && (
-          <Button
+          <LoadingButton
             variant="outline"
             size="icon"
             onClick={onGetHints}
             disabled={isLoadingHints}
+            isLoading={isLoadingHints}
             className={cn(
               'h-[44px] w-[44px] md:h-[50px] md:w-[50px] rounded-xl shrink-0 border-amber-200 bg-amber-50 hover:bg-amber-100 text-amber-600',
               isLoadingHints ? 'animate-pulse' : ''
             )}
             title="Get AI Hints"
           >
-            {isLoadingHints ? (
-              <Loader2 size={20} className="animate-spin" />
-            ) : (
-              <Lightbulb size={20} />
-            )}
-          </Button>
+            <Lightbulb size={20} />
+          </LoadingButton>
         )}
 
         {/* Tools Group */}
