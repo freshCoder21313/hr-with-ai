@@ -62,7 +62,7 @@ export const InputArea: React.FC<InputAreaProps> = ({
   };
 
   return (
-    <div className="p-2 md:p-4 bg-white border-t border-slate-200 z-10 shrink-0 safe-area-bottom">
+    <div className="p-2 md:p-4 bg-background border-t border-border z-10 shrink-0 safe-area-bottom">
       {/* Suggested Action Chip */}
       {suggestedAction && !isProcessing && (
         <div className="absolute -top-12 left-0 w-full flex justify-center pointer-events-none">
@@ -105,7 +105,7 @@ export const InputArea: React.FC<InputAreaProps> = ({
             disabled={isLoadingHints}
             isLoading={isLoadingHints}
             className={cn(
-              'h-[44px] w-[44px] md:h-[50px] md:w-[50px] rounded-xl shrink-0 border-amber-200 bg-amber-50 hover:bg-amber-100 text-amber-600',
+              'h-[44px] w-[44px] md:h-[50px] md:w-[50px] rounded-xl shrink-0 border-amber-200 bg-amber-50 text-amber-600 hover:bg-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800 dark:hover:bg-amber-900/40',
               isLoadingHints ? 'animate-pulse' : ''
             )}
             title="Get AI Hints"
@@ -123,8 +123,8 @@ export const InputArea: React.FC<InputAreaProps> = ({
             className={cn(
               'h-[44px] w-[44px] md:h-[50px] md:w-[50px] rounded-xl shrink-0',
               isCodeOpen
-                ? 'bg-indigo-600 text-white'
-                : 'text-indigo-600 bg-indigo-50 border-indigo-200'
+                ? 'bg-indigo-600 text-white hover:bg-indigo-700'
+                : 'text-indigo-600 bg-indigo-50 border-indigo-200 hover:bg-indigo-100 dark:bg-indigo-900/20 dark:text-indigo-400 dark:border-indigo-800 dark:hover:bg-indigo-900/40'
             )}
             title="Open Code Editor"
           >
@@ -137,8 +137,8 @@ export const InputArea: React.FC<InputAreaProps> = ({
             className={cn(
               'h-[44px] w-[44px] md:h-[50px] md:w-[50px] rounded-xl shrink-0',
               isWhiteboardOpen
-                ? 'bg-emerald-600 text-white'
-                : 'text-emerald-600 bg-emerald-50 border-emerald-200'
+                ? 'bg-emerald-600 text-white hover:bg-emerald-700'
+                : 'text-emerald-600 bg-emerald-50 border-emerald-200 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800 dark:hover:bg-emerald-900/40'
             )}
             title="Open Whiteboard"
           >
@@ -154,7 +154,9 @@ export const InputArea: React.FC<InputAreaProps> = ({
             placeholder={isListening ? 'Listening...' : 'Type your answer...'}
             className={cn(
               'w-full min-h-[44px] max-h-[120px] resize-none pr-10 md:pr-12 py-2.5 md:py-3 shadow-sm text-sm md:text-base',
-              isListening ? 'border-red-400 ring-2 ring-red-100 bg-red-50' : ''
+              isListening
+                ? 'border-red-400 ring-2 ring-red-100 bg-red-50 dark:bg-red-900/20 dark:border-red-500 dark:ring-red-900/30'
+                : ''
             )}
             rows={1}
           />
@@ -163,7 +165,7 @@ export const InputArea: React.FC<InputAreaProps> = ({
             size="icon"
             onClick={onToggleVoice}
             disabled={!isSupported || voiceEnabled === false}
-            className="absolute right-1 md:right-2 top-1 md:top-1.5 h-8 w-8 text-slate-400"
+            className="absolute right-1 md:right-2 top-1 md:top-1.5 h-8 w-8 text-muted-foreground hover:text-foreground"
           >
             {isListening ? <MicOff size={16} /> : <Mic size={16} />}
           </Button>

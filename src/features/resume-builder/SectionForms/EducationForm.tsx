@@ -59,7 +59,7 @@ const EducationForm: React.FC<EducationFormProps> = ({ data, onChange }) => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-xl font-bold text-slate-800">Education</h2>
+        <h2 className="text-xl font-bold text-foreground">Education</h2>
         <Button onClick={handleAdd} size="sm" className="gap-2">
           <Plus className="w-4 h-4" /> Add Education
         </Button>
@@ -148,7 +148,7 @@ const EducationForm: React.FC<EducationFormProps> = ({ data, onChange }) => {
       ))}
 
       {data.length === 0 && (
-        <div className="text-center py-12 border-2 border-dashed rounded-lg text-slate-400">
+        <div className="text-center py-12 border-2 border-dashed border-border rounded-lg text-muted-foreground">
           No education history added yet.
         </div>
       )}

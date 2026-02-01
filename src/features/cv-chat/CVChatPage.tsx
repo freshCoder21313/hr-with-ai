@@ -289,17 +289,17 @@ const CVChatPage: React.FC = () => {
     return (
       <div className="max-w-4xl mx-auto p-8 space-y-8">
         <div className="text-center space-y-4">
-          <h1 className="text-3xl font-bold text-slate-900">Setup Your Main CV</h1>
-          <p className="text-slate-600 max-w-xl mx-auto">
+          <h1 className="text-3xl font-bold text-foreground">Setup Your Main CV</h1>
+          <p className="text-muted-foreground max-w-xl mx-auto">
             To start using the AI Chat Assistant, you need to designate a &quot;Main CV&quot;. This
             will be the single source of truth that we update together.
           </p>
         </div>
 
         <div className="grid md:grid-cols-2 gap-8">
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-            <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
-              <Sparkles className="text-blue-500" />
+          <div className="bg-card p-6 rounded-xl shadow-sm border border-border">
+            <h3 className="font-semibold text-lg mb-4 flex items-center gap-2 text-foreground">
+              <Sparkles className="text-primary" />
               Select Existing Resume
             </h3>
             {allResumes.length > 0 ? (
@@ -309,29 +309,29 @@ const CVChatPage: React.FC = () => {
                   <div
                     key={r.id}
                     onClick={() => handleSelectAsMain(r)}
-                    className="p-3 border rounded mb-2 hover:bg-blue-50 hover:border-blue-300 cursor-pointer flex justify-between items-center transition-colors"
+                    className="p-3 border border-border rounded mb-2 hover:bg-primary/5 hover:border-primary/30 cursor-pointer flex justify-between items-center transition-colors"
                   >
-                    <span className="font-medium truncate">{r.fileName}</span>
-                    <ArrowRight size={16} className="text-blue-500" />
+                    <span className="font-medium truncate text-foreground">{r.fileName}</span>
+                    <ArrowRight size={16} className="text-primary" />
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-slate-400 italic">No uploaded resumes found.</p>
+              <p className="text-muted-foreground italic">No uploaded resumes found.</p>
             )}
           </div>
 
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex flex-col justify-center items-center text-center gap-4 border-dashed">
-            <div className="p-4 bg-slate-100 rounded-full">
-              <Upload className="w-8 h-8 text-slate-500" />
+          <div className="bg-card p-6 rounded-xl shadow-sm border border-border flex flex-col justify-center items-center text-center gap-4 border-dashed">
+            <div className="p-4 bg-muted rounded-full">
+              <Upload className="w-8 h-8 text-muted-foreground" />
             </div>
             <div>
-              <h3 className="font-semibold text-lg">Upload New Resume</h3>
-              <p className="text-sm text-slate-500 mt-1">
+              <h3 className="font-semibold text-lg text-foreground">Upload New Resume</h3>
+              <p className="text-sm text-muted-foreground mt-1">
                 Upload a PDF to set as your Main CV immediately.
               </p>
             </div>
-            <label className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 cursor-pointer transition-colors flex items-center gap-2">
+            <label className="bg-primary text-primary-foreground px-6 py-2 rounded-lg hover:bg-primary/90 cursor-pointer transition-colors flex items-center gap-2">
               {isParsing ? <Loader2 className="animate-spin" size={18} /> : null}
               <span>{isParsing ? 'Processing...' : 'Select PDF File'}</span>
               <input
@@ -351,11 +351,11 @@ const CVChatPage: React.FC = () => {
   return (
     <div className="flex h-[calc(100vh-64px)] overflow-hidden">
       {/* Left: Chat */}
-      <div className="w-1/2 md:w-[40%] border-r flex flex-col bg-white z-10 shadow-xl">
-        <div className="p-4 border-b bg-white flex justify-between items-center">
-          <h2 className="font-semibold">Chat Assistant</h2>
+      <div className="w-1/2 md:w-[40%] border-r border-border flex flex-col bg-background z-10 shadow-xl">
+        <div className="p-4 border-b border-border bg-background flex justify-between items-center">
+          <h2 className="font-semibold text-foreground">Chat Assistant</h2>
           {pendingChanges && (
-            <span className="text-xs bg-amber-100 text-amber-800 px-2 py-1 rounded-full animate-pulse">
+            <span className="text-xs bg-amber-500/10 text-amber-600 dark:text-amber-400 px-2 py-1 rounded-full animate-pulse">
               {pendingChanges.length} Pending Updates
             </span>
           )}
@@ -373,14 +373,14 @@ const CVChatPage: React.FC = () => {
       {/* Right: Preview & Review */}
       <div className="flex-1 flex overflow-hidden flex-col">
         {/* View Toggle Header */}
-        <div className="h-12 bg-white border-b flex items-center justify-between px-4 gap-2 shrink-0">
+        <div className="h-12 bg-background border-b border-border flex items-center justify-between px-4 gap-2 shrink-0">
           <div className="flex items-center gap-2">
             {viewMode === 'preview' && (
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setTemplate((t) => (t === 'modern' ? 'classic' : 'modern'))}
-                className="text-xs text-slate-600 gap-1.5 h-8"
+                className="text-xs text-muted-foreground gap-1.5 h-8"
                 title="Switch Layout (1-Col / 2-Col)"
               >
                 <LayoutTemplate size={14} />
@@ -390,12 +390,12 @@ const CVChatPage: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-xs text-slate-500 mr-1">View:</span>
-            <div className="flex bg-slate-100 p-1 rounded-lg">
+            <span className="text-xs text-muted-foreground mr-1">View:</span>
+            <div className="flex bg-muted p-1 rounded-lg">
               <Button
                 variant="ghost"
                 size="sm"
-                className={`h-7 px-3 text-xs ${viewMode === 'form' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:text-slate-700'}`}
+                className={`h-7 px-3 text-xs ${viewMode === 'form' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
                 onClick={() => setViewMode('form')}
               >
                 <Edit3 size={12} className="mr-1.5" /> Form
@@ -403,7 +403,7 @@ const CVChatPage: React.FC = () => {
               <Button
                 variant="ghost"
                 size="sm"
-                className={`h-7 px-3 text-xs ${viewMode === 'preview' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:text-slate-700'}`}
+                className={`h-7 px-3 text-xs ${viewMode === 'preview' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
                 onClick={() => setViewMode('preview')}
               >
                 <Eye size={12} className="mr-1.5" /> Preview
@@ -414,29 +414,35 @@ const CVChatPage: React.FC = () => {
 
         <div className="flex-1 flex overflow-hidden">
           {/* Middle: Resume Preview or Form (Scrollable) */}
-          <div className="flex-1 bg-slate-50 overflow-y-auto p-4 md:p-8 flex justify-center relative">
+          <div className="flex-1 bg-muted/30 overflow-y-auto p-4 md:p-8 flex justify-center relative">
             <div className={`w-full ${viewMode === 'preview' ? 'max-w-[210mm]' : 'max-w-3xl'}`}>
               {/* We pass the Main CV data. If we had a 'Draft' mode, we'd pass that instead. */}
               {mainCV.parsedData ? (
                 viewMode === 'preview' ? (
-                  <div className="bg-white shadow-lg min-h-[297mm]">
+                  <div className="bg-white shadow-lg min-h-[297mm] text-slate-900">
+                    {/* Note: ResumePreview usually renders a printed page representation, so it should stay white even in dark mode for accuracy */}
                     <ResumePreview data={mainCV.parsedData} template={template} />
                   </div>
                 ) : (
                   <ResumeFormView data={mainCV.parsedData} onChange={handleManualUpdate} />
                 )
               ) : (
-                <div className="p-10 text-center text-gray-400">Resume data not parsed.</div>
+                <div className="p-10 text-center text-muted-foreground">
+                  Resume data not parsed.
+                </div>
               )}
             </div>
           </div>
 
           {/* Right: Review Sidebar (Fixed Width, Scrollable) */}
           {pendingChanges && pendingChanges.length > 0 && (
-            <div className="w-[350px] border-l bg-slate-50/50 p-4 overflow-y-auto shadow-inner z-20 flex flex-col gap-4">
-              <div className="bg-amber-50 border border-amber-200 p-3 rounded-lg shadow-sm flex items-start gap-2 animate-in slide-in-from-right-2">
-                <AlertCircle className="text-amber-600 shrink-0 mt-0.5" size={18} />
-                <div className="text-xs text-amber-800">
+            <div className="w-[350px] border-l border-border bg-muted/10 p-4 overflow-y-auto shadow-inner z-20 flex flex-col gap-4">
+              <div className="bg-amber-500/10 border border-amber-500/20 p-3 rounded-lg shadow-sm flex items-start gap-2 animate-in slide-in-from-right-2">
+                <AlertCircle
+                  className="text-amber-600 dark:text-amber-400 shrink-0 mt-0.5"
+                  size={18}
+                />
+                <div className="text-xs text-amber-800 dark:text-amber-300">
                   <span className="font-semibold">Review Pending Updates:</span>
                   <p>Changes are not saved until you click Accept.</p>
                 </div>

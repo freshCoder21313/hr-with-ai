@@ -52,7 +52,7 @@ export const TailorResumeModal: React.FC<TailorResumeModalProps> = ({
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Wand2 className="w-5 h-5 text-purple-600" />
+            <Wand2 className="w-5 h-5 text-purple-600 dark:text-purple-400" />
             Tailor Resume to Job
           </DialogTitle>
           <DialogDescription>

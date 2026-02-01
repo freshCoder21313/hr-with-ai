@@ -80,24 +80,24 @@ export const ToolModals: React.FC<ToolModalsProps> = ({
 
       {/* Whiteboard Modal */}
       <Dialog open={isWhiteboardOpen} onOpenChange={setIsWhiteboardOpen}>
-        <DialogContent className="max-w-[95vw] w-[1200px] h-[90vh] p-0 gap-0 bg-white flex flex-col overflow-hidden">
-          <div className="flex items-center justify-between px-4 py-2 border-b shrink-0">
-            <DialogTitle className="text-slate-900 text-sm font-medium flex items-center gap-2">
+        <DialogContent className="max-w-[95vw] w-[1200px] h-[90vh] p-0 gap-0 bg-background flex flex-col overflow-hidden border-border">
+          <div className="flex items-center justify-between px-4 py-2 border-b border-border shrink-0">
+            <DialogTitle className="text-foreground text-sm font-medium flex items-center gap-2">
               <PenTool size={16} /> Design Whiteboard
             </DialogTitle>
             <Button
               size="sm"
               variant="ghost"
-              className="h-6"
+              className="h-6 text-muted-foreground hover:text-foreground"
               onClick={() => setIsWhiteboardOpen(false)}
             >
               <X size={16} /> Close
             </Button>
           </div>
-          <div className="flex-1 overflow-hidden relative bg-slate-50 w-full h-full">
+          <div className="flex-1 overflow-hidden relative bg-muted/30 w-full h-full">
             <Suspense
               fallback={
-                <div className="flex items-center justify-center h-full text-slate-400">
+                <div className="flex items-center justify-center h-full text-muted-foreground">
                   Loading Whiteboard...
                 </div>
               }

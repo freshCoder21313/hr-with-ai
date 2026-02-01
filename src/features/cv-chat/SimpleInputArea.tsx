@@ -30,7 +30,7 @@ export const SimpleInputArea: React.FC<SimpleInputAreaProps> = ({
   };
 
   return (
-    <div className="p-4 bg-white border-t border-slate-200 z-10 shrink-0">
+    <div className="p-4 bg-background border-t border-border z-10 shrink-0">
       <div className="relative flex items-end gap-2 max-w-5xl mx-auto">
         <Textarea
           value={inputValue}

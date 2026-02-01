@@ -20,7 +20,7 @@ export const ResumeFormView: React.FC<ResumeFormViewProps> = ({ data, onChange }
 
   return (
     <div className="max-w-3xl mx-auto pb-20">
-      <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg text-blue-800 text-sm">
+      <div className="mb-6 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg text-blue-600 dark:text-blue-400 text-sm">
         <p className="font-medium">✨ Editor Mode Active</p>
         <p>
           You can edit fields below directly. The AI also updates these fields automatically based

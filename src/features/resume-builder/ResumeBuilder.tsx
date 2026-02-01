@@ -141,28 +141,30 @@ const ResumeBuilder: React.FC = () => {
       </div>
 
       {/* Main UI */}
-      <div className="flex flex-col h-screen bg-slate-50 print:hidden">
+      <div className="flex flex-col h-screen bg-background text-foreground print:hidden">
         {/* Header */}
-        <header className="h-16 bg-white border-b flex items-center justify-between px-6 shrink-0">
+        <header className="h-16 bg-card border-b border-border flex items-center justify-between px-6 shrink-0">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="sm" onClick={() => navigate('/setup')}>
               <ChevronLeft className="w-4 h-4 mr-1" /> Back
             </Button>
-            <h1 className="font-bold text-lg text-slate-800 flex items-center gap-2">
+            <h1 className="font-bold text-lg text-foreground flex items-center gap-2">
               {resume.fileName}
-              <span className="text-slate-400 font-normal">| Editor</span>
+              <span className="text-muted-foreground font-normal">| Editor</span>
             </h1>
           </div>
 
           <div className="flex items-center gap-2">
             {/* Preview Toggle */}
-            <div className="flex bg-slate-100 p-1 rounded-lg mr-2">
+            <div className="flex bg-muted p-1 rounded-lg mr-2">
               <Button
                 size="sm"
                 variant="ghost"
                 onClick={() => setShowPreview(false)}
                 className={
-                  !showPreview ? 'bg-white shadow-sm hover:bg-white' : 'hover:bg-slate-200'
+                  !showPreview
+                    ? 'bg-background shadow-sm hover:bg-background text-foreground'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/80'
                 }
               >
                 Editor
@@ -171,7 +173,11 @@ const ResumeBuilder: React.FC = () => {
                 size="sm"
                 variant="ghost"
                 onClick={() => setShowPreview(true)}
-                className={showPreview ? 'bg-white shadow-sm hover:bg-white' : 'hover:bg-slate-200'}
+                className={
+                  showPreview
+                    ? 'bg-background shadow-sm hover:bg-background text-foreground'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/80'
+                }
               >
                 <Eye className="w-4 h-4 mr-2" /> Preview
               </Button>
@@ -193,7 +199,7 @@ const ResumeBuilder: React.FC = () => {
                   variant="outline"
                   size="sm"
                   onClick={handlePrint}
-                  className="gap-2 text-blue-600 border-blue-200 hover:bg-blue-50"
+                  className="gap-2 text-primary border-primary/20 hover:bg-primary/5"
                 >
                   <Printer className="w-4 h-4" /> Export PDF
                 </Button>
@@ -222,7 +228,7 @@ const ResumeBuilder: React.FC = () => {
         {/* Main Content */}
         <div className="flex-1 overflow-hidden flex">
           {showPreview ? (
-            <div className="flex-1 overflow-y-auto bg-slate-100 p-8 flex justify-center">
+            <div className="flex-1 overflow-y-auto bg-muted/30 p-8 flex justify-center">
               <div className="scale-[0.8] md:scale-90 origin-top shadow-2xl">
                 <ResumePreview data={data} template={template} />
               </div>
@@ -230,7 +236,7 @@ const ResumeBuilder: React.FC = () => {
           ) : (
             <>
               {/* Sidebar */}
-              <div className="w-64 bg-white border-r flex-shrink-0 overflow-y-auto">
+              <div className="w-64 bg-card border-r border-border flex-shrink-0 overflow-y-auto">
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                   <TabsList className="flex flex-col h-auto bg-transparent p-2 gap-1 w-full justify-start">
                     <TabsTrigger value="basics" className="w-full justify-start px-4 py-2">
@@ -254,15 +260,15 @@ const ResumeBuilder: React.FC = () => {
               </div>
 
               {/* Editor Area */}
-              <div className="flex-1 overflow-y-auto p-8">
+              <div className="flex-1 overflow-y-auto p-8 bg-background">
                 <div className="max-w-3xl mx-auto">
                   {!resume.formatted && !data.basics.name && (
-                    <Card className="mb-8 p-6 bg-purple-50 border-purple-200">
-                      <h3 className="font-bold text-purple-900 mb-2 flex items-center gap-2">
+                    <Card className="mb-8 p-6 bg-purple-500/10 border-purple-500/20 border">
+                      <h3 className="font-bold text-purple-700 dark:text-purple-400 mb-2 flex items-center gap-2">
                         <Wand2 className="w-5 h-5" />
                         AI Magic Available
                       </h3>
-                      <p className="text-purple-800 text-sm mb-4">
+                      <p className="text-purple-600 dark:text-purple-300 text-sm mb-4">
                         This resume seems to be raw text. Use &quot;Smart Format&quot; to
                         automatically structure it into fields using AI.
                       </p>

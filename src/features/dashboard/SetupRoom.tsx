@@ -275,12 +275,12 @@ const SetupRoom: React.FC = () => {
 
   return (
     <div className="max-w-4xl mx-auto p-4 md:p-8">
-      <Card className="border-none shadow-xl bg-white/90 backdrop-blur-sm">
+      <Card className="border-none shadow-xl bg-card/90 backdrop-blur-sm">
         <CardHeader className="text-center pb-6 md:pb-8 px-4 md:px-6">
-          <CardTitle className="text-2xl md:text-3xl font-bold text-slate-900">
+          <CardTitle className="text-2xl md:text-3xl font-bold text-foreground">
             Setup Interview Room
           </CardTitle>
-          <CardDescription className="text-sm md:text-lg text-slate-500 mt-2">
+          <CardDescription className="text-sm md:text-lg text-muted-foreground mt-2">
             Configure the AI persona and context for your realistic practice session.
           </CardDescription>
         </CardHeader>
@@ -335,7 +335,7 @@ const SetupRoom: React.FC = () => {
                     name="language"
                     value={formData.language}
                     onChange={handleChange}
-                    className="flex h-11 md:h-[88px] w-full items-center justify-between rounded-md border border-slate-200 bg-white px-3 py-2 text-sm ring-offset-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-950 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex h-11 md:h-[88px] w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <option value="en-US">English (US)</option>
                     <option value="vi-VN">Tiếng Việt</option>
@@ -353,7 +353,7 @@ const SetupRoom: React.FC = () => {
                     name="difficulty"
                     value={formData.difficulty}
                     onChange={handleChange}
-                    className="flex h-11 w-full items-center justify-between rounded-md border border-slate-200 bg-white px-3 py-2 text-sm ring-offset-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-950 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex h-11 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <option value="easy">Easy (Friendly)</option>
                     <option value="medium">Medium (Standard)</option>
@@ -397,7 +397,7 @@ const SetupRoom: React.FC = () => {
                   disabled={isExtracting || !formData.jobDescription.trim()}
                   isLoading={isExtracting}
                   loadingText="Auto-fill from JD"
-                  className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                  className="text-purple-600 border-purple-200 hover:bg-purple-50 dark:text-purple-400 dark:border-purple-500/30 dark:hover:bg-purple-500/10"
                   leftIcon={<Sparkles className="w-4 h-4" />}
                 >
                   Auto-fill from JD
@@ -423,13 +423,13 @@ const SetupRoom: React.FC = () => {
                     variant="outline"
                     size="sm"
                     onClick={() => setIsJobModalOpen(true)}
-                    className="text-green-600 border-green-200 hover:bg-green-50"
+                    className="text-green-600 border-green-200 hover:bg-green-50 dark:text-green-400 dark:border-green-500/30 dark:hover:bg-green-500/10"
                   >
                     <Briefcase className="mr-2 h-4 w-4" />
                     Find Job with CV
                   </Button>
                   <label
-                    className={`cursor-pointer inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-white border border-slate-200 bg-white hover:bg-slate-100 hover:text-slate-900 h-9 px-4 py-2 ${isParsing ? 'opacity-70 cursor-wait' : ''}`}
+                    className={`cursor-pointer inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 ${isParsing ? 'opacity-70 cursor-wait' : ''}`}
                   >
                     <LoadingButton
                       variant="ghost"
@@ -500,7 +500,7 @@ const SetupRoom: React.FC = () => {
                 disabled={isStarting}
                 isLoading={isStarting}
                 loadingText="Setting up Room..."
-                className="w-full h-14 text-lg bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all hover:scale-[1.01]"
+                className="w-full h-14 text-lg bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all hover:scale-[1.01]"
               >
                 Enter Interview Room
                 <Play className="ml-2 h-5 w-5 fill-current" />

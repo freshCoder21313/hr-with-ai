@@ -184,12 +184,12 @@ const InterviewRoom: React.FC = () => {
       try {
         const stored = await loadUserSettings();
         setUserSettings(stored);
-        
+
         // Restore TTS state from settings
         if (stored.voiceEnabled !== undefined) {
           setTtsEnabled(stored.voiceEnabled);
         }
-        
+
         setIsSettingsLoaded(true);
       } catch (error) {
         console.error('Failed to load settings:', error);
@@ -206,7 +206,7 @@ const InterviewRoom: React.FC = () => {
         try {
           const stored = await loadUserSettings();
           setUserSettings(stored);
-          
+
           // Update TTS state if voice settings changed
           if (stored.voiceEnabled !== undefined) {
             setTtsEnabled(stored.voiceEnabled);
@@ -345,14 +345,14 @@ const InterviewRoom: React.FC = () => {
     );
 
   return (
-    <div className="flex flex-col h-[calc(100dvh-56px)] md:h-[calc(100vh-80px)] w-full md:max-w-7xl mx-auto bg-white rounded-none md:rounded-xl shadow-none md:shadow-lg border-x-0 md:border border-slate-200 overflow-hidden md:my-4 relative">
+    <div className="flex flex-col h-[calc(100dvh-56px)] md:h-[calc(100vh-80px)] w-full md:max-w-7xl mx-auto bg-background rounded-none md:rounded-xl shadow-none md:shadow-lg border-x-0 md:border border-border overflow-hidden md:my-4 relative">
       {/* Loading Overlay */}
       {isEndingSession && (
-        <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm transition-all animate-in fade-in duration-300">
-          <div className="bg-white p-6 md:p-8 rounded-2xl shadow-2xl border border-slate-100 flex flex-col items-center max-w-md text-center mx-4">
-            <Loader2 className="w-12 h-12 text-blue-600 animate-spin mb-4" />
-            <h3 className="text-xl font-bold text-slate-900 mb-2">Analyzing Interview</h3>
-            <p className="text-slate-500">Generating detailed feedback...</p>
+        <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm transition-all animate-in fade-in duration-300">
+          <div className="bg-card p-6 md:p-8 rounded-2xl shadow-2xl border border-border flex flex-col items-center max-w-md text-center mx-4">
+            <Loader2 className="w-12 h-12 text-primary animate-spin mb-4" />
+            <h3 className="text-xl font-bold text-foreground mb-2">Analyzing Interview</h3>
+            <p className="text-muted-foreground">Generating detailed feedback...</p>
           </div>
         </div>
       )}
@@ -366,7 +366,7 @@ const InterviewRoom: React.FC = () => {
           if (isSpeaking) cancelSpeech();
           const newTtsState = !ttsEnabled;
           setTtsEnabled(newTtsState);
-          
+
           // Persist TTS preference
           try {
             const updatedSettings = await saveUserSettings({

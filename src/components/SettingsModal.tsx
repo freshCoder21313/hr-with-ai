@@ -93,18 +93,20 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onOpenChange, onSet
         </DialogHeader>
 
         {isLoading ? (
-          <div className="py-8 text-center text-sm text-slate-500">Loading configuration...</div>
+          <div className="py-8 text-center text-sm text-muted-foreground">
+            Loading configuration...
+          </div>
         ) : (
           <div className="grid gap-6 py-4">
             {/* Feature Toggles */}
-            <div className="space-y-4 border-b border-slate-100 pb-4">
-              <h3 className="text-sm font-semibold text-slate-900">Preferences</h3>
+            <div className="space-y-4 border-b border-border pb-4">
+              <h3 className="text-sm font-semibold text-foreground">Preferences</h3>
               <div className="flex items-center justify-between space-x-2">
                 <div className="flex flex-col space-y-1">
                   <Label htmlFor="voice-mode" className="font-medium text-sm">
                     Voice Input/Output
                   </Label>
-                  <span className="text-[11px] text-slate-500">
+                  <span className="text-[11px] text-muted-foreground">
                     Enable speech recognition and text-to-speech.
                   </span>
                 </div>
@@ -120,7 +122,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onOpenChange, onSet
                   <Label htmlFor="hints-mode" className="font-medium text-sm">
                     AI Interview Hints
                   </Label>
-                  <span className="text-[11px] text-slate-500">
+                  <span className="text-[11px] text-muted-foreground">
                     Show &quot;Lightbulb&quot; button for answer suggestions.
                   </span>
                 </div>
@@ -136,7 +138,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onOpenChange, onSet
                   <Label htmlFor="autofinish-mode" className="font-medium text-sm">
                     AI Auto-Finish
                   </Label>
-                  <span className="text-[11px] text-slate-500">
+                  <span className="text-[11px] text-muted-foreground">
                     Allow AI to decide when to end the interview.
                   </span>
                 </div>
@@ -150,11 +152,11 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onOpenChange, onSet
 
             {/* API Configuration */}
             <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-slate-900">AI Provider</h3>
+              <h3 className="text-sm font-semibold text-foreground">AI Provider</h3>
 
               <div className="space-y-2">
                 <Label htmlFor="apiKey" className="text-xs">
-                  API Key <span className="text-red-500">*</span>
+                  API Key <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   id="apiKey"
@@ -164,13 +166,13 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onOpenChange, onSet
                   placeholder="AIzaSy... or sk-..."
                   className="h-9"
                 />
-                <p className="text-[10px] text-slate-400">
+                <p className="text-[10px] text-muted-foreground">
                   Required. Get key from{' '}
                   <a
                     href="https://aistudio.google.com/app/apikey"
                     target="_blank"
                     rel="noreferrer"
-                    className="text-blue-500 hover:underline"
+                    className="text-primary hover:underline"
                   >
                     Google AI Studio
                   </a>
@@ -180,14 +182,16 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onOpenChange, onSet
 
               <CollapsibleSection
                 title={
-                  <span className="text-xs text-slate-500">Advanced (Custom Model / URL)</span>
+                  <span className="text-xs text-muted-foreground">
+                    Advanced (Custom Model / URL)
+                  </span>
                 }
                 defaultOpen={false}
-                className="border-slate-100"
-                headerClassName="py-2 bg-transparent border-none hover:bg-slate-50"
+                className="border-border"
+                headerClassName="py-2 bg-transparent border-none hover:bg-muted/50"
                 contentClassName="pt-0"
               >
-                <div className="space-y-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                <div className="space-y-3 bg-muted/30 p-3 rounded-lg border border-border">
                   <div className="space-y-1">
                     <Label htmlFor="baseUrl" className="text-xs">
                       Base URL (Optional)
@@ -197,7 +201,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onOpenChange, onSet
                       value={settings.baseUrl || ''}
                       onChange={(e) => setSettings((s) => ({ ...s, baseUrl: e.target.value }))}
                       placeholder="https://openrouter.ai/api/v1"
-                      className="h-8 text-xs bg-white"
+                      className="h-8 text-xs bg-background"
                     />
                   </div>
                   <div className="space-y-1">
@@ -215,14 +219,17 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onOpenChange, onSet
                         }))
                       }
                       placeholder="google/gemini-2.0-flash-exp"
-                      className="h-8 text-xs bg-white"
+                      className="h-8 text-xs bg-background"
                     />
                   </div>
                 </div>
               </CollapsibleSection>
             </div>
 
-            <Button onClick={handleSave} className="w-full bg-blue-600 hover:bg-blue-700">
+            <Button
+              onClick={handleSave}
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+            >
               Save Changes
             </Button>
           </div>

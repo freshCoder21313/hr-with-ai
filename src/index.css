@@ -7,57 +7,80 @@
   --safe-left: env(safe-area-inset-left);
   --safe-right: env(safe-area-inset-right);
 
-  /* Shadcn UI Color Tokens - Mapped to Slate/Blue theme */
-  --color-background: #ffffff;
-  --color-foreground: #0f172a; /* slate-900 */
-
-  --color-card: #ffffff;
-  --color-card-foreground: #0f172a;
-
-  --color-popover: #ffffff;
-  --color-popover-foreground: #0f172a;
-
-  --color-primary: #2563eb; /* blue-600 - Matches app accent */
-  --color-primary-foreground: #ffffff;
-
-  --color-secondary: #f1f5f9; /* slate-100 */
-  --color-secondary-foreground: #0f172a;
-
-  --color-muted: #f1f5f9;
-  --color-muted-foreground: #64748b; /* slate-500 */
-
-  --color-accent: #f8fafc; /* slate-50 */
-  --color-accent-foreground: #0f172a;
-
-  --color-destructive: #ef4444; /* red-500 */
-  --color-destructive-foreground: #ffffff;
-
-  --color-border: #e2e8f0; /* slate-200 */
-  --color-input: #e2e8f0;
-  --color-ring: #2563eb; /* blue-600 */
-
   /* Radius defaults */
   --radius-lg: 0.5rem;
   --radius-md: calc(0.5rem - 2px);
   --radius-sm: calc(0.5rem - 4px);
 
-  /* Legacy overrides/Explicit definitions */
-  --color-white: #ffffff;
-  --color-black: #000000;
-
-  --color-slate-50: #f8fafc;
-  --color-slate-100: #f1f5f9;
-  --color-slate-200: #e2e8f0;
-  --color-slate-300: #cbd5e1;
-  --color-slate-400: #94a3b8;
-  --color-slate-500: #64748b;
-  --color-slate-600: #475569;
-  --color-slate-700: #334155;
-  --color-slate-800: #1e293b;
-  --color-slate-900: #0f172a;
-  --color-slate-950: #020617;
-
+  /* Animation */
   --animate-pulse-slow: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* 
+  Define CSS Variables for Colors.
+  We use HSL or raw hex values where possible, but for Tailwind v4 
+  variable compatibility, we often map them directly in the CSS.
+*/
+:root {
+  --background: 0 0% 100%; /* white */
+  --foreground: 222.2 84% 4.9%; /* slate-950 */
+
+  --card: 0 0% 100%;
+  --card-foreground: 222.2 84% 4.9%;
+
+  --popover: 0 0% 100%;
+  --popover-foreground: 222.2 84% 4.9%;
+
+  --primary: 221.2 83.2% 53.3%; /* blue-600 */
+  --primary-foreground: 210 40% 98%;
+
+  --secondary: 210 40% 96.1%; /* slate-100 */
+  --secondary-foreground: 222.2 47.4% 11.2%;
+
+  --muted: 210 40% 96.1%;
+  --muted-foreground: 215.4 16.3% 46.9%; /* slate-500 */
+
+  --accent: 210 40% 96.1%;
+  --accent-foreground: 222.2 47.4% 11.2%;
+
+  --destructive: 0 84.2% 60.2%; /* red-500 */
+  --destructive-foreground: 210 40% 98%;
+
+  --border: 214.3 31.8% 91.4%; /* slate-200 */
+  --input: 214.3 31.8% 91.4%;
+  --ring: 221.2 83.2% 53.3%;
+
+  --radius: 0.5rem;
+}
+
+.dark {
+  --background: 222.2 84% 4.9%; /* slate-950 */
+  --foreground: 210 40% 98%; /* slate-50 */
+
+  --card: 222.2 84% 4.9%;
+  --card-foreground: 210 40% 98%;
+
+  --popover: 222.2 84% 4.9%;
+  --popover-foreground: 210 40% 98%;
+
+  --primary: 217.2 91.2% 59.8%; /* blue-500 */
+  --primary-foreground: 222.2 47.4% 11.2%;
+
+  --secondary: 217.2 32.6% 17.5%; /* slate-800 */
+  --secondary-foreground: 210 40% 98%;
+
+  --muted: 217.2 32.6% 17.5%;
+  --muted-foreground: 215 20.2% 65.1%; /* slate-400 */
+
+  --accent: 217.2 32.6% 17.5%;
+  --accent-foreground: 210 40% 98%;
+
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 210 40% 98%;
+
+  --border: 217.2 32.6% 17.5%; /* slate-800 */
+  --input: 217.2 32.6% 17.5%;
+  --ring: 224.3 76.3% 48%;
 }
 
 /* Custom scrollbar for chat area */
@@ -75,10 +98,72 @@
   inset: 0;
   width: 100%;
   height: 100%;
-  background: #f8fafc;
+  background: hsl(var(--background));
 }
 
-/* Base styles */
+/* Base styles using the variables */
 body {
-  @apply bg-background text-foreground font-sans antialiased;
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Utility classes mapping to variables */
+@utility bg-background {
+  background-color: hsl(var(--background));
+}
+@utility text-foreground {
+  color: hsl(var(--foreground));
+}
+@utility bg-card {
+  background-color: hsl(var(--card));
+}
+@utility text-card-foreground {
+  color: hsl(var(--card-foreground));
+}
+@utility bg-popover {
+  background-color: hsl(var(--popover));
+}
+@utility text-popover-foreground {
+  color: hsl(var(--popover-foreground));
+}
+@utility bg-primary {
+  background-color: hsl(var(--primary));
+}
+@utility text-primary-foreground {
+  color: hsl(var(--primary-foreground));
+}
+@utility bg-secondary {
+  background-color: hsl(var(--secondary));
+}
+@utility text-secondary-foreground {
+  color: hsl(var(--secondary-foreground));
+}
+@utility bg-muted {
+  background-color: hsl(var(--muted));
+}
+@utility text-muted-foreground {
+  color: hsl(var(--muted-foreground));
+}
+@utility bg-accent {
+  background-color: hsl(var(--accent));
+}
+@utility text-accent-foreground {
+  color: hsl(var(--accent-foreground));
+}
+@utility bg-destructive {
+  background-color: hsl(var(--destructive));
+}
+@utility text-destructive-foreground {
+  color: hsl(var(--destructive-foreground));
+}
+@utility border-border {
+  border-color: hsl(var(--border));
+}
+@utility border-input {
+  border-color: hsl(var(--input));
+}
+@utility ring-ring {
+  --tw-ring-color: hsl(var(--ring));
 }

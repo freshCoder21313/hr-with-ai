@@ -165,8 +165,8 @@ const JobRecommendationModal: React.FC<JobRecommendationModalProps> = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Briefcase className="w-5 h-5" />
+          <DialogTitle className="flex items-center gap-2 text-foreground">
+            <Briefcase className="w-5 h-5 text-primary" />
             Find Job with CV
           </DialogTitle>
         </DialogHeader>
@@ -174,7 +174,7 @@ const JobRecommendationModal: React.FC<JobRecommendationModalProps> = ({
         {/* Step 1: Select Resume */}
         {step === 'select-resume' && (
           <div className="space-y-6">
-            <p className="text-slate-600">
+            <p className="text-muted-foreground">
               Select a resume to generate personalized job recommendations
             </p>
 
@@ -191,8 +191,8 @@ const JobRecommendationModal: React.FC<JobRecommendationModalProps> = ({
                     key={resume.id || `resume-${index}`}
                     className={`p-4 border rounded-lg cursor-pointer transition-colors ${
                       selectedResume?.id === resume.id
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-slate-200 hover:border-blue-300'
+                        ? 'border-primary bg-primary/5 ring-1 ring-primary/20'
+                        : 'border-border hover:border-primary/50 hover:bg-muted/50'
                     }`}
                     onClick={() => setSelectedResume(resume)}
                   >
@@ -201,15 +201,15 @@ const JobRecommendationModal: React.FC<JobRecommendationModalProps> = ({
                         <div
                           className={`p-2 rounded-full ${
                             selectedResume?.id === resume.id
-                              ? 'bg-blue-100 text-blue-600'
-                              : 'bg-slate-100 text-slate-500'
+                              ? 'bg-primary/10 text-primary'
+                              : 'bg-muted text-muted-foreground'
                           }`}
                         >
                           <Briefcase className="w-4 h-4" />
                         </div>
                         <div>
-                          <h4 className="font-medium">{resume.fileName}</h4>
-                          <p className="text-sm text-slate-500">
+                          <h4 className="font-medium text-foreground">{resume.fileName}</h4>
+                          <p className="text-sm text-muted-foreground">
                             {resume.createdAt
                               ? new Date(resume.createdAt).toLocaleDateString()
                               : 'Unknown date'}
@@ -217,7 +217,7 @@ const JobRecommendationModal: React.FC<JobRecommendationModalProps> = ({
                         </div>
                       </div>
                       {selectedResume?.id === resume.id && (
-                        <CheckCircle className="w-5 h-5 text-blue-600" />
+                        <CheckCircle className="w-5 h-5 text-primary" />
                       )}
                     </div>
                   </div>
@@ -250,20 +250,20 @@ const JobRecommendationModal: React.FC<JobRecommendationModalProps> = ({
             <div className="text-center space-y-4">
               <div className="relative">
                 <div className="w-16 h-16 mx-auto">
-                  <div className="absolute inset-0 bg-blue-100 rounded-full animate-ping"></div>
-                  <div className="relative bg-blue-600 w-16 h-16 rounded-full flex items-center justify-center">
-                    <Search className="w-8 h-8 text-white" />
+                  <div className="absolute inset-0 bg-primary/20 rounded-full animate-ping"></div>
+                  <div className="relative bg-primary w-16 h-16 rounded-full flex items-center justify-center">
+                    <Search className="w-8 h-8 text-primary-foreground" />
                   </div>
                 </div>
               </div>
-              <h3 className="text-lg font-semibold">Analyzing Your Resume</h3>
-              <p className="text-slate-600">
+              <h3 className="text-lg font-semibold text-foreground">Analyzing Your Resume</h3>
+              <p className="text-muted-foreground">
                 Finding the best job matches based on your skills and experience...
               </p>
             </div>
 
             <div className="space-y-2">
-              <div className="flex justify-between text-sm">
+              <div className="flex justify-between text-sm text-foreground">
                 <span>Progress</span>
                 <span>{progress}%</span>
               </div>
@@ -271,20 +271,20 @@ const JobRecommendationModal: React.FC<JobRecommendationModalProps> = ({
             </div>
 
             <div className="space-y-1">
-              <div className="flex items-center gap-2 text-sm">
-                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
                 <span>Analyzing skills and experience</span>
               </div>
-              <div className="flex items-center gap-2 text-sm">
-                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse delay-75"></div>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="w-2 h-2 bg-primary rounded-full animate-pulse delay-75"></div>
                 <span>Identifying relevant industries</span>
               </div>
-              <div className="flex items-center gap-2 text-sm">
-                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse delay-150"></div>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="w-2 h-2 bg-primary rounded-full animate-pulse delay-150"></div>
                 <span>Matching with available opportunities</span>
               </div>
-              <div className="flex items-center gap-2 text-sm">
-                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse delay-200"></div>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="w-2 h-2 bg-primary rounded-full animate-pulse delay-200"></div>
                 <span>Scoring and ranking matches</span>
               </div>
             </div>
@@ -295,7 +295,7 @@ const JobRecommendationModal: React.FC<JobRecommendationModalProps> = ({
         {step === 'results' && (
           <div className="space-y-6">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold">Job Recommendations</h3>
+              <h3 className="text-lg font-semibold text-foreground">Job Recommendations</h3>
               <Button variant="outline" onClick={() => setStep('select-resume')}>
                 Change Resume
               </Button>
@@ -315,16 +315,18 @@ const JobRecommendationModal: React.FC<JobRecommendationModalProps> = ({
                     key={job.id}
                     className={`p-4 border rounded-lg cursor-pointer transition-all hover:shadow-md ${
                       selectedJob?.id === job.id
-                        ? 'border-blue-500 bg-blue-50 shadow-md'
-                        : 'border-slate-200'
+                        ? 'border-primary bg-primary/5 shadow-md ring-1 ring-primary/20'
+                        : 'border-border bg-card hover:border-primary/50'
                     }`}
                     onClick={() => handleSelectJob(job)}
                   >
                     <div className="space-y-3">
                       <div className="flex items-start justify-between">
                         <div className="space-y-1">
-                          <h4 className="font-semibold text-lg">{displayJob.title}</h4>
-                          <div className="flex items-center gap-2 text-sm text-slate-600">
+                          <h4 className="font-semibold text-lg text-foreground">
+                            {displayJob.title}
+                          </h4>
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
                             <Building className="w-4 h-4" />
                             {displayJob.company}
                           </div>
@@ -335,24 +337,26 @@ const JobRecommendationModal: React.FC<JobRecommendationModalProps> = ({
                       </div>
 
                       <div className="space-y-2 text-sm">
-                        <div className="flex items-center gap-2 text-slate-600">
+                        <div className="flex items-center gap-2 text-muted-foreground">
                           <MapPin className="w-4 h-4" />
                           {displayJob.location}
                         </div>
-                        <div className="flex items-center gap-2 text-slate-600">
+                        <div className="flex items-center gap-2 text-muted-foreground">
                           <DollarSign className="w-4 h-4" />
                           {displayJob.salaryDisplay}
                         </div>
                       </div>
 
                       <div className="space-y-2">
-                        <p className="text-sm font-medium">Key Requirements:</p>
-                        <p className="text-sm text-slate-600">{displayJob.keyRequirements}</p>
+                        <p className="text-sm font-medium text-foreground">Key Requirements:</p>
+                        <p className="text-sm text-muted-foreground">
+                          {displayJob.keyRequirements}
+                        </p>
                       </div>
 
                       <div className="space-y-2">
-                        <p className="text-sm font-medium">Why It Fits:</p>
-                        <p className="text-sm text-slate-600">{displayJob.whyItFits}</p>
+                        <p className="text-sm font-medium text-foreground">Why It Fits:</p>
+                        <p className="text-sm text-muted-foreground">{displayJob.whyItFits}</p>
                       </div>
 
                       <Button
@@ -382,33 +386,33 @@ const JobRecommendationModal: React.FC<JobRecommendationModalProps> = ({
             <div className="text-center space-y-4">
               <div className="relative">
                 <div className="w-16 h-16 mx-auto">
-                  <div className="absolute inset-0 bg-green-100 rounded-full animate-ping"></div>
-                  <div className="relative bg-green-600 w-16 h-16 rounded-full flex items-center justify-center">
+                  <div className="absolute inset-0 bg-emerald-500/20 rounded-full animate-ping"></div>
+                  <div className="relative bg-emerald-600 w-16 h-16 rounded-full flex items-center justify-center">
                     <CheckCircle className="w-8 h-8 text-white" />
                   </div>
                 </div>
               </div>
-              <h3 className="text-lg font-semibold">Job Selected!</h3>
-              <p className="text-slate-600">
+              <h3 className="text-lg font-semibold text-foreground">Job Selected!</h3>
+              <p className="text-muted-foreground">
                 Creating tailored resume for {selectedJob.title} at {selectedJob.company}...
               </p>
             </div>
 
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-              <div className="flex items-center gap-2 text-green-800 mb-2">
+            <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-4">
+              <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 mb-2">
                 <Sparkles className="w-5 h-5" />
                 <span className="font-medium">Selected Job</span>
               </div>
-              <h4 className="font-semibold text-lg">{selectedJob.title}</h4>
-              <p className="text-green-700">@ {selectedJob.company}</p>
+              <h4 className="font-semibold text-lg text-foreground">{selectedJob.title}</h4>
+              <p className="text-emerald-600 dark:text-emerald-500">@ {selectedJob.company}</p>
             </div>
 
             <div className="text-center">
-              <p className="text-sm text-slate-600 mb-4">
+              <p className="text-sm text-muted-foreground mb-4">
                 Interview form will be automatically filled with this job information
               </p>
               <div className="animate-pulse">
-                <div className="inline-flex items-center gap-2 text-blue-600">
+                <div className="inline-flex items-center gap-2 text-primary">
                   <Loader2 className="w-4 h-4 animate-spin" />
                   <span>Preparing interview...</span>
                 </div>

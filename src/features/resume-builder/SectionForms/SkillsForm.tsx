@@ -49,7 +49,7 @@ const SkillsForm: React.FC<SkillsFormProps> = ({ data, onChange }) => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-xl font-bold text-slate-800">Skills</h2>
+        <h2 className="text-xl font-bold text-foreground">Skills</h2>
         <Button onClick={handleAddCategory} size="sm" className="gap-2">
           <Plus className="w-4 h-4" /> Add Category
         </Button>
@@ -87,12 +87,12 @@ const SkillsForm: React.FC<SkillsFormProps> = ({ data, onChange }) => {
                     {category.keywords?.map((kw, kIndex) => (
                       <span
                         key={kIndex}
-                        className="bg-slate-100 text-slate-700 px-2 py-1 rounded text-sm flex items-center gap-1 border border-slate-200"
+                        className="bg-muted text-foreground px-2 py-1 rounded text-sm flex items-center gap-1 border border-border"
                       >
                         {kw}
                         <button
                           onClick={() => handleRemoveKeyword(index, kIndex)}
-                          className="text-slate-400 hover:text-red-500"
+                          className="text-muted-foreground hover:text-red-500"
                         >
                           <X size={12} />
                         </button>
@@ -117,7 +117,7 @@ const SkillsForm: React.FC<SkillsFormProps> = ({ data, onChange }) => {
       </div>
 
       {data.length === 0 && (
-        <div className="text-center py-12 border-2 border-dashed rounded-lg text-slate-400">
+        <div className="text-center py-12 border-2 border-dashed border-border rounded-lg text-muted-foreground">
           No skills added yet.
         </div>
       )}
