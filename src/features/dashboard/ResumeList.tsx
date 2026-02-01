@@ -1,6 +1,6 @@
 import React from 'react';
 import { Resume } from '@/types';
-import { FileText, Trash2, Check, Clock, Edit, Wand2 } from 'lucide-react';
+import { FileText, Trash2, Check, Clock, Edit, Wand2, Star, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 
@@ -10,6 +10,7 @@ interface ResumeListProps {
   onSelect: (resume: Resume) => void;
   onDelete: (id: number) => void;
   onTailor?: (resume: Resume) => void;
+  onToggleMain?: (resume: Resume) => void;
 }
 
 const ResumeList: React.FC<ResumeListProps> = ({
@@ -18,6 +19,7 @@ const ResumeList: React.FC<ResumeListProps> = ({
   onSelect,
   onDelete,
   onTailor,
+  onToggleMain,
 }) => {
   const navigate = useNavigate();
 
@@ -68,6 +70,42 @@ const ResumeList: React.FC<ResumeListProps> = ({
             </div>
 
             <div className="flex items-center gap-2 ml-2">
+              {/* Main CV Toggle */}
+              {onToggleMain && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className={`h-8 w-8 ${resume.isMain ? 'text-amber-500 hover:text-amber-600 hover:bg-amber-50' : 'text-slate-300 hover:text-amber-500 hover:bg-amber-50'}`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onToggleMain(resume);
+                  }}
+                  title={resume.isMain ? 'This is your Main CV' : 'Mark as Main CV'}
+                >
+                  <Star className="w-4 h-4" fill={resume.isMain ? 'currentColor' : 'none'} />
+                </Button>
+              )}
+
+              {/* Chat Button (Only for Main CV) */}
+              {resume.isMain && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-indigo-500 hover:text-indigo-600 hover:bg-indigo-50"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    navigate('/cv-chat');
+                  }}
+                  title="Chat with AI to Update"
+                >
+                  <MessageSquare className="w-4 h-4" />
+                </Button>
+              )}
+
               {onTailor && (
                 <Button
                   type="button"

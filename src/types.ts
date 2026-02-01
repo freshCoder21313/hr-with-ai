@@ -91,6 +91,7 @@ export interface Resume {
   formatted?: boolean; // True if AI parsing is done
   analysisResult?: ResumeAnalysis;
   analyzedJobDescription?: string;
+  isMain?: boolean; // True if this is the Main CV
 }
 
 export interface ResumeAnalysis {

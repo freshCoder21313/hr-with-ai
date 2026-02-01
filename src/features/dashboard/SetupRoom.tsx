@@ -93,6 +93,18 @@ const SetupRoom: React.FC = () => {
     }
   };
 
+  const handleToggleMain = async (resume: Resume) => {
+    if (!resume.id) return;
+    try {
+      await db.setMainCV(resume.id);
+      // Reload resumes to reflect changes
+      const updated = await db.resumes.toArray();
+      setSavedResumes(updated.sort((a, b) => b.createdAt - a.createdAt));
+    } catch (error) {
+      console.error('Failed to set main CV:', error);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     await startNewInterview(formData);
@@ -147,7 +159,7 @@ const SetupRoom: React.FC = () => {
       navigate(`/resumes/${newId}/edit`);
     } catch (error) {
       console.error(error);
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       alert('Failed to tailor resume: ' + (error as any).message);
     }
   };
@@ -443,6 +455,7 @@ const SetupRoom: React.FC = () => {
                 onSelect={handleResumeSelect}
                 onDelete={handleDeleteResume}
                 onTailor={handleTailorClick}
+                onToggleMain={handleToggleMain}
               />
 
               <Textarea

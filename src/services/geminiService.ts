@@ -21,18 +21,18 @@ export interface AIConfig {
   modelId?: string;
 }
 
-type AIConfigInput = string | AIConfig;
+export type AIConfigInput = string | AIConfig;
 
-const resolveConfig = (input: AIConfigInput): AIConfig => {
+export const resolveConfig = (input: AIConfigInput): AIConfig => {
   if (typeof input === 'string') return { apiKey: input };
   return input;
 };
 
 // --- Google Gemini Implementation ---
-const getGeminiClient = (apiKey: string) => new GoogleGenAI({ apiKey });
+export const getGeminiClient = (apiKey: string) => new GoogleGenAI({ apiKey });
 
 // --- OpenAI Compatible Implementation ---
-async function callOpenAI(
+export async function callOpenAI(
   config: AIConfig,
   messages: any[],
   model: string,

@@ -9,6 +9,7 @@ const SetupRoom = lazy(() => import('./features/dashboard/SetupRoom'));
 const InterviewRoom = lazy(() => import('./features/interview/InterviewRoom'));
 const FeedbackView = lazy(() => import('./features/interview/FeedbackView'));
 const ResumeBuilder = lazy(() => import('./features/resume-builder/ResumeBuilder'));
+const CVChatPage = lazy(() => import('./features/cv-chat/CVChatPage'));
 const LandingPage = lazy(() => import('./features/landing/LandingPage'));
 const HistoryPage = lazy(() => import('./features/history/HistoryPage'));
 
@@ -46,6 +47,9 @@ const App: React.FC = () => {
               <a href="#/" className="hover:text-blue-600 transition-colors">
                 Home
               </a>
+              <a href="#/cv-chat" className="hover:text-blue-600 transition-colors">
+                Main CV
+              </a>
               <a href="#/history" className="hover:text-blue-600 transition-colors">
                 History
               </a>
@@ -75,6 +79,7 @@ const App: React.FC = () => {
               <Route path="/setup" element={<SetupRoom />} />
               <Route path="/history" element={<HistoryPage />} />
               <Route path="/resumes/:id/edit" element={<ResumeBuilder />} />
+              <Route path="/cv-chat" element={<CVChatPage />} />
               <Route path="/interview/:id" element={<InterviewRoom />} />
               <Route path="/feedback/:id" element={<FeedbackView />} />
               <Route path="*" element={<Navigate to="/" replace />} />

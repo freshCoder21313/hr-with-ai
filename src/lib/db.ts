@@ -30,9 +30,15 @@ class HRDatabase extends Dexie {
 
     // Version 8: Add updatedAt for sync merging
     this.version(8).stores({
-      userSettings: '++id, apiKey, defaultModel, voiceEnabled, hintsEnabled, autoFinishEnabled, updatedAt',
+      userSettings:
+        '++id, apiKey, defaultModel, voiceEnabled, hintsEnabled, autoFinishEnabled, updatedAt',
       interviews: '++id, createdAt, title, company, jobTitle, status, updatedAt',
       resumes: '++id, createdAt, fileName, formatted, updatedAt',
+    });
+
+    // Version 9: Add isMain index to resumes
+    this.version(9).stores({
+      resumes: '++id, createdAt, fileName, formatted, updatedAt, isMain',
     });
 
     // Add hooks to auto-update updatedAt
@@ -58,6 +64,27 @@ class HRDatabase extends Dexie {
     this.userSettings.hook('updating', (_mods, _primKey, _obj, _trans) => {
       return { updatedAt: Date.now() };
     });
+  }
+
+  /**
+   * Sets a specific resume as the Main CV.
+   * Uses a transaction to ensure all other resumes are unset first.
+   */
+  async setMainCV(id: number) {
+    return this.transaction('rw', this.resumes, async () => {
+      // 1. Unset 'isMain' for ALL resumes that currently have it
+      await this.resumes.filter((resume) => !!resume.isMain).modify({ isMain: false });
+
+      // 2. Set 'isMain' for the target resume
+      await this.resumes.update(id, { isMain: true });
+    });
+  }
+
+  /**
+   * Retrieves the current Main CV.
+   */
+  async getMainCV() {
+    return this.resumes.filter((r) => !!r.isMain).first();
   }
 }
 
