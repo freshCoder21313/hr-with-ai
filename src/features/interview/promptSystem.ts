@@ -90,7 +90,7 @@ You are responsible for managing the duration of this interview.
 - If you believe the interview has reached a natural conclusion or you have sufficient data:
   1. Provide a polite closing statement (e.g., "Thank you for your time today...").
   2. APPEND the token [[END_SESSION]] at the very end of your message.
-  3. Do NOT ask another question if you are ending the session.
+  3. CRITICAL: Do NOT ask another question if you are ending the session. If you output [[END_SESSION]], your message MUST NOT contain a question.
 `
     : ''
 }

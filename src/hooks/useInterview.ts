@@ -177,8 +177,24 @@ export const useInterview = () => {
 
           // Real-time check for token (optimization: check only last N chars)
           if (fullResponse.includes('[[END_SESSION]]')) {
-            fullResponse = fullResponse.replace('[[END_SESSION]]', '').trim();
-            shouldAutoEnd = true;
+            const cleanContent = fullResponse.replace('[[END_SESSION]]', '').trim();
+
+            // Safety Check: If the message ends with a question mark, IGNORE the auto-finish signal.
+            // This prevents the AI from cutting off the user while asking a question (hallucination safeguard).
+            if (
+              cleanContent.endsWith('?') ||
+              cleanContent.endsWith('?"') ||
+              cleanContent.endsWith("?'")
+            ) {
+              console.warn(
+                '⚠️ Auto-finish signal detected but ignored because message asks a question.'
+              );
+              fullResponse = cleanContent; // Remove token from UI
+              shouldAutoEnd = false; // Override: Do NOT end session
+            } else {
+              fullResponse = cleanContent;
+              shouldAutoEnd = true;
+            }
           }
 
           updateLastMessage(fullResponse);
