@@ -14,8 +14,12 @@ import {
   Zap,
   Building2,
   Medal,
+  MessageSquare,
+  FileText,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { ChatArea } from './components/ChatArea';
 import {
   ResponsiveContainer,
   RadarChart,
@@ -30,6 +34,7 @@ const FeedbackView: React.FC = () => {
   const [interview, setInterview] = useState<Interview | null>(null);
   const [feedback, setFeedback] = useState<InterviewFeedback | null>(null);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('analysis');
   const mermaidRef1 = useRef<HTMLDivElement>(null);
   const mermaidRef2 = useRef<HTMLDivElement>(null);
 
@@ -65,7 +70,13 @@ const FeedbackView: React.FC = () => {
 
   useEffect(() => {
     const renderCharts = async () => {
-      if (feedback && !loading && mermaidRef1.current && mermaidRef2.current) {
+      if (
+        feedback &&
+        !loading &&
+        mermaidRef1.current &&
+        mermaidRef2.current &&
+        activeTab === 'analysis'
+      ) {
         try {
           mermaidRef1.current.innerHTML = '';
           mermaidRef2.current.innerHTML = '';
@@ -90,7 +101,7 @@ const FeedbackView: React.FC = () => {
       }
     };
     renderCharts();
-  }, [feedback, loading]);
+  }, [feedback, loading, activeTab]);
 
   if (loading) {
     return (
@@ -107,256 +118,291 @@ const FeedbackView: React.FC = () => {
 
   return (
     <div className="max-w-5xl mx-auto space-y-8 pb-12 p-6 md:p-8">
-      {/* Score Header */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="border-none shadow-md bg-white md:col-span-2">
-          <CardContent className="flex flex-col md:flex-row items-center justify-between gap-6 p-8">
-            <div>
-              <h1 className="text-3xl font-bold text-slate-900 mb-2">Interview Analysis</h1>
-              <p className="text-slate-500 text-lg">
-                {interview.jobTitle} @ {interview.company}
-              </p>
-
-              <div className="flex gap-2 mt-4 flex-wrap">
-                {(feedback.badges || []).map((badge, idx) => (
-                  <div
-                    key={idx}
-                    className="flex items-center px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-bold border border-amber-200"
-                  >
-                    <Medal className="w-3 h-3 mr-1" />
-                    {badge}
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="text-right hidden md:block">
-                <p className="text-sm text-slate-500 font-medium uppercase tracking-wider">
-                  Overall Score
-                </p>
-              </div>
-              <div
-                className={`w-24 h-24 rounded-full flex items-center justify-center border-[6px] text-3xl font-bold shadow-sm
-                    ${
-                      feedback.score >= 8
-                        ? 'border-emerald-500 text-emerald-600 bg-emerald-50'
-                        : feedback.score >= 6
-                          ? 'border-yellow-500 text-yellow-600 bg-yellow-50'
-                          : 'border-red-500 text-red-600 bg-red-50'
-                    }`}
-              >
-                {feedback.score}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* New Metrics: Resilience & Culture Fit */}
-        <Card className="flex flex-col justify-center gap-4 p-6">
-          <div className="space-y-2">
-            <div className="flex justify-between items-center text-sm font-medium text-slate-600">
-              <span className="flex items-center gap-2">
-                <Zap className="w-4 h-4 text-purple-500" /> Resilience
-              </span>
-              <span className="text-purple-700">{feedback.resilienceScore || 'N/A'}/10</span>
-            </div>
-            <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-purple-500"
-                style={{ width: `${(feedback.resilienceScore || 0) * 10}%` }}
-              ></div>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex justify-between items-center text-sm font-medium text-slate-600">
-              <span className="flex items-center gap-2">
-                <Building2 className="w-4 h-4 text-blue-500" /> Culture Fit
-              </span>
-              <span className="text-blue-700">{feedback.cultureFitScore || 'N/A'}/10</span>
-            </div>
-            <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-blue-500"
-                style={{ width: `${(feedback.cultureFitScore || 0) * 10}%` }}
-              ></div>
-            </div>
-          </div>
-
-          {/* Radar Chart (Mini) */}
-          <div className="h-[150px] w-full text-xs">
-            <ResponsiveContainer width="100%" height="100%">
-              <RadarChart
-                cx="50%"
-                cy="50%"
-                outerRadius="80%"
-                data={[
-                  { subject: 'Technical', A: feedback.score, fullMark: 10 },
-                  { subject: 'Culture', A: feedback.cultureFitScore || 5, fullMark: 10 },
-                  { subject: 'Resilience', A: feedback.resilienceScore || 5, fullMark: 10 },
-                  { subject: 'Comm', A: feedback.score * 0.9, fullMark: 10 }, // Placeholder logic
-                  {
-                    subject: 'Problem Solving',
-                    A: feedback.score * 1.1 > 10 ? 10 : feedback.score * 1.1,
-                    fullMark: 10,
-                  },
-                ]}
-              >
-                <PolarGrid stroke="#e2e8f0" />
-                <PolarAngleAxis dataKey="subject" tick={{ fill: '#64748b', fontSize: 10 }} />
-                <PolarRadiusAxis angle={30} domain={[0, 10]} tick={false} axisLine={false} />
-                <Radar
-                  name="Candidate"
-                  dataKey="A"
-                  stroke="#2563eb"
-                  fill="#3b82f6"
-                  fillOpacity={0.3}
-                />
-              </RadarChart>
-            </ResponsiveContainer>
-          </div>
-        </Card>
-      </div>
-
-      {/* Summary */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Executive Summary</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-slate-600 leading-relaxed text-lg">{feedback.summary}</p>
-        </CardContent>
-      </Card>
-
-      {/* Mermaid Graphs */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <BarChart2 className="w-5 h-5 text-blue-600" />
-              Current Performance Flow
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div
-              ref={mermaidRef1}
-              className="overflow-x-auto flex justify-center py-4 bg-slate-50/50 rounded-lg min-h-[200px] items-center"
-            ></div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <BarChart2 className="w-5 h-5 text-emerald-600" />
-              Potential & Improvement Path
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div
-              ref={mermaidRef2}
-              className="overflow-x-auto flex justify-center py-4 bg-slate-50/50 rounded-lg min-h-[200px] items-center"
-            ></div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Deep Dive */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="bg-emerald-50/30 border-emerald-100">
-          <CardHeader>
-            <CardTitle className="flex items-center text-emerald-800">
-              <CheckCircle2 className="w-5 h-5 mr-2" /> Strengths
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-3">
-              {feedback.strengths.map((s, i) => (
-                <li key={i} className="flex items-start text-emerald-900 text-sm">
-                  <span className="mr-2 text-emerald-500">•</span> {s}
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-        <Card className="bg-red-50/30 border-red-100">
-          <CardHeader>
-            <CardTitle className="flex items-center text-red-800">
-              <AlertCircle className="w-5 h-5 mr-2" /> Areas for Improvement
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-3">
-              {feedback.weaknesses.map((w, i) => (
-                <li key={i} className="flex items-start text-red-900 text-sm">
-                  <span className="mr-2 text-red-500">•</span> {w}
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Learning Resources */}
-      {feedback.recommendedResources && feedback.recommendedResources.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BookOpen className="w-5 h-5 text-purple-600" />
-              Recommended Learning Resources
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {feedback.recommendedResources.map((res, idx) => (
-                <a
-                  key={idx}
-                  href={`https://www.google.com/search?q=${encodeURIComponent(res.searchQuery)}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="group block p-4 rounded-lg border border-slate-200 hover:border-purple-300 hover:bg-purple-50 transition-all text-left"
-                >
-                  <h4 className="font-semibold text-slate-800 mb-1 group-hover:text-purple-700 flex items-center justify-between text-sm">
-                    {res.topic}
-                    <ExternalLink
-                      size={14}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity"
-                    />
-                  </h4>
-                  <p className="text-xs text-slate-500 line-clamp-2">{res.description}</p>
-                </a>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Q&A Analysis */}
-      <Card>
-        <CardHeader className="bg-slate-50 border-b border-slate-100">
-          <CardTitle>Key Question Analysis</CardTitle>
-        </CardHeader>
-        <div className="divide-y divide-slate-100">
-          {feedback.keyQuestionAnalysis.map((item, idx) => (
-            <div key={idx} className="p-6">
-              <p className="font-medium text-slate-900 mb-3 text-lg">Q: {item.question}</p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="text-sm text-slate-700 bg-slate-50 p-4 rounded-lg border border-slate-100">
-                  <span className="font-semibold block mb-2 text-slate-900 uppercase text-xs tracking-wider">
-                    Analysis
-                  </span>
-                  {item.analysis}
-                </div>
-                <div className="text-sm text-blue-900 bg-blue-50 p-4 rounded-lg border border-blue-100">
-                  <span className="font-semibold block mb-2 text-blue-800 uppercase text-xs tracking-wider">
-                    Better Approach
-                  </span>
-                  {item.improvement}
-                </div>
-              </div>
-            </div>
-          ))}
+      {/* Tabs Header */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <div className="flex justify-between items-center mb-6">
+          <TabsList className="bg-slate-100 p-1">
+            <TabsTrigger value="analysis" className="gap-2">
+              <BarChart2 className="w-4 h-4" />
+              Analysis
+            </TabsTrigger>
+            <TabsTrigger value="transcript" className="gap-2">
+              <MessageSquare className="w-4 h-4" />
+              Transcript
+            </TabsTrigger>
+          </TabsList>
         </div>
-      </Card>
+
+        <TabsContent
+          value="analysis"
+          className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300"
+        >
+          {/* Score Header */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card className="border-none shadow-md bg-white md:col-span-2">
+              <CardContent className="flex flex-col md:flex-row items-center justify-between gap-6 p-8">
+                <div>
+                  <h1 className="text-3xl font-bold text-slate-900 mb-2">Interview Analysis</h1>
+                  <p className="text-slate-500 text-lg">
+                    {interview.jobTitle} @ {interview.company}
+                  </p>
+
+                  <div className="flex gap-2 mt-4 flex-wrap">
+                    {(feedback.badges || []).map((badge, idx) => (
+                      <div
+                        key={idx}
+                        className="flex items-center px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-bold border border-amber-200"
+                      >
+                        <Medal className="w-3 h-3 mr-1" />
+                        {badge}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="text-right hidden md:block">
+                    <p className="text-sm text-slate-500 font-medium uppercase tracking-wider">
+                      Overall Score
+                    </p>
+                  </div>
+                  <div
+                    className={`w-24 h-24 rounded-full flex items-center justify-center border-[6px] text-3xl font-bold shadow-sm
+                        ${
+                          feedback.score >= 8
+                            ? 'border-emerald-500 text-emerald-600 bg-emerald-50'
+                            : feedback.score >= 6
+                              ? 'border-yellow-500 text-yellow-600 bg-yellow-50'
+                              : 'border-red-500 text-red-600 bg-red-50'
+                        }`}
+                  >
+                    {feedback.score}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* New Metrics: Resilience & Culture Fit */}
+            <Card className="flex flex-col justify-center gap-4 p-6">
+              <div className="space-y-2">
+                <div className="flex justify-between items-center text-sm font-medium text-slate-600">
+                  <span className="flex items-center gap-2">
+                    <Zap className="w-4 h-4 text-purple-500" /> Resilience
+                  </span>
+                  <span className="text-purple-700">{feedback.resilienceScore || 'N/A'}/10</span>
+                </div>
+                <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-purple-500"
+                    style={{ width: `${(feedback.resilienceScore || 0) * 10}%` }}
+                  ></div>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex justify-between items-center text-sm font-medium text-slate-600">
+                  <span className="flex items-center gap-2">
+                    <Building2 className="w-4 h-4 text-blue-500" /> Culture Fit
+                  </span>
+                  <span className="text-blue-700">{feedback.cultureFitScore || 'N/A'}/10</span>
+                </div>
+                <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-blue-500"
+                    style={{ width: `${(feedback.cultureFitScore || 0) * 10}%` }}
+                  ></div>
+                </div>
+              </div>
+
+              {/* Radar Chart (Mini) */}
+              <div className="h-[150px] w-full text-xs">
+                <ResponsiveContainer width="100%" height="100%">
+                  <RadarChart
+                    cx="50%"
+                    cy="50%"
+                    outerRadius="80%"
+                    data={[
+                      { subject: 'Technical', A: feedback.score, fullMark: 10 },
+                      { subject: 'Culture', A: feedback.cultureFitScore || 5, fullMark: 10 },
+                      { subject: 'Resilience', A: feedback.resilienceScore || 5, fullMark: 10 },
+                      { subject: 'Comm', A: feedback.score * 0.9, fullMark: 10 }, // Placeholder logic
+                      {
+                        subject: 'Problem Solving',
+                        A: feedback.score * 1.1 > 10 ? 10 : feedback.score * 1.1,
+                        fullMark: 10,
+                      },
+                    ]}
+                  >
+                    <PolarGrid stroke="#e2e8f0" />
+                    <PolarAngleAxis dataKey="subject" tick={{ fill: '#64748b', fontSize: 10 }} />
+                    <PolarRadiusAxis angle={30} domain={[0, 10]} tick={false} axisLine={false} />
+                    <Radar
+                      name="Candidate"
+                      dataKey="A"
+                      stroke="#2563eb"
+                      fill="#3b82f6"
+                      fillOpacity={0.3}
+                    />
+                  </RadarChart>
+                </ResponsiveContainer>
+              </div>
+            </Card>
+          </div>
+
+          {/* Summary */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Executive Summary</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-slate-600 leading-relaxed text-lg">{feedback.summary}</p>
+            </CardContent>
+          </Card>
+
+          {/* Mermaid Graphs */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <BarChart2 className="w-5 h-5 text-blue-600" />
+                  Current Performance Flow
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div
+                  ref={mermaidRef1}
+                  className="overflow-x-auto flex justify-center py-4 bg-slate-50/50 rounded-lg min-h-[200px] items-center"
+                ></div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <BarChart2 className="w-5 h-5 text-emerald-600" />
+                  Potential & Improvement Path
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div
+                  ref={mermaidRef2}
+                  className="overflow-x-auto flex justify-center py-4 bg-slate-50/50 rounded-lg min-h-[200px] items-center"
+                ></div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Deep Dive */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card className="bg-emerald-50/30 border-emerald-100">
+              <CardHeader>
+                <CardTitle className="flex items-center text-emerald-800">
+                  <CheckCircle2 className="w-5 h-5 mr-2" /> Strengths
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-3">
+                  {feedback.strengths.map((s, i) => (
+                    <li key={i} className="flex items-start text-emerald-900 text-sm">
+                      <span className="mr-2 text-emerald-500">•</span> {s}
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+            <Card className="bg-red-50/30 border-red-100">
+              <CardHeader>
+                <CardTitle className="flex items-center text-red-800">
+                  <AlertCircle className="w-5 h-5 mr-2" /> Areas for Improvement
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-3">
+                  {feedback.weaknesses.map((w, i) => (
+                    <li key={i} className="flex items-start text-red-900 text-sm">
+                      <span className="mr-2 text-red-500">•</span> {w}
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Learning Resources */}
+          {feedback.recommendedResources && feedback.recommendedResources.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BookOpen className="w-5 h-5 text-purple-600" />
+                  Recommended Learning Resources
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {feedback.recommendedResources.map((res, idx) => (
+                    <a
+                      key={idx}
+                      href={`https://www.google.com/search?q=${encodeURIComponent(res.searchQuery)}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="group block p-4 rounded-lg border border-slate-200 hover:border-purple-300 hover:bg-purple-50 transition-all text-left"
+                    >
+                      <h4 className="font-semibold text-slate-800 mb-1 group-hover:text-purple-700 flex items-center justify-between text-sm">
+                        {res.topic}
+                        <ExternalLink
+                          size={14}
+                          className="opacity-0 group-hover:opacity-100 transition-opacity"
+                        />
+                      </h4>
+                      <p className="text-xs text-slate-500 line-clamp-2">{res.description}</p>
+                    </a>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Q&A Analysis */}
+          <Card>
+            <CardHeader className="bg-slate-50 border-b border-slate-100">
+              <CardTitle>Key Question Analysis</CardTitle>
+            </CardHeader>
+            <div className="divide-y divide-slate-100">
+              {feedback.keyQuestionAnalysis.map((item, idx) => (
+                <div key={idx} className="p-6">
+                  <p className="font-medium text-slate-900 mb-3 text-lg">Q: {item.question}</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="text-sm text-slate-700 bg-slate-50 p-4 rounded-lg border border-slate-100">
+                      <span className="font-semibold block mb-2 text-slate-900 uppercase text-xs tracking-wider">
+                        Analysis
+                      </span>
+                      {item.analysis}
+                    </div>
+                    <div className="text-sm text-blue-900 bg-blue-50 p-4 rounded-lg border border-blue-100">
+                      <span className="font-semibold block mb-2 text-blue-800 uppercase text-xs tracking-wider">
+                        Better Approach
+                      </span>
+                      {item.improvement}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="transcript" className="h-[calc(100vh-200px)] min-h-[500px]">
+          <Card className="h-full border-none shadow-md overflow-hidden flex flex-col">
+            <CardHeader className="border-b bg-white py-4 shrink-0">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <FileText className="w-5 h-5 text-slate-500" />
+                Full Interview Transcript
+              </CardTitle>
+            </CardHeader>
+            <div className="flex-1 overflow-hidden relative flex flex-col">
+              <ChatArea messages={interview.messages} />
+            </div>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
