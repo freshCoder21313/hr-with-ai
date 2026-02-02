@@ -103,7 +103,10 @@ const InterviewRoom: React.FC = () => {
     cancelSpeech,
     isSpeaking,
     isSupported,
-  } = useVoice({ language: currentInterview?.language || 'en-US' });
+  } = useVoice({
+    language: currentInterview?.language || 'en-US',
+    enabled: userSettings.voiceEnabled,
+  });
 
   // Timer Hook
   const { timer } = useInterviewTimer(isProcessing, currentInterview?.difficulty, () =>

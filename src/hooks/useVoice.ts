@@ -2,9 +2,10 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 
 interface UseVoiceProps {
   language?: 'en-US' | 'vi-VN';
+  enabled?: boolean;
 }
 
-export const useVoice = ({ language = 'en-US' }: UseVoiceProps = {}) => {
+export const useVoice = ({ language = 'en-US', enabled = true }: UseVoiceProps = {}) => {
   const SpeechRecognition = useMemo(() => {
     if (typeof window !== 'undefined') {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -39,7 +40,7 @@ export const useVoice = ({ language = 'en-US' }: UseVoiceProps = {}) => {
       try {
         recognitionRef.current.start();
       } catch (e) {
-        console.error("Failed to start recognition:", e);
+        console.error('Failed to start recognition:', e);
         setIsListening(false);
       }
 
@@ -56,12 +57,12 @@ export const useVoice = ({ language = 'en-US' }: UseVoiceProps = {}) => {
       recognitionRef.current.onerror = (event: any) => {
         console.error('Speech recognition error', event.error);
         if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
-           setIsListening(false);
-           alert("Microphone access denied or not supported.");
+          setIsListening(false);
+          alert('Microphone access denied or not supported.');
         }
         // Don't stop listening immediately for 'no-speech' errors in continuous mode
         if (event.error !== 'no-speech') {
-             setIsListening(false);
+          setIsListening(false);
         }
       };
 
@@ -84,6 +85,7 @@ export const useVoice = ({ language = 'en-US' }: UseVoiceProps = {}) => {
 
   const speak = useCallback(
     (text: string) => {
+      if (!enabled) return;
       if (synthesisRef.current) {
         // Cancel previous speech
         synthesisRef.current.cancel();
@@ -98,7 +100,7 @@ export const useVoice = ({ language = 'en-US' }: UseVoiceProps = {}) => {
         synthesisRef.current.speak(utterance);
       }
     },
-    [language]
+    [language, enabled]
   );
 
   const cancelSpeech = useCallback(() => {
@@ -107,6 +109,21 @@ export const useVoice = ({ language = 'en-US' }: UseVoiceProps = {}) => {
       setIsSpeaking(false);
     }
   }, []);
+
+  useEffect(() => {
+    return () => {
+      if (synthesisRef.current) {
+        synthesisRef.current.cancel();
+      }
+    };
+  }, []);
+
+  // Stop speaking if disabled while active
+  useEffect(() => {
+    if (!enabled && isSpeaking) {
+      cancelSpeech();
+    }
+  }, [enabled, isSpeaking, cancelSpeech]);
 
   return {
     isListening,
