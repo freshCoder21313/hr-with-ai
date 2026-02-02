@@ -43,6 +43,10 @@ export const useInterview = () => {
           jobDescription: data.jobDescription,
           resumeText: data.resumeText,
           language: data.language,
+          difficulty: data.difficulty,
+          mode: data.mode, // Added mode
+          companyStatus: data.companyStatus,
+          interviewContext: data.interviewContext,
           status: InterviewStatus.CREATED,
           messages: [],
           code: '// Write your solution here...',

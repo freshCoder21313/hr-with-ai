@@ -165,6 +165,15 @@ const InterviewRoom: React.FC = () => {
     }
   }, [isProcessing, ttsEnabled, userSettings.voiceEnabled, currentInterview?.messages, speak]);
 
+  // Auto-open tools based on Mode
+  useEffect(() => {
+    if (currentInterview?.mode === 'coding') {
+      setIsCodeOpen(true);
+    } else if (currentInterview?.mode === 'system_design') {
+      setIsWhiteboardOpen(true);
+    }
+  }, [currentInterview?.mode]);
+
   // Load Data
   useEffect(() => {
     const loadInterview = async () => {

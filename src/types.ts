@@ -1,5 +1,7 @@
 import { ResumeData } from './types/resume';
 
+export type InterviewMode = 'standard' | 'coding' | 'system_design' | 'behavioral';
+
 export interface Message {
   role: 'user' | 'model';
   content: string;
@@ -24,6 +26,7 @@ export interface Interview {
   resumeText: string;
   language: 'vi-VN' | 'en-US';
   difficulty?: 'easy' | 'medium' | 'hard' | 'hardcore';
+  mode?: InterviewMode;
   companyStatus?: string;
   interviewContext?: string;
   status: InterviewStatus;
@@ -65,6 +68,7 @@ export interface SetupFormData {
   resumeText: string;
   language: 'vi-VN' | 'en-US';
   difficulty: 'easy' | 'medium' | 'hard' | 'hardcore';
+  mode: InterviewMode;
   companyStatus: string;
   interviewContext: string;
 }
