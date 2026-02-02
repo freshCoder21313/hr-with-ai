@@ -16,9 +16,11 @@ import {
   Medal,
   MessageSquare,
   FileText,
+  Printer,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
 import { ChatArea, AnalysisItem } from './components/ChatArea';
 import {
   ResponsiveContainer,
@@ -38,6 +40,10 @@ const FeedbackView: React.FC = () => {
   const [analysisMap, setAnalysisMap] = useState<Record<number, AnalysisItem>>({});
   const mermaidRef1 = useRef<HTMLDivElement>(null);
   const mermaidRef2 = useRef<HTMLDivElement>(null);
+
+  const handlePrint = () => {
+    window.print();
+  };
 
   useEffect(() => {
     mermaid.initialize({ startOnLoad: false, theme: 'default' });
@@ -149,7 +155,7 @@ const FeedbackView: React.FC = () => {
     <div className="max-w-5xl mx-auto space-y-8 pb-12 p-6 md:p-8">
       {/* Tabs Header */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex justify-between items-center mb-6 print:hidden">
           <TabsList className="bg-slate-100 p-1">
             <TabsTrigger value="analysis" className="gap-2">
               <BarChart2 className="w-4 h-4" />
@@ -160,6 +166,10 @@ const FeedbackView: React.FC = () => {
               Transcript
             </TabsTrigger>
           </TabsList>
+          <Button variant="outline" className="gap-2" onClick={handlePrint}>
+            <Printer className="w-4 h-4" />
+            Save as PDF
+          </Button>
         </div>
 
         <TabsContent
