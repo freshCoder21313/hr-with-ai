@@ -1,6 +1,8 @@
 import { db } from '@/lib/db';
 import { Interview, UserSettings, Resume } from '@/types';
 import LZString from 'lz-string';
+import axios from 'axios';
+import { apiClient } from '@/lib/api-client';
 
 interface SyncData {
   interviews: Interview[];
@@ -45,13 +47,12 @@ export const syncService = {
   // Merge Logic: Smartly merge cloud data into local DB
   importData: async (cloudData: SyncData): Promise<void> => {
     await db.transaction('rw', db.interviews, db.userSettings, db.resumes, async () => {
-      
       // 1. Merge User Settings (Usually singleton)
       if (cloudData.userSettings?.length) {
         const localSettings = await db.userSettings.toArray();
         for (const cloudSetting of cloudData.userSettings) {
-          const localMatch = localSettings.find(l => l.id === cloudSetting.id);
-          
+          const localMatch = localSettings.find((l) => l.id === cloudSetting.id);
+
           if (!localMatch) {
             await db.userSettings.add(cloudSetting);
           } else {
@@ -70,7 +71,7 @@ export const syncService = {
         const localInterviews = await db.interviews.toArray();
         for (const cloudInterview of cloudData.interviews) {
           // We use createdAt as a stable ID because local 'id' is auto-increment and changes per device
-          const localMatch = localInterviews.find(l => l.createdAt === cloudInterview.createdAt);
+          const localMatch = localInterviews.find((l) => l.createdAt === cloudInterview.createdAt);
 
           if (!localMatch) {
             // New item, delete local 'id' to let Dexie auto-increment
@@ -91,7 +92,7 @@ export const syncService = {
       if (cloudData.resumes?.length) {
         const localResumes = await db.resumes.toArray();
         for (const cloudResume of cloudData.resumes) {
-          const localMatch = localResumes.find(l => l.createdAt === cloudResume.createdAt);
+          const localMatch = localResumes.find((l) => l.createdAt === cloudResume.createdAt);
 
           if (!localMatch) {
             const { id: _id, ...dataToSave } = cloudResume;
@@ -119,36 +120,38 @@ export const syncService = {
       const jsonString = JSON.stringify(data);
       // Use Base64 which is safer for storage/transport than UTF16
       const compressedString = LZString.compressToBase64(jsonString);
-      
+
       // Wrap in object to satisfy JSONB if server requires it, or just consistency
       const payload: CompressedSyncData = { compressed: compressedString };
 
-      const response = await fetch('/api/sync', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-sync-id': id,
-        },
-        body: JSON.stringify({
+      await apiClient.post(
+        '/sync',
+        {
           password,
-          data: payload, 
-        }),
-      });
-
-      if (!response.ok) {
-        if (response.status === 429) {
-          throw new Error('Rate limit exceeded. Please try again later.');
+          data: payload,
+        },
+        {
+          headers: {
+            'x-sync-id': id,
+          },
         }
-        if (response.status === 401) {
-          throw new Error('Invalid password for this ID.');
-        }
-        throw new Error(`Upload failed: ${response.statusText}`);
-      }
+      );
 
       return { success: true };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Upload error:', error);
-      return { success: false, message: error instanceof Error ? error.message : 'Unknown error' };
+      let message = 'Unknown error';
+
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 429)
+          message = 'Rate limit exceeded. Please try again later.';
+        else if (error.response?.status === 401) message = 'Invalid password for this ID.';
+        else message = `Upload failed: ${error.response?.statusText || error.message}`;
+      } else if (error instanceof Error) {
+        message = error.message;
+      }
+
+      return { success: false, message };
     }
   },
 
@@ -157,36 +160,28 @@ export const syncService = {
     id: string
   ): Promise<{ success: boolean; data?: SyncData; message?: string }> => {
     try {
-      const response = await fetch(`/api/sync?id=${id}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+      const result = await apiClient.get<{ data: any }>(`/sync`, {
+        params: { id },
       });
 
-      if (!response.ok) {
-        if (response.status === 404) {
-          throw new Error('Backup not found for this ID.');
-        }
-        if (response.status === 429) {
-          throw new Error('Rate limit exceeded. Please try again later.');
-        }
-        throw new Error(`Download failed: ${response.statusText}`);
-      }
+      // The response interceptor returns 'response.data', but our API structure might be { data: ... }
+      // based on the previous code: const result = await response.json(); const rawData = result.data;
+      // So 'result' here is equivalent to the old 'result' object.
 
-      const result = await response.json();
-      const rawData = result.data;
+      // However, if the API returns the data directly (without wrapper), adjust accordingly.
+      // Assuming existing API returns JSON: { data: { compressed: "..." } }
+      const rawData = (result as any).data;
 
       // Check if data is compressed
       let finalData: SyncData;
-      
+
       if (rawData && typeof rawData === 'object' && rawData.compressed) {
         // Decompress - Try Base64 first (new format), then UTF16 (legacy/fallback)
         let decompressed = LZString.decompressFromBase64(rawData.compressed);
         if (!decompressed) {
           decompressed = LZString.decompressFromUTF16(rawData.compressed);
         }
-        
+
         if (!decompressed) throw new Error('Failed to decompress data');
         finalData = JSON.parse(decompressed);
       } else {
@@ -195,9 +190,20 @@ export const syncService = {
       }
 
       return { success: true, data: finalData };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Download error:', error);
-      return { success: false, message: error instanceof Error ? error.message : 'Unknown error' };
+      let message = 'Unknown error';
+
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 404) message = 'Backup not found for this ID.';
+        else if (error.response?.status === 429)
+          message = 'Rate limit exceeded. Please try again later.';
+        else message = `Download failed: ${error.response?.statusText || error.message}`;
+      } else if (error instanceof Error) {
+        message = error.message;
+      }
+
+      return { success: false, message };
     }
   },
 };
