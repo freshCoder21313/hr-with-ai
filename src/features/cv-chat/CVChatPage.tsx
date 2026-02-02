@@ -18,6 +18,7 @@ import {
   Eye,
   Edit3,
   LayoutTemplate,
+  Github,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import ResumeList from '@/features/dashboard/ResumeList';
@@ -26,6 +27,7 @@ import { getStoredAIConfig, parseResumeToJSON } from '@/services/geminiService';
 import { ChangeReviewCard } from './ChangeReviewCard';
 import { ResumeFormView } from './ResumeFormView';
 import { Button } from '@/components/ui/button';
+import { GitHubImportModal } from '@/features/resume-builder/github-import/GitHubImportModal';
 
 // Allowed keys from the ResumeData schema
 const ALLOWED_SECTIONS = [
@@ -52,6 +54,9 @@ const CVChatPage: React.FC = () => {
   const [pendingChanges, setPendingChanges] = useState<ProposedChange[] | null>(null);
   const [viewMode, setViewMode] = useState<'form' | 'preview'>('form');
   const [template, setTemplate] = useState<'modern' | 'classic'>('modern');
+
+  // GitHub Import State
+  const [isGitHubModalOpen, setIsGitHubModalOpen] = useState(false);
 
   // Selection State
   const [allResumes, setAllResumes] = useState<Resume[]>([]);
@@ -270,6 +275,26 @@ const CVChatPage: React.FC = () => {
     }
   };
 
+  const handleGitHubImportComplete = async () => {
+    try {
+      const cv = await db.getMainCV();
+      if (cv) {
+        setMainCV(cv);
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: 'model',
+            content:
+              'I have updated your resume with the projects imported from GitHub. You can review them in the Projects section.',
+            timestamp: Date.now(),
+          },
+        ]);
+      }
+    } catch (error) {
+      console.error('Failed to refresh CV after import', error);
+    }
+  };
+
   const handleRejectChange = (change: ProposedChange) => {
     setPendingChanges((prev) => {
       if (!prev) return null;
@@ -353,7 +378,19 @@ const CVChatPage: React.FC = () => {
       {/* Left: Chat */}
       <div className="w-1/2 md:w-[40%] border-r border-border flex flex-col bg-background z-10 shadow-xl">
         <div className="p-4 border-b border-border bg-background flex justify-between items-center">
-          <h2 className="font-semibold text-foreground">Chat Assistant</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="font-semibold text-foreground">Chat Assistant</h2>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 text-xs gap-1.5 ml-2"
+              onClick={() => setIsGitHubModalOpen(true)}
+              title="Import Projects from GitHub"
+            >
+              <Github size={12} />
+              Import Projects
+            </Button>
+          </div>
           {pendingChanges && (
             <span className="text-xs bg-amber-500/10 text-amber-600 dark:text-amber-400 px-2 py-1 rounded-full animate-pulse">
               {pendingChanges.length} Pending Updates
@@ -460,6 +497,11 @@ const CVChatPage: React.FC = () => {
           )}
         </div>
       </div>
+      <GitHubImportModal
+        isOpen={isGitHubModalOpen}
+        onClose={() => setIsGitHubModalOpen(false)}
+        onImportComplete={handleGitHubImportComplete}
+      />
     </div>
   );
 };

@@ -41,6 +41,12 @@ class HRDatabase extends Dexie {
       resumes: '++id, createdAt, fileName, formatted, updatedAt, isMain',
     });
 
+    // Version 10: Add GitHub settings
+    this.version(10).stores({
+      userSettings:
+        '++id, apiKey, githubUsername, githubToken, defaultModel, voiceEnabled, hintsEnabled, autoFinishEnabled, updatedAt',
+    });
+
     // Add hooks to auto-update updatedAt
     this.interviews.hook('creating', (_primKey, obj) => {
       obj.updatedAt = Date.now();

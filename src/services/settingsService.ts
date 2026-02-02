@@ -83,6 +83,8 @@ export async function saveUserSettings(settings: UserSettings): Promise<UserSett
       hintsEnabled: settings.hintsEnabled ?? false,
       autoFinishEnabled: settings.autoFinishEnabled ?? false,
       apiKey: settings.apiKey || '',
+      githubUsername: settings.githubUsername || '',
+      githubToken: settings.githubToken || '',
       defaultModel: settings.defaultModel || '',
       baseUrl: settings.baseUrl || '',
     };
@@ -108,9 +110,7 @@ export async function saveUserSettings(settings: UserSettings): Promise<UserSett
 /**
  * Get a specific setting value
  */
-export async function getSetting<K extends keyof UserSettings>(
-  key: K
-): Promise<UserSettings[K]> {
+export async function getSetting<K extends keyof UserSettings>(key: K): Promise<UserSettings[K]> {
   const settings = await loadUserSettings();
   return settings[key];
 }
@@ -143,9 +143,7 @@ export function loadSettingsSync(): Partial<UserSettings> {
  * Subscribe to settings changes
  * Returns unsubscribe function
  */
-export function subscribeToSettings(
-  callback: (settings: UserSettings) => void
-): () => void {
+export function subscribeToSettings(callback: (settings: UserSettings) => void): () => void {
   let isSubscribed = true;
 
   const checkForChanges = async () => {

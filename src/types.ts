@@ -73,6 +73,8 @@ export interface UserSettings {
   id?: number;
   updatedAt?: number; // Added for sync merging
   apiKey?: string;
+  githubUsername?: string;
+  githubToken?: string;
   defaultModel?: string;
   voiceEnabled?: boolean;
   hintsEnabled?: boolean;

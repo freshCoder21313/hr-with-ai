@@ -53,16 +53,18 @@ const SetupRoom: React.FC = () => {
     interviewContext: 'Modern day video call',
   });
 
+  // Load saved resumes
+  const loadResumes = async () => {
+    try {
+      const resumes = await db.resumes.toArray();
+      setSavedResumes(resumes.sort((a, b) => b.createdAt - a.createdAt));
+    } catch (error) {
+      console.error('Failed to load resumes:', error);
+    }
+  };
+
   // Load saved resumes on mount
   React.useEffect(() => {
-    const loadResumes = async () => {
-      try {
-        const resumes = await db.resumes.toArray();
-        setSavedResumes(resumes.sort((a, b) => b.createdAt - a.createdAt));
-      } catch (error) {
-        console.error('Failed to load resumes:', error);
-      }
-    };
     loadResumes();
   }, []);
 
@@ -462,6 +464,7 @@ const SetupRoom: React.FC = () => {
                 onDelete={handleDeleteResume}
                 onTailor={handleTailorClick}
                 onToggleMain={handleToggleMain}
+                onRefresh={loadResumes}
               />
 
               <Textarea

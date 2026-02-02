@@ -1,8 +1,19 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Resume } from '@/types';
-import { FileText, Trash2, Check, Clock, Edit, Wand2, Star, MessageSquare } from 'lucide-react';
+import {
+  FileText,
+  Trash2,
+  Check,
+  Clock,
+  Edit,
+  Wand2,
+  Star,
+  MessageSquare,
+  Github,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { GitHubImportModal } from '@/features/resume-builder/github-import/GitHubImportModal';
 
 interface ResumeListProps {
   resumes: Resume[];
@@ -11,6 +22,7 @@ interface ResumeListProps {
   onDelete: (id: number) => void;
   onTailor?: (resume: Resume) => void;
   onToggleMain?: (resume: Resume) => void;
+  onRefresh?: () => void;
 }
 
 const ResumeList: React.FC<ResumeListProps> = ({
@@ -20,8 +32,10 @@ const ResumeList: React.FC<ResumeListProps> = ({
   onDelete,
   onTailor,
   onToggleMain,
+  onRefresh,
 }) => {
   const navigate = useNavigate();
+  const [isGitHubModalOpen, setIsGitHubModalOpen] = useState(false);
 
   if (resumes.length === 0) {
     return null;
@@ -39,6 +53,7 @@ const ResumeList: React.FC<ResumeListProps> = ({
   return (
     <div className="space-y-3 mt-4">
       <h3 className="text-sm font-medium text-foreground">Saved Resumes</h3>
+
       <div className="border rounded-md bg-muted/50 p-2 max-h-[200px] overflow-y-auto space-y-2 border-border">
         {resumes.map((resume) => (
           <div
@@ -90,7 +105,7 @@ const ResumeList: React.FC<ResumeListProps> = ({
                 </Button>
               )}
 
-              {/* Chat Button (Only for Main CV) */}
+              {/* Main CV Actions */}
               {resume.isMain && (
                 <Button
                   type="button"
@@ -156,6 +171,12 @@ const ResumeList: React.FC<ResumeListProps> = ({
           </div>
         ))}
       </div>
+
+      <GitHubImportModal
+        isOpen={isGitHubModalOpen}
+        onClose={() => setIsGitHubModalOpen(false)}
+        onImportComplete={onRefresh}
+      />
     </div>
   );
 };
