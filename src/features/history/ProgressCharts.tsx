@@ -37,9 +37,7 @@ const ProgressCharts: React.FC<ProgressChartsProps> = ({ interviews }) => {
         ).toFixed(1)
       : '0.0';
   const highestScore =
-    totalInterviews > 0
-      ? Math.max(...completedInterviews.map((i) => i.feedback?.score || 0))
-      : 0;
+    totalInterviews > 0 ? Math.max(...completedInterviews.map((i) => i.feedback?.score || 0)) : 0;
 
   if (totalInterviews < 2) {
     return (
@@ -163,8 +161,20 @@ const ProgressCharts: React.FC<ProgressChartsProps> = ({ interviews }) => {
                 stroke="#3b82f6"
                 strokeWidth={3}
               />
-              <Bar dataKey="resilience" name="Resilience" barSize={12} fill="#8b5cf6" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="culture" name="Culture Fit" barSize={12} fill="#10b981" radius={[4, 4, 0, 0]} />
+              <Bar
+                dataKey="resilience"
+                name="Resilience"
+                barSize={12}
+                fill="#8b5cf6"
+                radius={[4, 4, 0, 0]}
+              />
+              <Bar
+                dataKey="culture"
+                name="Culture Fit"
+                barSize={12}
+                fill="#10b981"
+                radius={[4, 4, 0, 0]}
+              />
             </ComposedChart>
           </ResponsiveContainer>
         </CardContent>

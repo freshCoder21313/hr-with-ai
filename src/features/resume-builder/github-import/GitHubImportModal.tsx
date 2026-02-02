@@ -211,7 +211,7 @@ export const GitHubImportModal: React.FC<GitHubImportModalProps> = ({
         return;
       }
 
-      let parsedData = mainCV.parsedData || {
+      const parsedData = mainCV.parsedData || {
         basics: { name: '', email: '' },
         work: [],
         education: [],

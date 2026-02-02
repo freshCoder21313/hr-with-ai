@@ -121,7 +121,9 @@ export const useVoice = ({ language = 'en-US', enabled = true }: UseVoiceProps =
   // Stop speaking if disabled while active
   useEffect(() => {
     if (!enabled && isSpeaking) {
-      cancelSpeech();
+      setTimeout(() => {
+        cancelSpeech();
+      }, 0);
     }
   }, [enabled, isSpeaking, cancelSpeech]);
 

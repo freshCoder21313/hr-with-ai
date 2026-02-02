@@ -21,8 +21,6 @@ const parsePDF = async (file: File): Promise<string> => {
   const pdf = await loadingTask.promise;
 
   let fullText = '';
-  // ... rest of logic
-
 
   // Lặp qua từng trang
   for (let i = 1; i <= pdf.numPages; i++) {
