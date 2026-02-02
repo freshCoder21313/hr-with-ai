@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { ChatArea } from './components/ChatArea';
+import { ChatArea, AnalysisItem } from './components/ChatArea';
 import {
   ResponsiveContainer,
   RadarChart,
@@ -35,12 +35,41 @@ const FeedbackView: React.FC = () => {
   const [feedback, setFeedback] = useState<InterviewFeedback | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('analysis');
+  const [analysisMap, setAnalysisMap] = useState<Record<number, AnalysisItem>>({});
   const mermaidRef1 = useRef<HTMLDivElement>(null);
   const mermaidRef2 = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     mermaid.initialize({ startOnLoad: false, theme: 'default' });
   }, []);
+
+  useEffect(() => {
+    if (interview?.messages && feedback?.keyQuestionAnalysis) {
+      const map: Record<number, AnalysisItem> = {};
+
+      feedback.keyQuestionAnalysis.forEach((analysisItem) => {
+        // Simple logic: Find the model message that *contains* the question text
+        // Then find the immediate next user message.
+        // That user message is what we attach the feedback to.
+
+        // Clean up question text for better matching (remove newlines, extra spaces)
+        const cleanQuestion = analysisItem.question.trim().substring(0, 50); // Match first 50 chars
+
+        for (let i = 0; i < interview.messages.length - 1; i++) {
+          const msg = interview.messages[i];
+          if (msg.role === 'model' && msg.content.includes(cleanQuestion)) {
+            // Found the question. The answer should be i + 1
+            const nextMsg = interview.messages[i + 1];
+            if (nextMsg && nextMsg.role === 'user') {
+              map[i + 1] = analysisItem;
+              break; // Found the match for this analysis item
+            }
+          }
+        }
+      });
+      setAnalysisMap(map);
+    }
+  }, [interview, feedback]);
 
   useEffect(() => {
     const processFeedback = async () => {
@@ -394,11 +423,11 @@ const FeedbackView: React.FC = () => {
             <CardHeader className="border-b bg-white py-4 shrink-0">
               <CardTitle className="flex items-center gap-2 text-lg">
                 <FileText className="w-5 h-5 text-slate-500" />
-                Full Interview Transcript
+                Review Transcript
               </CardTitle>
             </CardHeader>
             <div className="flex-1 overflow-hidden relative flex flex-col">
-              <ChatArea messages={interview.messages} />
+              <ChatArea messages={interview.messages} analysisMap={analysisMap} />
             </div>
           </Card>
         </TabsContent>
