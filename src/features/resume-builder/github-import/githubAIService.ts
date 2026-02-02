@@ -1,13 +1,10 @@
 import { GitHubRepo } from '@/lib/github';
 import { Project } from '@/types/resume';
-import {
-  AIConfigInput,
-  resolveConfig,
-  getGeminiClient,
-  callOpenAI,
-} from '@/services/geminiService';
+import { AIConfigInput, resolveConfig } from '@/services/geminiService';
 import { getRepoToProjectPrompt } from './githubPrompt';
 import { Type } from '@google/genai';
+import { AIService } from '@/features/ai-provider/ai.service';
+import { AIConfig } from '@/features/ai-provider/types';
 
 export const convertRepoToProject = async (
   repo: GitHubRepo,
@@ -15,6 +12,14 @@ export const convertRepoToProject = async (
   configInput: AIConfigInput
 ): Promise<Project> => {
   const config = resolveConfig(configInput);
+  const providerConfig: AIConfig = {
+    apiKey: config.apiKey,
+    baseUrl: config.baseUrl,
+    modelId: config.modelId,
+    provider: config.baseUrl ? 'openai' : 'google',
+  };
+  const service = new AIService(providerConfig);
+
   const prompt = getRepoToProjectPrompt(repo, readme);
 
   try {
@@ -22,34 +27,27 @@ export const convertRepoToProject = async (
 
     if (config.baseUrl) {
       // Custom OpenAI/Compatible Provider
-      const messages = [{ role: 'user', content: prompt }];
-      const response = await callOpenAI(config, messages, 'gpt-4o-mini');
-      const data = await response.json();
-      jsonText = data.choices?.[0]?.message?.content || '';
+      const response = await service.generateText([{ role: 'user', content: prompt }], {
+        jsonMode: true,
+      });
+      jsonText = response.text || '';
     } else {
       // Google Gemini
-      const ai = getGeminiClient(config.apiKey);
-      const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: prompt,
-        config: {
-          responseMimeType: 'application/json',
-          responseSchema: {
-            type: Type.OBJECT,
-            properties: {
-              name: { type: Type.STRING },
-              description: { type: Type.STRING },
-              highlights: { type: Type.ARRAY, items: { type: Type.STRING } },
-              keywords: { type: Type.ARRAY, items: { type: Type.STRING } },
-              url: { type: Type.STRING },
-              roles: { type: Type.ARRAY, items: { type: Type.STRING } },
-              startDate: { type: Type.STRING },
-              endDate: { type: Type.STRING },
-            },
-            required: ['name', 'description', 'highlights', 'keywords', 'url'],
-          },
+      const schema = {
+        type: Type.OBJECT,
+        properties: {
+          name: { type: Type.STRING },
+          description: { type: Type.STRING },
+          highlights: { type: Type.ARRAY, items: { type: Type.STRING } },
+          keywords: { type: Type.ARRAY, items: { type: Type.STRING } },
+          url: { type: Type.STRING },
+          roles: { type: Type.ARRAY, items: { type: Type.STRING } },
+          startDate: { type: Type.STRING },
+          endDate: { type: Type.STRING },
         },
-      });
+        required: ['name', 'description', 'highlights', 'keywords', 'url'],
+      };
+      const response = await service.generateText([{ role: 'user', content: prompt }], { schema });
       jsonText = response.text || '';
     }
 

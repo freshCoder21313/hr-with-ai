@@ -1,4 +1,4 @@
-import { GoogleGenAI, Type } from '@google/genai';
+import { Type } from '@google/genai';
 import { Interview, Message, InterviewFeedback, UserSettings, ResumeAnalysis } from '@/types';
 import { db } from '@/lib/db';
 import {
@@ -14,6 +14,8 @@ import {
 } from '@/features/interview/promptSystem';
 import { generateJobRecommendationsPrompt, generateTailoredResumePrompt } from './jobPromptSystem';
 import { ResumeData } from '@/types/resume';
+import { AIService } from '@/features/ai-provider/ai.service';
+import { AIConfig as ProviderConfig, ChatMessage } from '@/types';
 
 export interface AIConfig {
   apiKey: string;
@@ -28,35 +30,17 @@ export const resolveConfig = (input: AIConfigInput): AIConfig => {
   return input;
 };
 
-// --- Google Gemini Implementation ---
-export const getGeminiClient = (apiKey: string) => new GoogleGenAI({ apiKey });
-
-// --- OpenAI Compatible Implementation ---
-export async function callOpenAI(
-  config: AIConfig,
-  messages: any[],
-  model: string,
-  stream: boolean = false
-): Promise<Response> {
-  if (!config.baseUrl) throw new Error('Base URL required for custom provider');
-
-  return fetch(`${config.baseUrl}/chat/completions`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${config.apiKey}`,
-      // Add generic headers often needed
-      'HTTP-Referer': window.location.origin,
-      'X-Title': 'HR-With-AI',
-    },
-    body: JSON.stringify({
-      model: config.modelId || model,
-      messages: messages,
-      stream: stream,
-      temperature: 0.7,
-    }),
-  });
-}
+// Helper to get AIService instance
+const getService = (input: AIConfigInput): AIService => {
+  const config = resolveConfig(input);
+  const providerConfig: ProviderConfig = {
+    apiKey: config.apiKey,
+    baseUrl: config.baseUrl,
+    modelId: config.modelId,
+    provider: config.baseUrl ? 'openai' : 'google',
+  };
+  return new AIService(providerConfig);
+};
 
 // --- Main Service Functions ---
 
@@ -64,29 +48,12 @@ export const startInterviewSession = async (
   interview: Interview,
   configInput: AIConfigInput
 ): Promise<string> => {
-  const config = resolveConfig(configInput);
-
   const prompt = getStartPrompt(interview);
+  const service = getService(configInput);
 
   try {
-    if (config.baseUrl) {
-      // Custom Provider
-      const response = await callOpenAI(
-        config,
-        [{ role: 'user', content: prompt }],
-        'gpt-3.5-turbo'
-      );
-      const data = await response.json();
-      return data.choices?.[0]?.message?.content || "Hello, let's start.";
-    } else {
-      // Gemini
-      const ai = getGeminiClient(config.apiKey);
-      const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash', // Updated model
-        contents: prompt,
-      });
-      return response.text || "Hello, let's start the interview. Can you introduce yourself?";
-    }
+    const response = await service.generateText([{ role: 'user', content: prompt }]);
+    return response.text || "Hello, let's start the interview. Can you introduce yourself?";
   } catch (error) {
     console.error('Error starting interview:', error);
     return 'System error: Unable to start AI session. Please check your connection or API key.';
@@ -101,11 +68,11 @@ export async function* streamInterviewMessage(
   currentCode?: string,
   newImageBase64?: string,
   autoFinishEnabled?: boolean,
-  systemInjection?: string | null // Added parameter
+  systemInjection?: string | null
 ) {
-  const config = resolveConfig(configInput);
-
   try {
+    const service = getService(configInput);
+
     // Construct Context
     let codeContext = '';
     if (currentCode) {
@@ -124,51 +91,41 @@ export async function* streamInterviewMessage(
       systemPrompt += `\n\n${systemInjection}\n\n`;
     }
 
+    const config = resolveConfig(configInput);
+
     if (config.baseUrl) {
       // --- Custom/OpenAI Logic ---
-      const messages = [
-        { role: 'system', content: systemPrompt },
-        ...history.map((m) => ({
-          role: m.role === 'model' ? 'assistant' : 'user',
-          content: m.content,
-        })),
-        { role: 'user', content: newMessage },
+      // For OpenAI, we reconstruct the chat history as messages
+      const messages: ChatMessage[] = history.map((m) => ({
+        role: m.role === 'model' ? 'assistant' : 'user',
+        content: m.content,
+        // Note: OpenAI strategy doesn't support images in history yet in this implementation if they were there,
+        // but 'newImageBase64' is for the *current* message.
+      }));
+
+      // Add system prompt
+      // The OpenAI strategy supports systemInstruction in options, or we can add as a message
+      // Let's add as message to be explicit/consistent with old logic
+      // But wait, old logic did: { role: 'system', content: systemPrompt }, ...messages, { role: 'user', content: newMessage }
+
+      const fullMessages: ChatMessage[] = [
+        // We can pass system prompt via options, but passing as message is also fine for OpenAI.
+        // However, my Strategy implementation maps 'system' role correctly.
+        // But to preserve EXACT behavior of "system prompt + history + new message":
       ];
 
-      const response = await callOpenAI(config, messages, 'gpt-3.5-turbo', true);
+      // OpenAI Strategy handles systemInstruction option.
+      // But let's build the array:
 
-      if (!response.body) throw new Error('No response body');
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = '';
+      const payload: ChatMessage[] = [...messages, { role: 'user', content: newMessage }];
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
+      const stream = service.streamText(payload, { systemInstruction: systemPrompt });
 
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop() || '';
-
-        for (const line of lines) {
-          if (line.trim() === '') continue;
-          if (line.includes('[DONE]')) continue;
-
-          if (line.startsWith('data: ')) {
-            try {
-              const data = JSON.parse(line.slice(6));
-              const content = data.choices?.[0]?.delta?.content;
-              if (content) yield content;
-            } catch (e) {
-              console.error('Error parsing stream:', e);
-            }
-          }
-        }
+      for await (const chunk of stream) {
+        yield chunk;
       }
     } else {
-      // --- Gemini Logic ---
-      const ai = getGeminiClient(config.apiKey);
-
+      // --- Gemini Logic (Preserving the specific prompting style) ---
       const conversationHistory = history
         .map((m) => {
           const role = m.role === 'user' ? 'Candidate' : 'Interviewer';
@@ -188,27 +145,17 @@ export async function* streamInterviewMessage(
         If an image is provided below, it is a whiteboard drawing from the candidate.
       `;
 
-      const parts: any[] = [{ text: fullPrompt }];
+      // Pass as single user message
+      const message: ChatMessage = {
+        role: 'user',
+        content: fullPrompt,
+        image: newImageBase64,
+      };
 
-      if (newImageBase64) {
-        const cleanBase64 = newImageBase64.replace(/^data:image\/(png|jpeg|webp);base64,/, '');
-        parts.push({
-          inlineData: {
-            mimeType: 'image/png',
-            data: cleanBase64,
-          },
-        });
-      }
+      const stream = service.streamText([message]);
 
-      const response = await ai.models.generateContentStream({
-        model: 'gemini-2.5-flash',
-        contents: [{ parts }],
-      });
-
-      for await (const chunk of response) {
-        if (chunk.text) {
-          yield chunk.text;
-        }
+      for await (const chunk of stream) {
+        yield chunk;
       }
     }
   } catch (error) {
@@ -221,7 +168,8 @@ export const generateInterviewFeedback = async (
   interview: Interview,
   configInput: AIConfigInput
 ): Promise<InterviewFeedback> => {
-  const config = resolveConfig(configInput);
+  const service = getService(configInput);
+  const config = resolveConfig(configInput); // Need raw config to check if OpenAI
 
   const conversationHistory = interview.messages
     .map((m) => `${m.role === 'user' ? 'Candidate' : 'Interviewer'}: ${m.content}`)
@@ -241,88 +189,82 @@ export const generateInterviewFeedback = async (
     let jsonText = '';
 
     if (config.baseUrl) {
-      // --- Custom/OpenAI Logic ---
-      const messages = [{ role: 'user', content: prompt }];
-      const response = await callOpenAI(config, messages, 'gpt-4o-mini');
-      const data = await response.json();
-      jsonText = data.choices?.[0]?.message?.content || '';
+      // OpenAI - uses jsonMode
+      const response = await service.generateText([{ role: 'user', content: prompt }], {
+        jsonMode: true,
+      });
+      jsonText = response.text;
     } else {
-      // --- Gemini Logic ---
-      const ai = getGeminiClient(config.apiKey);
-      const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: prompt,
-        config: {
-          responseMimeType: 'application/json',
-          responseSchema: {
-            type: Type.OBJECT,
-            properties: {
-              score: { type: Type.NUMBER, description: 'Score out of 10' },
-              summary: { type: Type.STRING },
-              strengths: { type: Type.ARRAY, items: { type: Type.STRING } },
-              weaknesses: { type: Type.ARRAY, items: { type: Type.STRING } },
-              keyQuestionAnalysis: {
-                type: Type.ARRAY,
-                items: {
-                  type: Type.OBJECT,
-                  properties: {
-                    question: { type: Type.STRING },
-                    analysis: { type: Type.STRING },
-                    improvement: { type: Type.STRING },
-                  },
-                },
-              },
-              mermaidGraphCurrent: {
-                type: Type.STRING,
-                description: 'Mermaid graph definition for current performance',
-              },
-              mermaidGraphPotential: {
-                type: Type.STRING,
-                description: 'Mermaid graph definition for improved potential performance',
-              },
-              resilienceScore: {
-                type: Type.NUMBER,
-                description: 'Score 0-10 on ability to handle pressure/gaslighting (optional)',
-              },
-              cultureFitScore: {
-                type: Type.NUMBER,
-                description: 'Score 0-10 on fit for the specific Company Status (optional)',
-              },
-              badges: {
-                type: Type.ARRAY,
-                items: { type: Type.STRING },
-                description:
-                  "Awards like 'Survivor' (finished hardcore), 'Culture Fit King', 'Tech Wizard'",
-              },
-              recommendedResources: {
-                type: Type.ARRAY,
-                items: {
-                  type: Type.OBJECT,
-                  properties: {
-                    topic: { type: Type.STRING },
-                    description: { type: Type.STRING },
-                    searchQuery: { type: Type.STRING },
-                  },
-                },
+      // Gemini - uses schema
+      const schema = {
+        type: Type.OBJECT,
+        properties: {
+          score: { type: Type.NUMBER, description: 'Score out of 10' },
+          summary: { type: Type.STRING },
+          strengths: { type: Type.ARRAY, items: { type: Type.STRING } },
+          weaknesses: { type: Type.ARRAY, items: { type: Type.STRING } },
+          keyQuestionAnalysis: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                question: { type: Type.STRING },
+                analysis: { type: Type.STRING },
+                improvement: { type: Type.STRING },
               },
             },
-            required: [
-              'score',
-              'summary',
-              'strengths',
-              'weaknesses',
-              'keyQuestionAnalysis',
-              'mermaidGraphCurrent',
-              'mermaidGraphPotential',
-              'recommendedResources',
-              'resilienceScore',
-              'cultureFitScore',
-              'badges',
-            ],
+          },
+          mermaidGraphCurrent: {
+            type: Type.STRING,
+            description: 'Mermaid graph definition for current performance',
+          },
+          mermaidGraphPotential: {
+            type: Type.STRING,
+            description: 'Mermaid graph definition for improved potential performance',
+          },
+          resilienceScore: {
+            type: Type.NUMBER,
+            description: 'Score 0-10 on ability to handle pressure/gaslighting (optional)',
+          },
+          cultureFitScore: {
+            type: Type.NUMBER,
+            description: 'Score 0-10 on fit for the specific Company Status (optional)',
+          },
+          badges: {
+            type: Type.ARRAY,
+            items: { type: Type.STRING },
+            description:
+              "Awards like 'Survivor' (finished hardcore), 'Culture Fit King', 'Tech Wizard'",
+          },
+          recommendedResources: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                topic: { type: Type.STRING },
+                description: { type: Type.STRING },
+                searchQuery: { type: Type.STRING },
+              },
+            },
           },
         },
-      });
-      jsonText = response.text || '';
+        required: [
+          'score',
+          'summary',
+          'strengths',
+          'weaknesses',
+          'keyQuestionAnalysis',
+          'mermaidGraphCurrent',
+          'mermaidGraphPotential',
+          'recommendedResources',
+          'resilienceScore',
+          'cultureFitScore',
+          'badges',
+        ],
+      };
+
+      const response = await service.generateText([{ role: 'user', content: prompt }], { schema });
+      jsonText = response.text;
     }
 
     if (!jsonText) throw new Error('No feedback generated');
@@ -347,25 +289,14 @@ export const extractInfoFromJD = async (
   companyStatus?: string;
   interviewContext?: string;
 }> => {
-  const config = resolveConfig(configInput);
+  const service = getService(configInput);
   const prompt = getExtractJDInfoPrompt(jobDescription);
 
   try {
-    let jsonText = '';
-
-    if (config.baseUrl) {
-      const messages = [{ role: 'user', content: prompt }];
-      const response = await callOpenAI(config, messages, 'gpt-4o-mini');
-      const data = await response.json();
-      jsonText = data.choices?.[0]?.message?.content || '';
-    } else {
-      const ai = getGeminiClient(config.apiKey);
-      const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: prompt,
-      });
-      jsonText = response.text || '';
-    }
+    // Both providers use simple text generation here, usually returning JSON string because prompt asks for it
+    // The prompt likely says "Return JSON".
+    const response = await service.generateText([{ role: 'user', content: prompt }]);
+    let jsonText = response.text || '';
 
     if (!jsonText) throw new Error('No information extracted');
 
@@ -384,6 +315,7 @@ export const analyzeResume = async (
   resumeId?: number
 ): Promise<ResumeAnalysis> => {
   const config = resolveConfig(configInput);
+  const service = getService(configInput);
 
   // Check Cache
   if (resumeId) {
@@ -408,30 +340,23 @@ export const analyzeResume = async (
     let jsonText = '';
 
     if (config.baseUrl) {
-      const messages = [{ role: 'user', content: prompt }];
-      const response = await callOpenAI(config, messages, 'gpt-4o-mini');
-      const data = await response.json();
-      jsonText = data.choices?.[0]?.message?.content || '';
-    } else {
-      const ai = getGeminiClient(config.apiKey);
-      const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: prompt,
-        config: {
-          responseMimeType: 'application/json',
-          responseSchema: {
-            type: Type.OBJECT,
-            properties: {
-              matchScore: { type: Type.NUMBER },
-              summary: { type: Type.STRING },
-              missingKeywords: { type: Type.ARRAY, items: { type: Type.STRING } },
-              improvements: { type: Type.ARRAY, items: { type: Type.STRING } },
-            },
-            required: ['matchScore', 'summary', 'missingKeywords', 'improvements'],
-          },
-        },
+      const response = await service.generateText([{ role: 'user', content: prompt }], {
+        jsonMode: true,
       });
-      jsonText = response.text || '';
+      jsonText = response.text;
+    } else {
+      const schema = {
+        type: Type.OBJECT,
+        properties: {
+          matchScore: { type: Type.NUMBER },
+          summary: { type: Type.STRING },
+          missingKeywords: { type: Type.ARRAY, items: { type: Type.STRING } },
+          improvements: { type: Type.ARRAY, items: { type: Type.STRING } },
+        },
+        required: ['matchScore', 'summary', 'missingKeywords', 'improvements'],
+      };
+      const response = await service.generateText([{ role: 'user', content: prompt }], { schema });
+      jsonText = response.text;
     }
 
     if (!jsonText) throw new Error('No analysis generated');
@@ -468,35 +393,29 @@ export const generateInterviewHints = async (
   configInput: AIConfigInput
 ): Promise<InterviewHints> => {
   const config = resolveConfig(configInput);
+  const service = getService(configInput);
   const prompt = getHintPrompt(lastQuestion, context);
 
   try {
     let jsonText = '';
 
     if (config.baseUrl) {
-      const messages = [{ role: 'user', content: prompt }];
-      const response = await callOpenAI(config, messages, 'gpt-4o-mini');
-      const data = await response.json();
-      jsonText = data.choices?.[0]?.message?.content || '';
-    } else {
-      const ai = getGeminiClient(config.apiKey);
-      const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: prompt,
-        config: {
-          responseMimeType: 'application/json',
-          responseSchema: {
-            type: Type.OBJECT,
-            properties: {
-              level1: { type: Type.STRING },
-              level2: { type: Type.STRING },
-              level3: { type: Type.STRING },
-            },
-            required: ['level1', 'level2', 'level3'],
-          },
-        },
+      const response = await service.generateText([{ role: 'user', content: prompt }], {
+        jsonMode: true,
       });
-      jsonText = response.text || '';
+      jsonText = response.text;
+    } else {
+      const schema = {
+        type: Type.OBJECT,
+        properties: {
+          level1: { type: Type.STRING },
+          level2: { type: Type.STRING },
+          level3: { type: Type.STRING },
+        },
+        required: ['level1', 'level2', 'level3'],
+      };
+      const response = await service.generateText([{ role: 'user', content: prompt }], { schema });
+      jsonText = response.text;
     }
 
     if (!jsonText) throw new Error('No hints generated');
@@ -513,28 +432,16 @@ export const parseResumeToJSON = async (
   rawText: string,
   configInput: AIConfigInput
 ): Promise<ResumeData> => {
-  const config = resolveConfig(configInput);
+  const service = getService(configInput);
   const prompt = getParseResumePrompt(rawText);
 
   try {
-    let jsonText = '';
-
-    if (config.baseUrl) {
-      const messages = [{ role: 'user', content: prompt }];
-      const response = await callOpenAI(config, messages, 'gpt-4o-mini');
-      const data = await response.json();
-      jsonText = data.choices?.[0]?.message?.content || '';
-    } else {
-      const ai = getGeminiClient(config.apiKey);
-      const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: prompt,
-        config: {
-          responseMimeType: 'application/json',
-        },
-      });
-      jsonText = response.text || '';
-    }
+    // Note: Original code for Gemini didn't specify a schema, just responseMimeType: 'application/json'
+    // So we can assume jsonMode for both
+    const response = await service.generateText([{ role: 'user', content: prompt }], {
+      jsonMode: true,
+    });
+    let jsonText = response.text || '';
 
     if (!jsonText) throw new Error('No parsed data generated');
 
@@ -552,35 +459,29 @@ export const analyzeResumeSection = async (
   configInput: AIConfigInput
 ): Promise<{ critique: string; suggestions: string[]; rewrittenExample: string }> => {
   const config = resolveConfig(configInput);
+  const service = getService(configInput);
   const prompt = getAnalyzeSectionPrompt(sectionName, sectionData);
 
   try {
     let jsonText = '';
 
     if (config.baseUrl) {
-      const messages = [{ role: 'user', content: prompt }];
-      const response = await callOpenAI(config, messages, 'gpt-4o-mini');
-      const data = await response.json();
-      jsonText = data.choices?.[0]?.message?.content || '';
-    } else {
-      const ai = getGeminiClient(config.apiKey);
-      const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: prompt,
-        config: {
-          responseMimeType: 'application/json',
-          responseSchema: {
-            type: Type.OBJECT,
-            properties: {
-              critique: { type: Type.STRING },
-              suggestions: { type: Type.ARRAY, items: { type: Type.STRING } },
-              rewrittenExample: { type: Type.STRING },
-            },
-            required: ['critique', 'suggestions', 'rewrittenExample'],
-          },
-        },
+      const response = await service.generateText([{ role: 'user', content: prompt }], {
+        jsonMode: true,
       });
-      jsonText = response.text || '';
+      jsonText = response.text;
+    } else {
+      const schema = {
+        type: Type.OBJECT,
+        properties: {
+          critique: { type: Type.STRING },
+          suggestions: { type: Type.ARRAY, items: { type: Type.STRING } },
+          rewrittenExample: { type: Type.STRING },
+        },
+        required: ['critique', 'suggestions', 'rewrittenExample'],
+      };
+      const response = await service.generateText([{ role: 'user', content: prompt }], { schema });
+      jsonText = response.text;
     }
 
     if (!jsonText) throw new Error('No analysis generated');
@@ -598,28 +499,14 @@ export const tailorResumeToJob = async (
   jobDescription: string,
   configInput: AIConfigInput
 ): Promise<ResumeData> => {
-  const config = resolveConfig(configInput);
+  const service = getService(configInput);
   const prompt = getTailorResumePrompt(sourceResume, jobDescription);
 
   try {
-    let jsonText = '';
-
-    if (config.baseUrl) {
-      const messages = [{ role: 'user', content: prompt }];
-      const response = await callOpenAI(config, messages, 'gpt-4o-mini');
-      const data = await response.json();
-      jsonText = data.choices?.[0]?.message?.content || '';
-    } else {
-      const ai = getGeminiClient(config.apiKey);
-      const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: prompt,
-        config: {
-          responseMimeType: 'application/json',
-        },
-      });
-      jsonText = response.text || '';
-    }
+    const response = await service.generateText([{ role: 'user', content: prompt }], {
+      jsonMode: true,
+    });
+    let jsonText = response.text || '';
 
     if (!jsonText) throw new Error('No tailored resume generated');
 
@@ -648,6 +535,8 @@ export const generateJobRecommendations = async (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<any[]> => {
   const aiConfig = getStoredAIConfig();
+  const config = resolveConfig(aiConfig);
+  const service = getService(aiConfig);
 
   // Check Cache
   if (resumeId) {
@@ -671,51 +560,42 @@ export const generateJobRecommendations = async (
   try {
     let jsonText = '';
 
-    if (aiConfig.baseUrl) {
-      // Custom Provider
-      const messages = [{ role: 'user', content: prompt }];
-      const response = await callOpenAI(aiConfig, messages, 'gpt-4o-mini');
-      const data = await response.json();
-      jsonText = data.choices?.[0]?.message?.content || '';
-    } else {
-      // Gemini
-      const ai = getGeminiClient(aiConfig.apiKey);
-      const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: prompt,
-        config: {
-          responseMimeType: 'application/json',
-          responseSchema: {
-            type: Type.ARRAY,
-            items: {
-              type: Type.OBJECT,
-              properties: {
-                title: { type: Type.STRING },
-                company: { type: Type.STRING },
-                industry: { type: Type.STRING },
-                location: { type: Type.STRING },
-                salaryRange: { type: Type.STRING },
-                keyRequirements: { type: Type.ARRAY, items: { type: Type.STRING } },
-                whyItFits: { type: Type.STRING },
-                matchScore: { type: Type.NUMBER },
-                jobDescription: { type: Type.STRING },
-              },
-              required: [
-                'title',
-                'company',
-                'industry',
-                'location',
-                'salaryRange',
-                'keyRequirements',
-                'whyItFits',
-                'matchScore',
-                'jobDescription',
-              ],
-            },
-          },
-        },
+    if (config.baseUrl) {
+      const response = await service.generateText([{ role: 'user', content: prompt }], {
+        jsonMode: true,
       });
-      jsonText = response.text || '';
+      jsonText = response.text;
+    } else {
+      const schema = {
+        type: Type.ARRAY,
+        items: {
+          type: Type.OBJECT,
+          properties: {
+            title: { type: Type.STRING },
+            company: { type: Type.STRING },
+            industry: { type: Type.STRING },
+            location: { type: Type.STRING },
+            salaryRange: { type: Type.STRING },
+            keyRequirements: { type: Type.ARRAY, items: { type: Type.STRING } },
+            whyItFits: { type: Type.STRING },
+            matchScore: { type: Type.NUMBER },
+            jobDescription: { type: Type.STRING },
+          },
+          required: [
+            'title',
+            'company',
+            'industry',
+            'location',
+            'salaryRange',
+            'keyRequirements',
+            'whyItFits',
+            'matchScore',
+            'jobDescription',
+          ],
+        },
+      };
+      const response = await service.generateText([{ role: 'user', content: prompt }], { schema });
+      jsonText = response.text;
     }
 
     if (!jsonText) throw new Error('No job recommendations generated');
@@ -759,27 +639,14 @@ export const generateTailoredResumeForJob = async (
   _config: UserSettings
 ): Promise<ResumeData> => {
   const aiConfig = getStoredAIConfig();
+  const service = getService(aiConfig);
   const prompt = generateTailoredResumePrompt(originalResumeData, jobDescription);
 
   try {
-    let jsonText = '';
-
-    if (aiConfig.baseUrl) {
-      const messages = [{ role: 'user', content: prompt }];
-      const response = await callOpenAI(aiConfig, messages, 'gpt-4o-mini');
-      const data = await response.json();
-      jsonText = data.choices?.[0]?.message?.content || '';
-    } else {
-      const ai = getGeminiClient(aiConfig.apiKey);
-      const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: prompt,
-        config: {
-          responseMimeType: 'application/json',
-        },
-      });
-      jsonText = response.text || '';
-    }
+    const response = await service.generateText([{ role: 'user', content: prompt }], {
+      jsonMode: true,
+    });
+    let jsonText = response.text || '';
 
     if (!jsonText) throw new Error('No tailored resume generated');
 
