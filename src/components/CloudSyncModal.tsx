@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -42,6 +43,7 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({ isOpen, onClose 
   const [uploadId, setUploadId] = useState('');
   const [uploadPassword, setUploadPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [includeApiKey, setIncludeApiKey] = useState(false);
 
   // Download State
   const [downloadId, setDownloadId] = useState('');
@@ -82,7 +84,7 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({ isOpen, onClose 
 
     setIsLoading(true);
     try {
-      const data = await syncService.exportData();
+      const data = await syncService.exportData({ includeSensitive: includeApiKey });
       const result = await syncService.uploadToCloud(uploadId, uploadPassword, data);
 
       if (result.success) {
@@ -279,6 +281,20 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({ isOpen, onClose 
               <p className="text-[11px] text-muted-foreground font-medium px-1 italic">
                 Ensures only you can overwrite your cloud-stored data.
               </p>
+
+              <div className="flex items-center space-x-2 pt-2 px-1">
+                <Checkbox
+                  id="include-api-key"
+                  checked={includeApiKey}
+                  onCheckedChange={(checked) => setIncludeApiKey(checked === true)}
+                />
+                <label
+                  htmlFor="include-api-key"
+                  className="text-xs font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-muted-foreground"
+                >
+                  Include API Key & Sensitive Data (Not Recommended)
+                </label>
+              </div>
             </div>
 
             <LoadingButton

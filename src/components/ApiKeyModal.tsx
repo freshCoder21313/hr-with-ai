@@ -3,6 +3,8 @@ import { loadUserSettings, saveUserSettings } from '@/services/settingsService';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { ShieldCheck } from 'lucide-react';
 
 const ApiKeyModal: React.FC = () => {
   const [apiKey, setApiKey] = useState(() => localStorage.getItem('gemini_api_key') || '');
@@ -51,6 +53,15 @@ const ApiKeyModal: React.FC = () => {
         <p className="text-muted-foreground text-sm mb-4">
           Enter your API Key. Default is Google Gemini, or configure a custom provider below.
         </p>
+
+        <Alert className="mb-4 bg-primary/10 border-primary/20">
+          <ShieldCheck className="h-4 w-4 text-primary" />
+          <AlertTitle className="text-primary font-semibold ml-2">Privacy & Security</AlertTitle>
+          <AlertDescription className="text-xs text-muted-foreground ml-2 mt-1">
+            Your API Key is stored <strong>locally in your browser</strong>. We do not store it on
+            our servers. It is strictly used to communicate with Google Gemini AI.
+          </AlertDescription>
+        </Alert>
 
         <div className="space-y-4">
           <div>

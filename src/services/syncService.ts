@@ -32,14 +32,26 @@ export const syncService = {
   },
 
   // Export local data from Dexie
-  exportData: async (): Promise<SyncData> => {
+  exportData: async (
+    options: { includeSensitive: boolean } = { includeSensitive: false }
+  ): Promise<SyncData> => {
     const interviews = await db.interviews.toArray();
     const userSettings = await db.userSettings.toArray();
     const resumes = await db.resumes.toArray();
 
+    // Strip sensitive fields unless explicitly requested
+    const safeSettings = userSettings.map((s) => {
+      if (options.includeSensitive) {
+        return s;
+      }
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { apiKey, githubToken, ...safe } = s;
+      return safe;
+    });
+
     return {
       interviews,
-      userSettings,
+      userSettings: safeSettings,
       resumes,
     };
   },
