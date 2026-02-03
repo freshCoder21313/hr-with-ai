@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -25,6 +25,8 @@ import {
   Eye,
   EyeOff,
   Info,
+  FileJson,
+  Laptop,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -34,7 +36,7 @@ interface CloudSyncModalProps {
 }
 
 export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({ isOpen, onClose }) => {
-  const [activeTab, setActiveTab] = useState<'upload' | 'download'>('upload');
+  const [activeTab, setActiveTab] = useState<'upload' | 'download' | 'offline'>('upload');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -47,6 +49,10 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({ isOpen, onClose 
 
   // Download State
   const [downloadId, setDownloadId] = useState('');
+
+  // Offline State
+  const [offlineIncludeApiKey, setOfflineIncludeApiKey] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Generate ID on mount (or just when needed)
   useEffect(() => {
@@ -124,6 +130,59 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({ isOpen, onClose 
     }
   };
 
+  const handleOfflineExport = async () => {
+    resetStatus();
+    setIsLoading(true);
+    try {
+      const data = await syncService.exportData({ includeSensitive: offlineIncludeApiKey });
+      const jsonString = JSON.stringify(data, null, 2);
+      const blob = new Blob([jsonString], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement('a');
+      a.href = url;
+      const date = new Date().toISOString().split('T')[0];
+      a.download = `hr-inv-backup-${date}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      setSuccess('Backup file downloaded successfully!');
+    } catch (err) {
+      console.error(err);
+      setError('Failed to export data.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleOfflineImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    resetStatus();
+    setIsLoading(true);
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text);
+      await syncService.importData(data);
+      setSuccess('Data imported successfully! The page will reload momentarily.');
+      setTimeout(() => window.location.reload(), 2000);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (err: any) {
+      console.error(err);
+      setError('Failed to process file. Make sure it is a valid backup JSON.');
+    } finally {
+      setIsLoading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-[460px] bg-background border-border">
@@ -173,18 +232,24 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({ isOpen, onClose 
           }}
           className="w-full"
         >
-          <TabsList className="grid w-full grid-cols-2 bg-muted p-1.5 mb-8 rounded-2xl">
+          <TabsList className="grid w-full grid-cols-3 bg-muted p-1.5 mb-8 rounded-2xl">
             <TabsTrigger
               value="upload"
-              className="rounded-xl py-2.5 text-sm font-semibold transition-all data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm"
+              className="rounded-xl py-2.5 text-xs font-semibold transition-all data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm"
             >
-              Backup
+              Cloud Backup
             </TabsTrigger>
             <TabsTrigger
               value="download"
-              className="rounded-xl py-2.5 text-sm font-semibold transition-all data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm"
+              className="rounded-xl py-2.5 text-xs font-semibold transition-all data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm"
             >
-              Restore
+              Cloud Restore
+            </TabsTrigger>
+            <TabsTrigger
+              value="offline"
+              className="rounded-xl py-2.5 text-xs font-semibold transition-all data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm"
+            >
+              Offline File
             </TabsTrigger>
           </TabsList>
 
@@ -353,6 +418,93 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({ isOpen, onClose 
             >
               Confirm & Merge
             </LoadingButton>
+          </TabsContent>
+
+          <TabsContent
+            value="offline"
+            className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500"
+          >
+            <div className="grid grid-cols-1 gap-6">
+              <div className="p-5 bg-muted/50 rounded-2xl border border-border">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 bg-background rounded-lg shadow-sm">
+                    <Download className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-foreground">Export Data</h3>
+                    <p className="text-xs text-muted-foreground">Download as JSON file</p>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="offline-include-api-key"
+                      checked={offlineIncludeApiKey}
+                      onCheckedChange={(checked) => setOfflineIncludeApiKey(checked === true)}
+                    />
+                    <label
+                      htmlFor="offline-include-api-key"
+                      className="text-xs font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-muted-foreground"
+                    >
+                      Include API Key
+                    </label>
+                  </div>
+
+                  <LoadingButton
+                    onClick={handleOfflineExport}
+                    disabled={isLoading}
+                    isLoading={isLoading && activeTab === 'offline'}
+                    loadingText="Exporting..."
+                    variant="outline"
+                    className="w-full"
+                    leftIcon={<FileJson className="h-4 w-4" />}
+                  >
+                    Download Backup File
+                  </LoadingButton>
+                </div>
+              </div>
+
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-2 text-muted-foreground">Or</span>
+                </div>
+              </div>
+
+              <div className="p-5 bg-muted/50 rounded-2xl border border-border">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 bg-background rounded-lg shadow-sm">
+                    <Laptop className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-foreground">Import Data</h3>
+                    <p className="text-xs text-muted-foreground">Restore from JSON file</p>
+                  </div>
+                </div>
+
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                  accept=".json"
+                  className="hidden"
+                />
+
+                <LoadingButton
+                  onClick={handleOfflineImportClick}
+                  disabled={isLoading}
+                  isLoading={isLoading && activeTab === 'offline'}
+                  loadingText="Importing..."
+                  className="w-full"
+                  leftIcon={<Upload className="h-4 w-4" />}
+                >
+                  Select Backup File
+                </LoadingButton>
+              </div>
+            </div>
           </TabsContent>
         </Tabs>
       </DialogContent>
