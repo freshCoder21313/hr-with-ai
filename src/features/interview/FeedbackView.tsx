@@ -21,6 +21,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { ChatArea, AnalysisItem } from './components/ChatArea';
 import {
   ResponsiveContainer,
@@ -166,10 +167,17 @@ const FeedbackView: React.FC = () => {
               Transcript
             </TabsTrigger>
           </TabsList>
-          <Button variant="outline" className="gap-2" onClick={handlePrint}>
-            <Printer className="w-4 h-4" />
-            Save as PDF
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="outline" className="gap-2" onClick={handlePrint}>
+                <Printer className="w-4 h-4" />
+                Save as PDF
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Print or Save as PDF</p>
+            </TooltipContent>
+          </Tooltip>
         </div>
 
         <TabsContent

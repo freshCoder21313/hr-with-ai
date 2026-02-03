@@ -10,6 +10,7 @@ import { Wand2, ChevronLeft, Save, Eye, LayoutTemplate, Printer, Loader2 } from 
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ResumePreview from './ResumePreview';
 import { LoadingButton } from '@/components/ui/loading-button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 // Import Section Forms
 import BasicsForm from './SectionForms/BasicsForm';
@@ -185,16 +186,22 @@ const ResumeBuilder: React.FC = () => {
 
             {showPreview && (
               <>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setTemplate((t) => (t === 'modern' ? 'classic' : 'modern'))}
-                  className="gap-2"
-                  title="Switch Layout"
-                >
-                  <LayoutTemplate className="w-4 h-4" />
-                  {template === 'modern' ? 'Modern (2-Col)' : 'Classic (1-Col)'}
-                </Button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setTemplate((t) => (t === 'modern' ? 'classic' : 'modern'))}
+                      className="gap-2"
+                    >
+                      <LayoutTemplate className="w-4 h-4" />
+                      {template === 'modern' ? 'Modern (2-Col)' : 'Classic (1-Col)'}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Switch Layout</p>
+                  </TooltipContent>
+                </Tooltip>
                 <Button
                   variant="outline"
                   size="sm"

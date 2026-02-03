@@ -7,6 +7,7 @@ import { Education } from '@/types/resume';
 import { Plus, Trash2, Wand2 } from 'lucide-react';
 import { analyzeResumeSection, getStoredAIConfig } from '@/services/geminiService';
 import { LoadingButton } from '@/components/ui/loading-button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface EducationFormProps {
   data: Education[];
@@ -68,18 +69,24 @@ const EducationForm: React.FC<EducationFormProps> = ({ data, onChange }) => {
       {data.map((entry, index) => (
         <Card key={index} className="relative group">
           <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-            <LoadingButton
-              variant="outline"
-              size="sm"
-              onClick={() => handleAnalyze(index)}
-              disabled={analyzingIndex === index}
-              isLoading={analyzingIndex === index}
-              loadingText=""
-              className="text-purple-600 border-purple-200 hover:bg-purple-50"
-              title="AI Check"
-            >
-              <Wand2 className="w-4 h-4" />
-            </LoadingButton>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <LoadingButton
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleAnalyze(index)}
+                  disabled={analyzingIndex === index}
+                  isLoading={analyzingIndex === index}
+                  loadingText=""
+                  className="text-purple-600 border-purple-200 hover:bg-purple-50"
+                >
+                  <Wand2 className="w-4 h-4" />
+                </LoadingButton>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>AI Check</p>
+              </TooltipContent>
+            </Tooltip>
             <Button variant="destructive" size="sm" onClick={() => handleRemove(index)}>
               <Trash2 className="w-4 h-4" />
             </Button>

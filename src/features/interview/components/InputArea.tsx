@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import InterviewHintView from '../InterviewHintView';
 import { InterviewHints } from '@/services/geminiService';
 import { LoadingButton } from '@/components/ui/loading-button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface InputAreaProps {
   inputValue: string;
@@ -98,52 +99,70 @@ export const InputArea: React.FC<InputAreaProps> = ({
       <div className="relative flex items-end gap-2 max-w-5xl mx-auto">
         {/* Hints Button */}
         {hintsEnabled !== false && (
-          <LoadingButton
-            variant="outline"
-            size="icon"
-            onClick={onGetHints}
-            disabled={isLoadingHints}
-            isLoading={isLoadingHints}
-            className={cn(
-              'h-[44px] w-[44px] md:h-[50px] md:w-[50px] rounded-xl shrink-0 border-amber-200 bg-amber-50 text-amber-600 hover:bg-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800 dark:hover:bg-amber-900/40',
-              isLoadingHints ? 'animate-pulse' : ''
-            )}
-            title="Get AI Hints"
-          >
-            <Lightbulb size={20} />
-          </LoadingButton>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <LoadingButton
+                variant="outline"
+                size="icon"
+                onClick={onGetHints}
+                disabled={isLoadingHints}
+                isLoading={isLoadingHints}
+                className={cn(
+                  'h-[44px] w-[44px] md:h-[50px] md:w-[50px] rounded-xl shrink-0 border-amber-200 bg-amber-50 text-amber-600 hover:bg-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800 dark:hover:bg-amber-900/40',
+                  isLoadingHints ? 'animate-pulse' : ''
+                )}
+              >
+                <Lightbulb size={20} />
+              </LoadingButton>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Get AI Hints</p>
+            </TooltipContent>
+          </Tooltip>
         )}
 
         {/* Tools Group */}
         <div className="flex gap-1 mr-1">
-          <Button
-            variant={isCodeOpen ? 'default' : 'outline'}
-            size="icon"
-            onClick={() => setIsCodeOpen(true)}
-            className={cn(
-              'h-[44px] w-[44px] md:h-[50px] md:w-[50px] rounded-xl shrink-0',
-              isCodeOpen
-                ? 'bg-indigo-600 text-white hover:bg-indigo-700'
-                : 'text-indigo-600 bg-indigo-50 border-indigo-200 hover:bg-indigo-100 dark:bg-indigo-900/20 dark:text-indigo-400 dark:border-indigo-800 dark:hover:bg-indigo-900/40'
-            )}
-            title="Open Code Editor"
-          >
-            <Code2 size={20} />
-          </Button>
-          <Button
-            variant={isWhiteboardOpen ? 'default' : 'outline'}
-            size="icon"
-            onClick={() => setIsWhiteboardOpen(true)}
-            className={cn(
-              'h-[44px] w-[44px] md:h-[50px] md:w-[50px] rounded-xl shrink-0',
-              isWhiteboardOpen
-                ? 'bg-emerald-600 text-white hover:bg-emerald-700'
-                : 'text-emerald-600 bg-emerald-50 border-emerald-200 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800 dark:hover:bg-emerald-900/40'
-            )}
-            title="Open Whiteboard"
-          >
-            <PenTool size={20} />
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant={isCodeOpen ? 'default' : 'outline'}
+                size="icon"
+                onClick={() => setIsCodeOpen(true)}
+                className={cn(
+                  'h-[44px] w-[44px] md:h-[50px] md:w-[50px] rounded-xl shrink-0',
+                  isCodeOpen
+                    ? 'bg-indigo-600 text-white hover:bg-indigo-700'
+                    : 'text-indigo-600 bg-indigo-50 border-indigo-200 hover:bg-indigo-100 dark:bg-indigo-900/20 dark:text-indigo-400 dark:border-indigo-800 dark:hover:bg-indigo-900/40'
+                )}
+              >
+                <Code2 size={20} />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Open Code Editor</p>
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant={isWhiteboardOpen ? 'default' : 'outline'}
+                size="icon"
+                onClick={() => setIsWhiteboardOpen(true)}
+                className={cn(
+                  'h-[44px] w-[44px] md:h-[50px] md:w-[50px] rounded-xl shrink-0',
+                  isWhiteboardOpen
+                    ? 'bg-emerald-600 text-white hover:bg-emerald-700'
+                    : 'text-emerald-600 bg-emerald-50 border-emerald-200 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800 dark:hover:bg-emerald-900/40'
+                )}
+              >
+                <PenTool size={20} />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Open Whiteboard</p>
+            </TooltipContent>
+          </Tooltip>
         </div>
 
         <div className="relative flex-1">
@@ -160,25 +179,39 @@ export const InputArea: React.FC<InputAreaProps> = ({
             )}
             rows={1}
           />
-          <Button
-            variant={isListening ? 'destructive' : 'ghost'}
-            size="icon"
-            onClick={onToggleVoice}
-            disabled={!isSupported || voiceEnabled === false}
-            className="absolute right-1 md:right-2 top-1 md:top-1.5 h-8 w-8 text-muted-foreground hover:text-foreground"
-          >
-            {isListening ? <MicOff size={16} /> : <Mic size={16} />}
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant={isListening ? 'destructive' : 'ghost'}
+                size="icon"
+                onClick={onToggleVoice}
+                disabled={!isSupported || voiceEnabled === false}
+                className="absolute right-1 md:right-2 top-1 md:top-1.5 h-8 w-8 text-muted-foreground hover:text-foreground"
+              >
+                {isListening ? <MicOff size={16} /> : <Mic size={16} />}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{isListening ? 'Stop Listening' : 'Start Microphone'}</p>
+            </TooltipContent>
+          </Tooltip>
         </div>
 
-        <Button
-          onClick={onSendMessage}
-          disabled={!inputValue.trim() && !isListening}
-          className="h-[44px] w-[44px] md:h-[50px] md:w-[50px] rounded-xl shrink-0"
-          size="icon"
-        >
-          <Send size={18} />
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              onClick={onSendMessage}
+              disabled={!inputValue.trim() && !isListening}
+              className="h-[44px] w-[44px] md:h-[50px] md:w-[50px] rounded-xl shrink-0"
+              size="icon"
+            >
+              <Send size={18} />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Send Message</p>
+          </TooltipContent>
+        </Tooltip>
       </div>
     </div>
   );

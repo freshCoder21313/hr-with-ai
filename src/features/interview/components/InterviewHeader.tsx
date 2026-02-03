@@ -3,6 +3,7 @@ import { StopCircle, Volume2, VolumeX, Settings as SettingsIcon } from 'lucide-r
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Interview } from '@/types';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface InterviewHeaderProps {
   interview: Interview;
@@ -56,25 +57,39 @@ export const InterviewHeader: React.FC<InterviewHeaderProps> = ({
       </div>
 
       <div className="flex items-center gap-1 md:gap-2 shrink-0">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onOpenSettings}
-          className="h-8 w-8 text-muted-foreground hover:text-foreground"
-        >
-          <SettingsIcon size={18} />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onToggleTts}
-          className={cn(
-            'h-8 w-8',
-            ttsEnabled ? 'text-primary bg-primary/10' : 'text-muted-foreground'
-          )}
-        >
-          {ttsEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onOpenSettings}
+              className="h-8 w-8 text-muted-foreground hover:text-foreground"
+            >
+              <SettingsIcon size={18} />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Settings</p>
+          </TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onToggleTts}
+              className={cn(
+                'h-8 w-8',
+                ttsEnabled ? 'text-primary bg-primary/10' : 'text-muted-foreground'
+              )}
+            >
+              {ttsEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>{ttsEnabled ? 'Mute AI Voice' : 'Enable AI Voice'}</p>
+          </TooltipContent>
+        </Tooltip>
         <Button
           variant="destructive"
           size="sm"

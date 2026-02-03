@@ -2,6 +2,7 @@ import React from 'react';
 import { Send } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { LoadingButton } from '@/components/ui/loading-button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface SimpleInputAreaProps {
   onSendMessage: (text: string) => void;
@@ -41,15 +42,22 @@ export const SimpleInputArea: React.FC<SimpleInputAreaProps> = ({
           className="w-full min-h-[44px] max-h-[120px] resize-none pr-12 py-3 shadow-sm"
           rows={1}
         />
-        <LoadingButton
-          onClick={handleSend}
-          disabled={!inputValue.trim() || disabled}
-          className="h-[44px] w-[44px] rounded-xl shrink-0"
-          size="icon"
-          isLoading={disabled}
-        >
-          <Send size={18} />
-        </LoadingButton>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <LoadingButton
+              onClick={handleSend}
+              disabled={!inputValue.trim() || disabled}
+              className="h-[44px] w-[44px] rounded-xl shrink-0"
+              size="icon"
+              isLoading={disabled}
+            >
+              <Send size={18} />
+            </LoadingButton>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Send Message</p>
+          </TooltipContent>
+        </Tooltip>
       </div>
     </div>
   );

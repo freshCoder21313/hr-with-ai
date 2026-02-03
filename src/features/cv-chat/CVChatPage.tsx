@@ -21,6 +21,7 @@ import {
   Github,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import ResumeList from '@/features/dashboard/ResumeList';
 import { parseResume } from '@/services/resumeParser';
 import { getStoredAIConfig, parseResumeToJSON } from '@/services/geminiService';
@@ -380,16 +381,22 @@ const CVChatPage: React.FC = () => {
         <div className="p-4 border-b border-border bg-background flex justify-between items-center">
           <div className="flex items-center gap-2">
             <h2 className="font-semibold text-foreground">Chat Assistant</h2>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-7 text-xs gap-1.5 ml-2"
-              onClick={() => setIsGitHubModalOpen(true)}
-              title="Import Projects from GitHub"
-            >
-              <Github size={12} />
-              Import Projects
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-xs gap-1.5 ml-2"
+                  onClick={() => setIsGitHubModalOpen(true)}
+                >
+                  <Github size={12} />
+                  Import Projects
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Import Projects from GitHub</p>
+              </TooltipContent>
+            </Tooltip>
           </div>
           {pendingChanges && (
             <span className="text-xs bg-amber-500/10 text-amber-600 dark:text-amber-400 px-2 py-1 rounded-full animate-pulse">
@@ -413,16 +420,22 @@ const CVChatPage: React.FC = () => {
         <div className="h-12 bg-background border-b border-border flex items-center justify-between px-4 gap-2 shrink-0">
           <div className="flex items-center gap-2">
             {viewMode === 'preview' && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setTemplate((t) => (t === 'modern' ? 'classic' : 'modern'))}
-                className="text-xs text-muted-foreground gap-1.5 h-8"
-                title="Switch Layout (1-Col / 2-Col)"
-              >
-                <LayoutTemplate size={14} />
-                {template === 'modern' ? '2-Column' : '1-Column'}
-              </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setTemplate((t) => (t === 'modern' ? 'classic' : 'modern'))}
+                    className="text-xs text-muted-foreground gap-1.5 h-8"
+                  >
+                    <LayoutTemplate size={14} />
+                    {template === 'modern' ? '2-Column' : '1-Column'}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Switch Layout (1-Col / 2-Col)</p>
+                </TooltipContent>
+              </Tooltip>
             )}
           </div>
 

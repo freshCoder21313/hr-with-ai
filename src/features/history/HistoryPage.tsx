@@ -5,6 +5,7 @@ import { Interview } from '@/types';
 import { Calendar, Building, Briefcase, Download, Plus, ArrowRight } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import ProgressCharts from './ProgressCharts';
 
 const HistoryPage: React.FC = () => {
@@ -124,22 +125,36 @@ const HistoryPage: React.FC = () => {
                   </div>
 
                   <div className="flex items-center gap-2 w-full md:w-auto mt-2 md:mt-0 pt-4 md:pt-0 border-t md:border-t-0 border-border">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => handleExport(interview, e)}
-                      className="text-muted-foreground hover:text-primary gap-1"
-                    >
-                      <Download size={14} />
-                      Export
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-muted-foreground group-hover:text-primary ml-auto md:ml-0"
-                    >
-                      <ArrowRight size={20} />
-                    </Button>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => handleExport(interview, e)}
+                          className="text-muted-foreground hover:text-primary gap-1"
+                        >
+                          <Download size={14} />
+                          Export
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Export as JSON</p>
+                      </TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-muted-foreground group-hover:text-primary ml-auto md:ml-0"
+                        >
+                          <ArrowRight size={20} />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>View Details</p>
+                      </TooltipContent>
+                    </Tooltip>
                   </div>
                 </div>
               </CardContent>

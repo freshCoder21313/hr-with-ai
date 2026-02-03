@@ -4,6 +4,7 @@ import ApiKeyModal from './components/ApiKeyModal';
 import { Loader2 } from 'lucide-react';
 import { ThemeProvider } from './components/theme-provider';
 import Header from './components/layout/Header';
+import { TooltipProvider } from '@/components/ui/tooltip';
 
 // Lazy load features
 const SetupRoom = lazy(() => import('./features/dashboard/SetupRoom'));
@@ -23,27 +24,29 @@ const PageLoader = () => (
 const App: React.FC = () => {
   return (
     <ThemeProvider defaultTheme="system" storageKey="hr-ai-theme">
-      <HashRouter>
-        <div className="min-h-[100dvh] flex flex-col bg-background text-foreground pt-[var(--safe-top)] pb-[var(--safe-bottom)] pl-[var(--safe-left)] pr-[var(--safe-right)]">
-          <ApiKeyModal />
-          <Header />
+      <TooltipProvider>
+        <HashRouter>
+          <div className="min-h-[100dvh] flex flex-col bg-background text-foreground pt-[var(--safe-top)] pb-[var(--safe-bottom)] pl-[var(--safe-left)] pr-[var(--safe-right)]">
+            <ApiKeyModal />
+            <Header />
 
-          <main className="flex-1 container mx-auto px-0 md:px-4 py-0 md:py-6">
-            <Suspense fallback={<PageLoader />}>
-              <Routes>
-                <Route path="/" element={<LandingPage />} />
-                <Route path="/setup" element={<SetupRoom />} />
-                <Route path="/history" element={<HistoryPage />} />
-                <Route path="/resumes/:id/edit" element={<ResumeBuilder />} />
-                <Route path="/cv-chat" element={<CVChatPage />} />
-                <Route path="/interview/:id" element={<InterviewRoom />} />
-                <Route path="/feedback/:id" element={<FeedbackView />} />
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
-            </Suspense>
-          </main>
-        </div>
-      </HashRouter>
+            <main className="flex-1 container mx-auto px-0 md:px-4 py-0 md:py-6">
+              <Suspense fallback={<PageLoader />}>
+                <Routes>
+                  <Route path="/" element={<LandingPage />} />
+                  <Route path="/setup" element={<SetupRoom />} />
+                  <Route path="/history" element={<HistoryPage />} />
+                  <Route path="/resumes/:id/edit" element={<ResumeBuilder />} />
+                  <Route path="/cv-chat" element={<CVChatPage />} />
+                  <Route path="/interview/:id" element={<InterviewRoom />} />
+                  <Route path="/feedback/:id" element={<FeedbackView />} />
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+              </Suspense>
+            </main>
+          </div>
+        </HashRouter>
+      </TooltipProvider>
     </ThemeProvider>
   );
 };

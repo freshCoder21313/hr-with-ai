@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { syncService } from '@/services/syncService';
@@ -208,26 +209,38 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({ isOpen, onClose 
                   className="h-14 pl-4 pr-24 bg-muted/50 border-input rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all font-mono text-lg tracking-[0.2em] uppercase text-foreground"
                 />
                 <div className="absolute right-2 flex gap-1">
-                  <LoadingButton
-                    variant="ghost"
-                    size="icon"
-                    onClick={generateNewId}
-                    title="Regenerate"
-                    className="h-10 w-10 rounded-xl hover:bg-background hover:text-primary transition-colors"
-                    isLoading={isLoading}
-                    loadingText=""
-                  >
-                    <RefreshCw className={cn('h-5 w-5', isLoading && 'animate-spin')} />
-                  </LoadingButton>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={handleCopyId}
-                    title="Copy Key"
-                    className="h-10 w-10 rounded-xl hover:bg-background hover:text-primary transition-colors"
-                  >
-                    <Copy className="h-5 w-5" />
-                  </Button>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <LoadingButton
+                        variant="ghost"
+                        size="icon"
+                        onClick={generateNewId}
+                        className="h-10 w-10 rounded-xl hover:bg-background hover:text-primary transition-colors"
+                        isLoading={isLoading}
+                        loadingText=""
+                      >
+                        <RefreshCw className={cn('h-5 w-5', isLoading && 'animate-spin')} />
+                      </LoadingButton>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Regenerate</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={handleCopyId}
+                        className="h-10 w-10 rounded-xl hover:bg-background hover:text-primary transition-colors"
+                      >
+                        <Copy className="h-5 w-5" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Copy Key</p>
+                    </TooltipContent>
+                  </Tooltip>
                 </div>
               </div>
               <div className="flex gap-3 p-4 bg-primary/5 rounded-2xl border border-primary/10">

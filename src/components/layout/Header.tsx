@@ -11,6 +11,39 @@ import {
 } from '@/components/ui/sheet';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { CloudSyncModal } from '@/components/CloudSyncModal';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+
+const NavLinks = ({ mobile = false, closeMenu }: { mobile?: boolean; closeMenu?: () => void }) => (
+  <>
+    <a
+      href="#/"
+      className={`text-sm font-medium transition-colors hover:text-primary ${
+        mobile ? 'text-lg py-2 border-b border-border' : 'text-muted-foreground'
+      }`}
+      onClick={() => mobile && closeMenu?.()}
+    >
+      Home
+    </a>
+    <a
+      href="#/cv-chat"
+      className={`text-sm font-medium transition-colors hover:text-primary ${
+        mobile ? 'text-lg py-2 border-b border-border' : 'text-muted-foreground'
+      }`}
+      onClick={() => mobile && closeMenu?.()}
+    >
+      CV Chat
+    </a>
+    <a
+      href="#/history"
+      className={`text-sm font-medium transition-colors hover:text-primary ${
+        mobile ? 'text-lg py-2 border-b border-border' : 'text-muted-foreground'
+      }`}
+      onClick={() => mobile && closeMenu?.()}
+    >
+      History
+    </a>
+  </>
+);
 
 const Header: React.FC = () => {
   const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
@@ -22,38 +55,6 @@ const Header: React.FC = () => {
       window.location.reload();
     }
   };
-
-  const NavLinks = ({ mobile = false }: { mobile?: boolean }) => (
-    <>
-      <a
-        href="#/"
-        className={`text-sm font-medium transition-colors hover:text-primary ${
-          mobile ? 'text-lg py-2 border-b border-border' : 'text-muted-foreground'
-        }`}
-        onClick={() => mobile && setIsMobileMenuOpen(false)}
-      >
-        Home
-      </a>
-      <a
-        href="#/cv-chat"
-        className={`text-sm font-medium transition-colors hover:text-primary ${
-          mobile ? 'text-lg py-2 border-b border-border' : 'text-muted-foreground'
-        }`}
-        onClick={() => mobile && setIsMobileMenuOpen(false)}
-      >
-        CV Chat
-      </a>
-      <a
-        href="#/history"
-        className={`text-sm font-medium transition-colors hover:text-primary ${
-          mobile ? 'text-lg py-2 border-b border-border' : 'text-muted-foreground'
-        }`}
-        onClick={() => mobile && setIsMobileMenuOpen(false)}
-      >
-        History
-      </a>
-    </>
-  );
 
   return (
     <>
@@ -76,26 +77,38 @@ const Header: React.FC = () => {
 
           {/* Actions */}
           <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsSyncModalOpen(true)}
-              className="hidden sm:flex gap-2"
-              title="Cloud Sync"
-            >
-              <Cloud className="w-4 h-4" />
-              <span className="hidden lg:inline">Sync</span>
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsSyncModalOpen(true)}
+                  className="hidden sm:flex gap-2"
+                >
+                  <Cloud className="w-4 h-4" />
+                  <span className="hidden lg:inline">Sync</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Cloud Sync</p>
+              </TooltipContent>
+            </Tooltip>
 
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleResetKey}
-              className="hidden sm:flex gap-2 text-muted-foreground hover:text-destructive"
-              title="Reset API Key"
-            >
-              <Key className="w-4 h-4" />
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleResetKey}
+                  className="hidden sm:flex gap-2 text-muted-foreground hover:text-destructive"
+                >
+                  <Key className="w-4 h-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Reset API Key</p>
+              </TooltipContent>
+            </Tooltip>
 
             <ThemeToggle />
 
@@ -114,7 +127,7 @@ const Header: React.FC = () => {
                     <SheetDescription>Navigate through the application</SheetDescription>
                   </SheetHeader>
                   <div className="flex flex-col gap-4 mt-8">
-                    <NavLinks mobile />
+                    <NavLinks mobile closeMenu={() => setIsMobileMenuOpen(false)} />
                     <div className="flex flex-col gap-2 mt-4 pt-4 border-t border-border">
                       <Button
                         variant="outline"
