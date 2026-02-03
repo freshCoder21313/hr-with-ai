@@ -47,6 +47,12 @@ class HRDatabase extends Dexie {
         '++id, apiKey, githubUsername, githubToken, defaultModel, voiceEnabled, hintsEnabled, autoFinishEnabled, updatedAt',
     });
 
+    // Version 11: Add AI Provider
+    this.version(11).stores({
+      userSettings:
+        '++id, apiKey, githubUsername, githubToken, defaultModel, voiceEnabled, hintsEnabled, autoFinishEnabled, updatedAt, provider',
+    });
+
     // Add hooks to auto-update updatedAt
     this.interviews.hook('creating', (_primKey, obj) => {
       obj.updatedAt = Date.now();

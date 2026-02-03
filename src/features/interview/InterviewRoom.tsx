@@ -14,6 +14,7 @@ import { useInterviewStore } from './interviewStore';
 import { UserSettings, Resume, JobRecommendation } from '@/types';
 import SettingsModal from '@/components/SettingsModal';
 import JobRecommendationModal from './JobRecommendationModal';
+import { openApiKeyModal } from '@/events/apiKeyEvents';
 
 // Components
 import { InterviewHeader } from './components/InterviewHeader';
@@ -254,7 +255,8 @@ const InterviewRoom: React.FC = () => {
     }
     const config = getStoredAIConfig();
     if (!config.apiKey) {
-      alert('Please check your API Key settings.');
+      // alert('Please check your API Key settings.');
+      openApiKeyModal();
       return;
     }
     setIsLoadingHints(true);

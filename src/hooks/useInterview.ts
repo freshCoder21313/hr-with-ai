@@ -10,6 +10,7 @@ import {
 import { db } from '../lib/db';
 import { InterviewStatus, SetupFormData, Interview, Message } from '@/types';
 import { getActiveScenario } from '@/features/interview/scenarios';
+import { openApiKeyModal } from '@/events/apiKeyEvents';
 
 export const useInterview = () => {
   const navigate = useNavigate();
@@ -31,6 +32,7 @@ export const useInterview = () => {
 
         const config = getStoredAIConfig();
         if (!config.apiKey) {
+          openApiKeyModal();
           throw new Error('API Key is missing. Please set it in Settings.');
         }
 
@@ -121,6 +123,12 @@ export const useInterview = () => {
       try {
         setLoading(true); // Start loading
         const config = getStoredAIConfig();
+
+        if (!config.apiKey) {
+          openApiKeyModal();
+          setLoading(false);
+          return;
+        }
 
         // 1. Add User Message
         const userMsg: Message = {

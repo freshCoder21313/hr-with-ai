@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Cloud, Menu, Key } from 'lucide-react';
+import { openApiKeyModal } from '@/events/apiKeyEvents';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -49,11 +50,8 @@ const Header: React.FC = () => {
   const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const handleResetKey = () => {
-    if (window.confirm('Remove API Key and reload?')) {
-      localStorage.removeItem('gemini_api_key');
-      window.location.reload();
-    }
+  const handleOpenSettings = () => {
+    openApiKeyModal();
   };
 
   return (
@@ -99,14 +97,15 @@ const Header: React.FC = () => {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={handleResetKey}
-                  className="hidden sm:flex gap-2 text-muted-foreground hover:text-destructive"
+                  onClick={handleOpenSettings}
+                  className="hidden sm:flex gap-2 text-muted-foreground hover:text-primary"
                 >
                   <Key className="w-4 h-4" />
+                  <span className="hidden lg:inline">API Key</span>
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>Reset API Key</p>
+                <p>API Key Settings</p>
               </TooltipContent>
             </Tooltip>
 
@@ -141,10 +140,10 @@ const Header: React.FC = () => {
                       </Button>
                       <Button
                         variant="ghost"
-                        onClick={handleResetKey}
-                        className="justify-start gap-2 text-destructive hover:text-destructive hover:bg-destructive/10"
+                        onClick={handleOpenSettings}
+                        className="justify-start gap-2 text-muted-foreground hover:text-primary"
                       >
-                        <Key className="w-4 h-4" /> Reset API Key
+                        <Key className="w-4 h-4" /> API Key Settings
                       </Button>
                     </div>
                   </div>

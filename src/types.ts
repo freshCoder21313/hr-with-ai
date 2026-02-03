@@ -85,6 +85,7 @@ export interface UserSettings {
   autoFinishEnabled?: boolean;
   baseUrl?: string;
   modelId?: string;
+  provider?: AIModelProvider;
 }
 
 export interface Resume {
@@ -131,7 +132,7 @@ export interface JobSelectionState {
   status: 'idle' | 'analyzing' | 'generating' | 'completed';
 }
 
-export type AIModelProvider = 'google' | 'openai' | 'anthropic';
+export type AIModelProvider = 'google' | 'openai' | 'anthropic' | 'openrouter';
 
 export interface AIConfig {
   apiKey: string;

@@ -17,27 +17,40 @@ import { ResumeData } from '@/types/resume';
 import { AIService } from '@/features/ai-provider/ai.service';
 import { AIConfig as ProviderConfig, ChatMessage } from '@/types';
 
+import { AIModelProvider } from '@/types';
+
 export interface AIConfig {
   apiKey: string;
   baseUrl?: string;
   modelId?: string;
+  provider?: AIModelProvider;
 }
 
 export type AIConfigInput = string | AIConfig;
 
 export const resolveConfig = (input: AIConfigInput): AIConfig => {
-  if (typeof input === 'string') return { apiKey: input };
+  if (typeof input === 'string') return { apiKey: input, provider: 'google' };
   return input;
 };
 
 // Helper to get AIService instance
 const getService = (input: AIConfigInput): AIService => {
   const config = resolveConfig(input);
+
+  let provider = config.provider || (config.baseUrl ? 'openai' : 'google');
+  let baseUrl = config.baseUrl;
+
+  // Map OpenRouter to OpenAI strategy
+  if (provider === 'openrouter') {
+    provider = 'openai';
+    baseUrl = baseUrl || 'https://openrouter.ai/api/v1';
+  }
+
   const providerConfig: ProviderConfig = {
     apiKey: config.apiKey,
-    baseUrl: config.baseUrl,
+    baseUrl: baseUrl,
     modelId: config.modelId,
-    provider: config.baseUrl ? 'openai' : 'google',
+    provider: provider,
   };
   return new AIService(providerConfig);
 };
@@ -107,12 +120,6 @@ export async function* streamInterviewMessage(
       // The OpenAI strategy supports systemInstruction in options, or we can add as a message
       // Let's add as message to be explicit/consistent with old logic
       // But wait, old logic did: { role: 'system', content: systemPrompt }, ...messages, { role: 'user', content: newMessage }
-
-      const fullMessages: ChatMessage[] = [
-        // We can pass system prompt via options, but passing as message is also fine for OpenAI.
-        // However, my Strategy implementation maps 'system' role correctly.
-        // But to preserve EXACT behavior of "system prompt + history + new message":
-      ];
 
       // OpenAI Strategy handles systemInstruction option.
       // But let's build the array:
@@ -523,6 +530,8 @@ export const getStoredAIConfig = (): AIConfig => {
     apiKey: localStorage.getItem('gemini_api_key') || '',
     baseUrl: localStorage.getItem('custom_base_url') || undefined,
     modelId: localStorage.getItem('custom_model_id') || undefined,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    provider: (localStorage.getItem('ai_provider') as any) || 'google',
   };
 };
 

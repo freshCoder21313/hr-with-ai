@@ -13,6 +13,7 @@ const DEFAULT_SETTINGS: UserSettings = {
   apiKey: '',
   baseUrl: '',
   defaultModel: '',
+  provider: 'google',
 };
 
 /**
@@ -28,6 +29,8 @@ export async function loadUserSettings(): Promise<UserSettings> {
     const localApiKey = localStorage.getItem('gemini_api_key') || '';
     const localBaseUrl = localStorage.getItem('custom_base_url') || '';
     const localModelId = localStorage.getItem('custom_model_id') || '';
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const localProvider = (localStorage.getItem('ai_provider') as any) || 'google';
 
     if (storedDB) {
       return {
@@ -35,6 +38,7 @@ export async function loadUserSettings(): Promise<UserSettings> {
         apiKey: storedDB.apiKey || localApiKey,
         baseUrl: storedDB.baseUrl || localBaseUrl,
         defaultModel: storedDB.defaultModel || localModelId,
+        provider: storedDB.provider || localProvider,
       };
     }
 
@@ -44,6 +48,7 @@ export async function loadUserSettings(): Promise<UserSettings> {
       apiKey: localApiKey,
       baseUrl: localBaseUrl,
       defaultModel: localModelId,
+      provider: localProvider,
     };
   } catch (error) {
     console.error('Failed to load settings from DB:', error);
@@ -53,6 +58,8 @@ export async function loadUserSettings(): Promise<UserSettings> {
       apiKey: localStorage.getItem('gemini_api_key') || '',
       baseUrl: localStorage.getItem('custom_base_url') || '',
       defaultModel: localStorage.getItem('custom_model_id') || '',
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      provider: (localStorage.getItem('ai_provider') as any) || 'google',
     };
   }
 }
@@ -76,6 +83,9 @@ export async function saveUserSettings(settings: UserSettings): Promise<UserSett
     } else {
       localStorage.removeItem('custom_model_id');
     }
+    if (settings.provider) {
+      localStorage.setItem('ai_provider', settings.provider);
+    }
 
     // 2. Save to IndexedDB
     const dbRecord: UserSettings = {
@@ -87,6 +97,7 @@ export async function saveUserSettings(settings: UserSettings): Promise<UserSett
       githubToken: settings.githubToken || '',
       defaultModel: settings.defaultModel || '',
       baseUrl: settings.baseUrl || '',
+      provider: settings.provider || 'google',
     };
 
     // Check if a settings record already exists
@@ -136,6 +147,8 @@ export function loadSettingsSync(): Partial<UserSettings> {
     apiKey: localStorage.getItem('gemini_api_key') || '',
     baseUrl: localStorage.getItem('custom_base_url') || '',
     defaultModel: localStorage.getItem('custom_model_id') || '',
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    provider: (localStorage.getItem('ai_provider') as any) || 'google',
   };
 }
 
