@@ -7,7 +7,165 @@ interface TemplateProps {
 }
 
 const ClassicTemplate: React.FC<TemplateProps> = ({ data }) => {
-  const { basics, work, education, skills, projects } = data;
+  const { basics, work, education, skills, projects, meta } = data;
+
+  const defaultOrder = ['summary', 'experience', 'projects', 'education', 'skills'];
+  
+  // For Classic, we merge sidebar and main if they exist (handling switch from Modern)
+  // or just use main if it contains everything.
+  // Best approach: Use a specific order if defined, otherwise defaults.
+  // If we want to support the same config object:
+  let sectionOrder = defaultOrder;
+  if (meta?.sectionOrder) {
+    // Flatten both lists for single column view
+    sectionOrder = [...(meta.sectionOrder.main || []), ...(meta.sectionOrder.sidebar || [])];
+    // Remove duplicates just in case
+    sectionOrder = Array.from(new Set(sectionOrder));
+  }
+
+  const renderSection = (id: string) => {
+    switch (id) {
+      case 'summary':
+        if (!basics.summary) return null;
+        return (
+          <section key="summary" className="mb-6">
+            <h2 className="text-lg font-bold uppercase border-b border-slate-300 mb-3 pb-1">
+              Professional Summary
+            </h2>
+            <p className="text-slate-700 leading-relaxed text-sm text-justify">{basics.summary}</p>
+          </section>
+        );
+
+      case 'work':
+      case 'experience': // Handle both keys
+        if (work.length === 0) return null;
+        return (
+          <section key="work" className="mb-6">
+            <h2 className="text-lg font-bold uppercase border-b border-slate-300 mb-4 pb-1">
+              Experience
+            </h2>
+            <div className="space-y-5">
+              {work.map((job, i) => (
+                <div key={i}>
+                  <div className="flex justify-between items-baseline mb-1">
+                    <h3 className="font-bold text-base">{job.name}</h3>
+                    <span className="text-sm text-slate-500 italic">
+                      {[job.startDate, job.endDate].filter(Boolean).join(' - ')}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-baseline mb-2">
+                    <p className="font-semibold text-sm text-slate-700">{job.position}</p>
+                  </div>
+                  <p className="text-sm text-slate-600 mb-2">{job.summary}</p>
+                  {job.highlights && job.highlights.length > 0 && (
+                    <ul className="list-disc ml-5 space-y-1">
+                      {job.highlights.map((highlight, idx) => (
+                        <li key={idx} className="text-sm text-slate-600">
+                          {highlight}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+        );
+
+      case 'projects':
+        if (projects.length === 0) return null;
+        return (
+          <section key="projects" className="mb-6">
+            <h2 className="text-lg font-bold uppercase border-b border-slate-300 mb-4 pb-1">
+              Projects
+            </h2>
+            <div className="space-y-4">
+              {projects.map((project, i) => (
+                <div key={i}>
+                  <div className="flex justify-between items-baseline mb-1">
+                    <h3 className="font-bold text-base">
+                      {project.name}
+                      {project.url && (
+                        <a
+                          href={project.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="ml-2 text-xs font-normal text-blue-600 hover:underline"
+                        >
+                          {project.url.replace(/^https?:\/\//, '')}
+                        </a>
+                      )}
+                    </h3>
+                    <span className="text-sm text-slate-500 italic">
+                      {[project.startDate, project.endDate].filter(Boolean).join(' - ')}
+                    </span>
+                  </div>
+                  <p className="text-sm text-slate-600 mb-2">{project.description}</p>
+                  {project.highlights && project.highlights.length > 0 && (
+                    <ul className="list-disc ml-5 space-y-1">
+                      {project.highlights.map((highlight, idx) => (
+                        <li key={idx} className="text-sm text-slate-600">
+                          {highlight}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+        );
+
+      case 'education':
+        if (education.length === 0) return null;
+        return (
+          <section key="education" className="mb-6">
+            <h2 className="text-lg font-bold uppercase border-b border-slate-300 mb-4 pb-1">
+              Education
+            </h2>
+            <div className="space-y-3">
+              {education.map((edu, i) => (
+                <div key={i}>
+                  <div className="flex justify-between items-baseline">
+                    <h3 className="font-bold text-base">{edu.institution}</h3>
+                    <span className="text-sm text-slate-500 italic">
+                      {[edu.startDate, edu.endDate].filter(Boolean).join(' - ')}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <p className="text-sm text-slate-700">
+                      {edu.studyType} in {edu.area}
+                    </p>
+                    {edu.score && <span className="text-sm text-slate-500">GPA: {edu.score}</span>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        );
+
+      case 'skills':
+        if (skills.length === 0) return null;
+        return (
+          <section key="skills">
+            <h2 className="text-lg font-bold uppercase border-b border-slate-300 mb-4 pb-1">
+              Skills
+            </h2>
+            <div className="grid grid-cols-1 gap-y-2 gap-x-8">
+              {skills.map((skill, i) => (
+                <div key={i} className="flex flex-col sm:items-baseline">
+                  <span className="font-bold text-sm min-w-[120px]">{skill.name}:</span>
+                  <p className="text-sm text-slate-600">{skill.keywords?.join(', ')}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        );
+        
+      default:
+        return null;
+    }
+  };
 
   return (
     <div className="font-serif text-slate-900 bg-white p-8 max-w-[210mm] mx-auto min-h-[297mm] shadow-sm print:shadow-none print:p-0">
@@ -53,136 +211,8 @@ const ClassicTemplate: React.FC<TemplateProps> = ({ data }) => {
         </div>
       </header>
 
-      {/* Summary */}
-      {basics.summary && (
-        <section className="mb-6">
-          <h2 className="text-lg font-bold uppercase border-b border-slate-300 mb-3 pb-1">
-            Professional Summary
-          </h2>
-          <p className="text-slate-700 leading-relaxed text-sm text-justify">{basics.summary}</p>
-        </section>
-      )}
-
-      {/* Experience */}
-      {work.length > 0 && (
-        <section className="mb-6">
-          <h2 className="text-lg font-bold uppercase border-b border-slate-300 mb-4 pb-1">
-            Experience
-          </h2>
-          <div className="space-y-5">
-            {work.map((job, i) => (
-              <div key={i}>
-                <div className="flex justify-between items-baseline mb-1">
-                  <h3 className="font-bold text-base">{job.name}</h3>
-                  <span className="text-sm text-slate-500 italic">
-                    {[job.startDate, job.endDate].filter(Boolean).join(' - ')}
-                  </span>
-                </div>
-                <div className="flex justify-between items-baseline mb-2">
-                  <p className="font-semibold text-sm text-slate-700">{job.position}</p>
-                </div>
-                <p className="text-sm text-slate-600 mb-2">{job.summary}</p>
-                {job.highlights && job.highlights.length > 0 && (
-                  <ul className="list-disc ml-5 space-y-1">
-                    {job.highlights.map((highlight, idx) => (
-                      <li key={idx} className="text-sm text-slate-600">
-                        {highlight}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Projects */}
-      {projects.length > 0 && (
-        <section className="mb-6">
-          <h2 className="text-lg font-bold uppercase border-b border-slate-300 mb-4 pb-1">
-            Projects
-          </h2>
-          <div className="space-y-4">
-            {projects.map((project, i) => (
-              <div key={i}>
-                <div className="flex justify-between items-baseline mb-1">
-                  <h3 className="font-bold text-base">
-                    {project.name}
-                    {project.url && (
-                      <a
-                        href={project.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="ml-2 text-xs font-normal text-blue-600 hover:underline"
-                      >
-                        {project.url.replace(/^https?:\/\//, '')}
-                      </a>
-                    )}
-                  </h3>
-                  <span className="text-sm text-slate-500 italic">
-                    {[project.startDate, project.endDate].filter(Boolean).join(' - ')}
-                  </span>
-                </div>
-                <p className="text-sm text-slate-600 mb-2">{project.description}</p>
-                {project.highlights && project.highlights.length > 0 && (
-                  <ul className="list-disc ml-5 space-y-1">
-                    {project.highlights.map((highlight, idx) => (
-                      <li key={idx} className="text-sm text-slate-600">
-                        {highlight}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Education */}
-      {education.length > 0 && (
-        <section className="mb-6">
-          <h2 className="text-lg font-bold uppercase border-b border-slate-300 mb-4 pb-1">
-            Education
-          </h2>
-          <div className="space-y-3">
-            {education.map((edu, i) => (
-              <div key={i}>
-                <div className="flex justify-between items-baseline">
-                  <h3 className="font-bold text-base">{edu.institution}</h3>
-                  <span className="text-sm text-slate-500 italic">
-                    {[edu.startDate, edu.endDate].filter(Boolean).join(' - ')}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <p className="text-sm text-slate-700">
-                    {edu.studyType} in {edu.area}
-                  </p>
-                  {edu.score && <span className="text-sm text-slate-500">GPA: {edu.score}</span>}
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Skills */}
-      {skills.length > 0 && (
-        <section>
-          <h2 className="text-lg font-bold uppercase border-b border-slate-300 mb-4 pb-1">
-            Skills
-          </h2>
-          <div className="grid grid-cols-1 gap-y-2 gap-x-8">
-            {skills.map((skill, i) => (
-              <div key={i} className="flex flex-col sm:items-baseline">
-                <span className="font-bold text-sm min-w-[120px]">{skill.name}:</span>
-                <p className="text-sm text-slate-600">{skill.keywords?.join(', ')}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
+      {/* Dynamic Sections */}
+      {sectionOrder.map(id => renderSection(id))}
     </div>
   );
 };

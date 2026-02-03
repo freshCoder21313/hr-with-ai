@@ -6,9 +6,10 @@ import { ResumeData } from '@/types/resume';
 import { getStoredAIConfig, parseResumeToJSON } from '@/services/geminiService';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Wand2, ChevronLeft, Save, Eye, LayoutTemplate, Printer, Loader2 } from 'lucide-react';
+import { Wand2, ChevronLeft, Save, Eye, LayoutTemplate, Printer, Loader2, List } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ResumePreview from './ResumePreview';
+import SectionReorderDialog from './components/SectionReorderDialog';
 import { LoadingButton } from '@/components/ui/loading-button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
@@ -29,6 +30,7 @@ const ResumeBuilder: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [activeTab, setActiveTab] = useState('basics');
   const [showPreview, setShowPreview] = useState(false);
+  const [showReorderDialog, setShowReorderDialog] = useState(false);
   const [template, setTemplate] = useState<'classic' | 'modern'>('modern');
 
   useEffect(() => {
@@ -116,6 +118,18 @@ const ResumeBuilder: React.FC = () => {
     }
   };
 
+  const handleOrderSave = (newOrder: { main: string[]; sidebar?: string[] }) => {
+    if (!data) return;
+    setData({
+      ...data,
+      meta: {
+        ...data.meta,
+        sectionOrder: newOrder,
+        template, // Ensure template is also synced
+      },
+    });
+  };
+
   const handlePrint = () => {
     window.print();
   };
@@ -140,6 +154,13 @@ const ResumeBuilder: React.FC = () => {
       <div className="hidden print:block print:absolute print:inset-0 print:z-[9999] print:bg-white">
         <ResumePreview data={data} template={template} />
       </div>
+
+      <SectionReorderDialog 
+        isOpen={showReorderDialog}
+        onClose={() => setShowReorderDialog(false)}
+        data={{...data, meta: { ...data.meta, template }}}
+        onSave={handleOrderSave}
+      />
 
       {/* Main UI */}
       <div className="flex flex-col h-screen bg-background text-foreground print:hidden">
@@ -191,24 +212,42 @@ const ResumeBuilder: React.FC = () => {
                     <Button
                       variant="outline"
                       size="sm"
+                      onClick={() => setShowReorderDialog(true)}
+                      className="gap-2"
+                    >
+                      <List className="w-4 h-4" />
+                      Arrange
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Reorder Sections</p>
+                  </TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
                       onClick={() => setTemplate((t) => (t === 'modern' ? 'classic' : 'modern'))}
                       className="gap-2"
                     >
                       <LayoutTemplate className="w-4 h-4" />
-                      {template === 'modern' ? 'Modern (2-Col)' : 'Classic (1-Col)'}
+                      {template === 'modern' ? 'Modern' : 'Classic'}
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
                     <p>Switch Layout</p>
                   </TooltipContent>
                 </Tooltip>
+                
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={handlePrint}
                   className="gap-2 text-primary border-primary/20 hover:bg-primary/5"
                 >
-                  <Printer className="w-4 h-4" /> Export PDF
+                  <Printer className="w-4 h-4" /> PDF
                 </Button>
               </>
             )}
