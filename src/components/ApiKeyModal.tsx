@@ -12,7 +12,9 @@ const ApiKeyModal: React.FC = () => {
   const [baseUrl, setBaseUrl] = useState(() => localStorage.getItem('custom_base_url') || '');
   const [modelId, setModelId] = useState(() => localStorage.getItem('custom_model_id') || '');
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [provider, setProvider] = useState<any>(() => localStorage.getItem('ai_provider') || 'google');
+  const [provider, setProvider] = useState<any>(
+    () => localStorage.getItem('ai_provider') || 'google'
+  );
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [isOpen, setIsOpen] = useState(() => !localStorage.getItem('gemini_api_key'));
 
@@ -59,9 +61,8 @@ const ApiKeyModal: React.FC = () => {
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
       <div className="bg-card rounded-xl shadow-2xl p-6 w-full max-w-md border border-border text-card-foreground relative animate-in fade-in zoom-in-95 duration-200">
-        
         {/* Close Button allowing Late Entry */}
-        <button 
+        <button
           onClick={() => setIsOpen(false)}
           className="absolute top-4 right-4 text-muted-foreground hover:text-foreground p-1 rounded-full hover:bg-muted transition-colors"
           title="Close / Skip for now"
@@ -92,9 +93,15 @@ const ApiKeyModal: React.FC = () => {
               onChange={(e) => setProvider(e.target.value)}
               className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <option value="google" className="bg-popover text-popover-foreground">Google Gemini (Default)</option>
-              <option value="openai" className="bg-popover text-popover-foreground">OpenAI / Compatible</option>
-              <option value="openrouter" className="bg-popover text-popover-foreground">OpenRouter</option>
+              <option value="google" className="bg-popover text-popover-foreground">
+                Google Gemini (Default)
+              </option>
+              <option value="openai" className="bg-popover text-popover-foreground">
+                OpenAI / Compatible
+              </option>
+              <option value="openrouter" className="bg-popover text-popover-foreground">
+                OpenRouter
+              </option>
               {/* <option value="anthropic">Anthropic Claude</option> */}
             </select>
           </div>
@@ -107,7 +114,7 @@ const ApiKeyModal: React.FC = () => {
               type="password"
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
-              placeholder={provider === 'google' ? "AIzaSy..." : "sk-..."}
+              placeholder={provider === 'google' ? 'AIzaSy...' : 'sk-...'}
             />
           </div>
 
@@ -130,10 +137,10 @@ const ApiKeyModal: React.FC = () => {
                   onChange={(e) => setBaseUrl(e.target.value)}
                   placeholder={
                     provider === 'google'
-                      ? "https://generativelanguage.googleapis.com"
+                      ? 'https://generativelanguage.googleapis.com'
                       : provider === 'openrouter'
-                      ? "https://openrouter.ai/api/v1"
-                      : "https://api.openai.com/v1"
+                        ? 'https://openrouter.ai/api/v1'
+                        : 'https://api.openai.com/v1'
                   }
                   className="text-sm"
                 />
@@ -146,7 +153,12 @@ const ApiKeyModal: React.FC = () => {
               </div>
               <div>
                 <Label className="mb-1 block">
-                  Model ID {provider === 'openrouter' ? <span className="text-destructive">*</span> : '(Optional)'}
+                  Model ID{' '}
+                  {provider === 'openrouter' ? (
+                    <span className="text-destructive">*</span>
+                  ) : (
+                    '(Optional)'
+                  )}
                 </Label>
                 <Input
                   type="text"
@@ -154,10 +166,10 @@ const ApiKeyModal: React.FC = () => {
                   onChange={(e) => setModelId(e.target.value)}
                   placeholder={
                     provider === 'google'
-                      ? "gemini-2.6-flash-exp"
+                      ? 'gemini-2.6-flash-exp'
                       : provider === 'openrouter'
-                      ? "e.g. liquid/lfm-2.5-1.2b-thinking:free"
-                      : "gpt-4o"
+                        ? 'e.g. liquid/lfm-2.5-1.2b-thinking:free'
+                        : 'gpt-4o'
                   }
                   className="text-sm"
                 />
@@ -167,19 +179,19 @@ const ApiKeyModal: React.FC = () => {
 
           <div className="flex gap-2">
             {!apiKey && (
-                 <Button variant="outline" onClick={() => setIsOpen(false)} className="w-full">
-                    Skip
-                </Button>
+              <Button variant="outline" onClick={() => setIsOpen(false)} className="w-full">
+                Skip
+              </Button>
             )}
-            <Button 
-                onClick={handleSave} 
-                disabled={!apiKey.trim() || (provider === 'openrouter' && !modelId.trim())} 
-                className="w-full"
+            <Button
+              onClick={handleSave}
+              disabled={!apiKey.trim() || (provider === 'openrouter' && !modelId.trim())}
+              className="w-full"
             >
-                Save Configuration
+              Save Configuration
             </Button>
           </div>
-          
+
           <p className="text-xs text-center text-muted-foreground">
             Get your key at{' '}
             {provider === 'google' ? (
@@ -201,7 +213,7 @@ const ApiKeyModal: React.FC = () => {
                 OpenRouter
               </a>
             ) : (
-               <a
+              <a
                 href="https://platform.openai.com/api-keys"
                 target="_blank"
                 rel="noreferrer"

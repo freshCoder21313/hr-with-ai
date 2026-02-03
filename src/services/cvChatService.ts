@@ -3,7 +3,7 @@ import { ResumeData } from '@/types/resume';
 import { getCVChatSystemPrompt } from '@/features/cv-chat/cvPrompt';
 import { resolveConfig, AIConfigInput } from '@/services/geminiService';
 import { AIService } from '@/features/ai-provider/ai.service';
-import { AIConfig, ChatMessage } from '@/features/ai-provider/types';
+import { AIConfig, ChatMessage } from '@/types';
 
 export async function* streamCVChatMessage(
   history: Message[],

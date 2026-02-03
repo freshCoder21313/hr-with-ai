@@ -1,4 +1,4 @@
-import { AIProviderStrategy, ChatMessage, AIResponse, AIRequestOptions } from '../types';
+import { AIProviderStrategy, ChatMessage, AIResponse, AIRequestOptions } from '@/types';
 
 export class OpenAICustomStrategy implements AIProviderStrategy {
   private apiKey: string;

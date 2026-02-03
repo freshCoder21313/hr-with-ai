@@ -10,7 +10,7 @@ const ClassicTemplate: React.FC<TemplateProps> = ({ data }) => {
   const { basics, work, education, skills, projects, meta } = data;
 
   const defaultOrder = ['summary', 'experience', 'projects', 'education', 'skills'];
-  
+
   // For Classic, we merge sidebar and main if they exist (handling switch from Modern)
   // or just use main if it contains everything.
   // Best approach: Use a specific order if defined, otherwise defaults.
@@ -161,7 +161,7 @@ const ClassicTemplate: React.FC<TemplateProps> = ({ data }) => {
             </div>
           </section>
         );
-        
+
       default:
         return null;
     }
@@ -212,7 +212,7 @@ const ClassicTemplate: React.FC<TemplateProps> = ({ data }) => {
       </header>
 
       {/* Dynamic Sections */}
-      {sectionOrder.map(id => renderSection(id))}
+      {sectionOrder.map((id) => renderSection(id))}
     </div>
   );
 };

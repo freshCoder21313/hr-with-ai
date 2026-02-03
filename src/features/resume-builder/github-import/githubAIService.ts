@@ -4,7 +4,7 @@ import { AIConfigInput, resolveConfig } from '@/services/geminiService';
 import { getRepoToProjectPrompt } from './githubPrompt';
 import { Type } from '@google/genai';
 import { AIService } from '@/features/ai-provider/ai.service';
-import { AIConfig } from '@/features/ai-provider/types';
+import { AIConfig } from '@/types';
 
 export const convertRepoToProject = async (
   repo: GitHubRepo,

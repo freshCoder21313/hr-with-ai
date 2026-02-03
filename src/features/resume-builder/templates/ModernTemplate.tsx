@@ -85,9 +85,9 @@ const ModernTemplate: React.FC<TemplateProps> = ({ data }) => {
         // Actually, users might want to move Summary below Experience.
         return (
           <div key="summary" className="mb-10 text-slate-600 text-sm leading-relaxed max-w-prose">
-             {basics.summary}
+            {basics.summary}
           </div>
-        )
+        );
 
       case 'work':
         if (work.length === 0) return null;
@@ -178,7 +178,7 @@ const ModernTemplate: React.FC<TemplateProps> = ({ data }) => {
             </div>
           </section>
         );
-      
+
       default:
         return null;
     }
@@ -232,7 +232,7 @@ const ModernTemplate: React.FC<TemplateProps> = ({ data }) => {
         </div>
 
         {/* Dynamic Sidebar Sections */}
-        {sidebarOrder.map(id => renderSection(id))}
+        {sidebarOrder.map((id) => renderSection(id))}
       </aside>
 
       {/* Main Content (Right Column) */}
@@ -267,7 +267,7 @@ const ModernTemplate: React.FC<TemplateProps> = ({ data }) => {
         </header>
 
         {/* Dynamic Main Sections */}
-        {mainOrder.map(id => renderSection(id))}
+        {mainOrder.map((id) => renderSection(id))}
       </main>
     </div>
   );

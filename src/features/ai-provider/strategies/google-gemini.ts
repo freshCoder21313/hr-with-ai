@@ -1,5 +1,5 @@
 import { GoogleGenAI } from '@google/genai';
-import { AIProviderStrategy, ChatMessage, AIResponse, AIRequestOptions } from '../types';
+import { AIProviderStrategy, ChatMessage, AIResponse, AIRequestOptions } from '@/types';
 
 export class GoogleGeminiStrategy implements AIProviderStrategy {
   private client: GoogleGenAI;

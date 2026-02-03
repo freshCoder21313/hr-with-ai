@@ -7,7 +7,16 @@ import { getStoredAIConfig, parseResumeToJSON } from '@/services/geminiService';
 import { openApiKeyModal } from '@/events/apiKeyEvents';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Wand2, ChevronLeft, Save, Eye, LayoutTemplate, Printer, Loader2, List } from 'lucide-react';
+import {
+  Wand2,
+  ChevronLeft,
+  Save,
+  Eye,
+  LayoutTemplate,
+  Printer,
+  Loader2,
+  List,
+} from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ResumePreview from './ResumePreview';
 import SectionReorderDialog from './components/SectionReorderDialog';
@@ -157,10 +166,10 @@ const ResumeBuilder: React.FC = () => {
         <ResumePreview data={data} template={template} />
       </div>
 
-      <SectionReorderDialog 
+      <SectionReorderDialog
         isOpen={showReorderDialog}
         onClose={() => setShowReorderDialog(false)}
-        data={{...data, meta: { ...data.meta, template }}}
+        data={{ ...data, meta: { ...data.meta, template } }}
         onSave={handleOrderSave}
       />
 
@@ -242,7 +251,7 @@ const ResumeBuilder: React.FC = () => {
                     <p>Switch Layout</p>
                   </TooltipContent>
                 </Tooltip>
-                
+
                 <Button
                   variant="outline"
                   size="sm"

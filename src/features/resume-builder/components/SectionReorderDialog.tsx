@@ -36,7 +36,7 @@ const SectionReorderDialog: React.FC<SectionReorderDialogProps> = ({
   onSave,
 }) => {
   const isModern = data.meta?.template === 'modern';
-  
+
   // Default Orders
   const defaultSidebar = ['education', 'skills', 'contact'];
   const defaultMain = ['summary', 'work', 'projects'];
@@ -52,21 +52,22 @@ const SectionReorderDialog: React.FC<SectionReorderDialogProps> = ({
         setMainOrder(data.meta?.sectionOrder?.main || defaultMain);
       } else {
         // Classic uses only main, but we might want to consolidate everything there
-        const currentOrder = 
-          data.meta?.sectionOrder?.main || 
-          [...(data.meta?.sectionOrder?.sidebar || []), ...(data.meta?.sectionOrder?.main || [])];
-        
+        const currentOrder = data.meta?.sectionOrder?.main || [
+          ...(data.meta?.sectionOrder?.sidebar || []),
+          ...(data.meta?.sectionOrder?.main || []),
+        ];
+
         // Ensure we have defaults if empty
         if (currentOrder.length === 0) {
-           setMainOrder(defaultClassic);
+          setMainOrder(defaultClassic);
         } else {
-           // Filter unique
-           setMainOrder(Array.from(new Set(currentOrder)));
+          // Filter unique
+          setMainOrder(Array.from(new Set(currentOrder)));
         }
         setSidebarOrder([]);
       }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, data, isModern]);
 
   const moveItem = (
@@ -113,8 +114,8 @@ const SectionReorderDialog: React.FC<SectionReorderDialogProps> = ({
     <div
       key={item}
       className={cn(
-        "flex items-center justify-between p-3 mb-2 rounded-lg border bg-card text-card-foreground shadow-sm",
-        "hover:border-primary/50 transition-colors"
+        'flex items-center justify-between p-3 mb-2 rounded-lg border bg-card text-card-foreground shadow-sm',
+        'hover:border-primary/50 transition-colors'
       )}
     >
       <span className="font-medium text-sm">{SECTION_LABELS[item] || item}</span>
@@ -137,7 +138,7 @@ const SectionReorderDialog: React.FC<SectionReorderDialogProps> = ({
         >
           <ArrowDown className="h-3 w-3" />
         </Button>
-        
+
         {isModern && (
           <Button
             variant="ghost"
@@ -151,7 +152,7 @@ const SectionReorderDialog: React.FC<SectionReorderDialogProps> = ({
               }
             }}
           >
-             {isSidebar ? <ArrowRight className="h-3 w-3" /> : <ArrowLeft className="h-3 w-3" />}
+            {isSidebar ? <ArrowRight className="h-3 w-3" /> : <ArrowLeft className="h-3 w-3" />}
           </Button>
         )}
       </div>
@@ -163,32 +164,36 @@ const SectionReorderDialog: React.FC<SectionReorderDialogProps> = ({
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Customize Resume Layout</DialogTitle>
-          <DialogDescription>
-            Reorder sections or move them between columns.
-          </DialogDescription>
+          <DialogDescription>Reorder sections or move them between columns.</DialogDescription>
         </DialogHeader>
 
-        <div className={cn("grid gap-4 py-4", isModern ? "grid-cols-2" : "grid-cols-1")}>
+        <div className={cn('grid gap-4 py-4', isModern ? 'grid-cols-2' : 'grid-cols-1')}>
           {isModern && (
             <div className="p-4 bg-muted/50 rounded-xl border border-border">
-              <h3 className="text-xs font-bold uppercase text-muted-foreground mb-3 tracking-wider">Sidebar (Left)</h3>
-              {sidebarOrder.map((item, i) => renderItem(item, i, sidebarOrder, setSidebarOrder, true))}
+              <h3 className="text-xs font-bold uppercase text-muted-foreground mb-3 tracking-wider">
+                Sidebar (Left)
+              </h3>
+              {sidebarOrder.map((item, i) =>
+                renderItem(item, i, sidebarOrder, setSidebarOrder, true)
+              )}
               {sidebarOrder.length === 0 && (
-                 <p className="text-xs text-muted-foreground italic text-center py-4">Empty</p>
+                <p className="text-xs text-muted-foreground italic text-center py-4">Empty</p>
               )}
             </div>
           )}
 
           <div className="p-4 bg-muted/50 rounded-xl border border-border">
             <h3 className="text-xs font-bold uppercase text-muted-foreground mb-3 tracking-wider">
-               {isModern ? "Main Content (Right)" : "Main Content"}
+              {isModern ? 'Main Content (Right)' : 'Main Content'}
             </h3>
             {mainOrder.map((item, i) => renderItem(item, i, mainOrder, setMainOrder, false))}
           </div>
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
           <Button onClick={handleSave}>Save Layout</Button>
         </DialogFooter>
       </DialogContent>

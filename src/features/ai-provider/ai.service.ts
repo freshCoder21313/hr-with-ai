@@ -1,11 +1,4 @@
-import {
-  AIModelProvider,
-  AIProviderStrategy,
-  AIConfig,
-  ChatMessage,
-  AIResponse,
-  AIRequestOptions,
-} from './types';
+import { AIProviderStrategy, AIConfig, ChatMessage, AIResponse, AIRequestOptions } from '@/types';
 import { GoogleGeminiStrategy } from './strategies/google-gemini';
 import { OpenAICustomStrategy } from './strategies/openai-custom';
 

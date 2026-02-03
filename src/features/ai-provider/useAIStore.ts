@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { AIService } from './ai.service';
-import { AIConfig, AIModelProvider } from './types';
+import { AIConfig, AIModelProvider } from '@/types';
 import { loadUserSettings } from '@/services/settingsService';
 
 interface AIState {
