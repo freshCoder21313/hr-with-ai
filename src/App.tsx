@@ -1,5 +1,6 @@
 import React, { Suspense, lazy } from 'react';
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
 import ApiKeyModal from './components/ApiKeyModal';
 import { Loader2 } from 'lucide-react';
 import { ThemeProvider } from './components/theme-provider';
@@ -24,7 +25,8 @@ const PageLoader = () => (
 const App: React.FC = () => {
   return (
     <ThemeProvider defaultTheme="system" storageKey="hr-ai-theme">
-      <TooltipProvider>
+      <HelmetProvider>
+        <TooltipProvider>
         <HashRouter>
           <div className="min-h-[100dvh] flex flex-col bg-background text-foreground pt-[var(--safe-top)] pb-[var(--safe-bottom)] pl-[var(--safe-left)] pr-[var(--safe-right)]">
             <ApiKeyModal />
@@ -47,6 +49,7 @@ const App: React.FC = () => {
           </div>
         </HashRouter>
       </TooltipProvider>
+      </HelmetProvider>
     </ThemeProvider>
   );
 };

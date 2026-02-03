@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import ProgressCharts from './ProgressCharts';
+import SEO from '@/components/SEO';
 
 const HistoryPage: React.FC = () => {
   const [interviews, setInterviews] = useState<Interview[]>([]);
@@ -38,6 +39,10 @@ const HistoryPage: React.FC = () => {
 
   return (
     <div className="max-w-5xl mx-auto p-6 md:p-8">
+      <SEO
+        title="Interview History - HR With AI"
+        description="Track your interview progress and review past sessions. Analyze your improvement over time."
+      />
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Interview History</h1>

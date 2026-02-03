@@ -1,12 +1,17 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FileText, MessageSquare, BarChart3, ArrowRight } from 'lucide-react';
+import SEO from '@/components/SEO';
 
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
 
   return (
     <div className="flex flex-col items-center justify-center py-8 md:py-12 space-y-8 md:space-y-12 px-4 md:px-0">
+      <SEO
+        title="HR With AI - Master Your Interview"
+        description="Practice with AI personas from top companies. Get instant feedback with structural visualizations."
+      />
       <div className="text-center space-y-4 max-w-2xl">
         <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-foreground sm:text-6xl">
           Master Your <span className="text-primary">Interview</span>

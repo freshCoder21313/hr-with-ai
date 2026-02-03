@@ -17,6 +17,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { db } from '@/lib/db';
 import ResumeList from './ResumeList';
+import SEO from '@/components/SEO';
 import ResumeAnalysisView from '@/features/resume-analysis/ResumeAnalysisView';
 import { TailorResumeModal } from './TailorResumeModal';
 import JobRecommendationModal from '@/features/interview/JobRecommendationModal';
@@ -278,6 +279,10 @@ const SetupRoom: React.FC = () => {
 
   return (
     <div className="max-w-4xl mx-auto p-4 md:p-8">
+      <SEO
+        title="Setup Interview - HR With AI"
+        description="Configure your AI mock interview session. Choose persona, difficulty, and upload your resume."
+      />
       <Card className="shadow-xl bg-card/90 backdrop-blur-sm">
         <CardHeader className="text-center pb-6 md:pb-8 px-4 md:px-6">
           <CardTitle className="text-2xl md:text-3xl font-bold text-foreground">

@@ -29,6 +29,7 @@ import { ChangeReviewCard } from './ChangeReviewCard';
 import { ResumeFormView } from './ResumeFormView';
 import { Button } from '@/components/ui/button';
 import { GitHubImportModal } from '@/features/resume-builder/github-import/GitHubImportModal';
+import SEO from '@/components/SEO';
 
 // Allowed keys from the ResumeData schema
 const ALLOWED_SECTIONS = [
@@ -314,6 +315,10 @@ const CVChatPage: React.FC = () => {
   if (!mainCV) {
     return (
       <div className="max-w-4xl mx-auto p-8 space-y-8">
+        <SEO
+          title="AI Resume Chat - HR With AI"
+          description="Interactive AI assistant to help you improve and tailor your resume."
+        />
         <div className="text-center space-y-4">
           <h1 className="text-3xl font-bold text-foreground">Setup Your Main CV</h1>
           <p className="text-muted-foreground max-w-xl mx-auto">
@@ -376,6 +381,10 @@ const CVChatPage: React.FC = () => {
 
   return (
     <div className="flex h-[calc(100vh-64px)] overflow-hidden">
+      <SEO
+        title={`Edit ${mainCV.fileName} - HR With AI`}
+        description="Interactive AI assistant to help you improve and tailor your resume."
+      />
       {/* Left: Chat */}
       <div className="w-1/2 md:w-[40%] border-r border-border flex flex-col bg-background z-10 shadow-xl">
         <div className="p-4 border-b border-border bg-background flex justify-between items-center">

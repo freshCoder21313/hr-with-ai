@@ -31,6 +31,7 @@ import {
   PolarRadiusAxis,
   Radar,
 } from 'recharts';
+import SEO from '@/components/SEO';
 
 const FeedbackView: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -154,6 +155,10 @@ const FeedbackView: React.FC = () => {
 
   return (
     <div className="max-w-5xl mx-auto space-y-8 pb-12 p-6 md:p-8">
+      <SEO
+        title={`Feedback: ${interview.jobTitle} - HR With AI`}
+        description={`AI detailed feedback for ${interview.jobTitle} at ${interview.company}. Score: ${feedback.score}/10.`}
+      />
       {/* Tabs Header */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <div className="flex justify-between items-center mb-6 print:hidden">

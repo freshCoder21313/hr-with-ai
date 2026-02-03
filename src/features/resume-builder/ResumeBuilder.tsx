@@ -29,6 +29,7 @@ import WorkForm from './SectionForms/WorkForm';
 import EducationForm from './SectionForms/EducationForm';
 import SkillsForm from './SectionForms/SkillsForm';
 import ProjectsForm from './SectionForms/ProjectsForm';
+import SEO from '@/components/SEO';
 
 const ResumeBuilder: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -161,6 +162,10 @@ const ResumeBuilder: React.FC = () => {
   // Print View (Only visible when printing)
   return (
     <>
+      <SEO
+        title="Resume Builder - HR With AI"
+        description="Build ATS-friendly resumes with AI assistance. Smart formatting and real-time preview."
+      />
       {/* Hidden Print Container */}
       <div className="hidden print:block print:absolute print:inset-0 print:z-[9999] print:bg-white">
         <ResumePreview data={data} template={template} />

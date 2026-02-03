@@ -15,6 +15,7 @@ import { UserSettings, Resume, JobRecommendation } from '@/types';
 import SettingsModal from '@/components/SettingsModal';
 import JobRecommendationModal from './JobRecommendationModal';
 import { openApiKeyModal } from '@/events/apiKeyEvents';
+import SEO from '@/components/SEO';
 
 // Components
 import { InterviewHeader } from './components/InterviewHeader';
@@ -360,6 +361,10 @@ const InterviewRoom: React.FC = () => {
 
   return (
     <div className="flex flex-col h-[calc(100dvh-56px)] md:h-[calc(100vh-80px)] w-full md:max-w-7xl mx-auto bg-background rounded-none md:rounded-xl shadow-none md:shadow-lg border-x-0 md:border border-border overflow-hidden md:my-4 relative">
+      <SEO
+        title="Interview Room - HR With AI"
+        description="Live AI mock interview regarding your target role. Receive real-time hints and feedback."
+      />
       {/* Loading Overlay */}
       {isEndingSession && (
         <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm transition-all animate-in fade-in duration-300">
