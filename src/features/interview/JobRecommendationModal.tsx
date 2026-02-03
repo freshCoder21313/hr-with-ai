@@ -386,9 +386,9 @@ const JobRecommendationModal: React.FC<JobRecommendationModalProps> = ({
             <div className="text-center space-y-4">
               <div className="relative">
                 <div className="w-16 h-16 mx-auto">
-                  <div className="absolute inset-0 bg-emerald-500/20 rounded-full animate-ping"></div>
-                  <div className="relative bg-emerald-600 w-16 h-16 rounded-full flex items-center justify-center">
-                    <CheckCircle className="w-8 h-8 text-white" />
+                  <div className="absolute inset-0 bg-primary/20 rounded-full animate-ping"></div>
+                  <div className="relative bg-primary w-16 h-16 rounded-full flex items-center justify-center">
+                    <CheckCircle className="w-8 h-8 text-primary-foreground" />
                   </div>
                 </div>
               </div>
@@ -398,13 +398,13 @@ const JobRecommendationModal: React.FC<JobRecommendationModalProps> = ({
               </p>
             </div>
 
-            <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-4">
-              <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 mb-2">
+            <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
+              <div className="flex items-center gap-2 text-primary mb-2">
                 <Sparkles className="w-5 h-5" />
                 <span className="font-medium">Selected Job</span>
               </div>
               <h4 className="font-semibold text-lg text-foreground">{selectedJob.title}</h4>
-              <p className="text-emerald-600 dark:text-emerald-500">@ {selectedJob.company}</p>
+              <p className="text-primary/80">@ {selectedJob.company}</p>
             </div>
 
             <div className="text-center">

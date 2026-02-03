@@ -9,7 +9,6 @@ import {
   Wand2,
   Star,
   MessageSquare,
-  Github,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
@@ -120,7 +119,7 @@ const ResumeList: React.FC<ResumeListProps> = ({
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8 text-indigo-500 hover:text-indigo-600 hover:bg-indigo-500/10"
+                      className="h-8 w-8 text-primary hover:text-primary hover:bg-primary/10"
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
@@ -143,7 +142,7 @@ const ResumeList: React.FC<ResumeListProps> = ({
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8 text-muted-foreground hover:text-purple-600 hover:bg-purple-500/10"
+                      className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10"
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();

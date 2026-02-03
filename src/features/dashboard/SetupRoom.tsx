@@ -278,7 +278,7 @@ const SetupRoom: React.FC = () => {
 
   return (
     <div className="max-w-4xl mx-auto p-4 md:p-8">
-      <Card className="border-none shadow-xl bg-card/90 backdrop-blur-sm">
+      <Card className="shadow-xl bg-card/90 backdrop-blur-sm">
         <CardHeader className="text-center pb-6 md:pb-8 px-4 md:px-6">
           <CardTitle className="text-2xl md:text-3xl font-bold text-foreground">
             Setup Interview Room
@@ -417,7 +417,7 @@ const SetupRoom: React.FC = () => {
                   disabled={isExtracting || !formData.jobDescription.trim()}
                   isLoading={isExtracting}
                   loadingText="Auto-fill from JD"
-                  className="text-purple-600 border-purple-200 hover:bg-purple-50 dark:text-purple-400 dark:border-purple-500/30 dark:hover:bg-purple-500/10"
+                  className="text-primary border-primary/20 hover:bg-primary/10 dark:text-primary dark:border-primary/30 dark:hover:bg-primary/10"
                   leftIcon={<Sparkles className="w-4 h-4" />}
                 >
                   Auto-fill from JD
@@ -443,7 +443,7 @@ const SetupRoom: React.FC = () => {
                     variant="outline"
                     size="sm"
                     onClick={() => setIsJobModalOpen(true)}
-                    className="text-green-600 border-green-200 hover:bg-green-50 dark:text-green-400 dark:border-green-500/30 dark:hover:bg-green-500/10"
+                    className="text-yellow-500 border-primary/20 hover:bg-primary/10 hover:border-primary/50 dark:text-primary dark:border-yellow-500/30 dark:hover:bg-primary/10"
                   >
                     <Briefcase className="mr-2 h-4 w-4" />
                     Find Job with CV
@@ -459,10 +459,8 @@ const SetupRoom: React.FC = () => {
                       className="p-0 h-auto hover:bg-transparent"
                       asChild
                     >
-                      <span>
-                        <Upload className="mr-2 h-4 w-4" />
-                        Upload PDF/TXT
-                      </span>
+                      <Upload className="mr-2 h-4 w-4" />
+                      Upload PDF/TXT
                     </LoadingButton>
                     <input
                       type="file"
@@ -505,7 +503,7 @@ const SetupRoom: React.FC = () => {
                     isLoading={isAnalyzing}
                     loadingText="Analyzing Fit..."
                     className="w-full"
-                    leftIcon={<Sparkles className="w-4 h-4 text-purple-500" />}
+                    leftIcon={<Sparkles className="w-4 h-4 text-primary" />}
                   >
                     Analyze Resume Fit (AI)
                   </LoadingButton>
