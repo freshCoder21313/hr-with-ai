@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import ProgressCharts from './ProgressCharts';
 import SEO from '@/components/SEO';
+import ShareModal from '@/features/history/components/ShareModal';
+import { Share2 } from 'lucide-react';
 
 const HistoryPage: React.FC = () => {
   const [interviews, setInterviews] = useState<Interview[]>([]);
@@ -130,6 +132,21 @@ const HistoryPage: React.FC = () => {
                   </div>
 
                   <div className="flex items-center gap-2 w-full md:w-auto mt-2 md:mt-0 pt-4 md:pt-0 border-t md:border-t-0 border-border">
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <ShareModal
+                        interview={interview}
+                        trigger={
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-muted-foreground hover:text-primary gap-1"
+                          >
+                            <Share2 size={14} />
+                            Share
+                          </Button>
+                        }
+                      />
+                    </div>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button
