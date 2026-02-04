@@ -23,6 +23,14 @@ import { TailorResumeModal } from './TailorResumeModal';
 import JobRecommendationModal from '@/features/interview/JobRecommendationModal';
 import { useNavigate } from 'react-router-dom';
 import { LoadingButton } from '@/components/ui/loading-button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
 
 const SetupRoom: React.FC = () => {
   const { startNewInterview, isLoading: isStarting } = useInterview();
@@ -40,6 +48,11 @@ const SetupRoom: React.FC = () => {
 
   // Job Recommendation State
   const [isJobModalOpen, setIsJobModalOpen] = useState(false);
+
+  // Main CV Clone State
+  const [showMainCVCloneDialog, setShowMainCVCloneDialog] = useState(false);
+  const [pendingMainResume, setPendingMainResume] = useState<Resume | null>(null);
+  const [isCloning, setIsCloning] = useState(false);
 
   const [formData, setFormData] = useState<SetupFormData>({
     company: 'Tech Corp',
@@ -76,10 +89,61 @@ const SetupRoom: React.FC = () => {
       setSelectedResumeId(undefined);
       setFormData((prev) => ({ ...prev, resumeText: '' }));
     } else {
-      // Select
+      // Check if this is a Main CV and we are selecting it (not deselecting)
+      if (resume.isMain) {
+        setPendingMainResume(resume);
+        setShowMainCVCloneDialog(true);
+        return;
+      }
+
+      // Normal Select
       setSelectedResumeId(resume.id);
       setFormData((prev) => ({ ...prev, resumeText: resume.rawText }));
     }
+  };
+
+  const handleConfirmClone = async (shouldClone: boolean) => {
+    if (!pendingMainResume) return;
+
+    if (shouldClone) {
+      setIsCloning(true);
+      try {
+        const copyName = `[Copy] ${pendingMainResume.fileName}`;
+        const newResume: Resume = {
+          ...pendingMainResume,
+          id: undefined, // Create new ID
+          fileName: copyName,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+          isMain: false, // Clone is not Main
+        };
+
+        const newId = await db.resumes.add(newResume);
+        const savedResume = { ...newResume, id: newId };
+        
+        // Update list
+        setSavedResumes((prev) => [savedResume, ...prev]);
+        
+        // Select the new clone
+        setSelectedResumeId(newId);
+        setFormData((prev) => ({ ...prev, resumeText: savedResume.rawText }));
+      } catch (error) {
+        console.error("Failed to clone resume:", error);
+        alert("Failed to clone resume");
+        // Fallback to original
+        setSelectedResumeId(pendingMainResume.id);
+        setFormData((prev) => ({ ...prev, resumeText: pendingMainResume.rawText }));
+      } finally {
+        setIsCloning(false);
+      }
+    } else {
+      // Use original Main CV directly
+      setSelectedResumeId(pendingMainResume.id);
+      setFormData((prev) => ({ ...prev, resumeText: pendingMainResume.rawText }));
+    }
+    
+    setShowMainCVCloneDialog(false);
+    setPendingMainResume(null);
   };
 
   const handleDeleteResume = async (id: number) => {
@@ -548,6 +612,29 @@ const SetupRoom: React.FC = () => {
         existingResumeId={selectedResumeId}
         availableResumes={savedResumes}
       />
+
+      <Dialog open={showMainCVCloneDialog} onOpenChange={setShowMainCVCloneDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Use Main CV?</DialogTitle>
+            <DialogDescription>
+              You selected your Main CV. Would you like to create a tailored copy for this interview or use the original?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => handleConfirmClone(false)} disabled={isCloning}>
+              Use Original
+            </Button>
+            <LoadingButton 
+              onClick={() => handleConfirmClone(true)} 
+              isLoading={isCloning}
+              loadingText="Cloning..."
+            >
+              Make a Copy & Use
+            </LoadingButton>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
