@@ -20,10 +20,12 @@ import { generateJobRecommendations, generateTailoredResumeForJob } from '@/serv
 import { getStoredAIConfig } from '@/services/geminiService';
 import { LoadingButton } from '@/components/ui/loading-button';
 
+import { ResumeData } from '@/types/resume';
+
 interface JobRecommendationModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSelectJob: (job: JobRecommendation, tailoredResumeText: string) => void;
+  onSelectJob: (job: JobRecommendation, tailoredResumeText: string, tailoredResumeData?: ResumeData) => void;
   existingResumeId?: number;
   availableResumes?: Resume[];
   currentInterviewId?: number;
@@ -131,18 +133,36 @@ const JobRecommendationModal: React.FC<JobRecommendationModalProps> = ({
       );
 
       // Convert tailored resume back to text format
-      // This is a simplified version - in a real app, you'd have a proper converter
-      const tailoredText =
-        `Tailored Resume for ${job.title} @ ${job.company}\n\n` +
-        `Professional Summary:\n${tailoredData.basics.summary}\n\n` +
-        `Skills: ${tailoredData.skills.map((s) => s.name).join(', ')}\n\n` +
-        `Experience:\n${tailoredData.work.map((w) => `- ${w.position} at ${w.name}`).join('\n')}`;
+      let tailoredText = `Tailored Resume for ${job.title} @ ${job.company}\n\n`;
+      
+      if (tailoredData.basics?.summary) {
+        tailoredText += `Professional Summary:\n${tailoredData.basics.summary}\n\n`;
+      }
+      
+      if (tailoredData.skills?.length) {
+         tailoredText += `Skills: ${tailoredData.skills.map((s) => s.name).join(', ')}\n\n`;
+      }
+      
+      if (tailoredData.work?.length) {
+        tailoredText += `Experience:\n${tailoredData.work.map((w) => {
+            const dateStr = w.startDate ? ` (${w.startDate} - ${w.endDate || 'Present'})` : '';
+            return `- ${w.position} at ${w.name}${dateStr}\n  ${w.summary || ''}`;
+        }).join('\n')}\n\n`;
+      }
+
+      if (tailoredData.education?.length) {
+        tailoredText += `Education:\n${tailoredData.education.map((e) => `- ${e.studyType} in ${e.area} at ${e.institution}`).join('\n')}\n\n`;
+      }
+
+      if (tailoredData.projects?.length) {
+        tailoredText += `Projects:\n${tailoredData.projects.map((p) => `- ${p.name}: ${p.description || ''}`).join('\n')}`;
+      }
 
       setTailoredResumeText(tailoredText);
 
       // Auto-select after a delay
       setTimeout(() => {
-        onSelectJob(job, tailoredText);
+        onSelectJob(job, tailoredText, tailoredData);
         onClose();
       }, 2000);
     } catch (err) {

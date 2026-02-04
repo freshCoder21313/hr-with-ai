@@ -327,7 +327,7 @@ const SetupRoom: React.FC = () => {
   };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleSelectJob = async (job: any, tailoredResumeText: string) => {
+  const handleSelectJob = async (job: any, tailoredResumeText: string, tailoredResumeData?: any) => {
     // Fill the form with selected job details
     setFormData((prev) => ({
       ...prev,
@@ -336,6 +336,34 @@ const SetupRoom: React.FC = () => {
       jobDescription: job.jobDescription,
       resumeText: tailoredResumeText || prev.resumeText, // Use tailored resume if available
     }));
+
+    // If we have a tailored resume, save it to DB
+    if (tailoredResumeText && tailoredResumeData) {
+      try {
+        const newFileName = `[Tailored] ${job.title} @ ${job.company}.pdf`; // Mock extension
+        const newResume: Resume = {
+          createdAt: Date.now(),
+          fileName: newFileName,
+          rawText: tailoredResumeText,
+          parsedData: tailoredResumeData,
+          formatted: true,
+          isMain: false,
+        };
+
+        const newId = await db.resumes.add(newResume);
+        const savedResume = { ...newResume, id: newId };
+
+        // Update list
+        setSavedResumes((prev) => [savedResume, ...prev]);
+        
+        // Select it
+        setSelectedResumeId(newId);
+        
+      } catch (e) {
+        console.error("Failed to save tailored resume:", e);
+        // non-blocking
+      }
+    }
 
     // Close the modal
     setIsJobModalOpen(false);
