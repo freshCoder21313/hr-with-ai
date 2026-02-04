@@ -8,7 +8,7 @@ export class AIService {
   constructor(config: AIConfig) {
     switch (config.provider) {
       case 'google':
-        this.strategy = new GoogleGeminiStrategy(config.apiKey);
+        this.strategy = new GoogleGeminiStrategy(config.apiKey, config.baseUrl);
         break;
       case 'openai':
         if (!config.baseUrl) {
