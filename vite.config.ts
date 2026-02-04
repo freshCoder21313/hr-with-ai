@@ -1,5 +1,6 @@
 /// <reference types="vitest" />
 import path from 'path';
+// Restart trigger
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import { localApiPlugin } from './local-api-plugin';

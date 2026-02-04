@@ -45,9 +45,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ interview, trigger }) => {
     try {
       const blob = await toBlob(cardRef.current, { cacheBust: true, pixelRatio: 2 });
       if (blob) {
-        await navigator.clipboard.write([
-          new ClipboardItem({ 'image/png': blob }),
-        ]);
+        await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
       }
@@ -78,19 +76,32 @@ const ShareModal: React.FC<ShareModalProps> = ({ interview, trigger }) => {
 
         <div className="flex flex-col items-center gap-6 py-4">
           <div className="relative rounded-xl overflow-hidden shadow-lg border border-border max-w-full overflow-x-auto">
-             {/* Render the card - it needs to be visible for html-to-image but we can scale it down for preview if needed.
+            {/* Render the card - it needs to be visible for html-to-image but we can scale it down for preview if needed.
                  However, since it's 600px wide, it fits in a max-w-3xl modal. */}
-             <div className="min-w-[600px]">
-                <ShareableResultCard ref={cardRef} interview={interview} />
-             </div>
+            <div className="min-w-[600px]">
+              <ShareableResultCard ref={cardRef} interview={interview} />
+            </div>
           </div>
 
           <div className="flex gap-4 w-full justify-center">
-            <Button onClick={handleDownload} disabled={isGenerating} className="gap-2 min-w-[140px]">
-              {isGenerating ? <Loader2 className="animate-spin" size={16} /> : <Download size={16} />}
+            <Button
+              onClick={handleDownload}
+              disabled={isGenerating}
+              className="gap-2 min-w-[140px]"
+            >
+              {isGenerating ? (
+                <Loader2 className="animate-spin" size={16} />
+              ) : (
+                <Download size={16} />
+              )}
               Download PNG
             </Button>
-            <Button onClick={handleCopy} disabled={isGenerating} variant="secondary" className="gap-2 min-w-[140px]">
+            <Button
+              onClick={handleCopy}
+              disabled={isGenerating}
+              variant="secondary"
+              className="gap-2 min-w-[140px]"
+            >
               {isGenerating ? (
                 <Loader2 className="animate-spin" size={16} />
               ) : copied ? (

@@ -143,9 +143,11 @@ const FeedbackView: React.FC = () => {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-4">
-        <Loader2 className="w-16 h-16 text-blue-600 animate-spin" />
-        <p className="text-slate-600 font-medium text-lg">AI is analyzing your performance...</p>
-        <p className="text-slate-400">Generating comprehensive report & visualization</p>
+        <Loader2 className="w-16 h-16 text-primary animate-spin" />
+        <p className="text-muted-foreground font-medium text-lg">
+          AI is analyzing your performance...
+        </p>
+        <p className="text-muted-foreground">Generating comprehensive report & visualization</p>
       </div>
     );
   }
@@ -162,7 +164,7 @@ const FeedbackView: React.FC = () => {
       {/* Tabs Header */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <div className="flex justify-between items-center mb-6 print:hidden">
-          <TabsList className="bg-slate-100 p-1">
+          <TabsList className="bg-muted p-1">
             <TabsTrigger value="analysis" className="gap-2">
               <BarChart2 className="w-4 h-4" />
               Analysis
@@ -191,11 +193,11 @@ const FeedbackView: React.FC = () => {
         >
           {/* Score Header */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card className="border-none shadow-md bg-white md:col-span-2">
+            <Card className="border-border shadow-md bg-card md:col-span-2">
               <CardContent className="flex flex-col md:flex-row items-center justify-between gap-6 p-8">
                 <div>
-                  <h1 className="text-3xl font-bold text-slate-900 mb-2">Interview Analysis</h1>
-                  <p className="text-slate-500 text-lg">
+                  <h1 className="text-3xl font-bold text-foreground mb-2">Interview Analysis</h1>
+                  <p className="text-muted-foreground text-lg">
                     {interview.jobTitle} @ {interview.company}
                   </p>
 
@@ -213,7 +215,7 @@ const FeedbackView: React.FC = () => {
                 </div>
                 <div className="flex items-center gap-4">
                   <div className="text-right hidden md:block">
-                    <p className="text-sm text-slate-500 font-medium uppercase tracking-wider">
+                    <p className="text-sm text-muted-foreground font-medium uppercase tracking-wider">
                       Overall Score
                     </p>
                   </div>
@@ -234,15 +236,17 @@ const FeedbackView: React.FC = () => {
             </Card>
 
             {/* New Metrics: Resilience & Culture Fit */}
-            <Card className="flex flex-col justify-center gap-4 p-6">
+            <Card className="flex flex-col justify-center gap-4 p-6 bg-card border-border">
               <div className="space-y-2">
-                <div className="flex justify-between items-center text-sm font-medium text-slate-600">
+                <div className="flex justify-between items-center text-sm font-medium text-muted-foreground">
                   <span className="flex items-center gap-2">
                     <Zap className="w-4 h-4 text-purple-500" /> Resilience
                   </span>
-                  <span className="text-purple-700">{feedback.resilienceScore || 'N/A'}/10</span>
+                  <span className="text-purple-600 font-bold">
+                    {feedback.resilienceScore || 'N/A'}/10
+                  </span>
                 </div>
-                <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
                   <div
                     className="h-full bg-purple-500"
                     style={{ width: `${(feedback.resilienceScore || 0) * 10}%` }}
@@ -251,13 +255,15 @@ const FeedbackView: React.FC = () => {
               </div>
 
               <div className="space-y-2">
-                <div className="flex justify-between items-center text-sm font-medium text-slate-600">
+                <div className="flex justify-between items-center text-sm font-medium text-muted-foreground">
                   <span className="flex items-center gap-2">
                     <Building2 className="w-4 h-4 text-blue-500" /> Culture Fit
                   </span>
-                  <span className="text-blue-700">{feedback.cultureFitScore || 'N/A'}/10</span>
+                  <span className="text-blue-600 font-bold">
+                    {feedback.cultureFitScore || 'N/A'}/10
+                  </span>
                 </div>
-                <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
                   <div
                     className="h-full bg-blue-500"
                     style={{ width: `${(feedback.cultureFitScore || 0) * 10}%` }}
@@ -301,12 +307,12 @@ const FeedbackView: React.FC = () => {
           </div>
 
           {/* Summary */}
-          <Card>
+          <Card className="bg-card border-border">
             <CardHeader>
               <CardTitle>Executive Summary</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-slate-600 leading-relaxed text-lg">{feedback.summary}</p>
+              <p className="text-muted-foreground leading-relaxed text-lg">{feedback.summary}</p>
             </CardContent>
           </Card>
 
@@ -322,7 +328,7 @@ const FeedbackView: React.FC = () => {
               <CardContent>
                 <div
                   ref={mermaidRef1}
-                  className="overflow-x-auto flex justify-center py-4 bg-slate-50/50 rounded-lg min-h-[200px] items-center"
+                  className="overflow-x-auto flex justify-center py-4 bg-muted/50 rounded-lg min-h-[200px] items-center"
                 ></div>
               </CardContent>
             </Card>
@@ -336,7 +342,7 @@ const FeedbackView: React.FC = () => {
               <CardContent>
                 <div
                   ref={mermaidRef2}
-                  className="overflow-x-auto flex justify-center py-4 bg-slate-50/50 rounded-lg min-h-[200px] items-center"
+                  className="overflow-x-auto flex justify-center py-4 bg-muted/50 rounded-lg min-h-[200px] items-center"
                 ></div>
               </CardContent>
             </Card>
@@ -344,33 +350,39 @@ const FeedbackView: React.FC = () => {
 
           {/* Deep Dive */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card className="bg-emerald-50/30 border-emerald-100">
+            <Card className="bg-emerald-500/10 border-emerald-500/20">
               <CardHeader>
-                <CardTitle className="flex items-center text-emerald-800">
+                <CardTitle className="flex items-center text-emerald-800 dark:text-emerald-400">
                   <CheckCircle2 className="w-5 h-5 mr-2" /> Strengths
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-3">
                   {feedback.strengths.map((s, i) => (
-                    <li key={i} className="flex items-start text-emerald-900 text-sm">
-                      <span className="mr-2 text-emerald-500">•</span> {s}
+                    <li
+                      key={i}
+                      className="flex items-start text-emerald-700 dark:text-emerald-100 text-sm"
+                    >
+                      <span className="mr-2 text-emerald-800 dark:text-emerald-400 font-bold">
+                        •
+                      </span>{' '}
+                      {s}
                     </li>
                   ))}
                 </ul>
               </CardContent>
             </Card>
-            <Card className="bg-red-50/30 border-red-100">
+            <Card className="bg-red-500/10 border-red-500/20">
               <CardHeader>
-                <CardTitle className="flex items-center text-red-800">
+                <CardTitle className="flex items-center text-red-800 dark:text-red-400">
                   <AlertCircle className="w-5 h-5 mr-2" /> Areas for Improvement
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-3">
                   {feedback.weaknesses.map((w, i) => (
-                    <li key={i} className="flex items-start text-red-900 text-sm">
-                      <span className="mr-2 text-red-500">•</span> {w}
+                    <li key={i} className="flex items-start text-red-700 dark:text-red-100 text-sm">
+                      <span className="mr-2 text-red-800 dark:text-red-400 font-bold">•</span> {w}
                     </li>
                   ))}
                 </ul>
@@ -395,16 +407,18 @@ const FeedbackView: React.FC = () => {
                       href={`https://www.google.com/search?q=${encodeURIComponent(res.searchQuery)}`}
                       target="_blank"
                       rel="noreferrer"
-                      className="group block p-4 rounded-lg border border-slate-200 hover:border-purple-300 hover:bg-purple-50 transition-all text-left"
+                      className="group block p-4 rounded-lg border border-border hover:border-purple-500 hover:bg-purple-500/10 transition-all text-left"
                     >
-                      <h4 className="font-semibold text-slate-800 mb-1 group-hover:text-purple-700 flex items-center justify-between text-sm">
+                      <h4 className="font-semibold text-foreground mb-1 group-hover:text-purple-500 flex items-center justify-between text-sm">
                         {res.topic}
                         <ExternalLink
                           size={14}
                           className="opacity-0 group-hover:opacity-100 transition-opacity"
                         />
                       </h4>
-                      <p className="text-xs text-slate-500 line-clamp-2">{res.description}</p>
+                      <p className="text-xs text-muted-foreground line-clamp-2">
+                        {res.description}
+                      </p>
                     </a>
                   ))}
                 </div>
@@ -414,22 +428,22 @@ const FeedbackView: React.FC = () => {
 
           {/* Q&A Analysis */}
           <Card>
-            <CardHeader className="bg-slate-50 border-b border-slate-100">
+            <CardHeader className="bg-muted/30 border-b border-border">
               <CardTitle>Key Question Analysis</CardTitle>
             </CardHeader>
-            <div className="divide-y divide-slate-100">
+            <div className="divide-y divide-border">
               {feedback.keyQuestionAnalysis.map((item, idx) => (
                 <div key={idx} className="p-6">
-                  <p className="font-medium text-slate-900 mb-3 text-lg">Q: {item.question}</p>
+                  <p className="font-medium text-foreground mb-3 text-lg">Q: {item.question}</p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="text-sm text-slate-700 bg-slate-50 p-4 rounded-lg border border-slate-100">
-                      <span className="font-semibold block mb-2 text-slate-900 uppercase text-xs tracking-wider">
+                    <div className="text-sm text-foreground bg-muted p-4 rounded-lg border border-border">
+                      <span className="font-semibold block mb-2 text-foreground uppercase text-xs tracking-wider">
                         Analysis
                       </span>
                       {item.analysis}
                     </div>
-                    <div className="text-sm text-blue-900 bg-blue-50 p-4 rounded-lg border border-blue-100">
-                      <span className="font-semibold block mb-2 text-blue-800 uppercase text-xs tracking-wider">
+                    <div className="text-sm text-blue-900 dark:text-blue-100 bg-blue-500/10 p-4 rounded-lg border border-blue-500/20">
+                      <span className="font-semibold block mb-2 text-blue-700 dark:text-blue-300 uppercase text-xs tracking-wider">
                         Better Approach
                       </span>
                       {item.improvement}
@@ -442,8 +456,8 @@ const FeedbackView: React.FC = () => {
         </TabsContent>
 
         <TabsContent value="transcript" className="h-[calc(100vh-200px)] min-h-[500px]">
-          <Card className="h-full border-none shadow-md overflow-hidden flex flex-col">
-            <CardHeader className="border-b bg-white py-4 shrink-0">
+          <Card className="h-full border-none shadow-md overflow-hidden flex flex-col bg-card">
+            <CardHeader className="border-b bg-muted/30 py-4 shrink-0">
               <CardTitle className="flex items-center gap-2 text-lg">
                 <FileText className="w-5 h-5 text-slate-500" />
                 Review Transcript
