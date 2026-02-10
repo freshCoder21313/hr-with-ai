@@ -48,7 +48,22 @@ export const useInterview = () => {
           resumeText: data.resumeText,
           language: data.language,
           difficulty: data.difficulty,
-          mode: data.mode, // Added mode
+          mode: data.mode || 'text', // Interaction Mode
+          type: data.type, // Content Type
+          voiceSettings:
+            data.mode === 'voice' || data.mode === 'hybrid'
+              ? {
+                  language: data.language,
+                  sttProvider: 'web-speech',
+                  ttsProvider: 'web-speech',
+                  speechRate: 1.0,
+                  pitch: 1.0,
+                  volume: 1.0,
+                  autoPlayResponse: true,
+                  pushToTalk: false,
+                  silenceTimeout: 2000,
+                }
+              : undefined,
           companyStatus: data.companyStatus,
           interviewContext: data.interviewContext,
           status: InterviewStatus.CREATED,

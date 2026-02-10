@@ -63,7 +63,8 @@ const SetupRoom: React.FC = () => {
     resumeText: '',
     language: 'en-US',
     difficulty: 'medium',
-    mode: 'standard',
+    type: 'standard',
+    mode: 'hybrid',
     companyStatus: 'Hiring for growth',
     interviewContext: 'Modern day video call',
   });
@@ -120,16 +121,16 @@ const SetupRoom: React.FC = () => {
 
         const newId = await db.resumes.add(newResume);
         const savedResume = { ...newResume, id: newId };
-        
+
         // Update list
         setSavedResumes((prev) => [savedResume, ...prev]);
-        
+
         // Select the new clone
         setSelectedResumeId(newId);
         setFormData((prev) => ({ ...prev, resumeText: savedResume.rawText }));
       } catch (error) {
-        console.error("Failed to clone resume:", error);
-        alert("Failed to clone resume");
+        console.error('Failed to clone resume:', error);
+        alert('Failed to clone resume');
         // Fallback to original
         setSelectedResumeId(pendingMainResume.id);
         setFormData((prev) => ({ ...prev, resumeText: pendingMainResume.rawText }));
@@ -141,7 +142,7 @@ const SetupRoom: React.FC = () => {
       setSelectedResumeId(pendingMainResume.id);
       setFormData((prev) => ({ ...prev, resumeText: pendingMainResume.rawText }));
     }
-    
+
     setShowMainCVCloneDialog(false);
     setPendingMainResume(null);
   };
@@ -327,7 +328,11 @@ const SetupRoom: React.FC = () => {
   };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleSelectJob = async (job: any, tailoredResumeText: string, tailoredResumeData?: any) => {
+  const handleSelectJob = async (
+    job: any,
+    tailoredResumeText: string,
+    tailoredResumeData?: any
+  ) => {
     // Fill the form with selected job details
     setFormData((prev) => ({
       ...prev,
@@ -355,12 +360,11 @@ const SetupRoom: React.FC = () => {
 
         // Update list
         setSavedResumes((prev) => [savedResume, ...prev]);
-        
+
         // Select it
         setSelectedResumeId(newId);
-        
       } catch (e) {
-        console.error("Failed to save tailored resume:", e);
+        console.error('Failed to save tailored resume:', e);
         // non-blocking
       }
     }
@@ -443,7 +447,25 @@ const SetupRoom: React.FC = () => {
                 </div>
               </div>
               <div className="space-y-2 md:space-y-3">
-                <Label htmlFor="mode">Interview Mode</Label>
+                <Label htmlFor="type">Interview Type</Label>
+                <div className="relative">
+                  <select
+                    id="type"
+                    name="type"
+                    value={formData.type}
+                    onChange={handleChange}
+                    className="flex h-11 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <option value="standard">Standard</option>
+                    <option value="coding">Coding (Technical)</option>
+                    <option value="system_design">System Design</option>
+                    <option value="behavioral">Behavioral (STAR)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="space-y-2 md:space-y-3">
+                <Label htmlFor="mode">Interaction Mode</Label>
                 <div className="relative">
                   <select
                     id="mode"
@@ -452,10 +474,9 @@ const SetupRoom: React.FC = () => {
                     onChange={handleChange}
                     className="flex h-11 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    <option value="standard">Standard</option>
-                    <option value="coding">Coding (Technical)</option>
-                    <option value="system_design">System Design</option>
-                    <option value="behavioral">Behavioral (STAR)</option>
+                    <option value="text">Text Chat</option>
+                    <option value="voice">Voice Interview</option>
+                    <option value="hybrid">Hybrid (Text + Voice)</option>
                   </select>
                 </div>
               </div>
@@ -646,15 +667,20 @@ const SetupRoom: React.FC = () => {
           <DialogHeader>
             <DialogTitle>Use Main CV?</DialogTitle>
             <DialogDescription>
-              You selected your Main CV. Would you like to create a tailored copy for this interview or use the original?
+              You selected your Main CV. Would you like to create a tailored copy for this interview
+              or use the original?
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2 sm:gap-0">
-            <Button variant="outline" onClick={() => handleConfirmClone(false)} disabled={isCloning}>
+            <Button
+              variant="outline"
+              onClick={() => handleConfirmClone(false)}
+              disabled={isCloning}
+            >
               Use Original
             </Button>
-            <LoadingButton 
-              onClick={() => handleConfirmClone(true)} 
+            <LoadingButton
+              onClick={() => handleConfirmClone(true)}
               isLoading={isCloning}
               loadingText="Cloning..."
             >

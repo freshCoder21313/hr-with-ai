@@ -22,6 +22,7 @@ import { InterviewHeader } from './components/InterviewHeader';
 import { ChatArea } from './components/ChatArea';
 import { InputArea } from './components/InputArea';
 import { ToolModals } from './components/ToolModals';
+import { VoiceInterviewRoom } from './components/VoiceInterviewRoom';
 
 // Hooks
 import { useInterviewTimer } from './hooks/useInterviewTimer';
@@ -142,12 +143,30 @@ const InterviewRoom: React.FC = () => {
 
   // Auto-open tools based on Mode
   useEffect(() => {
-    if (currentInterview?.mode === 'coding') {
+    // Check type first, fallback to mode (legacy)
+    const interviewType = currentInterview?.type || currentInterview?.mode;
+    
+    if (interviewType === 'coding') {
       setIsCodeOpen(true);
-    } else if (currentInterview?.mode === 'system_design') {
+    } else if (interviewType === 'system_design') {
       setIsWhiteboardOpen(true);
     }
+  }, [currentInterview?.type, currentInterview?.mode]);
+
+  // View Mode (Text vs Voice)
+  const [viewMode, setViewMode] = useState<'text' | 'voice'>('text');
+  
+  // Initialize view mode based on interview settings
+  useEffect(() => {
+    if (currentInterview?.mode === 'voice') {
+        setViewMode('voice');
+    } else if(currentInterview?.mode === 'text') {
+        setViewMode('text');
+    }
+    // Hybrid defaults to text unless configured otherwise, or we can add logic later
   }, [currentInterview?.mode]);
+
+
 
   // Load Data
   useEffect(() => {
@@ -315,6 +334,15 @@ const InterviewRoom: React.FC = () => {
       </div>
     );
 
+  // Conditional Render for Voice Room
+  if (viewMode === 'voice') {
+      return (
+          <VoiceInterviewRoom 
+             onSwitchToText={currentInterview.mode === 'hybrid' ? () => setViewMode('text') : undefined} 
+          />
+      );
+  }
+
   return (
     <div className="flex flex-col h-[calc(100dvh-56px)] md:h-[calc(100vh-80px)] w-full md:max-w-7xl mx-auto bg-background rounded-none md:rounded-xl shadow-none md:shadow-lg border-x-0 md:border border-border overflow-hidden md:my-4 relative">
       <SEO
@@ -336,9 +364,10 @@ const InterviewRoom: React.FC = () => {
       <InterviewHeader
         interview={currentInterview}
         timer={timer}
-
         onOpenSettings={() => setShowSettings(true)}
         onEndSession={handleEndInterview}
+        viewMode={viewMode}
+        onSwitchViewMode={(currentInterview.mode === 'hybrid' || currentInterview.mode === 'text') ? () => setViewMode(prev => prev === 'voice' ? 'text' : 'voice') : undefined}
       />
 
       {/* Main Chat Area */}

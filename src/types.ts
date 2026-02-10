@@ -8,6 +8,11 @@ export interface Message {
   timestamp: number;
   image?: string; // Base64 string for multimodal input
   isError?: boolean;
+  // Voice Interview Fields
+  audioBlob?: Blob; // Original user audio (optional)
+  audioUrl?: string; // URL blob for playback
+  transcriptionConfidence?: number; // STT confidence (0-1)
+  isVoiceInput?: boolean; // Mark as voice message
 }
 
 export enum InterviewStatus {
@@ -27,7 +32,9 @@ export interface Interview {
   resumeText: string;
   language: 'vi-VN' | 'en-US';
   difficulty?: 'easy' | 'medium' | 'hard' | 'hardcore';
-  mode?: InterviewMode;
+  mode?: InterviewMode | 'text' | 'voice' | 'hybrid'; // Interaction Mode
+  type?: InterviewMode; // Content Type (Standard, Coding, etc.)
+  voiceSettings?: VoiceSettings;
   companyStatus?: string;
   interviewContext?: string;
   status: InterviewStatus;
@@ -69,7 +76,8 @@ export interface SetupFormData {
   resumeText: string;
   language: 'vi-VN' | 'en-US';
   difficulty: 'easy' | 'medium' | 'hard' | 'hardcore';
-  mode: InterviewMode;
+  type: InterviewMode; // Content Type (Standard, Coding, etc.)
+  mode?: 'text' | 'voice' | 'hybrid'; // Interaction Mode
   companyStatus: string;
   interviewContext: string;
 }
@@ -86,6 +94,12 @@ export interface UserSettings {
   baseUrl?: string;
   modelId?: string;
   provider?: AIModelProvider;
+
+  // Voice Settings & Keys
+  defaultVoiceSettings?: VoiceSettings;
+  googleCloudApiKey?: string; // Optional, for Google Cloud STT/TTS
+  elevenLabsApiKey?: string; // Optional, for ElevenLabs TTS
+  deepgramApiKey?: string; // Optional, for Deepgram STT
 }
 
 export interface Resume {
@@ -166,4 +180,19 @@ export interface AIRequestOptions {
 export interface AIProviderStrategy {
   generateText(messages: ChatMessage[], options?: AIRequestOptions): Promise<AIResponse>;
   streamText(messages: ChatMessage[], options?: AIRequestOptions): AsyncIterable<string>;
+}
+
+// --- Voice Interview Types ---
+
+export interface VoiceSettings {
+  language: string; // 'vi-VN' | 'en-US' | ...
+  sttProvider: 'web-speech' | 'google-cloud' | 'deepgram';
+  ttsProvider: 'web-speech' | 'google-cloud' | 'elevenlabs';
+  voiceId?: string; // ID associated with the selected voice
+  speechRate: number; // 0.5 - 2.0
+  pitch: number; // 0.5 - 2.0
+  volume: number; // 0 - 1
+  autoPlayResponse: boolean;
+  pushToTalk: boolean; // true = push-to-talk, false = continuous
+  silenceTimeout: number; // ms before auto-stopping recording
 }
