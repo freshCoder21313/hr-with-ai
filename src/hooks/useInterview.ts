@@ -19,6 +19,8 @@ export const useInterview = () => {
     setInterview,
     addMessage,
     updateLastMessage,
+    markLastMessageAsError,
+    removeLastMessage,
     updateStatus,
     setLoading,
     setError,
@@ -118,7 +120,9 @@ export const useInterview = () => {
 
   const sendMessage = useCallback(
     async (content: string, image?: string) => {
-      if (!currentInterview) return;
+      // Get latest state to avoid closure staleness
+      const latestInterview = useInterviewStore.getState().currentInterview;
+      if (!latestInterview) return;
 
       try {
         setLoading(true); // Start loading
@@ -161,10 +165,10 @@ export const useInterview = () => {
 
         // --- HIDDEN SCENARIO CHECK ---
         let systemInjection: string | null = null;
-        if (currentInterview.companyStatus) {
+        if (latestInterview.companyStatus) {
           // Calculate turn count (user messages / 2 roughly)
-          const turnCount = Math.floor(currentInterview.messages.length / 2);
-          systemInjection = getActiveScenario(currentInterview.companyStatus, turnCount);
+          const turnCount = Math.floor(latestInterview.messages.length / 2);
+          systemInjection = getActiveScenario(latestInterview.companyStatus, turnCount);
 
           if (systemInjection) {
             console.log('🎲 [SCENARIO TRIGGERED]', systemInjection);
@@ -172,11 +176,11 @@ export const useInterview = () => {
         }
 
         const stream = streamInterviewMessage(
-          [...currentInterview.messages, userMsg], // Current history + new user msg
+          [...latestInterview.messages, userMsg], // Use latest history
           content,
-          currentInterview,
+          latestInterview,
           config,
-          currentInterview.code,
+          latestInterview.code,
           image,
           autoFinish,
           systemInjection // Pass the hidden injection
@@ -212,19 +216,27 @@ export const useInterview = () => {
           updateLastMessage(fullResponse);
         }
 
+        // Check if response was empty (silent failure)
+        if (!fullResponse.trim()) {
+          throw new Error('Received empty response from AI provider.');
+        }
+
         // 4. Update DB (Background)
-        if (currentInterview.id) {
+        if (latestInterview.id) {
           // Create a fresh copy of messages to save
+          // Note: we need the absolute latest messages including the ones we just added to store
+          // But addMessage is async/state update.
+          // Actually, we can just construct it here based on logic:
           const updatedMessages = [
-            ...currentInterview.messages,
+            ...latestInterview.messages,
             userMsg,
             { ...aiMsgPlaceholder, content: fullResponse },
           ];
 
-          await db.interviews.update(currentInterview.id, {
+          await db.interviews.update(latestInterview.id, {
             messages: updatedMessages,
-            code: currentInterview.code, // Save latest code too
-            whiteboard: currentInterview.whiteboard, // Save latest whiteboard
+            code: latestInterview.code, // Save latest code too
+            whiteboard: latestInterview.whiteboard, // Save latest whiteboard
           });
         }
 
@@ -238,17 +250,65 @@ export const useInterview = () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {
         console.error('Error sending message:', err);
-        // Optionally add an error message to chat
+        // Mark the last message (the placeholder) as error
+        markLastMessageAsError(err.message || 'An unexpected error occurred.');
       } finally {
         setLoading(false); // Stop loading
       }
     },
-    [currentInterview, addMessage, updateLastMessage, setLoading, endSession] // Added setLoading dependency
+    [
+      // Removed currentInterview dependency to avoid stale closure re-creation
+      addMessage,
+      updateLastMessage,
+      markLastMessageAsError,
+      setLoading,
+      endSession,
+    ]
   );
+
+  const retryLastMessage = useCallback(async () => {
+    const latestInterview = useInterviewStore.getState().currentInterview;
+    if (!latestInterview || latestInterview.messages.length === 0) return;
+
+    const messages = latestInterview.messages;
+    const lastMsg = messages[messages.length - 1];
+
+    // Check if last message is error OR empty (from silent failure)
+    const isErrorOrEmpty = lastMsg.role === 'model' && (lastMsg.isError || !lastMsg.content.trim());
+
+    if (isErrorOrEmpty) {
+      // Remove the error message from UI/Store
+      removeLastMessage();
+
+      // Need to fetch state again or rely on index?
+      // removeLastMessage updates store synchronously usually in zustand (but React re-render is async)
+      // Since we are in an async callback, let's be careful.
+      // Actually, removing from store is instant.
+
+      const updatedInterviewAfterErrorRemoval = useInterviewStore.getState().currentInterview;
+      if (!updatedInterviewAfterErrorRemoval) return;
+
+      const newMessages = updatedInterviewAfterErrorRemoval.messages;
+      const lastMsgIndex = newMessages.length - 1;
+
+      if (lastMsgIndex >= 0) {
+        const userMsg = newMessages[lastMsgIndex];
+        if (userMsg.role === 'user') {
+          // Remove the user message now so sendMessage can re-add it
+          removeLastMessage();
+
+          // Wait a tick to ensure store update propagates if needed, though Zustand is sync.
+          // Just calling sendMessage now.
+          await sendMessage(userMsg.content, userMsg.image);
+        }
+      }
+    }
+  }, [removeLastMessage, sendMessage]);
 
   return {
     startNewInterview,
     sendMessage,
+    retryLastMessage,
     endSession,
     isLoading: useInterviewStore((state) => state.isLoading),
     error: useInterviewStore((state) => state.error),

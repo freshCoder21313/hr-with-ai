@@ -27,19 +27,31 @@ export class OpenAICustomStrategy implements AIProviderStrategy {
     if (options?.jsonMode) {
       body.response_format = { type: 'json_object' };
     }
-    // Note: OpenAI 'schema' support usually requires 'json_schema' in response_format or function calling.
-    // For now, we assume standard json_object if jsonMode is true.
 
-    return fetch(`${this.baseUrl}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${this.apiKey}`,
-        'HTTP-Referer': window.location.origin,
-        'X-Title': 'HR-With-AI',
-      },
-      body: JSON.stringify(body),
-    });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+
+    try {
+      const response = await fetch(`${this.baseUrl}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${this.apiKey}`,
+          'HTTP-Referer': window.location.origin,
+          'X-Title': 'HR-With-AI',
+        },
+        body: JSON.stringify(body),
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+      return response;
+    } catch (error: any) {
+      clearTimeout(timeoutId);
+      if (error.name === 'AbortError') {
+        throw new Error('Request timed out');
+      }
+      throw error;
+    }
   }
 
   async generateText(messages: ChatMessage[], options?: AIRequestOptions): Promise<AIResponse> {

@@ -154,50 +154,89 @@ export class GoogleGeminiStrategy implements AIProviderStrategy {
           : undefined,
       };
 
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
 
-      if (!response.ok || !response.body) {
-        throw new Error(`Custom Gemini Stream Error: ${response.statusText}`);
-      }
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+          signal: controller.signal,
+        });
 
-      const reader = response.body.getReader();
-      // Removed 'constdecoder' typo and 'buffer' variable.
-      // TextDecoder is now instantiated directly within the loop.
+        clearTimeout(timeoutId);
 
-      // Simple SSE/JSON stream parsing for Gemini
-      // Gemini stream returns a JSON array like structure but chunked, or SSE depending on proxy.
-      // Standard Gemini API returns a stream of JSON objects.
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        const chunk = new TextDecoder().decode(value);
-        // Verify if this is correct for the custom provider.
-        // Assuming standard Gemini formatting, it might need more robust parsing.
-        // For now, attempting basic parse.
-
-        // In a real stream, we might get multiple JSON objects.
-        // Simplification: just yielding raw text is tricky.
-        // Let's assume the user wants Non-Streaming for custom if complex?
-        // Or try to parse standard structure "candidates[0].content.parts[0].text"
-
-        // Hacky parsing for demonstration:
-        try {
-          // Often starts with comma or bracket
-          const CleanChunk = chunk.replace(/^,\s*/, '').replace(/^\[/, '').replace(/\]$/, '');
-          if (!CleanChunk.trim()) continue;
-
-          const data = JSON.parse(CleanChunk);
-          const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (text) yield text;
-        } catch {
-          // Removed 'e' variable
-          // buffer handling would be needed here for split chunks
+        if (!response.ok || !response.body) {
+          throw new Error(`Custom Gemini Stream Error: ${response.statusText}`);
         }
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+
+          // Robust parsing for stream of JSON objects (possibly inside array)
+          let processedIndex = 0;
+          let braceCount = 0;
+          let inString = false;
+          let escaped = false;
+          let startIndex = -1;
+
+          for (let i = 0; i < buffer.length; i++) {
+            const char = buffer[i];
+
+            // Handle strings to avoid counting braces inside strings
+            if (char === '"' && !escaped) {
+              inString = !inString;
+            }
+            if (inString) {
+              escaped = char === '\\' && !escaped;
+              continue; // Skip structure checks inside strings
+            }
+            escaped = false; // Reset escape if not in string (though outside string escape means nothing usually)
+
+            if (char === '{') {
+              if (braceCount === 0) {
+                startIndex = i; // Mark start of a top-level object
+              }
+              braceCount++;
+            } else if (char === '}') {
+              braceCount--;
+              if (braceCount === 0 && startIndex !== -1) {
+                // Found a complete object from startIndex to i
+                const jsonStr = buffer.substring(startIndex, i + 1);
+                try {
+                  const data = JSON.parse(jsonStr);
+                  const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                  if (text) yield text;
+                } catch (e) {
+                  // Ignore parse errors, maybe not a valid object or different structure
+                }
+
+                startIndex = -1; // Reset
+                processedIndex = i + 1; // Mark as processed
+              }
+            }
+          }
+
+          // Remove processed part from buffer to save memory
+          if (processedIndex > 0) {
+            buffer = buffer.substring(processedIndex);
+          }
+        }
+      } catch (error: any) {
+        clearTimeout(timeoutId);
+        if (error.name === 'AbortError') {
+          throw new Error('Request timed out');
+        }
+        console.error('Custom Gemini Stream Error:', error);
+        throw error;
       }
       return;
     }

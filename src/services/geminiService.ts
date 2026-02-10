@@ -167,7 +167,7 @@ export async function* streamInterviewMessage(
     }
   } catch (error) {
     console.error('Error sending message:', error);
-    yield "I'm having trouble seeing or processing that. Could you try again?";
+    throw error;
   }
 }
 

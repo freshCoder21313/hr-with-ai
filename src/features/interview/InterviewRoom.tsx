@@ -68,7 +68,13 @@ const InterviewRoom: React.FC = () => {
   const navigate = useNavigate();
 
   // Custom Hooks
-  const { currentInterview, sendMessage, endSession, isLoading: isProcessing } = useInterview();
+  const {
+    currentInterview,
+    sendMessage,
+    endSession,
+    retryLastMessage,
+    isLoading: isProcessing,
+  } = useInterview();
   const { setInterview, updateCode, updateWhiteboard } = useInterviewStore();
 
   // Local State
@@ -402,8 +408,12 @@ const InterviewRoom: React.FC = () => {
       />
 
       {/* Main Chat Area */}
-      <ChatArea messages={currentInterview.messages} />
-
+      <ChatArea
+        messages={currentInterview.messages}
+        onRetry={retryLastMessage}
+        isProcessing={isProcessing}
+      />
+      
       {/* Input Area */}
       <InputArea
         inputValue={inputValue}

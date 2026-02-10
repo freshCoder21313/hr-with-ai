@@ -7,6 +7,7 @@ export interface Message {
   content: string;
   timestamp: number;
   image?: string; // Base64 string for multimodal input
+  isError?: boolean;
 }
 
 export enum InterviewStatus {

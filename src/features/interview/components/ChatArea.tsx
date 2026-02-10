@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { User, Bot, Lightbulb, ChevronDown, ChevronUp } from 'lucide-react';
+import { User, Bot, Lightbulb, ChevronDown, ChevronUp, RefreshCw, AlertCircle } from 'lucide-react';
 import MarkdownRenderer from '@/components/MarkdownRenderer';
 import { Message } from '@/types';
 import { Button } from '@/components/ui/button';
@@ -14,9 +14,16 @@ export interface AnalysisItem {
 interface ChatAreaProps {
   messages: Message[];
   analysisMap?: Record<number, AnalysisItem>; // Key is message index
+  onRetry?: () => void;
+  isProcessing?: boolean;
 }
 
-export const ChatArea: React.FC<ChatAreaProps> = ({ messages, analysisMap }) => {
+export const ChatArea: React.FC<ChatAreaProps> = ({
+  messages,
+  analysisMap,
+  onRetry,
+  isProcessing,
+}) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   // Track which feedback items are expanded
   const [expandedFeedback, setExpandedFeedback] = useState<Record<number, boolean>>({});
@@ -70,10 +77,44 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, analysisMap }) => 
                     </div>
                   )}
                   <div
-                    className={`p-3 md:p-4 rounded-2xl text-xs md:text-sm leading-relaxed shadow-sm ${msg.role === 'user' ? 'bg-primary text-primary-foreground rounded-tr-none' : 'bg-card text-foreground border border-border rounded-tl-none'}`}
+                    className={`p-3 md:p-4 rounded-2xl text-xs md:text-sm leading-relaxed shadow-sm ${
+                      msg.role === 'user'
+                        ? 'bg-primary text-primary-foreground rounded-tr-none'
+                        : msg.isError
+                          ? 'bg-destructive/10 text-destructive border-destructive/50 border rounded-tl-none'
+                          : 'bg-card text-foreground border border-border rounded-tl-none'
+                    }`}
                   >
                     {msg.role === 'model' ? (
-                      <MarkdownRenderer content={msg.content} />
+                      msg.isError ||
+                      (!msg.content && (!isProcessing || idx !== messages.length - 1)) ? (
+                        <div className="flex flex-col gap-2">
+                          <div className="flex items-center gap-2 font-semibold">
+                            <AlertCircle size={16} />
+                            <span>
+                              {msg.isError
+                                ? 'Failed to generate response'
+                                : 'Empty response received'}
+                            </span>
+                          </div>
+                          <div className="text-xs opacity-90">
+                            {msg.content || 'The AI sent an empty message.'}
+                          </div>
+                          {onRetry && idx === messages.length - 1 && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={onRetry}
+                              className="self-start mt-1 gap-2 border-destructive/30 hover:bg-destructive/10 text-destructive hover:text-destructive h-8"
+                            >
+                              <RefreshCw size={14} />
+                              Retry
+                            </Button>
+                          )}
+                        </div>
+                      ) : (
+                        <MarkdownRenderer content={msg.content} />
+                      )
                     ) : (
                       <div className="whitespace-pre-wrap">{msg.content}</div>
                     )}
