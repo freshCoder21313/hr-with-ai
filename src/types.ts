@@ -81,7 +81,6 @@ export interface UserSettings {
   githubUsername?: string;
   githubToken?: string;
   defaultModel?: string;
-  voiceEnabled?: boolean;
   hintsEnabled?: boolean;
   autoFinishEnabled?: boolean;
   baseUrl?: string;

@@ -1,5 +1,5 @@
 import React from 'react';
-import { StopCircle, Volume2, VolumeX, Settings as SettingsIcon } from 'lucide-react';
+import { StopCircle, Settings as SettingsIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Interview } from '@/types';
@@ -8,8 +8,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 interface InterviewHeaderProps {
   interview: Interview;
   timer: number;
-  ttsEnabled: boolean;
-  onToggleTts: () => void;
+
   onOpenSettings: () => void;
   onEndSession: () => void;
 }
@@ -17,8 +16,7 @@ interface InterviewHeaderProps {
 export const InterviewHeader: React.FC<InterviewHeaderProps> = ({
   interview,
   timer,
-  ttsEnabled,
-  onToggleTts,
+
   onOpenSettings,
   onEndSession,
 }) => {
@@ -72,24 +70,9 @@ export const InterviewHeader: React.FC<InterviewHeaderProps> = ({
             <p>Settings</p>
           </TooltipContent>
         </Tooltip>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onToggleTts}
-              className={cn(
-                'h-8 w-8',
-                ttsEnabled ? 'text-primary bg-primary/10' : 'text-muted-foreground'
-              )}
-            >
-              {ttsEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>{ttsEnabled ? 'Mute AI Voice' : 'Enable AI Voice'}</p>
-          </TooltipContent>
-        </Tooltip>
+
+
+
         <Button
           variant="destructive"
           size="sm"

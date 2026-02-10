@@ -7,7 +7,6 @@ import { UserSettings } from '@/types';
  */
 
 const DEFAULT_SETTINGS: UserSettings = {
-  voiceEnabled: true,
   hintsEnabled: false,
   autoFinishEnabled: false,
   apiKey: '',
@@ -89,7 +88,6 @@ export async function saveUserSettings(settings: UserSettings): Promise<UserSett
 
     // 2. Save to IndexedDB
     const dbRecord: UserSettings = {
-      voiceEnabled: settings.voiceEnabled ?? true,
       hintsEnabled: settings.hintsEnabled ?? false,
       autoFinishEnabled: settings.autoFinishEnabled ?? false,
       apiKey: settings.apiKey || '',

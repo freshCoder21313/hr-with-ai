@@ -3,13 +3,13 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { db } from '@/lib/db';
 import { useInterview } from '@/hooks/useInterview';
-import { useVoice } from '@/hooks/useVoice';
+
 import {
   generateInterviewHints,
   InterviewHints,
   getStoredAIConfig,
 } from '@/services/geminiService';
-import { loadUserSettings, saveUserSettings } from '@/services/settingsService';
+import { loadUserSettings } from '@/services/settingsService';
 import { useInterviewStore } from './interviewStore';
 import { UserSettings, Resume, JobRecommendation } from '@/types';
 import SettingsModal from '@/components/SettingsModal';
@@ -79,13 +79,13 @@ const InterviewRoom: React.FC = () => {
 
   // Local State
   const [inputValue, setInputValue] = useState('');
-  const [ttsEnabled, setTtsEnabled] = useState(true);
+
   const [isCodeOpen, setIsCodeOpen] = useState(false);
   const [isWhiteboardOpen, setIsWhiteboardOpen] = useState(false);
   const [isEndingSession, setIsEndingSession] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [userSettings, setUserSettings] = useState<UserSettings>({
-    voiceEnabled: true,
+
     hintsEnabled: false,
   });
   const [isSettingsLoaded, setIsSettingsLoaded] = useState(false);
@@ -98,23 +98,9 @@ const InterviewRoom: React.FC = () => {
   // Refs
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const editorRef = useRef<any>(null);
-  const lastSpokenTimestampRef = useRef<number>(0);
 
-  // Voice Hook
-  const {
-    isListening,
-    transcript,
-    startListening,
-    stopListening,
-    resetTranscript,
-    speak,
-    cancelSpeech,
-    isSpeaking,
-    isSupported,
-  } = useVoice({
-    language: currentInterview?.language || 'en-US',
-    enabled: userSettings.voiceEnabled,
-  });
+
+
 
   // Timer Hook
   const { timer } = useInterviewTimer(isProcessing, currentInterview?.difficulty, () =>
@@ -123,11 +109,7 @@ const InterviewRoom: React.FC = () => {
 
   // --- Effects ---
 
-  useEffect(() => {
-    if (isListening) {
-      setInputValue(transcript);
-    }
-  }, [transcript, isListening]);
+
 
   // Smart Action Detection
   useEffect(() => {
@@ -156,22 +138,7 @@ const InterviewRoom: React.FC = () => {
     }
   }, [currentInterview?.messages]);
 
-  // TTS Trigger
-  useEffect(() => {
-    if (
-      !isProcessing &&
-      ttsEnabled &&
-      userSettings.voiceEnabled &&
-      currentInterview?.messages?.length
-    ) {
-      const lastMsg = currentInterview.messages[currentInterview.messages.length - 1];
-      if (lastMsg.role === 'model' && lastMsg.timestamp > lastSpokenTimestampRef.current) {
-        lastSpokenTimestampRef.current = lastMsg.timestamp;
-        const cleanText = lastMsg.content.replace(/```[\s\S]*?```/g, 'Code block omitted.').trim();
-        speak(cleanText);
-      }
-    }
-  }, [isProcessing, ttsEnabled, userSettings.voiceEnabled, currentInterview?.messages, speak]);
+
 
   // Auto-open tools based on Mode
   useEffect(() => {
@@ -205,10 +172,7 @@ const InterviewRoom: React.FC = () => {
         const stored = await loadUserSettings();
         setUserSettings(stored);
 
-        // Restore TTS state from settings
-        if (stored.voiceEnabled !== undefined) {
-          setTtsEnabled(stored.voiceEnabled);
-        }
+
 
         setIsSettingsLoaded(true);
       } catch (error) {
@@ -227,10 +191,7 @@ const InterviewRoom: React.FC = () => {
           const stored = await loadUserSettings();
           setUserSettings(stored);
 
-          // Update TTS state if voice settings changed
-          if (stored.voiceEnabled !== undefined) {
-            setTtsEnabled(stored.voiceEnabled);
-          }
+
         } catch (error) {
           console.error('Failed to reload settings:', error);
         }
@@ -285,11 +246,7 @@ const InterviewRoom: React.FC = () => {
 
     setHints(null);
     setSuggestedAction(null);
-    if (isListening) {
-      stopListening();
-      resetTranscript();
-    }
-    cancelSpeech();
+
 
     let imageBase64: string | undefined = undefined;
     if (isWhiteboardOpen && editorRef.current) {
@@ -320,7 +277,7 @@ const InterviewRoom: React.FC = () => {
         'Are you sure you want to end this interview? AI will generate feedback for you.'
       )
     ) {
-      cancelSpeech();
+
       setIsEndingSession(true);
       try {
         await endSession();
@@ -331,14 +288,7 @@ const InterviewRoom: React.FC = () => {
     }
   };
 
-  const toggleVoice = () => {
-    if (isListening) {
-      stopListening();
-    } else {
-      cancelSpeech();
-      startListening();
-    }
-  };
+
 
   const handleRunCode = async () => {
     alert('This feature is coming soon! (Backend integration in progress)');
@@ -386,23 +336,7 @@ const InterviewRoom: React.FC = () => {
       <InterviewHeader
         interview={currentInterview}
         timer={timer}
-        ttsEnabled={ttsEnabled}
-        onToggleTts={async () => {
-          if (isSpeaking) cancelSpeech();
-          const newTtsState = !ttsEnabled;
-          setTtsEnabled(newTtsState);
 
-          // Persist TTS preference
-          try {
-            const updatedSettings = await saveUserSettings({
-              ...userSettings,
-              voiceEnabled: newTtsState,
-            });
-            setUserSettings(updatedSettings); // Update local state with the saved settings
-          } catch (error) {
-            console.error('Failed to save TTS preference:', error);
-          }
-        }}
         onOpenSettings={() => setShowSettings(true)}
         onEndSession={handleEndInterview}
       />
@@ -413,15 +347,13 @@ const InterviewRoom: React.FC = () => {
         onRetry={retryLastMessage}
         isProcessing={isProcessing}
       />
-      
+
       {/* Input Area */}
       <InputArea
         inputValue={inputValue}
         setInputValue={setInputValue}
         onSendMessage={handleSendMessage}
-        isListening={isListening}
-        isSupported={isSupported}
-        onToggleVoice={toggleVoice}
+
         isCodeOpen={isCodeOpen}
         setIsCodeOpen={setIsCodeOpen}
         isWhiteboardOpen={isWhiteboardOpen}
@@ -433,7 +365,7 @@ const InterviewRoom: React.FC = () => {
         isLoadingHints={isLoadingHints}
         onGetHints={handleGetHints}
         hintsEnabled={userSettings.hintsEnabled}
-        voiceEnabled={userSettings.voiceEnabled}
+
       />
 
       {/* Tool Modals */}

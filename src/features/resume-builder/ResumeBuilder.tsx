@@ -15,6 +15,7 @@ import {
   LayoutTemplate,
   Printer,
   Loader2,
+  Columns,
   List,
 } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -30,6 +31,7 @@ import EducationForm from './SectionForms/EducationForm';
 import SkillsForm from './SectionForms/SkillsForm';
 import ProjectsForm from './SectionForms/ProjectsForm';
 import SEO from '@/components/SEO';
+import { cn } from '@/lib/utils';
 
 const ResumeBuilder: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -41,6 +43,7 @@ const ResumeBuilder: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [activeTab, setActiveTab] = useState('basics');
   const [showPreview, setShowPreview] = useState(false);
+  const [isSplitView, setIsSplitView] = useState(false);
   const [showReorderDialog, setShowReorderDialog] = useState(false);
   const [template, setTemplate] = useState<'classic' | 'modern'>('modern');
 
@@ -198,9 +201,12 @@ const ResumeBuilder: React.FC = () => {
               <Button
                 size="sm"
                 variant="ghost"
-                onClick={() => setShowPreview(false)}
+                onClick={() => {
+                  setShowPreview(false);
+                  setIsSplitView(false);
+                }}
                 className={
-                  !showPreview
+                  !showPreview && !isSplitView
                     ? 'bg-background shadow-sm hover:bg-background text-foreground'
                     : 'text-muted-foreground hover:text-foreground hover:bg-muted/80'
                 }
@@ -210,18 +216,36 @@ const ResumeBuilder: React.FC = () => {
               <Button
                 size="sm"
                 variant="ghost"
-                onClick={() => setShowPreview(true)}
+                onClick={() => {
+                  setShowPreview(true);
+                  setIsSplitView(false);
+                }}
                 className={
-                  showPreview
+                  showPreview && !isSplitView
                     ? 'bg-background shadow-sm hover:bg-background text-foreground'
                     : 'text-muted-foreground hover:text-foreground hover:bg-muted/80'
                 }
               >
                 <Eye className="w-4 h-4 mr-2" /> Preview
               </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => {
+                  setIsSplitView(true);
+                  setShowPreview(false); // Split view overrides standard preview
+                }}
+                className={
+                  isSplitView
+                    ? 'bg-background shadow-sm hover:bg-background text-foreground'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/80'
+                }
+              >
+                <Columns className="w-4 h-4 mr-2" /> Split
+              </Button>
             </div>
 
-            {showPreview && (
+            {(showPreview || isSplitView) && (
               <>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -268,7 +292,7 @@ const ResumeBuilder: React.FC = () => {
               </>
             )}
 
-            {!resume.formatted && !showPreview && (
+            {!resume.formatted && !showPreview && !isSplitView && (
               <LoadingButton
                 onClick={handleSmartFormat}
                 disabled={isProcessing}
@@ -289,7 +313,34 @@ const ResumeBuilder: React.FC = () => {
 
         {/* Main Content */}
         <div className="flex-1 overflow-hidden flex">
-          {showPreview ? (
+          {/* Split View */}
+          {isSplitView ? (
+            <div className="flex w-full h-full overflow-hidden">
+              {/* Left: Source Text */}
+              <div className="w-1/2 border-r border-border flex flex-col bg-muted/10">
+                <div className="p-4 border-b border-border bg-muted/20 font-medium text-sm text-muted-foreground flex justify-between items-center">
+                  <span>Original Source (Raw Text)</span>
+                  <span className="text-xs">Read-only</span>
+                </div>
+                <div className="flex-1 overflow-auto p-4">
+                  <pre className="whitespace-pre-wrap font-mono text-xs md:text-sm text-foreground/80 leading-relaxed">
+                    {resume.rawText || 'No source text available.'}
+                  </pre>
+                </div>
+              </div>
+              {/* Right: Preview */}
+              <div className="w-1/2 flex flex-col bg-muted/30">
+                <div className="p-4 border-b border-border bg-muted/20 font-medium text-sm text-muted-foreground text-center">
+                  <span>Tailored Result (Preview)</span>
+                </div>
+                <div className="flex-1 overflow-y-auto p-8 flex justify-center">
+                  <div className="scale-[0.65] origin-top shadow-xl w-full max-w-[210mm]">
+                    <ResumePreview data={data} template={template} />
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : showPreview ? (
             <div className="flex-1 overflow-y-auto bg-muted/30 p-8 flex justify-center">
               <div className="scale-[0.8] md:scale-90 origin-top shadow-2xl">
                 <ResumePreview data={data} template={template} />

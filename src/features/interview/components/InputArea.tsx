@@ -1,5 +1,5 @@
 import React from 'react';
-import { Mic, MicOff, Code2, PenTool, Send, Lightbulb, Sparkles } from 'lucide-react';
+import { Code2, PenTool, Send, Lightbulb, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
@@ -12,9 +12,7 @@ interface InputAreaProps {
   inputValue: string;
   setInputValue: (val: string) => void;
   onSendMessage: () => void;
-  isListening: boolean;
-  isSupported: boolean;
-  onToggleVoice: () => void;
+
 
   // Tools
   isCodeOpen: boolean;
@@ -32,16 +30,14 @@ interface InputAreaProps {
   isLoadingHints: boolean;
   onGetHints: () => void;
   hintsEnabled?: boolean;
-  voiceEnabled?: boolean;
+
 }
 
 export const InputArea: React.FC<InputAreaProps> = ({
   inputValue,
   setInputValue,
   onSendMessage,
-  isListening,
-  isSupported,
-  onToggleVoice,
+
   isCodeOpen,
   setIsCodeOpen,
   isWhiteboardOpen,
@@ -53,7 +49,7 @@ export const InputArea: React.FC<InputAreaProps> = ({
   isLoadingHints,
   onGetHints,
   hintsEnabled,
-  voiceEnabled,
+
 }) => {
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -170,38 +166,20 @@ export const InputArea: React.FC<InputAreaProps> = ({
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyPress}
-            placeholder={isListening ? 'Listening...' : 'Type your answer...'}
+            placeholder='Type your answer...'
             className={cn(
-              'w-full min-h-[44px] max-h-[120px] resize-none pr-10 md:pr-12 py-2.5 md:py-3 shadow-sm text-sm md:text-base',
-              isListening
-                ? 'border-red-400 ring-2 ring-red-100 bg-red-50 dark:bg-red-900/20 dark:border-red-500 dark:ring-red-900/30'
-                : ''
+              'w-full min-h-[44px] max-h-[120px] resize-none pr-10 md:pr-12 py-2.5 md:py-3 shadow-sm text-sm md:text-base'
             )}
             rows={1}
           />
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant={isListening ? 'destructive' : 'ghost'}
-                size="icon"
-                onClick={onToggleVoice}
-                disabled={!isSupported || voiceEnabled === false}
-                className="absolute right-1 md:right-2 top-1 md:top-1.5 h-8 w-8 text-muted-foreground hover:text-foreground"
-              >
-                {isListening ? <MicOff size={16} /> : <Mic size={16} />}
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>{isListening ? 'Stop Listening' : 'Start Microphone'}</p>
-            </TooltipContent>
-          </Tooltip>
+
         </div>
 
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
               onClick={onSendMessage}
-              disabled={!inputValue.trim() && !isListening}
+              disabled={!inputValue.trim()}
               className="h-[44px] w-[44px] md:h-[50px] md:w-[50px] rounded-xl shrink-0"
               size="icon"
             >

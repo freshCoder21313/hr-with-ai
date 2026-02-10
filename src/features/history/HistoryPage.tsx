@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import ProgressCharts from './ProgressCharts';
+import LearningPath from './LearningPath';
 import SEO from '@/components/SEO';
 import ShareModal from '@/features/history/components/ShareModal';
 import { Share2 } from 'lucide-react';
@@ -60,6 +61,7 @@ const HistoryPage: React.FC = () => {
       {interviews.length > 0 && (
         <div className="mb-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <ProgressCharts interviews={interviews} />
+          <LearningPath interviews={interviews} />
         </div>
       )}
 
