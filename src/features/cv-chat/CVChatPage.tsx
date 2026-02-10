@@ -387,7 +387,7 @@ const CVChatPage: React.FC = () => {
       />
       {/* Left: Chat */}
       <div className="w-1/2 md:w-[40%] border-r border-border flex flex-col bg-background z-10 shadow-xl">
-        <div className="p-4 border-b border-border bg-background flex justify-between items-center">
+        <div className="h-12 px-4 border-b border-border bg-background flex justify-between items-center shrink-0">
           <div className="flex items-center gap-2">
             <h2 className="font-semibold text-foreground">Chat Assistant</h2>
             <Tooltip>
