@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { X, Lightbulb } from 'lucide-react';
 import { InterviewHints } from '@/services/geminiService';
+import MarkdownRenderer from '@/components/MarkdownRenderer';
 
 interface InterviewHintViewProps {
   hints: InterviewHints;
@@ -34,7 +35,9 @@ const InterviewHintView: React.FC<InterviewHintViewProps> = ({ hints, onClose })
               Level 1: Beginner
             </span>
           </div>
-          <p className="text-slate-600 leading-relaxed">{hints.level1}</p>
+          <div className="text-slate-600 leading-relaxed text-xs">
+            <MarkdownRenderer content={hints.level1} />
+          </div>
         </div>
 
         {/* Level 2: Creative */}
@@ -44,7 +47,9 @@ const InterviewHintView: React.FC<InterviewHintViewProps> = ({ hints, onClose })
               Level 2: Creative
             </span>
           </div>
-          <p className="text-slate-600 leading-relaxed">{hints.level2}</p>
+          <div className="text-slate-600 leading-relaxed text-xs">
+            <MarkdownRenderer content={hints.level2} />
+          </div>
         </div>
 
         {/* Level 3: Expert */}
@@ -54,7 +59,9 @@ const InterviewHintView: React.FC<InterviewHintViewProps> = ({ hints, onClose })
               Level 3: Expert
             </span>
           </div>
-          <p className="text-slate-600 leading-relaxed">{hints.level3}</p>
+          <div className="text-slate-600 leading-relaxed text-xs">
+            <MarkdownRenderer content={hints.level3} />
+          </div>
         </div>
       </CardContent>
     </Card>

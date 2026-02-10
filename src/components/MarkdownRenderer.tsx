@@ -44,7 +44,11 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = memo(({ content }) => 
             </SyntaxHighlighter>
           ) : (
             <code
-              className={`${inline ? 'bg-slate-100 text-slate-800 px-1.5 py-0.5 rounded font-mono text-[0.9em] border border-slate-200' : 'block bg-slate-100 p-4 rounded-lg my-2 overflow-x-auto text-sm'}`}
+              className={`${
+                inline
+                  ? 'bg-slate-100 text-slate-900 px-1.5 py-0.5 rounded font-mono text-[0.9em] border border-slate-200 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-700'
+                  : 'block bg-slate-100 text-slate-900 p-4 rounded-lg my-2 overflow-x-auto text-sm border border-slate-200 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-700'
+              }`}
               {...props}
             >
               {children}

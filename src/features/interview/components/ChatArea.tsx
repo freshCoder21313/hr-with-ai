@@ -125,43 +125,55 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
               {/* Inline Feedback Section */}
               {feedback && (
                 <div
-                  className={`mt-2 max-w-[95%] md:max-w-[75%] ${msg.role === 'user' ? 'mr-10 md:mr-12' : 'ml-10 md:ml-12'}`}
+                  className={`mt-3 max-w-[95%] md:max-w-[75%] ${
+                    msg.role === 'user' ? 'mr-10 md:mr-12' : 'ml-10 md:ml-12'
+                  } animate-in fade-in slide-in-from-top-2 duration-300`}
                 >
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => toggleFeedback(idx)}
-                    className={`h-8 text-xs font-medium border transition-colors ${
-                      isExpanded
-                        ? 'bg-amber-100 text-amber-900 border-amber-200 hover:bg-amber-200'
-                        : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50'
-                    }`}
-                  >
-                    <Lightbulb
-                      className={`w-3.5 h-3.5 mr-2 ${isExpanded ? 'text-amber-600' : 'text-slate-400'}`}
-                    />
-                    {isExpanded ? 'Hide AI Feedback' : 'View AI Feedback'}
-                    {isExpanded ? (
-                      <ChevronUp className="w-3 h-3 ml-1" />
-                    ) : (
+                  {!isExpanded ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => toggleFeedback(idx)}
+                      className="h-7 text-xs font-medium bg-background/50 border-amber-200/50 text-amber-600 hover:text-amber-700 hover:bg-amber-50/50 hover:border-amber-300 dark:border-amber-800/30 dark:text-amber-500 dark:hover:bg-amber-900/20 rounded-full"
+                    >
+                      <Lightbulb className="w-3.5 h-3.5 mr-1.5" />
+                      View AI Analysis
                       <ChevronDown className="w-3 h-3 ml-1" />
-                    )}
-                  </Button>
-
-                  {isExpanded && (
-                    <Card className="mt-2 bg-amber-50/50 border-amber-100 animate-in fade-in slide-in-from-top-1 duration-200">
-                      <CardContent className="p-4 space-y-3 text-sm">
-                        <div>
-                          <span className="font-semibold text-amber-900 block mb-1 text-xs uppercase tracking-wider">
+                    </Button>
+                  ) : (
+                    <Card className="bg-amber-50/80 dark:bg-amber-950/10 border-amber-200 dark:border-amber-800/40 shadow-sm overflow-hidden">
+                      <div
+                        className="px-4 py-2 flex items-center justify-between bg-amber-100/50 dark:bg-amber-900/20 border-b border-amber-200/50 dark:border-amber-800/30 cursor-pointer hover:bg-amber-100/70 dark:hover:bg-amber-900/30 transition-colors"
+                        onClick={() => toggleFeedback(idx)}
+                      >
+                        <div className="flex items-center gap-2 text-xs font-bold text-amber-700 dark:text-amber-500 uppercase tracking-wider">
+                          <Lightbulb className="w-3.5 h-3.5" />
+                          AI Feedback
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-5 w-5 text-amber-700/50 hover:text-amber-800 dark:text-amber-500/50 dark:hover:text-amber-400"
+                        >
+                          <ChevronUp className="w-3.5 h-3.5" />
+                        </Button>
+                      </div>
+                      <CardContent className="p-4 space-y-4 text-sm">
+                        <div className="space-y-1.5">
+                          <span className="text-xs font-bold text-amber-700 dark:text-amber-500 uppercase tracking-wider flex items-center gap-1.5">
                             Analysis
                           </span>
-                          <p className="text-slate-700 leading-relaxed">{feedback.analysis}</p>
+                          <div className="text-muted-foreground leading-relaxed">
+                            <MarkdownRenderer content={feedback.analysis} />
+                          </div>
                         </div>
-                        <div className="pt-2 border-t border-amber-100/50">
-                          <span className="font-semibold text-emerald-800 block mb-1 text-xs uppercase tracking-wider">
+                        <div className="space-y-1.5 pt-3 border-t border-amber-200/30 dark:border-amber-800/30">
+                          <span className="text-xs font-bold text-emerald-700 dark:text-emerald-500 uppercase tracking-wider flex items-center gap-1.5">
                             Better Approach
                           </span>
-                          <p className="text-slate-700 leading-relaxed">{feedback.improvement}</p>
+                          <div className="text-muted-foreground leading-relaxed">
+                            <MarkdownRenderer content={feedback.improvement} />
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
