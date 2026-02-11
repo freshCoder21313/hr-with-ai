@@ -303,6 +303,8 @@ PROVIDE 3 HINTS:
 2. **Intermediate/Creative**: For someone with SOME knowledge. Focus on a creative partial solution or logical guess.
 3. **Expert/Technical**: For someone with DEEP knowledge. Focus on the technically correct, optimized, or "perfect" answer.
 
+IMPORTANT: Keep each hint concise (maximum 2-3 sentences). Do not write full code solutions, just concepts or short snippets.
+
 OUTPUT FORMAT:
 Return a valid JSON object (NO MARKDOWN, NO \`\`\`json wrappers):
 {

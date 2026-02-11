@@ -166,7 +166,7 @@ const ApiKeyModal: React.FC = () => {
                   onChange={(e) => setModelId(e.target.value)}
                   placeholder={
                     provider === 'google'
-                      ? 'gemini-2.6-flash-exp'
+                      ? 'gemini-3-flash-preview'
                       : provider === 'openrouter'
                         ? 'e.g. liquid/lfm-2.5-1.2b-thinking:free'
                         : 'gpt-4o'

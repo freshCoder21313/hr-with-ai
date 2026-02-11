@@ -151,6 +151,26 @@ export const useVoiceInterview = () => {
     [addMessage, updateLastMessage, setLoading, clearTTSQueue, addToTTSQueue, setCurrentState]
   );
 
+  // Action: Send Text Message (Hybrid Mode)
+  const sendTextMessage = useCallback(
+    async (text: string) => {
+      if (!text.trim()) return;
+
+      // Add User Message
+      const userMsg: Message = {
+        role: 'user',
+        content: text,
+        timestamp: Date.now(),
+        isVoiceInput: false,
+      };
+      addMessage(userMsg);
+
+      // Send to Gemini
+      await processAIResponse(text);
+    },
+    [addMessage, processAIResponse]
+  );
+
   // Action: Stop Listening and Send
   const stopAndSend = useCallback(async () => {
     stt.stopListening();
@@ -232,6 +252,7 @@ export const useVoiceInterview = () => {
     audioLevel: useVoiceInterviewStore((s) => s.audioLevel),
     startListening,
     stopAndSend,
+    sendTextMessage,
     interruptAI,
     endInterview,
   };

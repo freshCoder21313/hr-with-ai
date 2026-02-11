@@ -35,7 +35,7 @@ const InterviewHintView: React.FC<InterviewHintViewProps> = ({ hints, onClose })
               Level 1: Beginner
             </span>
           </div>
-          <div className="text-slate-600 leading-relaxed text-xs">
+          <div className="text-slate-600 leading-relaxed text-xs max-h-[120px] overflow-y-auto pr-1">
             <MarkdownRenderer content={hints.level1} />
           </div>
         </div>
@@ -47,7 +47,7 @@ const InterviewHintView: React.FC<InterviewHintViewProps> = ({ hints, onClose })
               Level 2: Creative
             </span>
           </div>
-          <div className="text-slate-600 leading-relaxed text-xs">
+          <div className="text-slate-600 leading-relaxed text-xs max-h-[120px] overflow-y-auto pr-1">
             <MarkdownRenderer content={hints.level2} />
           </div>
         </div>
@@ -59,7 +59,7 @@ const InterviewHintView: React.FC<InterviewHintViewProps> = ({ hints, onClose })
               Level 3: Expert
             </span>
           </div>
-          <div className="text-slate-600 leading-relaxed text-xs">
+          <div className="text-slate-600 leading-relaxed text-xs max-h-[120px] overflow-y-auto pr-1">
             <MarkdownRenderer content={hints.level3} />
           </div>
         </div>
