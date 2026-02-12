@@ -22,7 +22,6 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import ResumeList from '@/features/dashboard/ResumeList';
 import { parseResume } from '@/services/resumeParser';
 import { getStoredAIConfig, parseResumeToJSON } from '@/services/geminiService';
 import { ChangeReviewCard } from './ChangeReviewCard';

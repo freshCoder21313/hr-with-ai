@@ -64,12 +64,40 @@ export interface Project {
   roles?: string[]; // e.g. ["Team Lead"]
 }
 
+export interface Volunteer {
+  organization?: string;
+  position?: string;
+  url?: string;
+  startDate?: string;
+  endDate?: string;
+  summary?: string;
+  highlights?: string[];
+}
+
+export interface Award {
+  title: string;
+  date?: string;
+  awarder?: string;
+  summary?: string;
+}
+
+export interface Publication {
+  name: string;
+  publisher?: string;
+  releaseDate?: string;
+  url?: string;
+  summary?: string;
+}
+
 export interface ResumeData {
   basics: Basics;
   work: Work[];
   education: Education[];
   skills: Skill[];
   projects: Project[];
+  volunteer?: Volunteer[];
+  awards?: Award[];
+  publications?: Publication[];
 
   // Additional sections often useful
   languages?: { language: string; fluency: string }[];

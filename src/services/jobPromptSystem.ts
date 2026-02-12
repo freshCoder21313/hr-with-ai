@@ -55,8 +55,12 @@ Requirements:
 2. Adjust the professional summary if needed
 3. Reorder bullet points to prioritize relevant achievements
 4. Add keywords from the job description
-5. Maintain the original structure and format
-6. Return JSON Resume format
+5. **PROJECT SELECTION:** You must select at least 3-5 projects from the original resume that are most relevant to this job.
+   - If the candidate has many projects, filter for the top 3-5 matches.
+   - If the candidate has fewer than 3 projects, keep them all but enhance their descriptions.
+   - Rewrite project descriptions to explicitly demonstrate the skills required by the job.
+6. Maintain the original structure and format
+7. Return JSON Resume format
 
 Format: JSON Resume object matching the input structure
 `;

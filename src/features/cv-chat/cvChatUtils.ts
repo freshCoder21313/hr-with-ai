@@ -2,6 +2,7 @@ import { ResumeData } from '@/types/resume';
 
 export interface ProposedChange {
   section: keyof ResumeData;
+  action: 'update' | 'add' | 'delete' | 'rewrite';
   newData: any;
   explanation: string;
 }

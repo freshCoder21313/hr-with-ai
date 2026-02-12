@@ -18,9 +18,30 @@ export const ChangeReviewCard: React.FC<ChangeReviewCardProps> = ({
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
+  const getActionBadge = () => {
+    switch (change.action) {
+      case 'add':
+        return <Badge className="bg-green-100 text-green-700 border-green-200">Add</Badge>;
+      case 'delete':
+        return <Badge className="bg-red-100 text-red-700 border-red-200">Delete</Badge>;
+      case 'rewrite':
+        return <Badge className="bg-purple-100 text-purple-700 border-purple-200">Rewrite</Badge>;
+      default:
+        return (
+          <Badge variant="outline" className="bg-blue-50 text-blue-600 border-blue-200">
+            Update
+          </Badge>
+        );
+    }
+  };
+
   // Helper to render readable diff content
   const renderContent = () => {
-    const { section, newData } = change;
+    const { section, newData, action } = change;
+
+    if (action === 'delete') {
+      return <div className="text-sm text-red-600 italic">This section will be removed.</div>;
+    }
 
     // Case 1: Arrays (Work, Education, Skills, Projects)
     if (Array.isArray(newData)) {
@@ -100,13 +121,11 @@ export const ChangeReviewCard: React.FC<ChangeReviewCardProps> = ({
       <CardHeader className="p-3 pb-2 flex flex-row items-center justify-between space-y-0">
         <div className="flex flex-col">
           <h3 className="font-bold text-sm uppercase tracking-wide text-blue-700 flex items-center gap-2">
-            Update: {change.section}
+            {change.section}
           </h3>
           <span className="text-xs text-slate-500 line-clamp-1">{change.explanation}</span>
         </div>
-        <Badge variant="outline" className="bg-blue-50 text-blue-600 border-blue-200">
-          Pending
-        </Badge>
+        {getActionBadge()}
       </CardHeader>
 
       <CardContent className="p-3 pt-0">{renderContent()}</CardContent>

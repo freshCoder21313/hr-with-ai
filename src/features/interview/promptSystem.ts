@@ -362,7 +362,8 @@ YOUR MISSION:
    - Use keywords from the JD naturally.
    - If a past role is irrelevant, minimize it (fewer bullets), but do not delete it if it leaves a gap.
 4. **Select Projects**:
-   - If the source resume has projects, select the most relevant ones.
+   - Select at least 3-5 of the most relevant projects from the source resume.
+   - If fewer than 3 projects exist, keep all of them.
    - Rewrite descriptions to focus on the tech stack mentioned in the JD.
 5. **Optimize Skills**: Reorder or group skills to prioritize what the JD asks for.
 
