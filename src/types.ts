@@ -146,6 +146,18 @@ export interface JobSelectionState {
   status: 'idle' | 'analyzing' | 'generating' | 'completed';
 }
 
+export interface SavedJob {
+  id?: number;
+  company: string;
+  jobTitle: string;
+  jobDescription: string;
+  interviewerPersona: string;
+  companyStatus?: string;
+  interviewContext?: string;
+  createdAt: number;
+  updatedAt: number;
+}
+
 export type AIModelProvider = 'google' | 'openai' | 'anthropic' | 'openrouter';
 
 export interface AIConfig {

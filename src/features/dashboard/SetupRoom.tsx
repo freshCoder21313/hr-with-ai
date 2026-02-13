@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { SetupFormData, Resume, ResumeAnalysis } from '@/types';
-import { Upload, Play, Sparkles, Briefcase } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { SetupFormData, Resume, ResumeAnalysis, SavedJob } from '@/types';
+import { Upload, Play, Sparkles, Briefcase, Save, Trash2, ChevronDown } from 'lucide-react';
 import { parseResume } from '@/services/resumeParser';
 import {
   extractInfoFromJD,
@@ -42,6 +42,10 @@ const SetupRoom: React.FC = () => {
   const [selectedResumeId, setSelectedResumeId] = useState<number>();
   const [resumeAnalysis, setResumeAnalysis] = useState<ResumeAnalysis | null>(null);
 
+  // Saved Jobs State
+  const [savedJobs, setSavedJobs] = useState<SavedJob[]>([]);
+  const [selectedJobId, setSelectedJobId] = useState<string>('new'); // 'new' or stringified number
+
   // Tailor Resume State
   const [isTailorModalOpen, setIsTailorModalOpen] = useState(false);
   const [resumeToTailor, setResumeToTailor] = useState<Resume | null>(null);
@@ -69,19 +73,22 @@ const SetupRoom: React.FC = () => {
     interviewContext: 'Modern day video call',
   });
 
-  // Load saved resumes
-  const loadResumes = async () => {
+  // Load saved resumes and jobs
+  const loadData = async () => {
     try {
       const resumes = await db.resumes.toArray();
       setSavedResumes(resumes.sort((a, b) => b.createdAt - a.createdAt));
+
+      const jobs = await db.jobs.toArray();
+      setSavedJobs(jobs.sort((a, b) => b.updatedAt - a.updatedAt));
     } catch (error) {
-      console.error('Failed to load resumes:', error);
+      console.error('Failed to load data:', error);
     }
   };
 
-  // Load saved resumes on mount
-  React.useEffect(() => {
-    loadResumes();
+  // Load data on mount
+  useEffect(() => {
+    loadData();
   }, []);
 
   const handleResumeSelect = (resume: Resume) => {
@@ -100,6 +107,88 @@ const SetupRoom: React.FC = () => {
       // Normal Select
       setSelectedResumeId(resume.id);
       setFormData((prev) => ({ ...prev, resumeText: resume.rawText }));
+    }
+  };
+
+  const handleSaveJob = async () => {
+    if (!formData.jobTitle || !formData.company) {
+      alert('Please enter at least a Job Title and Company.');
+      return;
+    }
+
+    try {
+      const timestamp = Date.now();
+      const baseJobData = {
+        company: formData.company,
+        jobTitle: formData.jobTitle,
+        jobDescription: formData.jobDescription,
+        interviewerPersona: formData.interviewerPersona,
+        companyStatus: formData.companyStatus,
+        interviewContext: formData.interviewContext,
+        updatedAt: timestamp,
+      };
+
+      if (selectedJobId !== 'new') {
+        // Update existing
+        await db.jobs.update(parseInt(selectedJobId), baseJobData);
+        alert('Job updated successfully!');
+      } else {
+        // Save as new
+        const newJob: SavedJob = {
+          ...baseJobData,
+          createdAt: timestamp,
+        };
+        const newId = await db.jobs.add(newJob);
+        alert('Job saved successfully!');
+
+        // Refresh list and select the new job
+        await loadData();
+        setSelectedJobId(newId.toString());
+        return;
+      }
+
+      loadData();
+    } catch (error) {
+      console.error('Failed to save job:', error);
+      alert('Failed to save job');
+    }
+  };
+
+  const handleDeleteJob = async (e: React.MouseEvent, id: number) => {
+    e.preventDefault();
+    e.stopPropagation(); // Prevent selection
+    if (!confirm('Delete this saved job template?')) return;
+
+    try {
+      await db.jobs.delete(id);
+      if (selectedJobId === id.toString()) {
+        setSelectedJobId('new');
+      }
+      loadData();
+    } catch (error) {
+      console.error('Failed to delete job:', error);
+    }
+  };
+
+  const handleSelectSavedJob = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const val = e.target.value;
+    setSelectedJobId(val);
+    if (val === 'new') {
+      // Optional: clear form? No, let's keep current text so user can save it.
+      return;
+    }
+
+    const job = savedJobs.find((j) => j.id?.toString() === val);
+    if (job) {
+      setFormData((prev) => ({
+        ...prev,
+        company: job.company,
+        jobTitle: job.jobTitle,
+        jobDescription: job.jobDescription,
+        interviewerPersona: job.interviewerPersona,
+        companyStatus: job.companyStatus || prev.companyStatus,
+        interviewContext: job.interviewContext || prev.interviewContext,
+      }));
     }
   };
 
@@ -390,6 +479,54 @@ const SetupRoom: React.FC = () => {
         </CardHeader>
         <CardContent className="px-4 md:px-6">
           <form onSubmit={handleSubmit} className="space-y-4 md:space-y-8">
+            {/* Job Selection / Template */}
+            <div className="flex items-center gap-4 bg-muted/30 p-4 rounded-lg border border-border">
+              <div className="flex-1">
+                <Label className="mb-2 block">Load Saved Job</Label>
+                <div className="relative">
+                  <select
+                    value={selectedJobId}
+                    onChange={handleSelectSavedJob}
+                    className="flex h-11 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 appearance-none"
+                  >
+                    <option value="new">+ New / Custom Job</option>
+                    {savedJobs.map((job) => (
+                      <option key={job.id} value={job.id?.toString()}>
+                        {job.jobTitle} @ {job.company}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute right-3 top-3 h-4 w-4 opacity-50" />
+                </div>
+              </div>
+              <div className="flex items-end h-[62px] pb-[2px]">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleSaveJob}
+                  title="Save current details as a reusable job template"
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  Save Job
+                </Button>
+              </div>
+
+              {/* Delete Button for Saved Jobs */}
+              {selectedJobId !== 'new' && (
+                <div className="flex items-end h-[62px] pb-[2px]">
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="icon"
+                    onClick={(e) => handleDeleteJob(e, parseInt(selectedJobId))}
+                    title="Delete this saved job"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              )}
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
               <div className="space-y-2 md:space-y-3">
                 <Label htmlFor="company">Target Company</Label>
@@ -598,7 +735,7 @@ const SetupRoom: React.FC = () => {
                 onDelete={handleDeleteResume}
                 onTailor={handleTailorClick}
                 onToggleMain={handleToggleMain}
-                onRefresh={loadResumes}
+                onRefresh={loadData}
               />
 
               <Textarea

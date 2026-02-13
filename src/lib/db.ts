@@ -1,5 +1,5 @@
 import Dexie, { Table } from 'dexie';
-import { Interview, UserSettings, Resume } from '@/types';
+import { Interview, UserSettings, Resume, SavedJob } from '@/types';
 import { DBJobRecommendation } from '@/services/jobRecommendationService';
 
 class HRDatabase extends Dexie {
@@ -7,6 +7,7 @@ class HRDatabase extends Dexie {
   userSettings!: Table<UserSettings, number>;
   resumes!: Table<Resume, number>;
   job_recommendations!: Table<DBJobRecommendation, number>;
+  jobs!: Table<SavedJob, number>;
 
   constructor() {
     super('VietPhongDB');
@@ -53,6 +54,11 @@ class HRDatabase extends Dexie {
         '++id, apiKey, githubUsername, githubToken, defaultModel, voiceEnabled, hintsEnabled, autoFinishEnabled, updatedAt, provider',
     });
 
+    // Version 12: Add Saved Jobs
+    this.version(12).stores({
+      jobs: '++id, company, jobTitle, createdAt, updatedAt',
+    });
+
     // Add hooks to auto-update updatedAt
     this.interviews.hook('creating', (_primKey, obj) => {
       obj.updatedAt = Date.now();
@@ -74,6 +80,14 @@ class HRDatabase extends Dexie {
       obj.updatedAt = Date.now();
     });
     this.userSettings.hook('updating', (_mods, _primKey, _obj, _trans) => {
+      return { updatedAt: Date.now() };
+    });
+
+    this.jobs.hook('creating', (_primKey, obj) => {
+      obj.updatedAt = Date.now();
+      if (!obj.createdAt) obj.createdAt = Date.now();
+    });
+    this.jobs.hook('updating', (_mods, _primKey, _obj, _trans) => {
       return { updatedAt: Date.now() };
     });
   }
