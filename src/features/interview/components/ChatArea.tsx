@@ -1,5 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { User, Bot, Lightbulb, ChevronDown, ChevronUp, RefreshCw, AlertCircle } from 'lucide-react';
+import {
+  User,
+  Bot,
+  Lightbulb,
+  ChevronDown,
+  ChevronUp,
+  RefreshCw,
+  AlertCircle,
+  Code2,
+  PenTool,
+} from 'lucide-react';
 import MarkdownRenderer from '@/components/MarkdownRenderer';
 import { Message } from '@/types';
 import { Button } from '@/components/ui/button';
@@ -16,6 +26,7 @@ interface ChatAreaProps {
   analysisMap?: Record<number, AnalysisItem>; // Key is message index
   onRetry?: () => void;
   isProcessing?: boolean;
+  onOpenTool?: (tool: 'code' | 'whiteboard') => void;
 }
 
 export const ChatArea: React.FC<ChatAreaProps> = ({
@@ -23,6 +34,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
   analysisMap,
   onRetry,
   isProcessing,
+  onOpenTool,
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   // Track which feedback items are expanded
@@ -46,12 +58,31 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
     }));
   };
 
+  const parseContent = (content: string) => {
+    const actionRegex = /<ACTION\s+type="([^"]+)"\s*(?:lang="([^"]+)")?\s*\/>/i;
+    const match = content.match(actionRegex);
+
+    if (match) {
+      const type = match[1].toUpperCase(); // CODE or DRAW
+      const lang = match[2];
+      const cleanContent = content.replace(actionRegex, '').trim();
+      return { cleanContent, action: { type, lang } };
+    }
+
+    return { cleanContent: content, action: null };
+  };
+
   return (
     <div className="flex-1 overflow-hidden relative flex flex-col bg-muted/30">
       <div className="flex-1 overflow-y-auto p-3 md:p-6 space-y-4 md:space-y-6">
         {messages.map((msg, idx) => {
           const feedback = analysisMap?.[idx];
           const isExpanded = expandedFeedback[idx];
+
+          const { cleanContent, action } =
+            msg.role === 'model'
+              ? parseContent(msg.content)
+              : { cleanContent: msg.content, action: null };
 
           return (
             <div
@@ -87,7 +118,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
                   >
                     {msg.role === 'model' ? (
                       msg.isError ||
-                      (!msg.content && (!isProcessing || idx !== messages.length - 1)) ? (
+                      (!cleanContent && (!isProcessing || idx !== messages.length - 1)) ? (
                         <div className="flex flex-col gap-2">
                           <div className="flex items-center gap-2 font-semibold">
                             <AlertCircle size={16} />
@@ -98,7 +129,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
                             </span>
                           </div>
                           <div className="text-xs opacity-90">
-                            {msg.content || 'The AI sent an empty message.'}
+                            {cleanContent || 'The AI sent an empty message.'}
                           </div>
                           {onRetry && idx === messages.length - 1 && (
                             <Button
@@ -113,10 +144,25 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
                           )}
                         </div>
                       ) : (
-                        <MarkdownRenderer content={msg.content} />
+                        <div className="flex flex-col gap-3">
+                          <MarkdownRenderer content={cleanContent} />
+                          {action && onOpenTool && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="self-start gap-2 bg-primary/5 hover:bg-primary/10 border-primary/20 text-primary"
+                              onClick={() =>
+                                onOpenTool(action.type === 'CODE' ? 'code' : 'whiteboard')
+                              }
+                            >
+                              {action.type === 'CODE' ? <Code2 size={14} /> : <PenTool size={14} />}
+                              {action.type === 'CODE' ? 'Open Code Editor' : 'Open Whiteboard'}
+                            </Button>
+                          )}
+                        </div>
                       )
                     ) : (
-                      <div className="whitespace-pre-wrap">{msg.content}</div>
+                      <div className="whitespace-pre-wrap">{cleanContent}</div>
                     )}
                   </div>
                 </div>

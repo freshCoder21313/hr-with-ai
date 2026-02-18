@@ -13,6 +13,10 @@ export interface Message {
   audioUrl?: string; // URL blob for playback
   transcriptionConfidence?: number; // STT confidence (0-1)
   isVoiceInput?: boolean; // Mark as voice message
+  action?: {
+    type: 'CODE' | 'DRAW';
+    language?: string; // For code
+  };
 }
 
 export enum InterviewStatus {

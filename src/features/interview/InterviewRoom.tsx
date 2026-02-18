@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
+import { Editor, TLShapeId } from 'tldraw';
 import { db } from '@/lib/db';
 import { useInterview } from '@/hooks/useInterview';
 
@@ -86,7 +87,6 @@ const InterviewRoom: React.FC = () => {
   const [isEndingSession, setIsEndingSession] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [userSettings, setUserSettings] = useState<UserSettings>({
-
     hintsEnabled: false,
   });
   const [isSettingsLoaded, setIsSettingsLoaded] = useState(false);
@@ -95,13 +95,11 @@ const InterviewRoom: React.FC = () => {
   const [showJobRecommendationModal, setShowJobRecommendationModal] = useState(false);
   const [availableResumes, setAvailableResumes] = useState<Resume[]>([]);
   const [suggestedAction, setSuggestedAction] = useState<'code' | 'draw' | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const processedMessageIds = useRef<Set<number>>(new Set());
 
   // Refs
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const editorRef = useRef<any>(null);
-
-
-
+  const editorRef = useRef<Editor | null>(null);
 
   // Timer Hook
   const { timer } = useInterviewTimer(isProcessing, currentInterview?.difficulty, () =>
@@ -110,26 +108,48 @@ const InterviewRoom: React.FC = () => {
 
   // --- Effects ---
 
-
-
-  // Smart Action Detection
+  // Smart Action Detection & Auto-Open
   useEffect(() => {
     if (currentInterview?.messages?.length) {
       const lastMsg = currentInterview.messages[currentInterview.messages.length - 1];
+
+      // Skip if we've already processed this message for auto-opening
+      if (processedMessageIds.current.has(lastMsg.timestamp)) {
+        return;
+      }
+
       if (lastMsg.role === 'model') {
-        const text = lastMsg.content.toLowerCase();
+        const text = lastMsg.content;
+
+        // 1. Explicit Tag Detection (Auto-Open)
+        if (text.includes('<ACTION type="CODE"')) {
+          // setIsCodeOpen(true); // Disable auto-open
+          setSuggestedAction('code');
+          processedMessageIds.current.add(lastMsg.timestamp);
+          return;
+        }
+
+        if (text.includes('<ACTION type="DRAW"')) {
+          // setIsWhiteboardOpen(true); // Disable auto-open
+          setSuggestedAction('draw');
+          processedMessageIds.current.add(lastMsg.timestamp);
+          return;
+        }
+
+        // 2. Fallback Heuristic (Suggestion Only, No Auto-Open)
+        const lower = text.toLowerCase();
         if (
-          text.includes('code') ||
-          text.includes('programming') ||
-          text.includes('function') ||
-          text.includes('implement')
+          lower.includes('code') ||
+          lower.includes('programming') ||
+          lower.includes('function') ||
+          lower.includes('implement')
         ) {
           setSuggestedAction('code');
         } else if (
-          text.includes('draw') ||
-          text.includes('diagram') ||
-          text.includes('whiteboard') ||
-          text.includes('visualize')
+          lower.includes('draw') ||
+          lower.includes('diagram') ||
+          lower.includes('whiteboard') ||
+          lower.includes('visualize')
         ) {
           setSuggestedAction('draw');
         } else {
@@ -139,13 +159,11 @@ const InterviewRoom: React.FC = () => {
     }
   }, [currentInterview?.messages]);
 
-
-
   // Auto-open tools based on Mode
   useEffect(() => {
     // Check type first, fallback to mode (legacy)
     const interviewType = currentInterview?.type || currentInterview?.mode;
-    
+
     if (interviewType === 'coding') {
       setIsCodeOpen(true);
     } else if (interviewType === 'system_design') {
@@ -155,18 +173,16 @@ const InterviewRoom: React.FC = () => {
 
   // View Mode (Text vs Voice)
   const [viewMode, setViewMode] = useState<'text' | 'voice'>('text');
-  
+
   // Initialize view mode based on interview settings
   useEffect(() => {
     if (currentInterview?.mode === 'voice') {
-        setViewMode('voice');
-    } else if(currentInterview?.mode === 'text') {
-        setViewMode('text');
+      setViewMode('voice');
+    } else if (currentInterview?.mode === 'text') {
+      setViewMode('text');
     }
     // Hybrid defaults to text unless configured otherwise, or we can add logic later
   }, [currentInterview?.mode]);
-
-
 
   // Load Data
   useEffect(() => {
@@ -191,8 +207,6 @@ const InterviewRoom: React.FC = () => {
         const stored = await loadUserSettings();
         setUserSettings(stored);
 
-
-
         setIsSettingsLoaded(true);
       } catch (error) {
         console.error('Failed to load settings:', error);
@@ -209,8 +223,6 @@ const InterviewRoom: React.FC = () => {
         try {
           const stored = await loadUserSettings();
           setUserSettings(stored);
-
-
         } catch (error) {
           console.error('Failed to reload settings:', error);
         }
@@ -266,12 +278,10 @@ const InterviewRoom: React.FC = () => {
     setHints(null);
     setSuggestedAction(null);
 
-
     let imageBase64: string | undefined = undefined;
     if (isWhiteboardOpen && editorRef.current) {
       try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const shapeIds = Array.from(editorRef.current.getCurrentPageShapeIds()) as any[];
+        const shapeIds = Array.from(editorRef.current.getCurrentPageShapeIds()) as TLShapeId[];
         if (shapeIds.length > 0) {
           const svg = await editorRef.current.getSvg(shapeIds, { background: true });
           if (svg) {
@@ -296,7 +306,6 @@ const InterviewRoom: React.FC = () => {
         'Are you sure you want to end this interview? AI will generate feedback for you.'
       )
     ) {
-
       setIsEndingSession(true);
       try {
         await endSession();
@@ -307,10 +316,56 @@ const InterviewRoom: React.FC = () => {
     }
   };
 
-
-
   const handleRunCode = async () => {
     alert('This feature is coming soon! (Backend integration in progress)');
+  };
+
+  const handleToolSubmit = async (type: 'code' | 'whiteboard') => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+
+    try {
+      let content = '';
+      let imageBase64: string | undefined = undefined;
+
+      if (type === 'code') {
+        const code = currentInterview?.code || '';
+        // TODO: Detect language dynamically if possible
+        content = `Here is my solution:\n\n\`\`\`javascript\n${code}\n\`\`\``;
+        setIsCodeOpen(false);
+      } else if (type === 'whiteboard') {
+        if (editorRef.current) {
+          try {
+            const shapeIds = Array.from(editorRef.current.getCurrentPageShapeIds()) as TLShapeId[];
+            if (shapeIds.length > 0) {
+              const svg = await editorRef.current.getSvg(shapeIds, {
+                background: true,
+                scale: 1, // Ensure good resolution
+              });
+              if (svg) {
+                const pngData = await svgToPngBase64(svg);
+                if (pngData) {
+                  imageBase64 = pngData;
+                } else {
+                  console.error('Failed to convert whiteboard SVG to PNG');
+                  // Optional: alert('Failed to generate image from whiteboard. Sending text only.');
+                }
+              }
+            }
+          } catch (e) {
+            console.error('Failed to capture whiteboard', e);
+          }
+        }
+        content = 'I have sketched the system design. Please review the attached diagram.';
+        setIsWhiteboardOpen(false);
+      }
+
+      if (content) {
+        await sendMessage(content, imageBase64);
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleSelectJob = async (job: JobRecommendation, tailoredResumeText: string) => {
@@ -336,11 +391,11 @@ const InterviewRoom: React.FC = () => {
 
   // Conditional Render for Voice Room
   if (viewMode === 'voice') {
-      return (
-          <VoiceInterviewRoom 
-             onSwitchToText={currentInterview.mode === 'hybrid' ? () => setViewMode('text') : undefined} 
-          />
-      );
+    return (
+      <VoiceInterviewRoom
+        onSwitchToText={currentInterview.mode === 'hybrid' ? () => setViewMode('text') : undefined}
+      />
+    );
   }
 
   return (
@@ -367,7 +422,11 @@ const InterviewRoom: React.FC = () => {
         onOpenSettings={() => setShowSettings(true)}
         onEndSession={handleEndInterview}
         viewMode={viewMode}
-        onSwitchViewMode={(currentInterview.mode === 'hybrid' || currentInterview.mode === 'text') ? () => setViewMode(prev => prev === 'voice' ? 'text' : 'voice') : undefined}
+        onSwitchViewMode={
+          currentInterview.mode === 'hybrid' || currentInterview.mode === 'text'
+            ? () => setViewMode((prev) => (prev === 'voice' ? 'text' : 'voice'))
+            : undefined
+        }
       />
 
       {/* Main Chat Area */}
@@ -375,6 +434,10 @@ const InterviewRoom: React.FC = () => {
         messages={currentInterview.messages}
         onRetry={retryLastMessage}
         isProcessing={isProcessing}
+        onOpenTool={(tool) => {
+          if (tool === 'code') setIsCodeOpen(true);
+          if (tool === 'whiteboard') setIsWhiteboardOpen(true);
+        }}
       />
 
       {/* Input Area */}
@@ -382,7 +445,6 @@ const InterviewRoom: React.FC = () => {
         inputValue={inputValue}
         setInputValue={setInputValue}
         onSendMessage={handleSendMessage}
-
         isCodeOpen={isCodeOpen}
         setIsCodeOpen={setIsCodeOpen}
         isWhiteboardOpen={isWhiteboardOpen}
@@ -394,7 +456,6 @@ const InterviewRoom: React.FC = () => {
         isLoadingHints={isLoadingHints}
         onGetHints={handleGetHints}
         hintsEnabled={userSettings.hintsEnabled}
-
       />
 
       {/* Tool Modals */}
@@ -411,7 +472,9 @@ const InterviewRoom: React.FC = () => {
         }}
         updateWhiteboard={updateWhiteboard}
         handleRunCode={handleRunCode}
+        onSubmit={handleToolSubmit}
         isHardcore={currentInterview.difficulty === 'hardcore'}
+        isSubmitting={isSubmitting}
       />
 
       <SettingsModal

@@ -22,7 +22,9 @@ interface ToolModalsProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   updateWhiteboard: (data: any) => void;
   handleRunCode: () => void;
+  onSubmit: (type: 'code' | 'whiteboard') => void;
   isHardcore: boolean;
+  isSubmitting: boolean;
 }
 
 export const ToolModals: React.FC<ToolModalsProps> = ({
@@ -36,13 +38,15 @@ export const ToolModals: React.FC<ToolModalsProps> = ({
   onWhiteboardMount,
   updateWhiteboard,
   handleRunCode,
+  onSubmit,
   isHardcore,
+  isSubmitting,
 }) => {
   return (
     <>
       {/* Code Editor Modal */}
       <Dialog open={isCodeOpen} onOpenChange={setIsCodeOpen}>
-        <DialogContent className="max-w-[95vw] w-[1200px] h-[90vh] p-0 gap-0 bg-[#1e1e1e] border-slate-800 flex flex-col overflow-hidden">
+        <DialogContent className="max-w-[95vw] w-[1200px] h-[90vh] p-0 gap-0 bg-[#1e1e1e] border-slate-800 flex flex-col overflow-hidden [&>button]:hidden">
           <div className="flex items-center justify-between px-4 py-2 bg-[#2d2d2d] border-b border-white/10 shrink-0">
             <DialogTitle className="text-white text-sm font-mono flex items-center gap-2">
               <Code2 size={16} /> Live Code Editor
@@ -50,8 +54,16 @@ export const ToolModals: React.FC<ToolModalsProps> = ({
             <div className="flex items-center gap-2">
               <Button
                 size="sm"
+                className="h-7 bg-green-600 hover:bg-green-700 text-white border-0"
+                onClick={() => onSubmit('code')}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Sending...' : 'Submit Solution'}
+              </Button>
+              <Button
+                size="sm"
                 variant="ghost"
-                className="h-6 text-slate-400 hover:text-white"
+                className="h-6 text-slate-400 hover:text-white gap-2"
                 onClick={() => setIsCodeOpen(false)}
               >
                 <X size={16} /> Close
@@ -80,19 +92,29 @@ export const ToolModals: React.FC<ToolModalsProps> = ({
 
       {/* Whiteboard Modal */}
       <Dialog open={isWhiteboardOpen} onOpenChange={setIsWhiteboardOpen}>
-        <DialogContent className="max-w-[95vw] w-[1200px] h-[90vh] p-0 gap-0 bg-background flex flex-col overflow-hidden border-border">
+        <DialogContent className="max-w-[95vw] w-[1200px] h-[90vh] p-0 gap-0 bg-background flex flex-col overflow-hidden border-border [&>button]:hidden">
           <div className="flex items-center justify-between px-4 py-2 border-b border-border shrink-0">
             <DialogTitle className="text-foreground text-sm font-medium flex items-center gap-2">
               <PenTool size={16} /> Design Whiteboard
             </DialogTitle>
-            <Button
-              size="sm"
-              variant="ghost"
-              className="h-6 text-muted-foreground hover:text-foreground"
-              onClick={() => setIsWhiteboardOpen(false)}
-            >
-              <X size={16} /> Close
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                className="h-7 bg-primary text-primary-foreground hover:bg-primary/90"
+                onClick={() => onSubmit('whiteboard')}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Sending...' : 'Submit Design'}
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-6 text-muted-foreground hover:text-foreground gap-2"
+                onClick={() => setIsWhiteboardOpen(false)}
+              >
+                <X size={16} /> Close
+              </Button>
+            </div>
           </div>
           <div className="flex-1 overflow-hidden relative bg-muted/30 w-full h-full">
             <Suspense
