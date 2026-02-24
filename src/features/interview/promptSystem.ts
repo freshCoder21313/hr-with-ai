@@ -1,9 +1,11 @@
+import { Interview } from '@/types';
+
 // INTERVIEW PROMPT SYSTEM
 
 export const getSystemPrompt = (
-  interview: any,
-  codeContext: string,
-  autoFinishEnabled: boolean = false
+  interview: Interview,
+  autoFinishEnabled: boolean,
+  _userName?: string
 ) => `
 You are an expert technical interviewer conducting a realistic mock interview.
 Your goal is to simulate a high-pressure, professional interview environment while being fair and constructive.
@@ -35,8 +37,6 @@ JOB CONTEXT
 DESCRIPTION:
 ${interview.jobDescription}
 
-${codeContext}
-
 ----------------
 INTERVIEW GUIDELINES (STRICT)
 ----------------
@@ -65,6 +65,20 @@ INTERVIEW GUIDELINES (STRICT)
    - If "Strict Tech Lead": Be direct, focus on optimization and failure scenarios.
    - If "Friendly HR": Focus on culture fit, soft skills, and behavioral questions (STAR method).
 
+${
+  interview.isPanel
+    ? `
+12. **PANEL INTERVIEW MODE (CRITICAL)**:
+   - You are simulating a PANEL of interviewers (usually 2-3 people).
+   - Each response should be prefixed with the name/role of the speaker.
+   - Example Personas for the panel:
+     * **Sarah (HR)**: Focuses on culture fit and soft skills.
+     * **David (Tech Lead)**: Focuses on deep technical details and architecture.
+   - You should alternate between them naturally.
+   - Example: "Sarah (HR): Welcome! David (Tech Lead): Let's start with your React experience..."
+`
+    : ''
+}
 
     8. **Difficulty & Context Adjustment**:
        - **Difficulty**: If 'hardcore', ask very complex, edge-case heavy questions and be less forgiving. If 'easy', be encouraging and helpful.
@@ -133,8 +147,8 @@ Just reply as the interviewer. Do not prefix with "Interviewer:" or "AI:".
 If you need to show code snippets to the user, use standard markdown code blocks.
 `;
 
-export const getStartPrompt = (interview: any) => `
-${getSystemPrompt(interview, '')}
+export const getStartPrompt = (interview: Interview) => `
+${getSystemPrompt(interview, false)}
 
 YOUR TASK:
 Start the interview now.
@@ -150,7 +164,7 @@ Keep it under 100 words.
 `;
 
 export const getFeedbackPrompt = (
-  interview: any,
+  interview: Interview,
   conversationHistory: string,
   codeContext: string
 ) => `
@@ -250,7 +264,7 @@ Return a valid JSON object (NO MARKDOWN, NO \`\`\`json wrappers) matching exactl
 If a field is missing in the text, omit it or use empty strings. Do not invent data.
 `;
 
-export const getAnalyzeResumePrompt = (resumeText: string, jobDescription: string) => `
+export const getResumeAnalysisPrompt = (resumeText: string, jobDescription: string) => `
 You are an expert Talent Acquisition Specialist and Technical Recruiter.
 Analyze the following Candidate Resume against the Job Description (JD) and provide a "Pre-Interview Match Analysis".
 
@@ -275,7 +289,7 @@ Return a valid JSON object (NO MARKDOWN, NO \`\`\`json wrappers) matching exactl
 }
 `;
 
-export const getAnalyzeSectionPrompt = (sectionName: string, sectionData: any) => `
+export const getAnalyzeSectionPrompt = (sectionName: string, sectionData: unknown) => `
 You are an expert Resume Writer and Career Coach.
 Analyze the following "${sectionName}" section from a candidate's resume and suggest improvements.
 
@@ -309,8 +323,6 @@ PROVIDE 3 HINTS:
 1. **Beginner/Attitude**: For someone with NO technical knowledge. Focus on showing a good learning attitude, honesty, and soft skills.
 2. **Intermediate/Creative**: For someone with SOME knowledge. Focus on a creative partial solution or logical guess.
 3. **Expert/Technical**: For someone with DEEP knowledge. Focus on the technically correct, optimized, or "perfect" answer.
-
-IMPORTANT: Keep each hint concise (maximum 2-3 sentences). Do not write full code solutions, just concepts or short snippets.
 
 OUTPUT FORMAT:
 Return a valid JSON object (NO MARKDOWN, NO \`\`\`json wrappers):
@@ -350,7 +362,7 @@ For difficulty, default to 'medium' if unsure. 'hardcore' is for Senior/Staff/Pr
 For the persona, create a professional and relevant one based on the seniority and requirements in the JD.
 `;
 
-export const getTailorResumePrompt = (sourceResume: any, jobDescription: string) => `
+export const getTailoredResumePrompt = (sourceResume: unknown, jobDescription: string) => `
 You are an expert Resume Strategist and Career Coach.
 Your task is to REWRITE and TAILOR the following Candidate Resume to specifically target the provided Job Description (JD).
 
@@ -383,4 +395,27 @@ Return a valid JSON object (NO MARKDOWN, NO \`\`\`json wrappers) matching exactl
   "skills": [ ... ],
   "projects": [ ... ]
 }
+`;
+export const getCompanyIntelPrompt = (companyName: string) => `
+You are an expert Corporate Researcher and HR Analyst.
+Your task is to provide a detailed "Company Intelligence" report for ${companyName} to help a candidate prepare for an interview.
+
+YOUR RESEARCH GOALS:
+1. **Culture & Values**: What is it actually like to work there? (e.g., fast-paced, engineering-heavy, formal, etc.)
+2. **Latest News**: Any major recent events (funding, acquisitions, product launches, layoffs).
+3. **Tech Stack**: Common technologies they are known to use.
+4. **Interview Tone**: What is their typical interview style?
+
+OUTPUT FORMAT:
+Return a valid JSON object (NO MARKDOWN, NO \`\`\`json wrappers) matching exactly this schema:
+{
+  "culture": "String. Detailed description of company culture and values.",
+  "latestNews": "String. Summary of recent significant events.",
+  "techStack": ["String", "String"], // Top technologies used
+  "interviewVibe": "String. Description of the typical interview environment/style.",
+  "suggestedStatus": "String. A concise status for the 'Company Status' field (e.g., 'Startup in Growth', 'Big Corp Stability', 'Restructuring').",
+  "suggestedContext": "String. A concise context for the 'Interview Context' field (e.g., 'Values Engineering Excellence', 'Focus on User Growth')."
+}
+
+If you don't have specific data for a new or small company, provide a "Likely Profile" based on its industry or size, but clearly state it is an estimate.
 `;

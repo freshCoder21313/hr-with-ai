@@ -13,6 +13,7 @@ export interface GitHubRepo {
   updated_at: string;
   fork: boolean;
   topics?: string[];
+  default_branch: string;
 }
 
 export const fetchGitHubRepos = async (username: string, token?: string): Promise<GitHubRepo[]> => {
@@ -87,5 +88,38 @@ export const fetchReadme = async (owner: string, repo: string, token?: string): 
   } catch (error) {
     console.warn(`Failed to fetch README for ${owner}/${repo}:`, error);
     return '';
+  }
+};
+
+export const fetchFileTree = async (
+  owner: string,
+  repo: string,
+  defaultBranch: string,
+  token?: string
+): Promise<string> => {
+  const headers: HeadersInit = {
+    Accept: 'application/vnd.github.v3+json',
+  };
+
+  if (token) {
+    headers['Authorization'] = `token ${token}`;
+  }
+
+  try {
+    // Fetch recursive tree of the default branch
+    const response = await fetch(
+      `https://api.github.com/repos/${owner}/${repo}/git/trees/${defaultBranch}?recursive=1`,
+      { headers }
+    );
+
+    if (!response.ok) {
+      return 'File tree unavailable';
+    }
+
+    const data = await response.json();
+    return (data.tree as { path: string }[]).map((t) => t.path).join('\n');
+  } catch (error) {
+    console.warn(`Failed to fetch file tree for ${owner}/${repo}:`, error);
+    return 'File tree unavailable';
   }
 };

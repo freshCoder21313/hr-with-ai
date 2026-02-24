@@ -6,11 +6,11 @@ import {
   getStartPrompt,
   getFeedbackPrompt,
   getExtractJDInfoPrompt,
-  getAnalyzeResumePrompt,
+  getResumeAnalysisPrompt,
   getHintPrompt,
   getParseResumePrompt,
   getAnalyzeSectionPrompt,
-  getTailorResumePrompt,
+  getTailoredResumePrompt,
 } from '@/features/interview/promptSystem';
 import { generateJobRecommendationsPrompt, generateTailoredResumePrompt } from './jobPromptSystem';
 import { ResumeData } from '@/types/resume';
@@ -97,7 +97,10 @@ export async function* streamInterviewMessage(
       `;
     }
 
-    let systemPrompt = getSystemPrompt(interviewContext, codeContext, autoFinishEnabled);
+    let systemPrompt = getSystemPrompt(interviewContext, autoFinishEnabled || false);
+    if (codeContext) {
+      systemPrompt += `\n\n${codeContext}\n\n`;
+    }
 
     // Inject Hidden Scenario Instruction if present
     if (systemInjection) {
@@ -341,7 +344,7 @@ export const analyzeResume = async (
     }
   }
 
-  const prompt = getAnalyzeResumePrompt(resumeText, jobDescription);
+  const prompt = getResumeAnalysisPrompt(resumeText, jobDescription);
 
   try {
     let jsonText = '';
@@ -507,7 +510,7 @@ export const tailorResumeToJob = async (
   configInput: AIConfigInput
 ): Promise<ResumeData> => {
   const service = getService(configInput);
-  const prompt = getTailorResumePrompt(sourceResume, jobDescription);
+  const prompt = getTailoredResumePrompt(sourceResume, jobDescription);
 
   try {
     const response = await service.generateText([{ role: 'user', content: prompt }], {

@@ -62,6 +62,11 @@ export interface Project {
   endDate?: string;
   url?: string;
   roles?: string[]; // e.g. ["Team Lead"]
+  suggestedInterviewQuestions?: Array<{
+    question: string;
+    topics: string[];
+    suggestedAnswer: string;
+  }>;
 }
 
 export interface Volunteer {

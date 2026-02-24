@@ -48,6 +48,7 @@ export interface Interview {
   feedback?: InterviewFeedback;
   resumeId?: number; // ID of the resume used for this interview
   tailoredResume?: string; // Generated tailored resume text
+  isPanel?: boolean; // True if it's a panel interview with multiple personas
 }
 
 export interface InterviewFeedback {
@@ -84,6 +85,7 @@ export interface SetupFormData {
   mode?: 'text' | 'voice' | 'hybrid'; // Interaction Mode
   companyStatus: string;
   interviewContext: string;
+  isPanel?: boolean; // Panel Interview Mode
 }
 
 export interface UserSettings {

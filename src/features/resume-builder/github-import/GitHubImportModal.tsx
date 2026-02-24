@@ -10,7 +10,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
   Github,
@@ -23,6 +23,7 @@ import {
   Star,
   GitFork,
   User,
+  Zap,
 } from 'lucide-react';
 import { fetchGitHubRepos, fetchReadme, GitHubRepo } from '@/lib/github';
 import { loadUserSettings, saveUserSettings } from '@/services/settingsService';
@@ -121,8 +122,8 @@ export const GitHubImportModal: React.FC<GitHubImportModalProps> = ({
       }
 
       setStep('selection');
-    } catch (err: any) {
-      setError(err.message || 'Failed to connect to GitHub');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to connect to GitHub');
     } finally {
       setIsLoading(false);
     }
@@ -164,10 +165,11 @@ export const GitHubImportModal: React.FC<GitHubImportModalProps> = ({
                 baseUrl: settings.baseUrl,
                 modelId: settings.defaultModel,
               });
-            } catch (err: any) {
+            } catch (err) {
               console.error(`Failed to process ${repo.name}`, err);
               // If it's an API key error, we should probably stop the whole process and alert user
-              if (err.message?.includes('API Key') || err.message?.includes('API_KEY_INVALID')) {
+              const errMsg = err instanceof Error ? err.message : '';
+              if (errMsg.includes('API Key') || errMsg.includes('API_KEY_INVALID')) {
                 throw err;
               }
               return null;
@@ -179,8 +181,8 @@ export const GitHubImportModal: React.FC<GitHubImportModalProps> = ({
         results.push(...(batchResults.filter((p) => p !== null) as Project[]));
         setProcessedCount(Math.min(i + BATCH_SIZE, selectedRepos.length));
       }
-    } catch (err: any) {
-      setError(err.message || 'An error occurred during processing.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred during processing.');
       setIsLoading(false);
       return;
     }
@@ -274,8 +276,8 @@ export const GitHubImportModal: React.FC<GitHubImportModalProps> = ({
 
       if (onImportComplete) onImportComplete();
       onClose();
-    } catch (err: any) {
-      setError('Failed to save projects to CV: ' + err.message);
+    } catch (err) {
+      setError('Failed to save projects to CV: ' + (err instanceof Error ? err.message : String(err)));
     } finally {
       setIsLoading(false);
     }
@@ -496,6 +498,28 @@ export const GitHubImportModal: React.FC<GitHubImportModalProps> = ({
                         </span>
                       )}
                     </div>
+                    
+                    {project.suggestedInterviewQuestions && project.suggestedInterviewQuestions.length > 0 && (
+                      <div className="mt-4 p-3 bg-indigo-50/50 rounded-md border border-indigo-100">
+                        <h5 className="text-xs font-bold text-indigo-700 flex items-center gap-1 mb-2">
+                          <Zap className="w-3 h-3" /> Technical Deep-Dive (Target Questions)
+                        </h5>
+                        <div className="space-y-2">
+                          {project.suggestedInterviewQuestions.map((q, qidx) => (
+                            <div key={qidx} className="text-[11px]">
+                              <span className="font-semibold text-indigo-900">Q: {q.question}</span>
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {q.topics.map(t => (
+                                  <Badge key={t} variant="outline" className="text-[9px] py-0 h-4 bg-white/50">
+                                    {t}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               ))}

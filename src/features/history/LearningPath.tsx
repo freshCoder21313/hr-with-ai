@@ -2,7 +2,6 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Interview } from '@/types';
 import { BookOpen, ExternalLink, Target, AlertTriangle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 
 interface LearningPathProps {
   interviews: Interview[];
@@ -71,7 +70,7 @@ const LearningPath: React.FC<LearningPathProps> = ({ interviews }) => {
   }
 
   return (
-    <Card className="shadow-lg bg-card border-border mt-8">
+    <Card className="shadow-xl bg-card border-border/50 backdrop-blur-sm">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-xl font-bold">
           <Target className="w-5 h-5 text-purple-600" />
@@ -79,7 +78,7 @@ const LearningPath: React.FC<LearningPathProps> = ({ interviews }) => {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {Array.from(aggregatedResources.entries())
             .sort((a, b) => b[1].count - a[1].count)
             .slice(0, 6)
@@ -89,21 +88,23 @@ const LearningPath: React.FC<LearningPathProps> = ({ interviews }) => {
                 href={`https://www.google.com/search?q=${encodeURIComponent(topic + ' tutorial')}`}
                 target="_blank"
                 rel="noreferrer"
-                className="group flex flex-col justify-between p-4 rounded-lg border border-border hover:border-purple-500 hover:bg-purple-50/50 dark:hover:bg-purple-900/10 transition-all cursor-pointer"
+                className="group flex flex-col justify-between p-5 rounded-xl border border-border bg-muted/30 hover:border-purple-500/50 hover:bg-purple-500/5 hover:shadow-lg hover:shadow-purple-500/10 transition-all duration-300 cursor-pointer"
               >
                 <div>
-                  <div className="flex justify-between items-start mb-2">
-                    <h4 className="font-semibold text-foreground group-hover:text-purple-600 transition-colors flex items-center gap-2">
-                      <BookOpen size={16} />
-                      {topic}
+                  <div className="flex justify-between items-start mb-3 gap-2 w-full">
+                    <h4 className="font-bold text-foreground group-hover:text-purple-500 transition-colors flex items-center gap-2 min-w-0 flex-1">
+                      <div className="p-1.5 rounded-lg bg-purple-500/10 text-purple-600 shrink-0">
+                        <BookOpen size={16} />
+                      </div>
+                      <span className="truncate">{topic}</span>
                     </h4>
                     {data.count > 1 && (
-                      <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full dark:bg-purple-900 dark:text-purple-300">
-                        Seen {data.count}x
+                      <span className="text-[10px] font-bold uppercase tracking-wider bg-purple-500/20 text-purple-700 px-2 py-0.5 rounded-full dark:text-purple-300 shrink-0">
+                        {data.count}x Frequency
                       </span>
                     )}
                   </div>
-                  <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
+                  <p className="text-sm text-muted-foreground line-clamp-2 mb-4 w-full">
                     {data.description}
                   </p>
                 </div>
@@ -124,21 +125,23 @@ const LearningPath: React.FC<LearningPathProps> = ({ interviews }) => {
                   href={`https://www.google.com/search?q=${encodeURIComponent(topic + ' interview preparation')}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="group flex flex-col justify-between p-4 rounded-lg border border-border hover:border-red-500 hover:bg-red-50/50 dark:hover:bg-red-900/10 transition-all cursor-pointer"
+                  className="group flex flex-col justify-between p-5 rounded-xl border border-border bg-muted/30 hover:border-red-500/50 hover:bg-red-500/5 hover:shadow-lg hover:shadow-red-500/10 transition-all duration-300 cursor-pointer"
                 >
                   <div>
-                    <div className="flex justify-between items-start mb-2">
-                      <h4 className="font-semibold text-foreground group-hover:text-red-600 transition-colors flex items-center gap-2">
-                        <AlertTriangle size={16} />
-                        {topic}
+                    <div className="flex justify-between items-start mb-3 gap-2 w-full">
+                      <h4 className="font-bold text-foreground group-hover:text-red-500 transition-colors flex items-center gap-2 min-w-0 flex-1">
+                        <div className="p-1.5 rounded-lg bg-red-500/10 text-red-600 shrink-0">
+                          <AlertTriangle size={16} />
+                        </div>
+                        <span className="truncate">{topic}</span>
                       </h4>
                       {data.count > 1 && (
-                        <span className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full dark:bg-red-900 dark:text-red-300">
+                        <span className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full dark:bg-red-900 dark:text-red-300 shrink-0">
                           Flagged {data.count}x
                         </span>
                       )}
                     </div>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-muted-foreground w-full">
                       Identified as an area for improvement in your sessions.
                     </p>
                   </div>

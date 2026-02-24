@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import ProgressCharts from './ProgressCharts';
 import LearningPath from './LearningPath';
+import SkillRadarChart from './SkillRadarChart';
 import SEO from '@/components/SEO';
 import ShareModal from '@/features/history/components/ShareModal';
 import { Share2 } from 'lucide-react';
@@ -59,9 +60,16 @@ const HistoryPage: React.FC = () => {
 
       {/* Progress Charts Section */}
       {interviews.length > 0 && (
-        <div className="mb-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="mb-8 animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-8">
           <ProgressCharts interviews={interviews} />
-          <LearningPath interviews={interviews} />
+          <div className="flex flex-col gap-8 w-full">
+            <div className="w-full">
+              <SkillRadarChart interviews={interviews} />
+            </div>
+            <div className="w-full">
+              <LearningPath interviews={interviews} />
+            </div>
+          </div>
         </div>
       )}
 

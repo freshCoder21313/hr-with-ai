@@ -1,10 +1,11 @@
 import { GitHubRepo } from '@/lib/github';
 import { Project } from '@/types/resume';
 import { AIConfigInput, resolveConfig } from '@/services/geminiService';
-import { getRepoToProjectPrompt } from './githubPrompt';
+import { getRepoToProjectPrompt, getGitHubInterviewPrompt } from './githubPrompt';
+import { fetchFileTree } from '@/lib/github';
 import { Type } from '@google/genai';
 import { AIService } from '@/features/ai-provider/ai.service';
-import { AIConfig } from '@/types';
+import { AIConfig, UserSettings } from '@/types';
 
 export const convertRepoToProject = async (
   repo: GitHubRepo,
@@ -20,7 +21,15 @@ export const convertRepoToProject = async (
   };
   const service = new AIService(providerConfig);
 
-  const prompt = getRepoToProjectPrompt(repo, readme);
+  // Fetch file tree for deeper analysis
+  const fileTree = await fetchFileTree(
+    repo.owner.login,
+    repo.name,
+    repo.default_branch,
+    (config as UserSettings).githubToken
+  );
+
+  const prompt = getRepoToProjectPrompt(repo, readme, fileTree);
 
   try {
     let jsonText = '';
@@ -59,7 +68,20 @@ export const convertRepoToProject = async (
     const project = JSON.parse(jsonText) as Project;
 
     // Fallback/Validation: Ensure URL is set to repo URL if AI missed it
+    // Fallback/Validation: Ensure URL is set to repo URL if AI missed it
     if (!project.url) project.url = repo.html_url;
+
+    // Generate Interview Questions as part of deep dive
+    try {
+      project.suggestedInterviewQuestions = await generateGitHubInterviewQuestions(
+        repo,
+        readme,
+        fileTree,
+        configInput
+      );
+    } catch (e) {
+      console.warn('Failed to generate interview questions for repo', e);
+    }
 
     return project;
   } catch (error) {
@@ -74,5 +96,32 @@ export const convertRepoToProject = async (
       roles: ['Maintainer'],
       endDate: repo.updated_at.split('T')[0],
     } as Project;
+  }
+};
+
+export const generateGitHubInterviewQuestions = async (
+  repo: GitHubRepo,
+  readme: string,
+  fileTree: string,
+  configInput: AIConfigInput
+) => {
+  const config = resolveConfig(configInput);
+  const service = new AIService({
+    apiKey: config.apiKey,
+    baseUrl: config.baseUrl,
+    modelId: config.modelId,
+    provider: config.baseUrl ? 'openai' : 'google',
+  });
+
+  const prompt = getGitHubInterviewPrompt(repo, readme, fileTree);
+
+  try {
+    const response = await service.generateText([{ role: 'user', content: prompt }], {
+      jsonMode: true,
+    });
+    return JSON.parse(response.text || '[]');
+  } catch (error) {
+    console.error('Error generating GitHub questions:', error);
+    return [];
   }
 };
