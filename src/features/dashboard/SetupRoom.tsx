@@ -30,9 +30,10 @@ import { db } from '@/lib/db';
 import ResumeList from './ResumeList';
 import SEO from '@/components/SEO';
 import ResumeAnalysisView from '@/features/resume-analysis/ResumeAnalysisView';
-import { TailorResumeModal } from './TailorResumeModal';
+
 import JobRecommendationModal from '@/features/interview/JobRecommendationModal';
 import { useNavigate } from 'react-router-dom';
+import { TailorResumeModal } from './TailorResumeModal';
 import { LoadingButton } from '@/components/ui/loading-button';
 import {
   Dialog,
@@ -872,13 +873,6 @@ const SetupRoom: React.FC = () => {
         </CardContent>
       </Card>
 
-      <TailorResumeModal
-        isOpen={isTailorModalOpen}
-        onClose={() => setIsTailorModalOpen(false)}
-        sourceResume={resumeToTailor}
-        onGenerate={handleGenerateTailoredResume}
-      />
-
       <JobRecommendationModal
         isOpen={isJobModalOpen}
         onClose={() => setIsJobModalOpen(false)}
@@ -914,6 +908,13 @@ const SetupRoom: React.FC = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <TailorResumeModal
+        isOpen={isTailorModalOpen}
+        onClose={() => setIsTailorModalOpen(false)}
+        sourceResume={resumeToTailor}
+        onGenerate={handleGenerateTailoredResume}
+      />
     </div>
   );
 };

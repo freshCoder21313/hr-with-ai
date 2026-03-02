@@ -77,16 +77,18 @@ export class AudioRecorderService {
   }
 
   private analyzeAudio = () => {
-    if (!this.analyser || !this.dataArray) return;
+    const currentDataArray = this.dataArray;
+    if (!this.analyser || !currentDataArray) return;
 
-    this.analyser.getByteFrequencyData(this.dataArray);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    this.analyser.getByteFrequencyData(currentDataArray as any);
 
     // Calculate average volume level (0-1)
     let sum = 0;
-    for (let i = 0; i < this.dataArray.length; i++) {
-      sum += this.dataArray[i];
+    for (let i = 0; i < currentDataArray.length; i++) {
+      sum += currentDataArray[i];
     }
-    const average = sum / this.dataArray.length;
+    const average = sum / currentDataArray.length;
     const normalizedLevel = average / 255; // 0 to 1
 
     if (this.onAudioLevelChange) {
