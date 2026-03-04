@@ -1,5 +1,5 @@
-import React from 'react';
-import { Code2, PenTool, Send, Lightbulb, Sparkles } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Code2, PenTool, Send, Lightbulb, Sparkles, Mic } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
@@ -7,12 +7,12 @@ import InterviewHintView from '../InterviewHintView';
 import { InterviewHints } from '@/services/geminiService';
 import { LoadingButton } from '@/components/ui/loading-button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { useSpeechToText } from '@/hooks/useSpeechToText';
 
 interface InputAreaProps {
   inputValue: string;
   setInputValue: (val: string) => void;
   onSendMessage: () => void;
-
 
   // Tools
   isCodeOpen: boolean;
@@ -30,7 +30,6 @@ interface InputAreaProps {
   isLoadingHints: boolean;
   onGetHints: () => void;
   hintsEnabled?: boolean;
-
 }
 
 export const InputArea: React.FC<InputAreaProps> = ({
@@ -49,8 +48,24 @@ export const InputArea: React.FC<InputAreaProps> = ({
   isLoadingHints,
   onGetHints,
   hintsEnabled,
-
 }) => {
+  const { isListening, toggleListening, transcript } = useSpeechToText('vi-VN');
+  const [baseText, setBaseText] = useState('');
+
+  const handleToggleListening = React.useCallback(() => {
+    if (!isListening) {
+      // Capture the current input before starting to listen
+      setBaseText(inputValue);
+    }
+    toggleListening();
+  }, [isListening, inputValue, toggleListening]);
+
+  useEffect(() => {
+    if (isListening && transcript) {
+      setInputValue((baseText + ' ' + transcript).trim());
+    }
+  }, [transcript, isListening, baseText, setInputValue]);
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -166,13 +181,32 @@ export const InputArea: React.FC<InputAreaProps> = ({
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyPress}
-            placeholder='Type your answer...'
+            placeholder="Type your answer..."
             className={cn(
               'w-full min-h-[44px] max-h-[120px] resize-none pr-10 md:pr-12 py-2.5 md:py-3 shadow-sm text-sm md:text-base'
             )}
             rows={1}
           />
-
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className={cn(
+                  'absolute right-1 bottom-1 h-9 w-9 md:h-10 md:w-10 rounded-xl',
+                  isListening
+                    ? 'text-red-500 animate-pulse hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
+                onClick={handleToggleListening}
+              >
+                <Mic size={18} />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{isListening ? 'Stop Listening' : 'Start Voice Input'}</p>
+            </TooltipContent>
+          </Tooltip>
         </div>
 
         <Tooltip>
