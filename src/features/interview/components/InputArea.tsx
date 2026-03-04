@@ -30,6 +30,7 @@ interface InputAreaProps {
   isLoadingHints: boolean;
   onGetHints: () => void;
   hintsEnabled?: boolean;
+  language?: string;
 }
 
 export const InputArea: React.FC<InputAreaProps> = ({
@@ -48,8 +49,9 @@ export const InputArea: React.FC<InputAreaProps> = ({
   isLoadingHints,
   onGetHints,
   hintsEnabled,
+  language,
 }) => {
-  const { isListening, toggleListening, transcript } = useSpeechToText('vi-VN');
+  const { isListening, toggleListening, transcript } = useSpeechToText(language || 'vi-VN');
   const [baseText, setBaseText] = useState('');
 
   const handleToggleListening = React.useCallback(() => {

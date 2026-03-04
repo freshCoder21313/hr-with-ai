@@ -175,6 +175,8 @@ CONTEXT:
 Role: ${interview.jobTitle} at ${interview.company}
 Language: ${interview.language}
 
+IMPORTANT: You MUST write ALL the feedback (summary, strengths, weaknesses, analysis, improvements, descriptions) in the following language: ${interview.language}.
+
 TRANSCRIPT:
 ${conversationHistory}
 
@@ -317,8 +319,10 @@ Provide 3 levels of "Answer Hints" to help them.
 
 QUESTION: "${lastQuestion}"
 
-CONTEXT (Job & Role):
+CONTEXT (Job & Role & Language):
 ${context}
+
+IMPORTANT: You MUST write ALL the hints in the exact language specified in the CONTEXT above.
 
 PROVIDE 3 HINTS:
 1. **Beginner/Attitude**: For someone with NO technical knowledge. Focus on showing a good learning attitude, honesty, and soft skills.

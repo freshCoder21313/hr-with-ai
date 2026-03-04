@@ -40,10 +40,15 @@ export const useVoiceInterview = () => {
     silenceTimeout: 2000,
   };
 
-  const voiceSettings = storeVoiceSettings || defaultVoiceSettings;
-
   const { currentInterview, addMessage, updateLastMessage, setLoading, clearInterview } =
     useInterviewStore();
+
+  const voiceSettings = {
+    ...(storeVoiceSettings || defaultVoiceSettings),
+    // Override language with the specific interview's language if available
+    language:
+      currentInterview?.language || storeVoiceSettings?.language || defaultVoiceSettings.language,
+  };
 
   // Services Hooks
   const stt = useSpeechToText(voiceSettings);

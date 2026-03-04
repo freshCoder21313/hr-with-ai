@@ -261,7 +261,7 @@ const InterviewRoom: React.FC = () => {
     setIsLoadingHints(true);
     setHints(null);
     try {
-      const context = `Role: ${currentInterview.jobTitle} at ${currentInterview.company}. Persona: ${currentInterview.interviewerPersona}`;
+      const context = `Role: ${currentInterview.jobTitle} at ${currentInterview.company}. Persona: ${currentInterview.interviewerPersona}. Language: ${currentInterview.language}`;
       const result = await generateInterviewHints(lastQuestion.content, context, config);
       setHints(result);
     } catch (error) {
@@ -456,6 +456,7 @@ const InterviewRoom: React.FC = () => {
         isLoadingHints={isLoadingHints}
         onGetHints={handleGetHints}
         hintsEnabled={userSettings.hintsEnabled}
+        language={currentInterview.language}
       />
 
       {/* Tool Modals */}
