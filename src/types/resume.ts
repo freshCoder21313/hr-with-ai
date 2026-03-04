@@ -112,6 +112,7 @@ export interface ResumeData {
   meta?: {
     template?: 'classic' | 'modern';
     theme?: 'blue' | 'green' | 'gray';
+    lastParsedRawText?: string;
     sectionOrder?: {
       main: string[]; // e.g. ['summary', 'work', 'projects']
       sidebar?: string[]; // e.g. ['skills', 'education']

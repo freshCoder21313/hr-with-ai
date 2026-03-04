@@ -33,12 +33,15 @@ import ProjectsForm from './SectionForms/ProjectsForm';
 import SEO from '@/components/SEO';
 import { cn } from '@/lib/utils';
 
+import { useDebounce } from '@/hooks/useDebounce';
+
 const ResumeBuilder: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
   const [resume, setResume] = useState<Resume | null>(null);
   const [data, setData] = useState<ResumeData | null>(null);
+  const debouncedData = useDebounce(data, 500);
   const [isLoading, setIsLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
   const [activeTab, setActiveTab] = useState('basics');
@@ -86,6 +89,13 @@ const ResumeBuilder: React.FC = () => {
   const handleSmartFormat = async () => {
     if (!resume?.rawText) return;
 
+    if (data?.meta?.lastParsedRawText === resume.rawText) {
+      alert(
+        'The current text has already been formatted. Try editing manually or changing the source text.'
+      );
+      return;
+    }
+
     const config = getStoredAIConfig();
     if (!config.apiKey) {
       // alert('Please set API Key in settings first.'); // Replaced with modal
@@ -96,6 +106,10 @@ const ResumeBuilder: React.FC = () => {
     setIsProcessing(true);
     try {
       const parsed = await parseResumeToJSON(resume.rawText, config);
+
+      // Cache the raw text used for parsing
+      parsed.meta = { ...parsed.meta, lastParsedRawText: resume.rawText, template };
+
       setData(parsed);
 
       await db.resumes.update(parseInt(id!), {
@@ -334,7 +348,7 @@ const ResumeBuilder: React.FC = () => {
                 </div>
                 <div className="flex-1 overflow-y-auto p-8 flex justify-center">
                   <div className="scale-[0.65] origin-top shadow-xl w-full max-w-[210mm]">
-                    <ResumePreview data={data} template={template} />
+                    <ResumePreview data={debouncedData || data} template={template} />
                   </div>
                 </div>
               </div>
@@ -342,7 +356,7 @@ const ResumeBuilder: React.FC = () => {
           ) : showPreview ? (
             <div className="flex-1 overflow-y-auto bg-muted/30 p-8 flex justify-center">
               <div className="scale-[0.8] md:scale-90 origin-top shadow-2xl">
-                <ResumePreview data={data} template={template} />
+                <ResumePreview data={debouncedData || data} template={template} />
               </div>
             </div>
           ) : (

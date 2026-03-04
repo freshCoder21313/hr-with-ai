@@ -116,6 +116,7 @@ export interface Resume {
   fileName: string;
   rawText: string;
   parsedData?: ResumeData; // Structured JSON Resume
+  compressedData?: string; // LZ-String compressed JSON for storage optimization
   formatted?: boolean; // True if AI parsing is done
   analysisResult?: ResumeAnalysis;
   analyzedJobDescription?: string;

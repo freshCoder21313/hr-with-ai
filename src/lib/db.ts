@@ -1,6 +1,7 @@
 import Dexie, { Table } from 'dexie';
 import { Interview, UserSettings, Resume, SavedJob } from '@/types';
 import { DBJobRecommendation } from '@/services/jobRecommendationService';
+import LZString from 'lz-string';
 
 class HRDatabase extends Dexie {
   interviews!: Table<Interview, number>;
@@ -59,6 +60,11 @@ class HRDatabase extends Dexie {
       jobs: '++id, company, jobTitle, createdAt, updatedAt',
     });
 
+    // Version 13: Compression for resumes
+    this.version(13).stores({
+      resumes: '++id, createdAt, fileName, formatted, updatedAt, isMain',
+    });
+
     // Add hooks to auto-update updatedAt
     this.interviews.hook('creating', (_primKey, obj) => {
       obj.updatedAt = Date.now();
@@ -68,12 +74,51 @@ class HRDatabase extends Dexie {
       return { updatedAt: Date.now() };
     });
 
+    this.resumes.hook('reading', (obj) => {
+      if (obj && obj.compressedData && !obj.parsedData) {
+        try {
+          const decompressed = LZString.decompressFromUTF16(obj.compressedData);
+          if (decompressed) {
+            obj.parsedData = JSON.parse(decompressed);
+          }
+        } catch (e) {
+          console.error('Failed to decompress parsedData for resume:', obj.id, e);
+        }
+      }
+      return obj;
+    });
+
     this.resumes.hook('creating', (_primKey, obj) => {
       obj.updatedAt = Date.now();
       if (!obj.createdAt) obj.createdAt = Date.now();
+
+      if (obj.parsedData) {
+        try {
+          obj.compressedData = LZString.compressToUTF16(JSON.stringify(obj.parsedData));
+          delete obj.parsedData;
+        } catch (e) {
+          console.error('Failed to compress parsedData on create:', e);
+        }
+      }
     });
-    this.resumes.hook('updating', (_mods, _primKey, _obj, _trans) => {
-      return { updatedAt: Date.now() };
+    this.resumes.hook('updating', (mods: Partial<Resume>, _primKey, _obj, _trans) => {
+      const extraMods: Partial<Resume> = { updatedAt: Date.now() };
+
+      if ('parsedData' in mods) {
+        const pd = mods.parsedData;
+        if (pd) {
+          try {
+            extraMods.compressedData = LZString.compressToUTF16(JSON.stringify(pd));
+          } catch (e) {
+            console.error('Failed to compress parsedData on update:', e);
+          }
+        } else if (pd === null) {
+          extraMods.compressedData = undefined;
+        }
+        // Deletes parsedData from DB storage (using any since undefined deletes it in Dexie)
+        (extraMods as any).parsedData = undefined;
+      }
+      return extraMods;
     });
 
     this.userSettings.hook('creating', (_primKey, obj) => {
@@ -111,6 +156,34 @@ class HRDatabase extends Dexie {
    */
   async getMainCV() {
     return this.resumes.filter((r) => !!r.isMain).first();
+  }
+
+  /**
+   * Cleans up old draft resumes that have not been updated in over 30 days
+   * and are not marked as the Main CV.
+   */
+  async cleanOldResumes() {
+    const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
+    const now = Date.now();
+
+    try {
+      const oldResumes = await this.resumes
+        .filter((r) => {
+          if (r.isMain) return false;
+          // Use updatedAt if available, fallback to createdAt
+          const lastModified = r.updatedAt || r.createdAt || 0;
+          return now - lastModified > THIRTY_DAYS;
+        })
+        .toArray();
+
+      if (oldResumes.length > 0) {
+        const ids = oldResumes.map((r) => r.id!);
+        await this.resumes.bulkDelete(ids);
+        console.log(`🧹 Cleaned up ${ids.length} old resumes.`);
+      }
+    } catch (e) {
+      console.error('Failed to clean old resumes:', e);
+    }
   }
 }
 
