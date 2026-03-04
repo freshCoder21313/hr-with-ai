@@ -59,9 +59,10 @@ const getService = (input: AIConfigInput): AIService => {
 
 export const startInterviewSession = async (
   interview: Interview,
-  configInput: AIConfigInput
+  configInput: AIConfigInput,
+  forceToolsEnabled: boolean = false
 ): Promise<string> => {
-  const prompt = getStartPrompt(interview);
+  const prompt = getStartPrompt(interview, forceToolsEnabled);
   const service = getService(configInput);
 
   try {
@@ -81,6 +82,7 @@ export async function* streamInterviewMessage(
   currentCode?: string,
   newImageBase64?: string,
   autoFinishEnabled?: boolean,
+  forceToolsEnabled?: boolean,
   systemInjection?: string | null
 ) {
   try {
@@ -97,7 +99,11 @@ export async function* streamInterviewMessage(
       `;
     }
 
-    let systemPrompt = getSystemPrompt(interviewContext, autoFinishEnabled || false);
+    let systemPrompt = getSystemPrompt(
+      interviewContext,
+      autoFinishEnabled || false,
+      forceToolsEnabled || false
+    );
     if (codeContext) {
       systemPrompt += `\n\n${codeContext}\n\n`;
     }

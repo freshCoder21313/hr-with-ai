@@ -97,6 +97,7 @@ export interface UserSettings {
   defaultModel?: string;
   hintsEnabled?: boolean;
   autoFinishEnabled?: boolean;
+  forceToolsEnabled?: boolean; // Added this
   baseUrl?: string;
   modelId?: string;
   provider?: AIModelProvider;

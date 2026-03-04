@@ -72,7 +72,12 @@ export const useInterview = () => {
         };
 
         // 1. Get first message from AI
-        const firstMessageContent = await startInterviewSession(newInterview, config);
+        const settings = await db.userSettings.orderBy('id').first();
+        const firstMessageContent = await startInterviewSession(
+          newInterview,
+          config,
+          settings?.forceToolsEnabled
+        );
 
         const initializedInterview: Interview = {
           ...newInterview,
@@ -171,11 +176,13 @@ export const useInterview = () => {
 
         // Get Auto-Finish Setting
         let autoFinish = false;
+        let forceTools = false;
         try {
           const settings = await db.userSettings.orderBy('id').first();
           if (settings?.autoFinishEnabled) autoFinish = true;
+          if (settings?.forceToolsEnabled) forceTools = true;
         } catch (e) {
-          console.warn('Failed to load settings for auto-finish check', e);
+          console.warn('Failed to load settings', e);
         }
 
         // --- HIDDEN SCENARIO CHECK ---
@@ -198,6 +205,7 @@ export const useInterview = () => {
           latestInterview.code,
           image,
           autoFinish,
+          forceTools,
           systemInjection // Pass the hidden injection
         );
 

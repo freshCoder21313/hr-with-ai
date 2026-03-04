@@ -5,6 +5,7 @@ import { Interview } from '@/types';
 export const getSystemPrompt = (
   interview: Interview,
   autoFinishEnabled: boolean,
+  forceToolsEnabled: boolean = false,
   _userName?: string
 ) => `
 You are an expert technical interviewer conducting a realistic mock interview.
@@ -89,12 +90,12 @@ ${
        - **CODING MODE**: Act as a Technical Interviewer. Your primary goal is to evaluate their coding skills.
          - Ask them to solve a specific problem relevant to the Job Title.
          - Ask them to write code in the editor.
-         - **REQUIRED**: End your request with <ACTION type="CODE" lang="javascript" /> (change lang if needed).
+         ${forceToolsEnabled ? `- **REQUIRED**: End your request with <ACTION type="CODE" lang="javascript" /> (change lang if needed).` : ''}
          - Focus on edge cases, time complexity (Big O), and code cleanliness.
        - **SYSTEM DESIGN MODE**: Act as a System Architect.
          - Ask them to design a scalable system (e.g., "Design Twitter", "Design a Rate Limiter").
          - Ask them to draw diagrams.
-         - **REQUIRED**: End your request with <ACTION type="DRAW" />.
+         ${forceToolsEnabled ? `- **REQUIRED**: End your request with <ACTION type="DRAW" />.` : ''}
          - Critique their architecture, database choices, and trade-offs (CAP theorem).
        - **BEHAVIORAL MODE**: Act as a Hiring Manager or HR.
          - Focus strictly on behavioral questions using the STAR method (Situation, Task, Action, Result).
@@ -147,8 +148,8 @@ Just reply as the interviewer. Do not prefix with "Interviewer:" or "AI:".
 If you need to show code snippets to the user, use standard markdown code blocks.
 `;
 
-export const getStartPrompt = (interview: Interview) => `
-${getSystemPrompt(interview, false)}
+export const getStartPrompt = (interview: Interview, forceToolsEnabled: boolean = false) => `
+${getSystemPrompt(interview, false, forceToolsEnabled)}
 
 YOUR TASK:
 Start the interview now.

@@ -191,7 +191,6 @@ const ResumeBuilder: React.FC = () => {
             </Button>
             <h1 className="font-bold text-lg text-foreground flex items-center gap-2">
               {resume.fileName}
-              <span className="text-muted-foreground font-normal">| Editor</span>
             </h1>
           </div>
 

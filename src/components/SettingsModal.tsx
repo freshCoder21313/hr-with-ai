@@ -26,6 +26,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onOpenChange, onSet
   const [settings, setSettings] = useState<UserSettings>({
     hintsEnabled: false,
     autoFinishEnabled: false,
+    forceToolsEnabled: false,
     apiKey: '',
     baseUrl: '',
     modelId: '',
@@ -33,8 +34,6 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onOpenChange, onSet
   const [isLoading, setIsLoading] = useState(true);
 
   const [activeTab, setActiveTab] = useState('general');
-
-
 
   // Load settings on open
   useEffect(() => {
@@ -64,6 +63,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onOpenChange, onSet
         id: settings.id,
         hintsEnabled: settings.hintsEnabled ?? false,
         autoFinishEnabled: settings.autoFinishEnabled ?? false,
+        forceToolsEnabled: settings.forceToolsEnabled ?? false,
         apiKey: settings.apiKey || '',
         baseUrl: settings.baseUrl || '',
         defaultModel: settings.modelId || '',
@@ -139,6 +139,22 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onOpenChange, onSet
                       id="autofinish-mode"
                       checked={settings.autoFinishEnabled === true}
                       onCheckedChange={(c) => setSettings((s) => ({ ...s, autoFinishEnabled: c }))}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between space-x-2">
+                    <div className="flex flex-col space-y-1">
+                      <Label htmlFor="forcetools-mode" className="font-medium text-sm">
+                        Force AI Tools (Code/Draw)
+                      </Label>
+                      <span className="text-[11px] text-muted-foreground">
+                        Require AI to always ask for code/draw in specific modes.
+                      </span>
+                    </div>
+                    <Switch
+                      id="forcetools-mode"
+                      checked={settings.forceToolsEnabled === true}
+                      onCheckedChange={(c) => setSettings((s) => ({ ...s, forceToolsEnabled: c }))}
                     />
                   </div>
                 </div>
@@ -220,8 +236,6 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onOpenChange, onSet
                   </CollapsibleSection>
                 </div>
               </TabsContent>
-
-
             </div>
 
             <Button
