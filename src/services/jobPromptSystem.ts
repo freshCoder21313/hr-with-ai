@@ -51,16 +51,18 @@ Original Resume Data:
 ${JSON.stringify(originalResumeData, null, 2)}
 
 Requirements:
-1. Modify the resume to highlight relevant skills and experience
-2. Adjust the professional summary if needed
-3. Reorder bullet points to prioritize relevant achievements
-4. Add keywords from the job description
+1. Modify the resume to highlight relevant skills and experience based ONLY on the original resume.
+2. Adjust the professional summary if needed.
+3. Reorder bullet points to prioritize relevant achievements.
+4. Add keywords from the job description ONLY IF they are naturally implied by the candidate's existing experience. DO NOT hallucinate or add skills/experience the candidate does not have.
 5. **PROJECT SELECTION:** You must select at least 3-5 projects from the original resume that are most relevant to this job.
    - If the candidate has many projects, filter for the top 3-5 matches.
-   - If the candidate has fewer than 3 projects, keep them all but enhance their descriptions.
-   - Rewrite project descriptions to explicitly demonstrate the skills required by the job.
-6. Maintain the original structure and format
-7. Return JSON Resume format
+   - If the candidate has fewer than 3 projects, keep them all but enhance their descriptions based ONLY on existing facts.
+   - Rewrite project descriptions to explicitly demonstrate the skills required by the job, without inventing new features or roles.
+6. Maintain the original structure and format.
+7. Return JSON Resume format.
+
+CRITICAL RULE: The tailored resume MUST be strictly based on the facts in the Original Resume Data. Do NOT fabricate, invent, or add any skills, experiences, degrees, or projects that are not present in the original resume.
 
 Format: JSON Resume object matching the input structure
 `;
