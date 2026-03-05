@@ -544,6 +544,37 @@ export const getStoredAIConfig = (): AIConfig => {
   };
 };
 
+export const translateResume = async (
+  resumeData: ResumeData,
+  targetLanguage: 'vi' | 'en',
+  configInput: AIConfigInput
+): Promise<ResumeData> => {
+  const service = getService(configInput);
+  const prompt = `Translate the following JSON resume data into ${
+    targetLanguage === 'vi' ? 'Vietnamese' : 'English'
+  }. Keep the exact same JSON structure, keys, and formatting. Only translate the values (text content).
+
+Resume JSON:
+${JSON.stringify(resumeData)}`;
+
+  try {
+    const response = await service.generateText([{ role: 'user', content: prompt }], {
+      jsonMode: true,
+    });
+    let jsonText = response.text || '';
+
+    if (!jsonText) throw new Error('No translated data generated');
+
+    jsonText = jsonText.replace(/```json\n?|\n?```/g, '').trim();
+    const translated = JSON.parse(jsonText) as ResumeData;
+    translated.language = targetLanguage;
+    return translated;
+  } catch (error) {
+    console.error('Error translating resume:', error);
+    throw error;
+  }
+};
+
 // Generate job recommendations from resume data
 export const generateJobRecommendations = async (
   resumeData: ResumeData,

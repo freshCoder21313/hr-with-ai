@@ -1,0 +1,245 @@
+import React from 'react';
+import { ResumeData } from '@/types/resume';
+import { MapPin, Mail, Phone, Link as LinkIcon, Linkedin, Github } from 'lucide-react';
+
+interface TemplateProps {
+  data: ResumeData;
+  themeColor?: string;
+}
+
+const MinimalistTemplate: React.FC<TemplateProps> = ({ data, themeColor = '#1e293b' }) => {
+  const { basics, work, education, skills, projects, meta } = data;
+
+  const defaultOrder = ['summary', 'experience', 'projects', 'education', 'skills'];
+
+  let sectionOrder = defaultOrder;
+  if (meta?.sectionOrder) {
+    sectionOrder = [...(meta.sectionOrder.main || []), ...(meta.sectionOrder.sidebar || [])];
+    sectionOrder = Array.from(new Set(sectionOrder));
+  }
+
+  const renderSection = (id: string) => {
+    switch (id) {
+      case 'summary':
+        if (!basics.summary) return null;
+        return (
+          <section key="summary" className="mb-10 break-inside-avoid">
+            <h2 className="text-xs tracking-widest uppercase font-bold text-slate-400 mb-4">
+              Summary
+            </h2>
+            <p className="text-sm text-slate-700 leading-loose">{basics.summary}</p>
+          </section>
+        );
+
+      case 'work':
+      case 'experience':
+        if (work.length === 0) return null;
+        return (
+          <section key="work" className="mb-10 break-inside-avoid">
+            <h2 className="text-xs tracking-widest uppercase font-bold text-slate-400 mb-6">
+              Experience
+            </h2>
+            <div className="space-y-8">
+              {work.map((job, i) => (
+                <div key={i} className="flex flex-col md:flex-row gap-4">
+                  <div className="md:w-1/4 shrink-0 text-sm text-slate-500 pt-1">
+                    {[job.startDate, job.endDate].filter(Boolean).join(' — ')}
+                  </div>
+                  <div className="md:w-3/4">
+                    <h3 className="font-semibold text-slate-900 text-base">{job.position}</h3>
+                    <div className="text-sm text-slate-600 mb-3" style={{ color: themeColor }}>
+                      {job.name}
+                    </div>
+                    <p className="text-sm text-slate-700 leading-relaxed mb-3">{job.summary}</p>
+                    {job.highlights && (
+                      <ul className="list-disc ml-4 space-y-1.5 text-sm text-slate-700">
+                        {job.highlights.map((h, k) => (
+                          <li key={k}>{h}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        );
+
+      case 'projects':
+        if (projects.length === 0) return null;
+        return (
+          <section key="projects" className="mb-10 break-inside-avoid">
+            <h2 className="text-xs tracking-widest uppercase font-bold text-slate-400 mb-6">
+              Projects
+            </h2>
+            <div className="space-y-8">
+              {projects.map((project, i) => (
+                <div key={i} className="flex flex-col md:flex-row gap-4">
+                  <div className="md:w-1/4 shrink-0 text-sm text-slate-500 pt-1">
+                    {[project.startDate, project.endDate].filter(Boolean).join(' — ')}
+                  </div>
+                  <div className="md:w-3/4">
+                    <h3 className="font-semibold text-slate-900 text-base flex items-center gap-2">
+                      {project.name}
+                      {project.url && (
+                        <a
+                          href={project.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-slate-400 hover:text-slate-900 transition-colors"
+                        >
+                          <LinkIcon size={12} />
+                        </a>
+                      )}
+                    </h3>
+                    <p className="text-sm text-slate-700 leading-relaxed mt-2 mb-3">
+                      {project.description}
+                    </p>
+                    {project.highlights && (
+                      <ul className="list-disc ml-4 space-y-1.5 text-sm text-slate-700 mb-3">
+                        {project.highlights.map((h, k) => (
+                          <li key={k}>{h}</li>
+                        ))}
+                      </ul>
+                    )}
+                    {project.keywords && (
+                      <div className="flex flex-wrap gap-2">
+                        {project.keywords.map((kw, k) => (
+                          <span
+                            key={k}
+                            className="text-xs text-slate-500 border border-slate-200 px-2 py-1 rounded"
+                          >
+                            {kw}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        );
+
+      case 'education':
+        if (education.length === 0) return null;
+        return (
+          <section key="education" className="mb-10 break-inside-avoid">
+            <h2 className="text-xs tracking-widest uppercase font-bold text-slate-400 mb-6">
+              Education
+            </h2>
+            <div className="space-y-6">
+              {education.map((edu, i) => (
+                <div key={i} className="flex flex-col md:flex-row gap-4">
+                  <div className="md:w-1/4 shrink-0 text-sm text-slate-500 pt-1">
+                    {[edu.startDate, edu.endDate].filter(Boolean).join(' — ')}
+                  </div>
+                  <div className="md:w-3/4">
+                    <h3 className="font-semibold text-slate-900 text-base">{edu.institution}</h3>
+                    <div className="text-sm text-slate-700 mt-1">
+                      {edu.studyType} in {edu.area}
+                    </div>
+                    {edu.score && (
+                      <div className="text-sm text-slate-500 mt-1">Score: {edu.score}</div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        );
+
+      case 'skills':
+        if (skills.length === 0) return null;
+        return (
+          <section key="skills" className="mb-10 break-inside-avoid">
+            <h2 className="text-xs tracking-widest uppercase font-bold text-slate-400 mb-6">
+              Skills
+            </h2>
+            <div className="space-y-4">
+              {skills.map((skill, i) => (
+                <div key={i} className="flex flex-col md:flex-row gap-4">
+                  <div className="md:w-1/4 shrink-0 font-medium text-sm text-slate-900 pt-1">
+                    {skill.name}
+                  </div>
+                  <div className="md:w-3/4 text-sm text-slate-700 leading-relaxed pt-1">
+                    {skill.keywords?.join(', ')}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="bg-white p-12 max-w-[210mm] mx-auto min-h-[297mm] shadow-sm print:shadow-none print:p-8">
+      {/* Header */}
+      <header className="mb-16">
+        <h1 className="text-4xl font-light tracking-tight text-slate-900 mb-3">{basics.name}</h1>
+        <p className="text-lg text-slate-500 mb-6" style={{ color: themeColor }}>
+          {basics.label}
+        </p>
+
+        <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-500">
+          {basics.email && (
+            <a
+              href={`mailto:${basics.email}`}
+              className="flex items-center gap-1.5 hover:text-slate-900 transition-colors"
+            >
+              <Mail size={14} /> {basics.email}
+            </a>
+          )}
+          {basics.phone && (
+            <span className="flex items-center gap-1.5">
+              <Phone size={14} /> {basics.phone}
+            </span>
+          )}
+          {basics.location && (
+            <span className="flex items-center gap-1.5">
+              <MapPin size={14} />
+              {[basics.location.city, basics.location.countryCode].filter(Boolean).join(', ')}
+            </span>
+          )}
+          {basics.url && (
+            <a
+              href={basics.url}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-1.5 hover:text-slate-900 transition-colors"
+            >
+              <LinkIcon size={14} /> {basics.url.replace(/^https?:\/\//, '')}
+            </a>
+          )}
+          {basics.profiles?.map((profile, i) => (
+            <a
+              key={i}
+              href={profile.url}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-1.5 hover:text-slate-900 transition-colors"
+            >
+              {profile.network.toLowerCase().includes('github') ? (
+                <Github size={14} />
+              ) : profile.network.toLowerCase().includes('linkedin') ? (
+                <Linkedin size={14} />
+              ) : (
+                <LinkIcon size={14} />
+              )}
+              {profile.url.replace(/^https?:\/\/(www\.)?/, '').split('/')[1] || profile.network}
+            </a>
+          ))}
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <div className="space-y-2">{sectionOrder.map((id) => renderSection(id))}</div>
+    </div>
+  );
+};
+
+export default React.memo(MinimalistTemplate);

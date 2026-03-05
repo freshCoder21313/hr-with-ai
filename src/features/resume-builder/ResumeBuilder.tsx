@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { db } from '@/lib/db';
 import { Resume } from '@/types';
 import { ResumeData } from '@/types/resume';
-import { getStoredAIConfig, parseResumeToJSON } from '@/services/geminiService';
+import { getStoredAIConfig, parseResumeToJSON, translateResume } from '@/services/geminiService';
 import { openApiKeyModal } from '@/events/apiKeyEvents';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -17,12 +17,21 @@ import {
   Loader2,
   Columns,
   List,
+  Palette,
+  Languages,
+  Type as TypeIcon,
 } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ResumePreview from './ResumePreview';
 import SectionReorderDialog from './components/SectionReorderDialog';
 import { LoadingButton } from '@/components/ui/loading-button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 // Import Section Forms
 import BasicsForm from './SectionForms/BasicsForm';
@@ -48,7 +57,11 @@ const ResumeBuilder: React.FC = () => {
   const [showPreview, setShowPreview] = useState(false);
   const [isSplitView, setIsSplitView] = useState(false);
   const [showReorderDialog, setShowReorderDialog] = useState(false);
-  const [template, setTemplate] = useState<'classic' | 'modern'>('modern');
+  const [template, setTemplate] = useState<
+    'classic' | 'modern' | 'creative' | 'minimalist' | 'academic'
+  >('modern');
+  const [isTranslating, setIsTranslating] = useState(false);
+  const [viewLanguage, setViewLanguage] = useState<'vi' | 'en'>('en');
 
   useEffect(() => {
     const loadResume = async () => {
@@ -64,6 +77,9 @@ const ResumeBuilder: React.FC = () => {
             // Load preferred template if saved
             if (doc.parsedData.meta?.template) {
               setTemplate(doc.parsedData.meta.template);
+            }
+            if (doc.parsedData.language) {
+              setViewLanguage(doc.parsedData.language);
             }
           } else {
             setData({
@@ -155,6 +171,57 @@ const ResumeBuilder: React.FC = () => {
         ...data.meta,
         sectionOrder: newOrder,
         template, // Ensure template is also synced
+      },
+    });
+  };
+
+  const handleTranslate = async () => {
+    if (!data) return;
+    const targetLang = viewLanguage === 'en' ? 'vi' : 'en';
+    const config = getStoredAIConfig();
+
+    if (!config.apiKey) {
+      openApiKeyModal();
+      return;
+    }
+
+    setIsTranslating(true);
+    try {
+      const translatedData = await translateResume(data, targetLang, config);
+      setData(translatedData);
+      setViewLanguage(targetLang);
+
+      // Save automatically
+      await db.resumes.update(parseInt(id!), {
+        parsedData: translatedData,
+      });
+      alert(`Translated to ${targetLang === 'vi' ? 'Vietnamese' : 'English'} successfully!`);
+    } catch (error) {
+      console.error(error);
+      alert('Translation failed.');
+    } finally {
+      setIsTranslating(false);
+    }
+  };
+
+  const handleThemeChange = (color: string) => {
+    if (!data) return;
+    setData({
+      ...data,
+      meta: {
+        ...data.meta,
+        themeColor: color,
+      },
+    });
+  };
+
+  const handleFontChange = (fontFamily: 'sans' | 'serif' | 'mono') => {
+    if (!data) return;
+    setData({
+      ...data,
+      meta: {
+        ...data.meta,
+        fontFamily,
       },
     });
   };
@@ -277,20 +344,121 @@ const ResumeBuilder: React.FC = () => {
                   </TooltipContent>
                 </Tooltip>
 
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" className="gap-2">
+                      <LayoutTemplate className="w-4 h-4" />
+                      {template.charAt(0).toUpperCase() + template.slice(1)}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem onClick={() => setTemplate('modern')}>
+                      Modern
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setTemplate('classic')}>
+                      Classic
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setTemplate('creative')}>
+                      Creative
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setTemplate('minimalist')}>
+                      Minimalist
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setTemplate('academic')}>
+                      Academic
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" className="gap-2 w-28 justify-start">
+                      <TypeIcon className="w-4 h-4 shrink-0" />
+                      <span className="truncate">
+                        {data?.meta?.fontFamily === 'serif'
+                          ? 'Serif'
+                          : data?.meta?.fontFamily === 'mono'
+                            ? 'Monospace'
+                            : 'Sans-serif'}
+                      </span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem onClick={() => handleFontChange('sans')}>
+                      Sans-serif
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleFontChange('serif')}>
+                      Serif
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleFontChange('mono')}>
+                      Monospace
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                {(template === 'creative' ||
+                  template === 'minimalist' ||
+                  template === 'academic') && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="relative flex items-center">
+                        <Palette className="w-4 h-4 absolute left-2 pointer-events-none text-muted-foreground" />
+                        <input
+                          type="color"
+                          value={
+                            data?.meta?.themeColor ||
+                            (template === 'minimalist'
+                              ? '#1e293b'
+                              : template === 'academic'
+                                ? '#1e3a8a'
+                                : '#8b5cf6')
+                          }
+                          onChange={(e) => handleThemeChange(e.target.value)}
+                          className="h-9 w-20 pl-8 cursor-pointer rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors"
+                        />
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Theme Color</p>
+                    </TooltipContent>
+                  </Tooltip>
+                )}
+
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setTemplate((t) => (t === 'modern' ? 'classic' : 'modern'))}
+                      onClick={() => {
+                        // Toggle logic handled by Translate or Switch
+                        // If current lang is diff, show translate button
+                      }}
                       className="gap-2"
                     >
-                      <LayoutTemplate className="w-4 h-4" />
-                      {template === 'modern' ? 'Modern' : 'Classic'}
+                      <Languages className="w-4 h-4" />
+                      <span className="uppercase">{viewLanguage}</span>
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Switch Layout</p>
+                    <div className="flex flex-col gap-2">
+                      <p className="text-xs font-semibold">
+                        Current Language: {viewLanguage === 'en' ? 'English' : 'Vietnamese'}
+                      </p>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        className="w-full text-xs h-7"
+                        onClick={handleTranslate}
+                        disabled={isTranslating}
+                      >
+                        {isTranslating ? (
+                          <Loader2 className="w-3 h-3 animate-spin mr-1" />
+                        ) : (
+                          <Wand2 className="w-3 h-3 mr-1" />
+                        )}
+                        Translate to {viewLanguage === 'en' ? 'VI' : 'EN'}
+                      </Button>
+                    </div>
                   </TooltipContent>
                 </Tooltip>
 

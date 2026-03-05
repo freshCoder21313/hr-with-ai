@@ -109,9 +109,12 @@ export interface ResumeData {
   interests?: { name: string; keywords: string[] }[];
   references?: { name: string; reference: string }[];
 
+  language?: 'vi' | 'en';
   meta?: {
-    template?: 'classic' | 'modern';
+    template?: 'classic' | 'modern' | 'creative' | 'minimalist' | 'academic';
     theme?: 'blue' | 'green' | 'gray';
+    themeColor?: string; // e.g. '#3b82f6'
+    fontFamily?: 'sans' | 'serif' | 'mono';
     lastParsedRawText?: string;
     sectionOrder?: {
       main: string[]; // e.g. ['summary', 'work', 'projects']
