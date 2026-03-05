@@ -220,6 +220,7 @@ MERMAID GRAPH GUIDELINES:
 
 export const getParseResumePrompt = (rawText: string) => `
 You are an expert Data Parser. Convert the following Resume Text into a structured JSON object following the JSON Resume Schema.
+IMPORTANT: Clean up and format the text content to be professional. Remove excessive newlines, fix capitalization, and merge broken sentences.
 
 RESUME TEXT:
 ${rawText}
@@ -232,7 +233,7 @@ Return a valid JSON object (NO MARKDOWN, NO \`\`\`json wrappers) matching exactl
     "email": "String",
     "phone": "String",
     "label": "String (Job Title)",
-    "summary": "String (Profile/About)",
+    "summary": "String (Profile/About - Cleaned and well-formatted)",
     "location": { "city": "String", "countryCode": "String" },
     "profiles": [{ "network": "String (LinkedIn/GitHub)", "url": "String", "username": "String" }]
   },
@@ -241,8 +242,8 @@ Return a valid JSON object (NO MARKDOWN, NO \`\`\`json wrappers) matching exactl
     "position": "String",
     "startDate": "String (YYYY-MM-DD or YYYY-MM)",
     "endDate": "String (YYYY-MM-DD or YYYY-MM or Present)",
-    "summary": "String",
-    "highlights": ["String", "String"]
+    "summary": "String (Cleaned up description)",
+    "highlights": ["String (Well-formatted bullet point)", "String"]
   }],
   "education": [{
     "institution": "String",
@@ -257,7 +258,7 @@ Return a valid JSON object (NO MARKDOWN, NO \`\`\`json wrappers) matching exactl
   }],
   "projects": [{
     "name": "String",
-    "description": "String",
+    "description": "String (Cleaned up description)",
     "highlights": ["String"],
     "keywords": ["String"],
     "url": "String"
@@ -265,6 +266,7 @@ Return a valid JSON object (NO MARKDOWN, NO \`\`\`json wrappers) matching exactl
 }
 
 If a field is missing in the text, omit it or use empty strings. Do not invent data.
+Ensure all text values are properly spaced and formatted (e.g., "word1 word2" not "word1  word2" or "w o r d").
 `;
 
 export const getResumeAnalysisPrompt = (resumeText: string, jobDescription: string) => `

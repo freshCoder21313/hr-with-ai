@@ -25,11 +25,6 @@ export default defineConfig(({ mode }) => {
     css: {
       postcss: './postcss.config.js',
     },
-    define: {
-      'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
-      'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
-      'process.env.DATABASE_URL': JSON.stringify(env.DATABASE_URL),
-    },
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src'),

@@ -9,9 +9,9 @@ const parsePDF = async (file: File): Promise<string> => {
   const pdfjsLib = await import('pdfjs-dist');
 
   // Cấu hình Worker cho PDF.js
-  // Sử dụng file local trong thư mục public để hỗ trợ Offline hoàn toàn
+  // Sử dụng CDN để giảm tải băng thông cho server (khắc phục technical debt)
   if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
-    pdfjsLib.GlobalWorkerOptions.workerSrc = `/pdf.worker.min.mjs`;
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@5.4.530/build/pdf.worker.min.mjs`;
   }
 
   const arrayBuffer = await file.arrayBuffer();
@@ -29,7 +29,7 @@ const parsePDF = async (file: File): Promise<string> => {
 
     // Nối các item text lại với nhau
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const pageText = textContent.items.map((item: any) => item.str).join(' ');
+    const pageText = textContent.items.map((item: any) => item.str).join('');
 
     fullText += pageText + '\n\n';
   }
