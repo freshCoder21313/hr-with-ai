@@ -17,7 +17,6 @@ import {
   Loader2,
   Columns,
   List,
-  Palette,
   Languages,
   Type as TypeIcon,
 } from 'lucide-react';
@@ -42,6 +41,8 @@ import ProjectsForm from './SectionForms/ProjectsForm';
 import SEO from '@/components/SEO';
 import { cn } from '@/lib/utils';
 
+import Joyride, { Step } from 'react-joyride';
+import QuickActionFab from './components/QuickActionFab';
 import { useDebounce } from '@/hooks/useDebounce';
 
 const ResumeBuilder: React.FC = () => {
@@ -62,6 +63,49 @@ const ResumeBuilder: React.FC = () => {
   >('modern');
   const [isTranslating, setIsTranslating] = useState(false);
   const [viewLanguage, setViewLanguage] = useState<'vi' | 'en'>('en');
+  const [runTour, setRunTour] = useState(false);
+
+  const tourSteps: Step[] = [
+    {
+      target: 'body',
+      content: "Welcome to the AI Resume Builder! Let's take a quick tour.",
+      placement: 'center',
+    },
+    {
+      target: '.tour-magic-format',
+      content: 'Uploaded a raw text resume? Click here to let AI automatically format it for you!',
+    },
+    {
+      target: '.tour-layout-switch',
+      content:
+        'Switch between Modern, Classic, Creative, Minimalist, or Academic templates instantly.',
+    },
+    {
+      target: '.tour-translate',
+      content: 'Translate your entire resume between English and Vietnamese with one click.',
+    },
+    {
+      target: '.tour-preview-toggle',
+      content: 'Toggle between Editor, Full Preview, or Split View side-by-side.',
+    },
+    {
+      target: '.tour-fab',
+      content: 'Use this button to quickly add new Work Experience, Education, or Skills.',
+    },
+  ];
+
+  useEffect(() => {
+    // Check if first time user
+    const hasSeenTour = localStorage.getItem('hasSeenResumeBuilderTour');
+    if (!hasSeenTour && !isLoading && data) {
+      setRunTour(true);
+    }
+  }, [isLoading, data]);
+
+  const handleTourFinish = () => {
+    setRunTour(false);
+    localStorage.setItem('hasSeenResumeBuilderTour', 'true');
+  };
 
   useEffect(() => {
     const loadResume = async () => {
@@ -235,6 +279,36 @@ const ResumeBuilder: React.FC = () => {
     setData((prev) => (prev ? { ...prev, [section]: value } : null));
   };
 
+  const handleAddSection = (section: 'work' | 'education' | 'skills' | 'projects') => {
+    setActiveTab(section);
+    if (!data) return;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const newItems: any = {
+      work: { name: 'New Company', position: 'Role', startDate: '', endDate: '', summary: '' },
+      education: {
+        institution: 'New School',
+        area: 'Major',
+        studyType: 'Degree',
+        startDate: '',
+        endDate: '',
+      },
+      skills: { name: 'New Skill Category', keywords: [] },
+      projects: { name: 'New Project', description: '' },
+    };
+
+    const currentList = (data[section] as any[]) || [];
+    updateSection(section, [...currentList, newItems[section]]);
+  };
+
+  const handleScrollToTop = () => {
+    document.querySelector('.editor-scroll-area')?.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleScrollToBottom = () => {
+    document.querySelector('.editor-scroll-area')?.scrollTo({ top: 9999, behavior: 'smooth' });
+  };
+
   if (isLoading)
     return (
       <div className="flex h-screen items-center justify-center">
@@ -263,21 +337,43 @@ const ResumeBuilder: React.FC = () => {
       />
 
       {/* Main UI */}
+      <Joyride
+        steps={tourSteps}
+        run={runTour}
+        continuous={true}
+        showSkipButton={true}
+        showProgress={true}
+        styles={{
+          options: {
+            primaryColor: '#8b5cf6', // purple-500
+          },
+        }}
+        callback={(data) => {
+          if (data.status === 'finished' || data.status === 'skipped') {
+            handleTourFinish();
+          }
+        }}
+      />
       <div className="flex flex-col h-screen bg-background text-foreground print:hidden">
         {/* Header */}
-        <header className="h-16 bg-card border-b border-border flex items-center justify-between px-6 shrink-0">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm" onClick={() => navigate('/setup')}>
+        <header className="h-16 bg-card border-b border-border flex items-center justify-between px-6 shrink-0 gap-4">
+          <div className="flex items-center gap-4 flex-1 min-w-0">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/setup')}
+              className="shrink-0"
+            >
               <ChevronLeft className="w-4 h-4 mr-1" /> Back
             </Button>
-            <h1 className="font-bold text-lg text-foreground flex items-center gap-2">
+            <h1 className="font-bold text-lg text-foreground truncate" title={resume.fileName}>
               {resume.fileName}
             </h1>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
             {/* Preview Toggle */}
-            <div className="flex bg-muted p-1 rounded-lg mr-2">
+            <div className="flex bg-muted p-1 rounded-lg mr-2 tour-preview-toggle">
               <Button
                 size="sm"
                 variant="ghost"
@@ -326,151 +422,25 @@ const ResumeBuilder: React.FC = () => {
             </div>
 
             {(showPreview || isSplitView) && (
-              <>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setShowReorderDialog(true)}
-                      className="gap-2"
-                    >
-                      <List className="w-4 h-4" />
-                      Arrange
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Reorder Sections</p>
-                  </TooltipContent>
-                </Tooltip>
-
+              <div className="flex md:hidden items-center gap-2">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" size="sm" className="gap-2">
                       <LayoutTemplate className="w-4 h-4" />
-                      {template.charAt(0).toUpperCase() + template.slice(1)}
+                      Actions
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                    <DropdownMenuItem onClick={() => setTemplate('modern')}>
-                      Modern
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => setShowReorderDialog(true)}>
+                      <List className="w-4 h-4 mr-2" /> Arrange Sections
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setTemplate('classic')}>
-                      Classic
+                    <DropdownMenuItem onClick={handlePrint}>
+                      <Printer className="w-4 h-4 mr-2" /> Export PDF
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setTemplate('creative')}>
-                      Creative
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setTemplate('minimalist')}>
-                      Minimalist
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setTemplate('academic')}>
-                      Academic
-                    </DropdownMenuItem>
+                    {/* Add more mobile actions here if needed */}
                   </DropdownMenuContent>
                 </DropdownMenu>
-
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" className="gap-2 w-28 justify-start">
-                      <TypeIcon className="w-4 h-4 shrink-0" />
-                      <span className="truncate">
-                        {data?.meta?.fontFamily === 'serif'
-                          ? 'Serif'
-                          : data?.meta?.fontFamily === 'mono'
-                            ? 'Monospace'
-                            : 'Sans-serif'}
-                      </span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                    <DropdownMenuItem onClick={() => handleFontChange('sans')}>
-                      Sans-serif
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleFontChange('serif')}>
-                      Serif
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleFontChange('mono')}>
-                      Monospace
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-
-                {(template === 'creative' ||
-                  template === 'minimalist' ||
-                  template === 'academic') && (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="relative flex items-center">
-                        <Palette className="w-4 h-4 absolute left-2 pointer-events-none text-muted-foreground" />
-                        <input
-                          type="color"
-                          value={
-                            data?.meta?.themeColor ||
-                            (template === 'minimalist'
-                              ? '#1e293b'
-                              : template === 'academic'
-                                ? '#1e3a8a'
-                                : '#8b5cf6')
-                          }
-                          onChange={(e) => handleThemeChange(e.target.value)}
-                          className="h-9 w-20 pl-8 cursor-pointer rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors"
-                        />
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Theme Color</p>
-                    </TooltipContent>
-                  </Tooltip>
-                )}
-
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        // Toggle logic handled by Translate or Switch
-                        // If current lang is diff, show translate button
-                      }}
-                      className="gap-2"
-                    >
-                      <Languages className="w-4 h-4" />
-                      <span className="uppercase">{viewLanguage}</span>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <div className="flex flex-col gap-2">
-                      <p className="text-xs font-semibold">
-                        Current Language: {viewLanguage === 'en' ? 'English' : 'Vietnamese'}
-                      </p>
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        className="w-full text-xs h-7"
-                        onClick={handleTranslate}
-                        disabled={isTranslating}
-                      >
-                        {isTranslating ? (
-                          <Loader2 className="w-3 h-3 animate-spin mr-1" />
-                        ) : (
-                          <Wand2 className="w-3 h-3 mr-1" />
-                        )}
-                        Translate to {viewLanguage === 'en' ? 'VI' : 'EN'}
-                      </Button>
-                    </div>
-                  </TooltipContent>
-                </Tooltip>
-
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handlePrint}
-                  className="gap-2 text-primary border-primary/20 hover:bg-primary/5"
-                >
-                  <Printer className="w-4 h-4" /> PDF
-                </Button>
-              </>
+              </div>
             )}
 
             {!resume.formatted && !showPreview && !isSplitView && (
@@ -522,9 +492,196 @@ const ResumeBuilder: React.FC = () => {
               </div>
             </div>
           ) : showPreview ? (
-            <div className="flex-1 overflow-y-auto bg-muted/30 p-8 flex justify-center">
-              <div className="scale-[0.8] md:scale-90 origin-top shadow-2xl">
-                <ResumePreview data={debouncedData || data} template={template} />
+            <div className="flex-1 relative overflow-hidden flex bg-muted/30">
+              {/* Left Toolbar */}
+              <div className="hidden md:flex flex-col gap-2 p-4 w-16 items-center shrink-0 z-10 justify-center">
+                <Tooltip delayDuration={0}>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setShowReorderDialog(true)}
+                      className="h-10 w-10 rounded-full bg-background shadow-sm hover:shadow-md transition-all"
+                    >
+                      <List className="w-5 h-5" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">
+                    <p>Arrange Sections</p>
+                  </TooltipContent>
+                </Tooltip>
+
+                <DropdownMenu>
+                  <Tooltip delayDuration={0}>
+                    <TooltipTrigger asChild>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-10 w-10 rounded-full bg-background shadow-sm hover:shadow-md transition-all"
+                        >
+                          <LayoutTemplate className="w-5 h-5" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent side="right">
+                      <p>Switch Template</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  <DropdownMenuContent side="right" align="start">
+                    <DropdownMenuItem onClick={() => setTemplate('modern')}>
+                      Modern
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setTemplate('classic')}>
+                      Classic
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setTemplate('creative')}>
+                      Creative
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setTemplate('minimalist')}>
+                      Minimalist
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setTemplate('academic')}>
+                      Academic
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                <DropdownMenu>
+                  <Tooltip delayDuration={0}>
+                    <TooltipTrigger asChild>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-10 w-10 rounded-full bg-background shadow-sm hover:shadow-md transition-all"
+                        >
+                          <TypeIcon className="w-5 h-5" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent side="right">
+                      <p>Change Font</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  <DropdownMenuContent side="right" align="start">
+                    <DropdownMenuItem onClick={() => handleFontChange('sans')}>
+                      Sans-serif
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleFontChange('serif')}>
+                      Serif
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleFontChange('mono')}>
+                      Monospace
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+
+              {/* Main Preview Area */}
+              <div className="flex-1 overflow-y-auto p-8 flex justify-center">
+                <div className="scale-[0.8] md:scale-90 origin-top shadow-2xl h-fit">
+                  <ResumePreview data={debouncedData || data} template={template} />
+                </div>
+              </div>
+
+              {/* Right Toolbar */}
+              <div className="hidden md:flex flex-col gap-2 p-4 w-16 items-center shrink-0 z-10 justify-center">
+                {(template === 'creative' ||
+                  template === 'minimalist' ||
+                  template === 'academic') && (
+                  <Tooltip delayDuration={0}>
+                    <TooltipTrigger asChild>
+                      <div className="relative flex items-center justify-center">
+                        <div className="h-10 w-10 rounded-full bg-background shadow-sm flex items-center justify-center cursor-pointer overflow-hidden border border-input hover:shadow-md transition-all">
+                          <input
+                            type="color"
+                            value={
+                              data?.meta?.themeColor ||
+                              (template === 'minimalist'
+                                ? '#1e293b'
+                                : template === 'academic'
+                                  ? '#1e3a8a'
+                                  : '#8b5cf6')
+                            }
+                            onChange={(e) => handleThemeChange(e.target.value)}
+                            className="absolute inset-0 opacity-0 cursor-pointer h-full w-full"
+                          />
+                          <div
+                            className="w-6 h-6 rounded-full border border-black/10"
+                            style={{
+                              backgroundColor:
+                                data?.meta?.themeColor ||
+                                (template === 'minimalist'
+                                  ? '#1e293b'
+                                  : template === 'academic'
+                                    ? '#1e3a8a'
+                                    : '#8b5cf6'),
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent side="left">
+                      <p>Theme Color</p>
+                    </TooltipContent>
+                  </Tooltip>
+                )}
+
+                <Tooltip delayDuration={0}>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => {
+                        // Toggle logic handled by Translate or Switch
+                      }}
+                      className="h-10 w-10 rounded-full bg-background shadow-sm hover:shadow-md transition-all relative"
+                    >
+                      <Languages className="w-5 h-5" />
+                      <span className="absolute -bottom-1 -right-1 text-[8px] font-bold bg-primary text-primary-foreground px-1 rounded-sm uppercase">
+                        {viewLanguage}
+                      </span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="left">
+                    <div className="flex flex-col gap-2">
+                      <p className="text-xs font-semibold">
+                        Current: {viewLanguage === 'en' ? 'English' : 'Vietnamese'}
+                      </p>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        className="w-full text-xs h-7"
+                        onClick={handleTranslate}
+                        disabled={isTranslating}
+                      >
+                        {isTranslating ? (
+                          <Loader2 className="w-3 h-3 animate-spin mr-1" />
+                        ) : (
+                          <Wand2 className="w-3 h-3 mr-1" />
+                        )}
+                        Translate
+                      </Button>
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+
+                <Tooltip delayDuration={0}>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={handlePrint}
+                      className="h-10 w-10 rounded-full bg-background text-primary border-primary/20 hover:bg-primary/5 shadow-sm hover:shadow-md transition-all"
+                    >
+                      <Printer className="w-5 h-5" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="left">
+                    <p>Export PDF</p>
+                  </TooltipContent>
+                </Tooltip>
               </div>
             </div>
           ) : (
@@ -554,10 +711,10 @@ const ResumeBuilder: React.FC = () => {
               </div>
 
               {/* Editor Area */}
-              <div className="flex-1 overflow-y-auto p-8 bg-background">
+              <div className="flex-1 overflow-y-auto p-8 bg-background editor-scroll-area">
                 <div className="max-w-3xl mx-auto">
                   {!resume.formatted && !data.basics.name && (
-                    <Card className="mb-8 p-6 bg-purple-500/10 border-purple-500/20 border">
+                    <Card className="mb-8 p-6 bg-purple-500/10 border-purple-500/20 border tour-magic-format">
                       <h3 className="font-bold text-purple-700 dark:text-purple-400 mb-2 flex items-center gap-2">
                         <Wand2 className="w-5 h-5" />
                         AI Magic Available
@@ -607,6 +764,13 @@ const ResumeBuilder: React.FC = () => {
                     />
                   )}
                 </div>
+              </div>
+              <div className="tour-fab">
+                <QuickActionFab
+                  onAddSection={handleAddSection}
+                  onScrollToTop={handleScrollToTop}
+                  onScrollToBottom={handleScrollToBottom}
+                />
               </div>
             </>
           )}
