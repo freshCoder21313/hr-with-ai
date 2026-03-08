@@ -39,7 +39,7 @@ import EducationForm from './SectionForms/EducationForm';
 import SkillsForm from './SectionForms/SkillsForm';
 import ProjectsForm from './SectionForms/ProjectsForm';
 import SEO from '@/components/SEO';
-import { cn } from '@/lib/utils';
+import { cn, getErrorMessage } from '@/lib/utils';
 
 import Joyride, { Step } from 'react-joyride';
 import QuickActionFab from './components/QuickActionFab';
@@ -179,8 +179,7 @@ const ResumeBuilder: React.FC = () => {
       setResume((prev) => (prev ? { ...prev, formatted: true } : null));
     } catch (error) {
       console.error(error);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      alert('Failed to format resume: ' + (error as any).message);
+      alert('Failed to format resume: ' + getErrorMessage(error));
     } finally {
       setIsProcessing(false);
     }
@@ -274,8 +273,7 @@ const ResumeBuilder: React.FC = () => {
     window.print();
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const updateSection = (section: keyof ResumeData, value: any) => {
+  const updateSection = <K extends keyof ResumeData>(section: K, value: ResumeData[K]) => {
     setData((prev) => (prev ? { ...prev, [section]: value } : null));
   };
 

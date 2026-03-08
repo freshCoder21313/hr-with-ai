@@ -30,8 +30,7 @@ const WorkForm: React.FC<WorkFormProps> = ({ data, onChange }) => {
     }
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleChange = (index: number, field: keyof Work, value: any) => {
+  const handleChange = <K extends keyof Work>(index: number, field: K, value: Work[K]) => {
     const newData = [...data];
     newData[index] = { ...newData[index], [field]: value };
     onChange(newData);

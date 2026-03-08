@@ -14,7 +14,7 @@ interface ResumeFormViewProps {
 
 export const ResumeFormView: React.FC<ResumeFormViewProps> = ({ data, onChange }) => {
   // Helpers to update specific sections without mutating the whole object deeply manually
-  const updateSection = (section: keyof ResumeData, value: any) => {
+  const updateSection = <K extends keyof ResumeData>(section: K, value: ResumeData[K]) => {
     onChange({ ...data, [section]: value });
   };
 

@@ -43,7 +43,6 @@ export class VoiceInterviewService {
     // Improving regex to include common sentence endings
     // match [content][.?!]space
 
-    let match;
     // We loop to find all complete sentences
     // We use a simpler regex that matches "Sentence."
     // We need to be careful not to consume the buffer if the sentence isn't finished (e.g. ellipses...)
@@ -54,9 +53,13 @@ export class VoiceInterviewService {
     // While (buffer contains end punctuation)
     // Extract sentence, emit, remove from buffer
 
-    while (true) {
+    let hasSentence = true;
+    while (hasSentence) {
       const matchIndex = this.sentenceBuffer.search(endPunc);
-      if (matchIndex === -1) break;
+      if (matchIndex === -1) {
+        hasSentence = false;
+        break;
+      }
 
       // Ensure we have enough context to know it's a sentence end?
       // E.g. "ver 1.2" - "." is not sentence end.

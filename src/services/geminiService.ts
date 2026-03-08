@@ -539,8 +539,7 @@ export const getStoredAIConfig = (): AIConfig => {
     apiKey: localStorage.getItem('gemini_api_key') || '',
     baseUrl: localStorage.getItem('custom_base_url') || undefined,
     modelId: localStorage.getItem('custom_model_id') || undefined,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    provider: (localStorage.getItem('ai_provider') as any) || 'google',
+    provider: (localStorage.getItem('ai_provider') as AIModelProvider) || 'google',
   };
 };
 

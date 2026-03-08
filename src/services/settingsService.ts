@@ -1,5 +1,5 @@
 import { db } from '@/lib/db';
-import { UserSettings } from '@/types';
+import { UserSettings, AIModelProvider } from '@/types';
 
 /**
  * Centralized Settings Service
@@ -28,8 +28,7 @@ export async function loadUserSettings(): Promise<UserSettings> {
     const localApiKey = localStorage.getItem('gemini_api_key') || '';
     const localBaseUrl = localStorage.getItem('custom_base_url') || '';
     const localModelId = localStorage.getItem('custom_model_id') || '';
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const localProvider = (localStorage.getItem('ai_provider') as any) || 'google';
+    const localProvider = (localStorage.getItem('ai_provider') as AIModelProvider) || 'google';
 
     if (storedDB) {
       return {
@@ -57,8 +56,7 @@ export async function loadUserSettings(): Promise<UserSettings> {
       apiKey: localStorage.getItem('gemini_api_key') || '',
       baseUrl: localStorage.getItem('custom_base_url') || '',
       defaultModel: localStorage.getItem('custom_model_id') || '',
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      provider: (localStorage.getItem('ai_provider') as any) || 'google',
+      provider: (localStorage.getItem('ai_provider') as AIModelProvider) || 'google',
     };
   }
 }
@@ -145,8 +143,7 @@ export function loadSettingsSync(): Partial<UserSettings> {
     apiKey: localStorage.getItem('gemini_api_key') || '',
     baseUrl: localStorage.getItem('custom_base_url') || '',
     defaultModel: localStorage.getItem('custom_model_id') || '',
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    provider: (localStorage.getItem('ai_provider') as any) || 'google',
+    provider: (localStorage.getItem('ai_provider') as AIModelProvider) || 'google',
   };
 }
 

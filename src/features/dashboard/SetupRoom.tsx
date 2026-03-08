@@ -28,6 +28,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { db } from '@/lib/db';
 import ResumeList from './ResumeList';
+import { getErrorMessage } from '@/lib/utils';
 import SEO from '@/components/SEO';
 import ResumeAnalysisView from '@/features/resume-analysis/ResumeAnalysisView';
 
@@ -332,8 +333,7 @@ const SetupRoom: React.FC = () => {
       navigate(`/resumes/${newId}/edit`);
     } catch (error) {
       console.error(error);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      alert('Failed to tailor resume: ' + (error as any).message);
+      alert('Failed to tailor resume: ' + getErrorMessage(error));
     }
   };
 
@@ -362,8 +362,7 @@ const SetupRoom: React.FC = () => {
         interviewContext: extracted.interviewContext || prev.interviewContext,
       }));
     } catch (error) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      alert('Failed to extract info: ' + (error as any).message);
+      alert('Failed to extract info: ' + getErrorMessage(error));
     } finally {
       setIsExtracting(false);
     }
@@ -392,8 +391,7 @@ const SetupRoom: React.FC = () => {
       }));
       alert(`Research for ${formData.company} complete! Form updated.`);
     } catch (error) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      alert('Failed to research company: ' + (error as any).message);
+      alert('Failed to research company: ' + getErrorMessage(error));
     } finally {
       setIsResearching(false);
     }
@@ -423,8 +421,7 @@ const SetupRoom: React.FC = () => {
       setFormData((prev) => ({ ...prev, resumeText: text }));
       setResumeAnalysis(null); // Reset analysis on new upload
     } catch (error) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      alert('Failed to parse resume: ' + (error as any).message);
+      alert('Failed to parse resume: ' + getErrorMessage(error));
     } finally {
       setIsParsing(false);
       e.target.value = '';

@@ -30,8 +30,7 @@ const ProjectsForm: React.FC<ProjectsFormProps> = ({ data, onChange }) => {
     }
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleChange = (index: number, field: keyof Project, value: any) => {
+  const handleChange = <K extends keyof Project>(index: number, field: K, value: Project[K]) => {
     const newData = [...data];
     newData[index] = { ...newData[index], [field]: value };
     onChange(newData);

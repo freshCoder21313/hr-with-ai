@@ -64,7 +64,7 @@ export class AudioRecorderService {
   }
 
   private setupAudioAnalysis(stream: MediaStream) {
-    this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
     const source = this.audioContext.createMediaStreamSource(stream);
     this.analyser = this.audioContext.createAnalyser();
     this.analyser.fftSize = 256;

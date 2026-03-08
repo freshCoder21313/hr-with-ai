@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useCallback } from 'react';
 import { useVoiceInterviewStore } from '@/features/interview/stores/voiceInterviewStore';
 import { useSpeechToText } from './useSpeechToText';
 import { useTextToSpeech } from './useTextToSpeech';
@@ -7,12 +7,10 @@ import { useInterviewStore } from '@/features/interview/interviewStore';
 import { streamInterviewMessage, getStoredAIConfig } from '@/services/geminiService';
 import { voiceInterviewService } from '@/services/voiceInterviewService';
 import { Message } from '@/types';
-import { useParams } from 'react-router-dom';
+import { getErrorMessage } from '@/lib/utils';
 
 export const useVoiceInterview = () => {
   // Local state & Context
-  // const { id: interviewIdParam } = useParams(); // Unused
-  // const interviewId = Number(interviewIdParam);
 
   const {
     voiceSettings: storeVoiceSettings,
@@ -40,8 +38,7 @@ export const useVoiceInterview = () => {
     silenceTimeout: 2000,
   };
 
-  const { currentInterview, addMessage, updateLastMessage, setLoading, clearInterview } =
-    useInterviewStore();
+  const { currentInterview, addMessage, updateLastMessage, setLoading } = useInterviewStore();
 
   const voiceSettings = {
     ...(storeVoiceSettings || defaultVoiceSettings),
@@ -146,9 +143,9 @@ export const useVoiceInterview = () => {
         updateLastMessage(fullContent); // Ensure final consistency
 
         setLoading(false);
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error(error);
-        updateLastMessage('Error: ' + (error.message || 'Unknown error'));
+        updateLastMessage('Error: ' + getErrorMessage(error));
         setCurrentState('idle');
         setLoading(false);
       }
@@ -226,7 +223,14 @@ export const useVoiceInterview = () => {
         return () => clearTimeout(timer);
       }
     }
-  }, [currentState, tts.isSpeaking, ttsQueue.length, voiceSettings.pushToTalk, startListening]);
+  }, [
+    currentState,
+    tts.isSpeaking,
+    ttsQueue.length,
+    voiceSettings.pushToTalk,
+    startListening,
+    setCurrentState,
+  ]);
 
   const interruptAI = useCallback(() => {
     tts.stop();
@@ -235,10 +239,6 @@ export const useVoiceInterview = () => {
     // Maybe cancel Gemini stream if possible? (Simulate by ignoring rest)
     // Hard to cancel generator loop from outside unless built-in support.
   }, [tts, clearTTSQueue, setCurrentState]);
-
-  const toggleMode = useCallback(() => {
-    // Switch PTT <-> Continuous
-  }, []);
 
   const endInterview = useCallback(() => {
     tts.stop();

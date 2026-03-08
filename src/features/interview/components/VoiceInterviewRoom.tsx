@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useVoiceInterview } from '../hooks/useVoiceInterview';
 import { VoiceMicButton } from './VoiceMicButton';
@@ -32,12 +32,11 @@ export const VoiceInterviewRoom: React.FC<VoiceInterviewRoomProps> = ({ onSwitch
     stopAndSend,
     sendTextMessage,
     endInterview,
-    interruptAI,
   } = useVoiceInterview();
 
   // Access store directly for messages state
   const { currentInterview } = useInterviewStore();
-  const messages = currentInterview?.messages || [];
+  const messages = useMemo(() => currentInterview?.messages || [], [currentInterview?.messages]);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   useEffect(() => {

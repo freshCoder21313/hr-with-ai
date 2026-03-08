@@ -29,8 +29,11 @@ const EducationForm: React.FC<EducationFormProps> = ({ data, onChange }) => {
     }
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleChange = (index: number, field: keyof Education, value: any) => {
+  const handleChange = <K extends keyof Education>(
+    index: number,
+    field: K,
+    value: Education[K]
+  ) => {
     const newData = [...data];
     newData[index] = { ...newData[index], [field]: value };
     onChange(newData);
