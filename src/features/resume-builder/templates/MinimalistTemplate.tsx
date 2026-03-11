@@ -1,22 +1,63 @@
 import React from 'react';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { SortableSection } from '../components/SortableSection';
 import { ResumeData } from '@/types/resume';
+import { InlineEdit } from '../components/InlineEdit';
 import { MapPin, Mail, Phone, Link as LinkIcon, Linkedin, Github } from 'lucide-react';
 
 interface TemplateProps {
+  onUpdate?: (newData: import('@/types/resume').ResumeData) => void;
   data: ResumeData;
   themeColor?: string;
+  onOrderChange?: (newSidebar: string[], newMain: string[]) => void;
 }
 
-const MinimalistTemplate: React.FC<TemplateProps> = ({ data, themeColor = '#1e293b' }) => {
+const MinimalistTemplate: React.FC<TemplateProps> = ({
+  data,
+  themeColor = '#1e293b',
+  onUpdate,
+  onOrderChange,
+}) => {
   const { basics, work, education, skills, projects, meta } = data;
 
   const defaultOrder = ['summary', 'experience', 'projects', 'education', 'skills'];
 
-  let sectionOrder = defaultOrder;
+  let mainOrder = defaultOrder;
   if (meta?.sectionOrder) {
-    sectionOrder = [...(meta.sectionOrder.main || []), ...(meta.sectionOrder.sidebar || [])];
-    sectionOrder = Array.from(new Set(sectionOrder));
+    mainOrder = [...(meta.sectionOrder.main || []), ...(meta.sectionOrder.sidebar || [])];
+    mainOrder = Array.from(new Set(mainOrder));
   }
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEndMain = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      const oldIndex = mainOrder.indexOf(String(active.id));
+      const newIndex = mainOrder.indexOf(String(over.id));
+      const newOrder = arrayMove(mainOrder, oldIndex, newIndex);
+      onOrderChange?.([], newOrder);
+    }
+  };
 
   const renderSection = (id: string) => {
     switch (id) {
@@ -27,7 +68,15 @@ const MinimalistTemplate: React.FC<TemplateProps> = ({ data, themeColor = '#1e29
             <h2 className="text-xs tracking-widest uppercase font-bold text-slate-400 mb-4">
               Summary
             </h2>
-            <p className="text-sm text-slate-700 leading-loose">{basics.summary}</p>
+            <div className="text-sm text-slate-700 leading-loose">
+              <InlineEdit
+                as="div"
+                multiline
+                className="w-full"
+                value={basics.summary || ''}
+                onSave={(val) => onUpdate?.({ ...data, basics: { ...basics, summary: val } })}
+              />
+            </div>
           </section>
         );
 
@@ -46,11 +95,38 @@ const MinimalistTemplate: React.FC<TemplateProps> = ({ data, themeColor = '#1e29
                     {[job.startDate, job.endDate].filter(Boolean).join(' — ')}
                   </div>
                   <div className="md:w-3/4">
-                    <h3 className="font-semibold text-slate-900 text-base">{job.position}</h3>
-                    <div className="text-sm text-slate-600 mb-3" style={{ color: themeColor }}>
-                      {job.name}
-                    </div>
-                    <p className="text-sm text-slate-700 leading-relaxed mb-3">{job.summary}</p>
+                    <InlineEdit
+                      as="h3"
+                      className="font-semibold text-slate-900 text-base inline-block"
+                      value={job.position || ''}
+                      onSave={(val) => {
+                        const newWork = [...work];
+                        newWork[i] = { ...job, position: val };
+                        onUpdate?.({ ...data, work: newWork });
+                      }}
+                    />
+                    <InlineEdit
+                      as="div"
+                      className="text-sm text-slate-600 mb-3 inline-block"
+                      style={{ color: themeColor }}
+                      value={job.name || ''}
+                      onSave={(val) => {
+                        const newWork = [...work];
+                        newWork[i] = { ...job, name: val };
+                        onUpdate?.({ ...data, work: newWork });
+                      }}
+                    />
+                    <InlineEdit
+                      as="p"
+                      multiline
+                      className="text-sm text-slate-700 leading-relaxed mb-3 w-full"
+                      value={job.summary || ''}
+                      onSave={(val) => {
+                        const newWork = [...work];
+                        newWork[i] = { ...job, summary: val };
+                        onUpdate?.({ ...data, work: newWork });
+                      }}
+                    />
                     {job.highlights && (
                       <ul className="list-disc ml-4 space-y-1.5 text-sm text-slate-700">
                         {job.highlights.map((h, k) => (
@@ -92,9 +168,17 @@ const MinimalistTemplate: React.FC<TemplateProps> = ({ data, themeColor = '#1e29
                         </a>
                       )}
                     </h3>
-                    <p className="text-sm text-slate-700 leading-relaxed mt-2 mb-3">
-                      {project.description}
-                    </p>
+                    <InlineEdit
+                      as="p"
+                      multiline
+                      className="text-sm text-slate-700 leading-relaxed mt-2 mb-3 w-full"
+                      value={project.description || ''}
+                      onSave={(val) => {
+                        const newProjects = [...projects];
+                        newProjects[i] = { ...project, description: val };
+                        onUpdate?.({ ...data, projects: newProjects });
+                      }}
+                    />
                     {project.highlights && (
                       <ul className="list-disc ml-4 space-y-1.5 text-sm text-slate-700 mb-3">
                         {project.highlights.map((h, k) => (
@@ -135,7 +219,16 @@ const MinimalistTemplate: React.FC<TemplateProps> = ({ data, themeColor = '#1e29
                     {[edu.startDate, edu.endDate].filter(Boolean).join(' — ')}
                   </div>
                   <div className="md:w-3/4">
-                    <h3 className="font-semibold text-slate-900 text-base">{edu.institution}</h3>
+                    <InlineEdit
+                      as="h3"
+                      className="font-semibold text-slate-900 text-base inline-block"
+                      value={edu.institution || ''}
+                      onSave={(val) => {
+                        const newEdu = [...education];
+                        newEdu[i] = { ...edu, institution: val };
+                        onUpdate?.({ ...data, education: newEdu });
+                      }}
+                    />
                     <div className="text-sm text-slate-700 mt-1">
                       {edu.studyType} in {edu.area}
                     </div>
@@ -180,10 +273,19 @@ const MinimalistTemplate: React.FC<TemplateProps> = ({ data, themeColor = '#1e29
     <div className="bg-white p-12 max-w-[210mm] mx-auto min-h-[297mm] shadow-sm print:shadow-none print:p-8">
       {/* Header */}
       <header className="mb-16">
-        <h1 className="text-4xl font-light tracking-tight text-slate-900 mb-3">{basics.name}</h1>
-        <p className="text-lg text-slate-500 mb-6" style={{ color: themeColor }}>
-          {basics.label}
-        </p>
+        <InlineEdit
+          as="h1"
+          className="text-4xl font-light tracking-tight text-slate-900 mb-3 inline-block"
+          value={basics.name || ''}
+          onSave={(val) => onUpdate?.({ ...data, basics: { ...basics, name: val } })}
+        />
+        <InlineEdit
+          as="p"
+          className="text-lg text-slate-500 mb-6 inline-block"
+          style={{ color: themeColor }}
+          value={basics.label || ''}
+          onSave={(val) => onUpdate?.({ ...data, basics: { ...basics, label: val } })}
+        />
 
         <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-500">
           {basics.email && (
@@ -237,7 +339,21 @@ const MinimalistTemplate: React.FC<TemplateProps> = ({ data, themeColor = '#1e29
       </header>
 
       {/* Main Content */}
-      <div className="space-y-2">{sectionOrder.map((id) => renderSection(id))}</div>
+      <div className="space-y-2">
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEndMain}
+        >
+          <SortableContext items={mainOrder} strategy={verticalListSortingStrategy}>
+            {mainOrder.map((id) => (
+              <SortableSection key={id} id={id}>
+                {renderSection(id)}
+              </SortableSection>
+            ))}
+          </SortableContext>
+        </DndContext>
+      </div>
     </div>
   );
 };

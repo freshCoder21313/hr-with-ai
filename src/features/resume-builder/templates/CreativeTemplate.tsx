@@ -1,14 +1,38 @@
 import React from 'react';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { SortableSection } from '../components/SortableSection';
 import { ResumeData } from '@/types/resume';
 import { MapPin, Mail, Phone, Link as LinkIcon, Linkedin, Github, Globe } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { InlineEdit } from '../components/InlineEdit';
 
 interface TemplateProps {
+  onUpdate?: (newData: import('@/types/resume').ResumeData) => void;
   data: ResumeData;
   themeColor?: string;
+  onOrderChange?: (newSidebar: string[], newMain: string[]) => void;
 }
 
-const CreativeTemplate: React.FC<TemplateProps> = ({ data, themeColor = '#8b5cf6' }) => {
+const CreativeTemplate: React.FC<TemplateProps> = ({
+  data,
+  themeColor = '#8b5cf6',
+  onUpdate,
+  onOrderChange,
+}) => {
   const { basics, work, education, skills, projects, meta } = data;
 
   const defaultOrder = ['summary', 'experience', 'projects', 'education', 'skills'];
@@ -21,6 +45,33 @@ const CreativeTemplate: React.FC<TemplateProps> = ({ data, themeColor = '#8b5cf6
 
   const sidebarOrder = meta?.sectionOrder?.sidebar || ['skills', 'education', 'contact'];
   const mainOrder = meta?.sectionOrder?.main || ['summary', 'work', 'projects'];
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEndSidebar = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      const oldIndex = sidebarOrder.indexOf(String(active.id));
+      const newIndex = sidebarOrder.indexOf(String(over.id));
+      const newOrder = arrayMove(sidebarOrder, oldIndex, newIndex);
+      onOrderChange?.(newOrder, mainOrder);
+    }
+  };
+
+  const handleDragEndMain = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      const oldIndex = mainOrder.indexOf(String(active.id));
+      const newIndex = mainOrder.indexOf(String(over.id));
+      const newOrder = arrayMove(mainOrder, oldIndex, newIndex);
+      onOrderChange?.(sidebarOrder, newOrder);
+    }
+  };
 
   // Dynamic Styles based on themeColor
   const primaryColor = themeColor || '#8b5cf6'; // Default Purple
@@ -37,7 +88,15 @@ const CreativeTemplate: React.FC<TemplateProps> = ({ data, themeColor = '#8b5cf6
             >
               About Me
             </h3>
-            <p className="text-slate-700 leading-relaxed text-sm">{basics.summary}</p>
+            <div className="text-slate-700 leading-relaxed text-sm">
+              <InlineEdit
+                as="div"
+                multiline
+                className="w-full"
+                value={basics.summary || ''}
+                onSave={(val) => onUpdate?.({ ...data, basics: { ...basics, summary: val } })}
+              />
+            </div>
           </div>
         );
 
@@ -63,15 +122,42 @@ const CreativeTemplate: React.FC<TemplateProps> = ({ data, themeColor = '#8b5cf6
                     style={{ borderColor: primaryColor }}
                   ></div>
                   <div className="mb-2">
-                    <h4 className="font-bold text-slate-800 text-base">{job.position}</h4>
-                    <div className="text-sm font-semibold" style={{ color: primaryColor }}>
-                      {job.name}
-                    </div>
+                    <InlineEdit
+                      as="h4"
+                      className="font-bold text-slate-800 text-base inline-block"
+                      value={job.position || ''}
+                      onSave={(val) => {
+                        const newWork = [...work];
+                        newWork[i] = { ...job, position: val };
+                        onUpdate?.({ ...data, work: newWork });
+                      }}
+                    />
+                    <InlineEdit
+                      as="div"
+                      className="text-sm font-semibold inline-block"
+                      style={{ color: primaryColor }}
+                      value={job.name || ''}
+                      onSave={(val) => {
+                        const newWork = [...work];
+                        newWork[i] = { ...job, name: val };
+                        onUpdate?.({ ...data, work: newWork });
+                      }}
+                    />
                     <span className="text-xs text-slate-500 block mt-1">
                       {[job.startDate, job.endDate].filter(Boolean).join(' - ')}
                     </span>
                   </div>
-                  <p className="text-sm text-slate-600 mb-2">{job.summary}</p>
+                  <InlineEdit
+                    as="p"
+                    multiline
+                    className="text-sm text-slate-600 mb-2 w-full"
+                    value={job.summary || ''}
+                    onSave={(val) => {
+                      const newWork = [...work];
+                      newWork[i] = { ...job, summary: val };
+                      onUpdate?.({ ...data, work: newWork });
+                    }}
+                  />
                   {job.highlights && (
                     <ul className="list-disc ml-4 space-y-1">
                       {job.highlights.map((h, k) => (
@@ -118,7 +204,17 @@ const CreativeTemplate: React.FC<TemplateProps> = ({ data, themeColor = '#8b5cf6
                       {[project.startDate, project.endDate].filter(Boolean).join(' - ')}
                     </span>
                   </div>
-                  <p className="text-xs text-slate-600 mb-2">{project.description}</p>
+                  <InlineEdit
+                    as="p"
+                    multiline
+                    className="text-xs text-slate-600 mb-2 w-full"
+                    value={project.description || ''}
+                    onSave={(val) => {
+                      const newProjects = [...projects];
+                      newProjects[i] = { ...project, description: val };
+                      onUpdate?.({ ...data, projects: newProjects });
+                    }}
+                  />
                   {project.highlights && (
                     <div className="flex flex-wrap gap-1">
                       {project.highlights.map((h, k) => (
@@ -156,7 +252,15 @@ const CreativeTemplate: React.FC<TemplateProps> = ({ data, themeColor = '#8b5cf6
                   <div
                     className={cn('font-bold text-sm', isSidebar ? 'text-white' : 'text-slate-800')}
                   >
-                    {edu.institution}
+                    <InlineEdit
+                      as="span"
+                      value={edu.institution || ''}
+                      onSave={(val) => {
+                        const newEdu = [...education];
+                        newEdu[i] = { ...edu, institution: val };
+                        onUpdate?.({ ...data, education: newEdu });
+                      }}
+                    />
                   </div>
                   <div className={cn('text-xs', isSidebar ? 'text-slate-300' : 'text-slate-600')}>
                     {edu.studyType} in {edu.area}
@@ -298,16 +402,36 @@ const CreativeTemplate: React.FC<TemplateProps> = ({ data, themeColor = '#8b5cf6
               </div>
             </div>
           )}
-          <h1 className="text-2xl font-bold tracking-wide mb-2 text-white">{basics.name}</h1>
-          <p
-            className="text-sm font-medium tracking-wider uppercase opacity-80"
+          <InlineEdit
+            as="h1"
+            className="text-2xl font-bold tracking-wide mb-2 text-white inline-block"
+            value={basics.name || ''}
+            onSave={(val) => onUpdate?.({ ...data, basics: { ...basics, name: val } })}
+          />
+          <InlineEdit
+            as="p"
+            className="text-sm font-medium tracking-wider uppercase opacity-80 inline-block"
             style={{ color: primaryColor }}
-          >
-            {basics.label}
-          </p>
+            value={basics.label || ''}
+            onSave={(val) => onUpdate?.({ ...data, basics: { ...basics, label: val } })}
+          />
         </div>
         {/* Dynamic Sidebar Sections */}
-        <div className="flex-1">{sidebarOrder.map((id) => renderSection(id, true))}</div>
+        <div className="flex-1">
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEndSidebar}
+          >
+            <SortableContext items={sidebarOrder} strategy={verticalListSortingStrategy}>
+              {sidebarOrder.map((id) => (
+                <SortableSection key={id} id={id}>
+                  {renderSection(id, true)}
+                </SortableSection>
+              ))}
+            </SortableContext>
+          </DndContext>
+        </div>
       </aside>
 
       {/* Main Content (Right) */}
@@ -318,7 +442,21 @@ const CreativeTemplate: React.FC<TemplateProps> = ({ data, themeColor = '#8b5cf6
           style={{ backgroundColor: primaryColor }}
         ></div>
 
-        <div className="mt-4">{mainOrder.map((id) => renderSection(id, false))}</div>
+        <div className="mt-4">
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEndMain}
+          >
+            <SortableContext items={mainOrder} strategy={verticalListSortingStrategy}>
+              {mainOrder.map((id) => (
+                <SortableSection key={id} id={id}>
+                  {renderSection(id, false)}
+                </SortableSection>
+              ))}
+            </SortableContext>
+          </DndContext>
+        </div>
       </main>
     </div>
   );

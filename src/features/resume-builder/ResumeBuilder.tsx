@@ -39,7 +39,7 @@ import EducationForm from './SectionForms/EducationForm';
 import SkillsForm from './SectionForms/SkillsForm';
 import ProjectsForm from './SectionForms/ProjectsForm';
 import SEO from '@/components/SEO';
-import { cn, getErrorMessage } from '@/lib/utils';
+import { getErrorMessage } from '@/lib/utils';
 
 import Joyride, { Step } from 'react-joyride';
 import QuickActionFab from './components/QuickActionFab';
@@ -324,7 +324,14 @@ const ResumeBuilder: React.FC = () => {
       />
       {/* Hidden Print Container */}
       <div className="hidden print:block print:absolute print:inset-0 print:z-[9999] print:bg-white">
-        <ResumePreview data={data} template={template} />
+        <ResumePreview 
+            data={data} 
+            template={template} 
+            onUpdate={(newData) => {
+              setData(newData);
+              db.resumes.update(parseInt(id!), { parsedData: newData });
+            }}
+          />
       </div>
 
       <SectionReorderDialog
@@ -484,7 +491,14 @@ const ResumeBuilder: React.FC = () => {
                 </div>
                 <div className="flex-1 overflow-y-auto p-8 flex justify-center">
                   <div className="scale-[0.65] origin-top shadow-xl w-full max-w-[210mm]">
-                    <ResumePreview data={debouncedData || data} template={template} />
+                    <ResumePreview 
+    data={debouncedData || data} 
+    template={template} 
+    onUpdate={(newData) => {
+      setData(newData);
+      db.resumes.update(parseInt(id!), { parsedData: newData });
+    }}
+  />
                   </div>
                 </div>
               </div>
@@ -579,7 +593,14 @@ const ResumeBuilder: React.FC = () => {
               {/* Main Preview Area */}
               <div className="flex-1 overflow-y-auto p-8 flex justify-center">
                 <div className="scale-[0.8] md:scale-90 origin-top shadow-2xl h-fit">
-                  <ResumePreview data={debouncedData || data} template={template} />
+                  <ResumePreview 
+    data={debouncedData || data} 
+    template={template} 
+    onUpdate={(newData) => {
+      setData(newData);
+      db.resumes.update(parseInt(id!), { parsedData: newData });
+    }}
+  />
                 </div>
               </div>
 

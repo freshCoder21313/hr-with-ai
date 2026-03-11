@@ -1,24 +1,63 @@
 import React from 'react';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { SortableSection } from '../components/SortableSection';
 import { ResumeData } from '@/types/resume';
+import { InlineEdit } from '../components/InlineEdit';
 import { MapPin, Mail, Phone, Link as LinkIcon, Linkedin, Github } from 'lucide-react';
 
 interface TemplateProps {
+  onUpdate?: (newData: import('@/types/resume').ResumeData) => void;
   data: ResumeData;
+  onOrderChange?: (newSidebar: string[], newMain: string[]) => void;
 }
 
-const SummarySection = React.memo(function SummarySection({ summary }: { summary?: string }) {
+const SummarySection = React.memo(function SummarySection({
+  summary,
+  onUpdate,
+}: {
+  summary?: string;
+  onUpdate?: (summary: string) => void;
+}) {
   if (!summary) return null;
   return (
     <section className="mb-6 break-inside-avoid">
       <h2 className="text-lg font-bold uppercase border-b border-slate-300 mb-3 pb-1">
         Professional Summary
       </h2>
-      <p className="text-slate-700 leading-relaxed text-sm text-justify">{summary}</p>
+      <div className="text-slate-700 leading-relaxed text-sm text-justify">
+        <InlineEdit
+          as="div"
+          multiline
+          className="w-full"
+          value={summary || ''}
+          onSave={(val) => onUpdate?.(val)}
+        />
+      </div>
     </section>
   );
 });
 
-const WorkSection = React.memo(function WorkSection({ work }: { work: ResumeData['work'] }) {
+const WorkSection = React.memo(function WorkSection({
+  work,
+  onUpdate,
+}: {
+  work: ResumeData['work'];
+  onUpdate?: (work: ResumeData['work']) => void;
+}) {
   if (!work || work.length === 0) return null;
   return (
     <section className="mb-6 break-inside-avoid">
@@ -29,15 +68,43 @@ const WorkSection = React.memo(function WorkSection({ work }: { work: ResumeData
         {work.map((job, i) => (
           <div key={i}>
             <div className="flex justify-between items-baseline mb-1">
-              <h3 className="font-bold text-base">{job.name}</h3>
+              <InlineEdit
+                as="h3"
+                className="font-bold text-base inline-block"
+                value={job.name || ''}
+                onSave={(val) => {
+                  const newWork = [...work];
+                  newWork[i] = { ...job, name: val };
+                  onUpdate?.(newWork);
+                }}
+              />
               <span className="text-sm text-slate-500 italic">
                 {[job.startDate, job.endDate].filter(Boolean).join(' - ')}
               </span>
             </div>
             <div className="flex justify-between items-baseline mb-2">
-              <p className="font-semibold text-sm text-slate-700">{job.position}</p>
+              <InlineEdit
+                as="p"
+                className="font-semibold text-sm text-slate-700 inline-block"
+                value={job.position || ''}
+                onSave={(val) => {
+                  const newWork = [...work];
+                  newWork[i] = { ...job, position: val };
+                  onUpdate?.(newWork);
+                }}
+              />
             </div>
-            <p className="text-sm text-slate-600 mb-2">{job.summary}</p>
+            <InlineEdit
+              as="p"
+              multiline
+              className="text-sm text-slate-600 mb-2 w-full"
+              value={job.summary || ''}
+              onSave={(val) => {
+                const newWork = [...work];
+                newWork[i] = { ...job, summary: val };
+                onUpdate?.(newWork);
+              }}
+            />
             {job.highlights && job.highlights.length > 0 && (
               <ul className="list-disc ml-5 space-y-1">
                 {job.highlights.map((highlight, idx) => (
@@ -56,8 +123,10 @@ const WorkSection = React.memo(function WorkSection({ work }: { work: ResumeData
 
 const ProjectsSection = React.memo(function ProjectsSection({
   projects,
+  onUpdate,
 }: {
   projects: ResumeData['projects'];
+  onUpdate?: (projects: ResumeData['projects']) => void;
 }) {
   if (!projects || projects.length === 0) return null;
   return (
@@ -84,7 +153,17 @@ const ProjectsSection = React.memo(function ProjectsSection({
                 {[project.startDate, project.endDate].filter(Boolean).join(' - ')}
               </span>
             </div>
-            <p className="text-sm text-slate-600 mb-2">{project.description}</p>
+            <InlineEdit
+              as="p"
+              multiline
+              className="text-sm text-slate-600 mb-2 w-full"
+              value={project.description || ''}
+              onSave={(val) => {
+                const newProjects = [...projects];
+                newProjects[i] = { ...project, description: val };
+                onUpdate?.(newProjects);
+              }}
+            />
             {project.highlights && project.highlights.length > 0 && (
               <ul className="list-disc ml-5 space-y-1">
                 {project.highlights.map((highlight, idx) => (
@@ -103,8 +182,10 @@ const ProjectsSection = React.memo(function ProjectsSection({
 
 const EducationSection = React.memo(function EducationSection({
   education,
+  onUpdate,
 }: {
   education: ResumeData['education'];
+  onUpdate?: (education: ResumeData['education']) => void;
 }) {
   if (!education || education.length === 0) return null;
   return (
@@ -114,7 +195,16 @@ const EducationSection = React.memo(function EducationSection({
         {education.map((edu, i) => (
           <div key={i}>
             <div className="flex justify-between items-baseline">
-              <h3 className="font-bold text-base">{edu.institution}</h3>
+              <InlineEdit
+                as="h3"
+                className="font-bold text-base inline-block"
+                value={edu.institution || ''}
+                onSave={(val) => {
+                  const newEdu = [...education];
+                  newEdu[i] = { ...edu, institution: val };
+                  onUpdate?.(newEdu);
+                }}
+              />
               <span className="text-sm text-slate-500 italic">
                 {[edu.startDate, edu.endDate].filter(Boolean).join(' - ')}
               </span>
@@ -155,13 +245,25 @@ const SkillsSection = React.memo(function SkillsSection({
 
 const HeaderSection = React.memo(function HeaderSection({
   basics,
+  onUpdate,
 }: {
   basics: ResumeData['basics'];
+  onUpdate?: (basics: ResumeData['basics']) => void;
 }) {
   return (
     <header className="border-b-2 border-slate-800 pb-4 mb-6">
-      <h1 className="text-4xl font-bold uppercase tracking-wide mb-2">{basics.name}</h1>
-      <p className="text-xl text-slate-600 mb-4">{basics.label}</p>
+      <InlineEdit
+        as="h1"
+        className="text-4xl font-bold uppercase tracking-wide mb-2 inline-block"
+        value={basics.name || ''}
+        onSave={(val) => onUpdate?.({ ...basics, name: val })}
+      />
+      <InlineEdit
+        as="p"
+        className="text-xl text-slate-600 mb-4 inline-block"
+        value={basics.label || ''}
+        onSave={(val) => onUpdate?.({ ...basics, label: val })}
+      />
 
       <div className="flex flex-wrap gap-4 text-sm text-slate-600">
         {basics.email && (
@@ -202,28 +304,69 @@ const HeaderSection = React.memo(function HeaderSection({
   );
 });
 
-const ClassicTemplate: React.FC<TemplateProps> = ({ data }) => {
+const ClassicTemplate: React.FC<TemplateProps> = ({ data, onUpdate, onOrderChange }) => {
   const { basics, work, education, skills, projects, meta } = data;
 
   const defaultOrder = ['summary', 'experience', 'projects', 'education', 'skills'];
 
-  let sectionOrder = defaultOrder;
+  let mainOrder = defaultOrder;
   if (meta?.sectionOrder) {
-    sectionOrder = [...(meta.sectionOrder.main || []), ...(meta.sectionOrder.sidebar || [])];
-    sectionOrder = Array.from(new Set(sectionOrder));
+    mainOrder = [...(meta.sectionOrder.main || []), ...(meta.sectionOrder.sidebar || [])];
+    mainOrder = Array.from(new Set(mainOrder));
   }
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEndMain = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      const oldIndex = mainOrder.indexOf(String(active.id));
+      const newIndex = mainOrder.indexOf(String(over.id));
+      const newOrder = arrayMove(mainOrder, oldIndex, newIndex);
+      onOrderChange?.([], newOrder);
+    }
+  };
 
   const renderSection = (id: string) => {
     switch (id) {
       case 'summary':
-        return <SummarySection key={id} summary={basics.summary} />;
+        return (
+          <SummarySection
+            key={id}
+            summary={basics.summary}
+            onUpdate={(summary) => onUpdate?.({ ...data, basics: { ...basics, summary } })}
+          />
+        );
       case 'work':
       case 'experience':
-        return <WorkSection key={id} work={work} />;
+        return (
+          <WorkSection
+            key={id}
+            work={work}
+            onUpdate={(workData) => onUpdate?.({ ...data, work: workData })}
+          />
+        );
       case 'projects':
-        return <ProjectsSection key={id} projects={projects} />;
+        return (
+          <ProjectsSection
+            key={id}
+            projects={projects}
+            onUpdate={(projectsData) => onUpdate?.({ ...data, projects: projectsData })}
+          />
+        );
       case 'education':
-        return <EducationSection key={id} education={education} />;
+        return (
+          <EducationSection
+            key={id}
+            education={education}
+            onUpdate={(educationData) => onUpdate?.({ ...data, education: educationData })}
+          />
+        );
       case 'skills':
         return <SkillsSection key={id} skills={skills} />;
       default:
@@ -233,8 +376,23 @@ const ClassicTemplate: React.FC<TemplateProps> = ({ data }) => {
 
   return (
     <div className="font-serif text-slate-900 bg-white p-8 max-w-[210mm] mx-auto min-h-[297mm] shadow-sm print:shadow-none print:p-0">
-      <HeaderSection basics={basics} />
-      {sectionOrder.map((id) => renderSection(id))}
+      <HeaderSection
+        basics={basics}
+        onUpdate={(newBasics) => onUpdate?.({ ...data, basics: newBasics })}
+      />
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEndMain}
+      >
+        <SortableContext items={mainOrder} strategy={verticalListSortingStrategy}>
+          {mainOrder.map((id) => (
+            <SortableSection key={id} id={id}>
+              {renderSection(id)}
+            </SortableSection>
+          ))}
+        </SortableContext>
+      </DndContext>
     </div>
   );
 };

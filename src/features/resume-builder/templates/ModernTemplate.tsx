@@ -1,15 +1,36 @@
 import React from 'react';
 import { ResumeData } from '@/types/resume';
 import { MapPin, Mail, Phone, Link as LinkIcon, Linkedin, Github, Globe } from 'lucide-react';
+import { InlineEdit } from '../components/InlineEdit';
+import { SortableSection } from '../components/SortableSection';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
 
 interface TemplateProps {
+  onUpdate?: (newData: import('@/types/resume').ResumeData) => void;
   data: ResumeData;
+  onOrderChange?: (newSidebar: string[], newMain: string[]) => void;
 }
 
 const EducationSection = React.memo(function EducationSection({
+  onUpdate,
   education,
 }: {
   education: ResumeData['education'];
+  onUpdate?: (education: ResumeData['education']) => void;
 }) {
   if (!education || education.length === 0) return null;
   return (
@@ -35,9 +56,11 @@ const EducationSection = React.memo(function EducationSection({
 });
 
 const SkillsSection = React.memo(function SkillsSection({
+  onUpdate,
   skills,
 }: {
   skills: ResumeData['skills'];
+  onUpdate?: (skills: ResumeData['skills']) => void;
 }) {
   if (!skills || skills.length === 0) return null;
   return (
@@ -66,12 +89,34 @@ const SkillsSection = React.memo(function SkillsSection({
   );
 });
 
-const SummarySection = React.memo(function SummarySection({ summary }: { summary?: string }) {
+const SummarySection = React.memo(function SummarySection({
+  summary,
+  onUpdate,
+}: {
+  summary?: string;
+  onUpdate?: (summary: string) => void;
+}) {
   if (!summary) return null;
-  return <div className="mb-10 text-slate-600 text-sm leading-relaxed max-w-prose">{summary}</div>;
+  return (
+    <div className="mb-10 text-slate-600 text-sm leading-relaxed max-w-prose">
+      <InlineEdit
+        as="div"
+        multiline
+        className="w-full"
+        value={summary || ''}
+        onSave={(val) => onUpdate?.(val)}
+      />
+    </div>
+  );
 });
 
-const WorkSection = React.memo(function WorkSection({ work }: { work: ResumeData['work'] }) {
+const WorkSection = React.memo(function WorkSection({
+  work,
+  onUpdate,
+}: {
+  work: ResumeData['work'];
+  onUpdate?: (work: ResumeData['work']) => void;
+}) {
   if (!work || work.length === 0) return null;
   return (
     <section className="mb-12 break-inside-avoid">
@@ -84,13 +129,41 @@ const WorkSection = React.memo(function WorkSection({ work }: { work: ResumeData
           <div key={i} className="relative pl-8 group">
             <div className="absolute -left-[5px] top-1.5 w-4 h-4 rounded-full bg-white border-4 border-slate-200 group-hover:border-blue-400 transition-colors"></div>
             <div className="flex justify-between items-baseline mb-2">
-              <h3 className="font-bold text-slate-800 text-lg leading-tight">{job.position}</h3>
+              <InlineEdit
+                as="h3"
+                className="font-bold text-slate-800 text-lg leading-tight inline-block"
+                value={job.position || ''}
+                onSave={(val) => {
+                  const newWork = [...work];
+                  newWork[i] = { ...job, position: val };
+                  onUpdate?.(newWork);
+                }}
+              />
               <span className="text-xs font-semibold text-slate-500 bg-slate-100 px-3 py-1 rounded-full whitespace-nowrap">
                 {[job.startDate, job.endDate].filter(Boolean).join(' - ')}
               </span>
             </div>
-            <p className="text-sm font-medium text-blue-600 mb-3">{job.name}</p>
-            <p className="text-sm text-slate-600 mb-3 leading-relaxed">{job.summary}</p>
+            <InlineEdit
+              as="p"
+              className="text-sm font-medium text-blue-600 mb-3 inline-block"
+              value={job.name || ''}
+              onSave={(val) => {
+                const newWork = [...work];
+                newWork[i] = { ...job, name: val };
+                onUpdate?.(newWork);
+              }}
+            />
+            <InlineEdit
+              as="p"
+              multiline
+              className="text-sm text-slate-600 mb-3 leading-relaxed w-full"
+              value={job.summary || ''}
+              onSave={(val) => {
+                const newWork = [...work];
+                newWork[i] = { ...job, summary: val };
+                onUpdate?.(newWork);
+              }}
+            />
             {job.highlights && job.highlights.length > 0 && (
               <ul className="space-y-2">
                 {job.highlights.map((highlight, idx) => (
@@ -112,9 +185,11 @@ const WorkSection = React.memo(function WorkSection({ work }: { work: ResumeData
 });
 
 const ProjectsSection = React.memo(function ProjectsSection({
+  onUpdate,
   projects,
 }: {
   projects: ResumeData['projects'];
+  onUpdate?: (projects: ResumeData['projects']) => void;
 }) {
   if (!projects || projects.length === 0) return null;
   return (
@@ -143,7 +218,17 @@ const ProjectsSection = React.memo(function ProjectsSection({
                 {[project.startDate, project.endDate].filter(Boolean).join(' - ')}
               </span>
             </div>
-            <p className="text-sm text-slate-600 mb-3 leading-relaxed">{project.description}</p>
+            <InlineEdit
+              as="p"
+              multiline
+              className="text-sm text-slate-600 mb-3 leading-relaxed w-full"
+              value={project.description || ''}
+              onSave={(val) => {
+                const newProjects = [...projects];
+                newProjects[i] = { ...project, description: val };
+                onUpdate?.(newProjects);
+              }}
+            />
             {project.highlights && (
               <div className="flex flex-wrap gap-2">
                 {project.highlights.map((h, k) => (
@@ -167,6 +252,7 @@ const SidebarContactInfo = React.memo(function SidebarContactInfo({
   basics,
 }: {
   basics: ResumeData['basics'];
+  onUpdate?: (basics: ResumeData['basics']) => void;
 }) {
   return (
     <div className="mb-8 space-y-3 text-sm text-slate-300">
@@ -213,7 +299,13 @@ const SidebarContactInfo = React.memo(function SidebarContactInfo({
   );
 });
 
-const MainHeader = React.memo(function MainHeader({ basics }: { basics: ResumeData['basics'] }) {
+const MainHeader = React.memo(function MainHeader({
+  basics,
+  onUpdate,
+}: {
+  basics: ResumeData['basics'];
+  onUpdate?: (basics: ResumeData['basics']) => void;
+}) {
   return (
     <header className="mb-10 pb-8 border-b border-slate-200">
       <div className="flex items-start gap-8">
@@ -227,19 +319,25 @@ const MainHeader = React.memo(function MainHeader({ basics }: { basics: ResumeDa
           </div>
         )}
         <div className="flex-1 min-w-0 pt-2">
-          <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight leading-none mb-3 break-words">
-            {basics.name}
-          </h1>
-          <p className="text-xl text-blue-600 font-semibold tracking-wide uppercase text-sm mb-4">
-            {basics.label}
-          </p>
+          <InlineEdit
+            as="h1"
+            className="text-4xl font-extrabold text-slate-900 tracking-tight leading-none mb-3 break-words inline-block"
+            value={basics.name || ''}
+            onSave={(val) => onUpdate?.({ ...basics, name: val })}
+          />
+          <InlineEdit
+            as="p"
+            className="text-xl text-blue-600 font-semibold tracking-wide uppercase text-sm mb-4 inline-block"
+            value={basics.label || ''}
+            onSave={(val) => onUpdate?.({ ...basics, label: val })}
+          />
         </div>
       </div>
     </header>
   );
 });
 
-const ModernTemplate: React.FC<TemplateProps> = ({ data }) => {
+const ModernTemplate: React.FC<TemplateProps> = ({ data, onUpdate, onOrderChange }) => {
   const { basics, work, education, skills, projects, meta } = data;
 
   const defaultSidebar = ['education', 'skills', 'contact'];
@@ -248,19 +346,76 @@ const ModernTemplate: React.FC<TemplateProps> = ({ data }) => {
   const sidebarOrder = meta?.sectionOrder?.sidebar || defaultSidebar;
   const mainOrder = meta?.sectionOrder?.main || defaultMain;
 
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEndSidebar = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      const oldIndex = sidebarOrder.indexOf(String(active.id));
+      const newIndex = sidebarOrder.indexOf(String(over.id));
+      const newOrder = arrayMove(sidebarOrder, oldIndex, newIndex);
+      onOrderChange?.(newOrder, mainOrder);
+    }
+  };
+
+  const handleDragEndMain = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      const oldIndex = mainOrder.indexOf(String(active.id));
+      const newIndex = mainOrder.indexOf(String(over.id));
+      const newOrder = arrayMove(mainOrder, oldIndex, newIndex);
+      onOrderChange?.(sidebarOrder, newOrder);
+    }
+  };
+
   const renderSection = (id: string) => {
     switch (id) {
       case 'education':
-        return <EducationSection key={id} education={education} />;
+        return (
+          <EducationSection
+            key={id}
+            education={education}
+            onUpdate={(educationData) => onUpdate?.({ ...data, education: educationData })}
+          />
+        );
       case 'skills':
-        return <SkillsSection key={id} skills={skills} />;
+        return (
+          <SkillsSection
+            key={id}
+            skills={skills}
+            onUpdate={(skillsData) => onUpdate?.({ ...data, skills: skillsData })}
+          />
+        );
       case 'summary':
-        return <SummarySection key={id} summary={basics.summary} />;
+        return (
+          <SummarySection
+            key={id}
+            summary={basics.summary}
+            onUpdate={(summary) => onUpdate?.({ ...data, basics: { ...basics, summary } })}
+          />
+        );
       case 'work':
       case 'experience':
-        return <WorkSection key={id} work={work} />;
+        return (
+          <WorkSection
+            key={id}
+            work={work}
+            onUpdate={(workData) => onUpdate?.({ ...data, work: workData })}
+          />
+        );
       case 'projects':
-        return <ProjectsSection key={id} projects={projects} />;
+        return (
+          <ProjectsSection
+            key={id}
+            projects={projects}
+            onUpdate={(projectsData) => onUpdate?.({ ...data, projects: projectsData })}
+          />
+        );
       default:
         return null;
     }
@@ -271,13 +426,40 @@ const ModernTemplate: React.FC<TemplateProps> = ({ data }) => {
       {/* Sidebar (Left Column) */}
       <aside className="bg-slate-900 text-white p-6 print:bg-slate-900 print:text-white h-full">
         <SidebarContactInfo basics={basics} />
-        {sidebarOrder.map((id) => renderSection(id))}
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEndSidebar}
+        >
+          <SortableContext items={sidebarOrder} strategy={verticalListSortingStrategy}>
+            {sidebarOrder.map((id) => (
+              <SortableSection key={id} id={id}>
+                {renderSection(id)}
+              </SortableSection>
+            ))}
+          </SortableContext>
+        </DndContext>
       </aside>
 
       {/* Main Content (Right Column) */}
       <main className="p-10 bg-white">
-        <MainHeader basics={basics} />
-        {mainOrder.map((id) => renderSection(id))}
+        <MainHeader
+          basics={basics}
+          onUpdate={(newBasics) => onUpdate?.({ ...data, basics: newBasics })}
+        />
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEndMain}
+        >
+          <SortableContext items={mainOrder} strategy={verticalListSortingStrategy}>
+            {mainOrder.map((id) => (
+              <SortableSection key={id} id={id}>
+                {renderSection(id)}
+              </SortableSection>
+            ))}
+          </SortableContext>
+        </DndContext>
       </main>
     </div>
   );

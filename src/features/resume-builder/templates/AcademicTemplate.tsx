@@ -1,22 +1,63 @@
 import React from 'react';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { SortableSection } from '../components/SortableSection';
 import { ResumeData } from '@/types/resume';
+import { InlineEdit } from '../components/InlineEdit';
 import { MapPin, Mail, Phone, Link as LinkIcon } from 'lucide-react';
 
 interface TemplateProps {
+  onUpdate?: (newData: import('@/types/resume').ResumeData) => void;
   data: ResumeData;
   themeColor?: string;
+  onOrderChange?: (newSidebar: string[], newMain: string[]) => void;
 }
 
-const AcademicTemplate: React.FC<TemplateProps> = ({ data, themeColor = '#1e3a8a' }) => {
+const AcademicTemplate: React.FC<TemplateProps> = ({
+  data,
+  themeColor = '#1e3a8a',
+  onUpdate,
+  onOrderChange,
+}) => {
   const { basics, work, education, skills, projects, meta } = data;
 
   const defaultOrder = ['summary', 'education', 'work', 'projects', 'skills'];
 
-  let sectionOrder = defaultOrder;
+  let mainOrder = defaultOrder;
   if (meta?.sectionOrder) {
-    sectionOrder = [...(meta.sectionOrder.main || []), ...(meta.sectionOrder.sidebar || [])];
-    sectionOrder = Array.from(new Set(sectionOrder));
+    mainOrder = [...(meta.sectionOrder.main || []), ...(meta.sectionOrder.sidebar || [])];
+    mainOrder = Array.from(new Set(mainOrder));
   }
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEndMain = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      const oldIndex = mainOrder.indexOf(String(active.id));
+      const newIndex = mainOrder.indexOf(String(over.id));
+      const newOrder = arrayMove(mainOrder, oldIndex, newIndex);
+      onOrderChange?.([], newOrder);
+    }
+  };
 
   const renderSection = (id: string) => {
     switch (id) {
@@ -30,9 +71,15 @@ const AcademicTemplate: React.FC<TemplateProps> = ({ data, themeColor = '#1e3a8a
             >
               Professional Summary
             </h2>
-            <p className="text-sm text-slate-800 leading-relaxed text-justify indent-8">
-              {basics.summary}
-            </p>
+            <div className="text-sm text-slate-800 leading-relaxed text-justify indent-8">
+              <InlineEdit
+                as="div"
+                multiline
+                className="w-full"
+                value={basics.summary || ''}
+                onSave={(val) => onUpdate?.({ ...data, basics: { ...basics, summary: val } })}
+              />
+            </div>
           </section>
         );
 
@@ -50,7 +97,16 @@ const AcademicTemplate: React.FC<TemplateProps> = ({ data, themeColor = '#1e3a8a
               {education.map((edu, i) => (
                 <div key={i} className="flex justify-between items-start">
                   <div>
-                    <h3 className="font-bold text-slate-900 text-base">{edu.institution}</h3>
+                    <InlineEdit
+                      as="h3"
+                      className="font-bold text-slate-900 text-base inline-block"
+                      value={edu.institution || ''}
+                      onSave={(val) => {
+                        const newEdu = [...education];
+                        newEdu[i] = { ...edu, institution: val };
+                        onUpdate?.({ ...data, education: newEdu });
+                      }}
+                    />
                     <div className="text-sm text-slate-700 italic">
                       {edu.studyType} in {edu.area}
                     </div>
@@ -80,13 +136,41 @@ const AcademicTemplate: React.FC<TemplateProps> = ({ data, themeColor = '#1e3a8a
               {work.map((job, i) => (
                 <div key={i}>
                   <div className="flex justify-between items-baseline mb-1">
-                    <h3 className="font-bold text-base text-slate-900">{job.name}</h3>
+                    <InlineEdit
+                      as="h3"
+                      className="font-bold text-base text-slate-900 inline-block"
+                      value={job.name || ''}
+                      onSave={(val) => {
+                        const newWork = [...work];
+                        newWork[i] = { ...job, name: val };
+                        onUpdate?.({ ...data, work: newWork });
+                      }}
+                    />
                     <span className="text-sm text-slate-600 italic">
                       {[job.startDate, job.endDate].filter(Boolean).join(' - ')}
                     </span>
                   </div>
-                  <div className="font-semibold text-sm text-slate-800 mb-2">{job.position}</div>
-                  <p className="text-sm text-slate-700 mb-2 leading-relaxed">{job.summary}</p>
+                  <InlineEdit
+                    as="div"
+                    className="font-semibold text-sm text-slate-800 mb-2 inline-block"
+                    value={job.position || ''}
+                    onSave={(val) => {
+                      const newWork = [...work];
+                      newWork[i] = { ...job, position: val };
+                      onUpdate?.({ ...data, work: newWork });
+                    }}
+                  />
+                  <InlineEdit
+                    as="p"
+                    multiline
+                    className="text-sm text-slate-700 mb-2 leading-relaxed w-full"
+                    value={job.summary || ''}
+                    onSave={(val) => {
+                      const newWork = [...work];
+                      newWork[i] = { ...job, summary: val };
+                      onUpdate?.({ ...data, work: newWork });
+                    }}
+                  />
                   {job.highlights && (
                     <ul className="list-disc ml-5 space-y-1 text-sm text-slate-700">
                       {job.highlights.map((h, k) => (
@@ -131,9 +215,17 @@ const AcademicTemplate: React.FC<TemplateProps> = ({ data, themeColor = '#1e3a8a
                       {[project.startDate, project.endDate].filter(Boolean).join(' - ')}
                     </span>
                   </div>
-                  <p className="text-sm text-slate-700 mb-2 leading-relaxed">
-                    {project.description}
-                  </p>
+                  <InlineEdit
+                    as="p"
+                    multiline
+                    className="text-sm text-slate-700 mb-2 leading-relaxed w-full"
+                    value={project.description || ''}
+                    onSave={(val) => {
+                      const newProjects = [...projects];
+                      newProjects[i] = { ...project, description: val };
+                      onUpdate?.({ ...data, projects: newProjects });
+                    }}
+                  />
                   {project.highlights && (
                     <ul className="list-disc ml-5 space-y-1 text-sm text-slate-700">
                       {project.highlights.map((h, k) => (
@@ -182,13 +274,19 @@ const AcademicTemplate: React.FC<TemplateProps> = ({ data, themeColor = '#1e3a8a
         className="text-center mb-8 pb-6 border-b-2 border-slate-300"
         style={{ borderColor: themeColor }}
       >
-        <h1
-          className="text-3xl font-bold uppercase tracking-wider mb-2"
+        <InlineEdit
+          as="h1"
+          className="text-3xl font-bold uppercase tracking-wider mb-2 inline-block"
           style={{ color: themeColor }}
-        >
-          {basics.name}
-        </h1>
-        <p className="text-lg text-slate-600 italic mb-4">{basics.label}</p>
+          value={basics.name || ''}
+          onSave={(val) => onUpdate?.({ ...data, basics: { ...basics, name: val } })}
+        />
+        <InlineEdit
+          as="p"
+          className="text-lg text-slate-600 italic mb-4 inline-block"
+          value={basics.label || ''}
+          onSave={(val) => onUpdate?.({ ...data, basics: { ...basics, label: val } })}
+        />
 
         <div className="flex flex-wrap justify-center gap-4 text-sm text-slate-600">
           {basics.email && (
@@ -223,7 +321,21 @@ const AcademicTemplate: React.FC<TemplateProps> = ({ data, themeColor = '#1e3a8a
       </header>
 
       {/* Main Content */}
-      <div className="space-y-6">{sectionOrder.map((id) => renderSection(id))}</div>
+      <div className="space-y-6">
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEndMain}
+        >
+          <SortableContext items={mainOrder} strategy={verticalListSortingStrategy}>
+            {mainOrder.map((id) => (
+              <SortableSection key={id} id={id}>
+                {renderSection(id)}
+              </SortableSection>
+            ))}
+          </SortableContext>
+        </DndContext>
+      </div>
     </div>
   );
 };

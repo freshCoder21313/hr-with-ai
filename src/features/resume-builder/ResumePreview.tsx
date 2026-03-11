@@ -10,25 +10,47 @@ interface ResumePreviewProps {
   data: ResumeData;
   template?: 'classic' | 'modern' | 'creative' | 'minimalist' | 'academic';
   className?: string;
+  onUpdate?: (newData: ResumeData) => void;
 }
 
-const ResumePreview: React.FC<ResumePreviewProps> = ({ data, template = 'modern', className }) => {
+const ResumePreview: React.FC<ResumePreviewProps> = ({
+  data,
+  template = 'modern',
+  className,
+  onUpdate,
+}) => {
   const themeColor = data.meta?.themeColor;
   const fontFamily = data.meta?.fontFamily || 'sans';
+
+  const handleOrderChange = (newSidebar: string[], newMain: string[]) => {
+    if (onUpdate) {
+      onUpdate({
+        ...data,
+        meta: {
+          ...data.meta,
+          sectionOrder: {
+            ...data.meta?.sectionOrder,
+            sidebar: newSidebar,
+            main: newMain,
+          },
+        },
+      });
+    }
+  };
 
   const renderTemplate = () => {
     switch (template) {
       case 'classic':
-        return <ClassicTemplate data={data} />;
+        return <ClassicTemplate data={data} onUpdate={onUpdate} />;
       case 'creative':
-        return <CreativeTemplate data={data} themeColor={themeColor} />;
+        return <CreativeTemplate data={data} themeColor={themeColor} onUpdate={onUpdate} />;
       case 'minimalist':
-        return <MinimalistTemplate data={data} themeColor={themeColor} />;
+        return <MinimalistTemplate data={data} themeColor={themeColor} onUpdate={onUpdate} />;
       case 'academic':
-        return <AcademicTemplate data={data} themeColor={themeColor} />;
+        return <AcademicTemplate data={data} themeColor={themeColor} onUpdate={onUpdate} />;
       case 'modern':
       default:
-        return <ModernTemplate data={data} />;
+        return <ModernTemplate data={data} onUpdate={onUpdate} onOrderChange={handleOrderChange} />;
     }
   };
 
