@@ -307,7 +307,7 @@ const HeaderSection = React.memo(function HeaderSection({
 const ClassicTemplate: React.FC<TemplateProps> = ({ data, onUpdate, onOrderChange }) => {
   const { basics, work, education, skills, projects, meta } = data;
 
-  const defaultOrder = ['summary', 'experience', 'projects', 'education', 'skills'];
+  const defaultOrder = ['header', 'summary', 'experience', 'projects', 'education', 'skills'];
 
   let mainOrder = defaultOrder;
   if (meta?.sectionOrder) {
@@ -369,6 +369,14 @@ const ClassicTemplate: React.FC<TemplateProps> = ({ data, onUpdate, onOrderChang
         );
       case 'skills':
         return <SkillsSection key={id} skills={skills} />;
+      case 'header':
+        return (
+          <HeaderSection
+            key={id}
+            basics={basics}
+            onUpdate={(newBasics) => onUpdate?.({ ...data, basics: newBasics })}
+          />
+        );
       default:
         return null;
     }
@@ -376,10 +384,6 @@ const ClassicTemplate: React.FC<TemplateProps> = ({ data, onUpdate, onOrderChang
 
   return (
     <div className="font-serif text-slate-900 bg-white p-8 max-w-[210mm] mx-auto min-h-[297mm] shadow-sm print:shadow-none print:p-0">
-      <HeaderSection
-        basics={basics}
-        onUpdate={(newBasics) => onUpdate?.({ ...data, basics: newBasics })}
-      />
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}

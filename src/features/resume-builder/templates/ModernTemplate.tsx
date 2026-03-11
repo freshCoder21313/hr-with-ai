@@ -341,7 +341,7 @@ const ModernTemplate: React.FC<TemplateProps> = ({ data, onUpdate, onOrderChange
   const { basics, work, education, skills, projects, meta } = data;
 
   const defaultSidebar = ['education', 'skills', 'contact'];
-  const defaultMain = ['summary', 'work', 'projects'];
+  const defaultMain = ['header', 'summary', 'work', 'projects'];
 
   const sidebarOrder = meta?.sectionOrder?.sidebar || defaultSidebar;
   const mainOrder = meta?.sectionOrder?.main || defaultMain;
@@ -416,6 +416,14 @@ const ModernTemplate: React.FC<TemplateProps> = ({ data, onUpdate, onOrderChange
             onUpdate={(projectsData) => onUpdate?.({ ...data, projects: projectsData })}
           />
         );
+      case 'header':
+        return (
+          <MainHeader
+            key={id}
+            basics={basics}
+            onUpdate={(newBasics) => onUpdate?.({ ...data, basics: newBasics })}
+          />
+        );
       default:
         return null;
     }
@@ -443,10 +451,6 @@ const ModernTemplate: React.FC<TemplateProps> = ({ data, onUpdate, onOrderChange
 
       {/* Main Content (Right Column) */}
       <main className="p-10 bg-white">
-        <MainHeader
-          basics={basics}
-          onUpdate={(newBasics) => onUpdate?.({ ...data, basics: newBasics })}
-        />
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}

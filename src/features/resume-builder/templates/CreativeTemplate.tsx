@@ -27,6 +27,41 @@ interface TemplateProps {
   onOrderChange?: (newSidebar: string[], newMain: string[]) => void;
 }
 
+const CreativeSidebarHeader = React.memo(function CreativeSidebarHeader({
+  basics,
+  onUpdate,
+  primaryColor,
+}: {
+  basics: ResumeData['basics'];
+  onUpdate?: (basics: ResumeData['basics']) => void;
+  primaryColor: string;
+}) {
+  return (
+    <div className="mb-10 text-center">
+      {basics.image && (
+        <div className="mb-4 inline-block relative">
+          <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white/20 shadow-xl mx-auto">
+            <img src={basics.image} alt={basics.name} className="w-full h-full object-cover" />
+          </div>
+        </div>
+      )}
+      <InlineEdit
+        as="h1"
+        className="text-2xl font-bold tracking-wide mb-2 text-white inline-block"
+        value={basics.name || ''}
+        onSave={(val) => onUpdate?.({ ...basics, name: val })}
+      />
+      <InlineEdit
+        as="p"
+        className="text-sm font-medium tracking-wider uppercase opacity-80 inline-block"
+        style={{ color: primaryColor }}
+        value={basics.label || ''}
+        onSave={(val) => onUpdate?.({ ...basics, label: val })}
+      />
+    </div>
+  );
+});
+
 const CreativeTemplate: React.FC<TemplateProps> = ({
   data,
   themeColor = '#8b5cf6',
@@ -43,7 +78,7 @@ const CreativeTemplate: React.FC<TemplateProps> = ({
   // Let's try a Left Sidebar with a curve or unique shape.
   // For simplicity and "Creative" feel, let's do a dark sidebar with the user photo overlapping.
 
-  const sidebarOrder = meta?.sectionOrder?.sidebar || ['skills', 'education', 'contact'];
+  const sidebarOrder = meta?.sectionOrder?.sidebar || ['header', 'skills', 'education', 'contact'];
   const mainOrder = meta?.sectionOrder?.main || ['summary', 'work', 'projects'];
 
   const sensors = useSensors(
@@ -78,6 +113,15 @@ const CreativeTemplate: React.FC<TemplateProps> = ({
 
   const renderSection = (id: string, isSidebar: boolean) => {
     switch (id) {
+      case 'header':
+        return (
+          <CreativeSidebarHeader
+            key={id}
+            basics={basics}
+            onUpdate={(newBasics) => onUpdate?.({ ...data, basics: newBasics })}
+            primaryColor={primaryColor}
+          />
+        );
       case 'summary':
         if (!basics.summary) return null;
         return (
@@ -393,29 +437,6 @@ const CreativeTemplate: React.FC<TemplateProps> = ({
       <aside className="text-white p-8 h-full flex flex-col" style={{ backgroundColor: '#1e293b' }}>
         {' '}
         {/* Slate-800 */}
-        {/* Profile Image & Name (Fixed Top) */}
-        <div className="mb-10 text-center">
-          {basics.image && (
-            <div className="mb-4 inline-block relative">
-              <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white/20 shadow-xl mx-auto">
-                <img src={basics.image} alt={basics.name} className="w-full h-full object-cover" />
-              </div>
-            </div>
-          )}
-          <InlineEdit
-            as="h1"
-            className="text-2xl font-bold tracking-wide mb-2 text-white inline-block"
-            value={basics.name || ''}
-            onSave={(val) => onUpdate?.({ ...data, basics: { ...basics, name: val } })}
-          />
-          <InlineEdit
-            as="p"
-            className="text-sm font-medium tracking-wider uppercase opacity-80 inline-block"
-            style={{ color: primaryColor }}
-            value={basics.label || ''}
-            onSave={(val) => onUpdate?.({ ...data, basics: { ...basics, label: val } })}
-          />
-        </div>
         {/* Dynamic Sidebar Sections */}
         <div className="flex-1">
           <DndContext

@@ -26,6 +26,68 @@ interface TemplateProps {
   onOrderChange?: (newSidebar: string[], newMain: string[]) => void;
 }
 
+const AcademicHeader = React.memo(function AcademicHeader({
+  basics,
+  onUpdate,
+  themeColor,
+}: {
+  basics: ResumeData['basics'];
+  onUpdate?: (basics: ResumeData['basics']) => void;
+  themeColor: string;
+}) {
+  return (
+    <header
+      className="text-center mb-8 pb-6 border-b-2 border-slate-300"
+      style={{ borderColor: themeColor }}
+    >
+      <InlineEdit
+        as="h1"
+        className="text-3xl font-bold uppercase tracking-wider mb-2 inline-block"
+        style={{ color: themeColor }}
+        value={basics.name || ''}
+        onSave={(val) => onUpdate?.({ ...basics, name: val })}
+      />
+      <InlineEdit
+        as="p"
+        className="text-lg text-slate-600 italic mb-4 inline-block"
+        value={basics.label || ''}
+        onSave={(val) => onUpdate?.({ ...basics, label: val })}
+      />
+
+      <div className="flex flex-wrap justify-center gap-4 text-sm text-slate-600">
+        {basics.email && (
+          <span className="flex items-center gap-1">
+            <Mail size={12} /> {basics.email}
+          </span>
+        )}
+        {basics.phone && (
+          <span className="flex items-center gap-1">
+            <Phone size={12} /> {basics.phone}
+          </span>
+        )}
+        {basics.location && (
+          <span className="flex items-center gap-1">
+            <MapPin size={12} />
+            {[basics.location.city, basics.location.countryCode].filter(Boolean).join(', ')}
+          </span>
+        )}
+        {basics.url && (
+          <span className="flex items-center gap-1">
+            <LinkIcon size={12} /> {basics.url.replace(/^https?:\/\//, '')}
+          </span>
+        )}
+      </div>
+      <div className="flex flex-wrap justify-center gap-4 text-sm text-slate-600 mt-2">
+        {basics.profiles?.map((profile, i) => (
+          <span key={i} className="flex items-center gap-1">
+            {profile.network}: {profile.url.replace(/^https?:\/\/(www\.)?/, '').split('/')[1]}
+          </span>
+        ))}
+      </div>
+    </header>
+  );
+});
+
 const AcademicTemplate: React.FC<TemplateProps> = ({
   data,
   themeColor = '#1e3a8a',
@@ -34,7 +96,7 @@ const AcademicTemplate: React.FC<TemplateProps> = ({
 }) => {
   const { basics, work, education, skills, projects, meta } = data;
 
-  const defaultOrder = ['summary', 'education', 'work', 'projects', 'skills'];
+  const defaultOrder = ['header', 'summary', 'education', 'work', 'projects', 'skills'];
 
   let mainOrder = defaultOrder;
   if (meta?.sectionOrder) {
@@ -61,6 +123,15 @@ const AcademicTemplate: React.FC<TemplateProps> = ({
 
   const renderSection = (id: string) => {
     switch (id) {
+      case 'header':
+        return (
+          <AcademicHeader
+            key={id}
+            basics={basics}
+            onUpdate={(newBasics) => onUpdate?.({ ...data, basics: newBasics })}
+            themeColor={themeColor}
+          />
+        );
       case 'summary':
         if (!basics.summary) return null;
         return (
@@ -269,57 +340,6 @@ const AcademicTemplate: React.FC<TemplateProps> = ({
 
   return (
     <div className="font-serif bg-white p-10 max-w-[210mm] mx-auto min-h-[297mm] shadow-sm print:shadow-none print:p-8 text-slate-900">
-      {/* Header */}
-      <header
-        className="text-center mb-8 pb-6 border-b-2 border-slate-300"
-        style={{ borderColor: themeColor }}
-      >
-        <InlineEdit
-          as="h1"
-          className="text-3xl font-bold uppercase tracking-wider mb-2 inline-block"
-          style={{ color: themeColor }}
-          value={basics.name || ''}
-          onSave={(val) => onUpdate?.({ ...data, basics: { ...basics, name: val } })}
-        />
-        <InlineEdit
-          as="p"
-          className="text-lg text-slate-600 italic mb-4 inline-block"
-          value={basics.label || ''}
-          onSave={(val) => onUpdate?.({ ...data, basics: { ...basics, label: val } })}
-        />
-
-        <div className="flex flex-wrap justify-center gap-4 text-sm text-slate-600">
-          {basics.email && (
-            <span className="flex items-center gap-1">
-              <Mail size={12} /> {basics.email}
-            </span>
-          )}
-          {basics.phone && (
-            <span className="flex items-center gap-1">
-              <Phone size={12} /> {basics.phone}
-            </span>
-          )}
-          {basics.location && (
-            <span className="flex items-center gap-1">
-              <MapPin size={12} />
-              {[basics.location.city, basics.location.countryCode].filter(Boolean).join(', ')}
-            </span>
-          )}
-          {basics.url && (
-            <span className="flex items-center gap-1">
-              <LinkIcon size={12} /> {basics.url.replace(/^https?:\/\//, '')}
-            </span>
-          )}
-        </div>
-        <div className="flex flex-wrap justify-center gap-4 text-sm text-slate-600 mt-2">
-          {basics.profiles?.map((profile, i) => (
-            <span key={i} className="flex items-center gap-1">
-              {profile.network}: {profile.url.replace(/^https?:\/\/(www\.)?/, '').split('/')[1]}
-            </span>
-          ))}
-        </div>
-      </header>
-
       {/* Main Content */}
       <div className="space-y-6">
         <DndContext

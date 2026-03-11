@@ -26,6 +26,84 @@ interface TemplateProps {
   onOrderChange?: (newSidebar: string[], newMain: string[]) => void;
 }
 
+const MinimalistHeader = React.memo(function MinimalistHeader({
+  basics,
+  onUpdate,
+  themeColor,
+}: {
+  basics: ResumeData['basics'];
+  onUpdate?: (basics: ResumeData['basics']) => void;
+  themeColor: string;
+}) {
+  return (
+    <header className="mb-16">
+      <InlineEdit
+        as="h1"
+        className="text-4xl font-light tracking-tight text-slate-900 mb-3 inline-block"
+        value={basics.name || ''}
+        onSave={(val) => onUpdate?.({ ...basics, name: val })}
+      />
+      <InlineEdit
+        as="p"
+        className="text-lg text-slate-500 mb-6 inline-block"
+        style={{ color: themeColor }}
+        value={basics.label || ''}
+        onSave={(val) => onUpdate?.({ ...basics, label: val })}
+      />
+
+      <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-500">
+        {basics.email && (
+          <a
+            href={`mailto:${basics.email}`}
+            className="flex items-center gap-1.5 hover:text-slate-900 transition-colors"
+          >
+            <Mail size={14} /> {basics.email}
+          </a>
+        )}
+        {basics.phone && (
+          <span className="flex items-center gap-1.5">
+            <Phone size={14} /> {basics.phone}
+          </span>
+        )}
+        {basics.location && (
+          <span className="flex items-center gap-1.5">
+            <MapPin size={14} />
+            {[basics.location.city, basics.location.countryCode].filter(Boolean).join(', ')}
+          </span>
+        )}
+        {basics.url && (
+          <a
+            href={basics.url}
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center gap-1.5 hover:text-slate-900 transition-colors"
+          >
+            <LinkIcon size={14} /> {basics.url.replace(/^https?:\/\//, '')}
+          </a>
+        )}
+        {basics.profiles?.map((profile, i) => (
+          <a
+            key={i}
+            href={profile.url}
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center gap-1.5 hover:text-slate-900 transition-colors"
+          >
+            {profile.network.toLowerCase().includes('github') ? (
+              <Github size={14} />
+            ) : profile.network.toLowerCase().includes('linkedin') ? (
+              <Linkedin size={14} />
+            ) : (
+              <LinkIcon size={14} />
+            )}
+            {profile.url.replace(/^https?:\/\/(www\.)?/, '').split('/')[1] || profile.network}
+          </a>
+        ))}
+      </div>
+    </header>
+  );
+});
+
 const MinimalistTemplate: React.FC<TemplateProps> = ({
   data,
   themeColor = '#1e293b',
@@ -34,7 +112,7 @@ const MinimalistTemplate: React.FC<TemplateProps> = ({
 }) => {
   const { basics, work, education, skills, projects, meta } = data;
 
-  const defaultOrder = ['summary', 'experience', 'projects', 'education', 'skills'];
+  const defaultOrder = ['header', 'summary', 'experience', 'projects', 'education', 'skills'];
 
   let mainOrder = defaultOrder;
   if (meta?.sectionOrder) {
@@ -61,6 +139,15 @@ const MinimalistTemplate: React.FC<TemplateProps> = ({
 
   const renderSection = (id: string) => {
     switch (id) {
+      case 'header':
+        return (
+          <MinimalistHeader
+            key={id}
+            basics={basics}
+            onUpdate={(newBasics) => onUpdate?.({ ...data, basics: newBasics })}
+            themeColor={themeColor}
+          />
+        );
       case 'summary':
         if (!basics.summary) return null;
         return (
@@ -271,73 +358,6 @@ const MinimalistTemplate: React.FC<TemplateProps> = ({
 
   return (
     <div className="bg-white p-12 max-w-[210mm] mx-auto min-h-[297mm] shadow-sm print:shadow-none print:p-8">
-      {/* Header */}
-      <header className="mb-16">
-        <InlineEdit
-          as="h1"
-          className="text-4xl font-light tracking-tight text-slate-900 mb-3 inline-block"
-          value={basics.name || ''}
-          onSave={(val) => onUpdate?.({ ...data, basics: { ...basics, name: val } })}
-        />
-        <InlineEdit
-          as="p"
-          className="text-lg text-slate-500 mb-6 inline-block"
-          style={{ color: themeColor }}
-          value={basics.label || ''}
-          onSave={(val) => onUpdate?.({ ...data, basics: { ...basics, label: val } })}
-        />
-
-        <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-500">
-          {basics.email && (
-            <a
-              href={`mailto:${basics.email}`}
-              className="flex items-center gap-1.5 hover:text-slate-900 transition-colors"
-            >
-              <Mail size={14} /> {basics.email}
-            </a>
-          )}
-          {basics.phone && (
-            <span className="flex items-center gap-1.5">
-              <Phone size={14} /> {basics.phone}
-            </span>
-          )}
-          {basics.location && (
-            <span className="flex items-center gap-1.5">
-              <MapPin size={14} />
-              {[basics.location.city, basics.location.countryCode].filter(Boolean).join(', ')}
-            </span>
-          )}
-          {basics.url && (
-            <a
-              href={basics.url}
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center gap-1.5 hover:text-slate-900 transition-colors"
-            >
-              <LinkIcon size={14} /> {basics.url.replace(/^https?:\/\//, '')}
-            </a>
-          )}
-          {basics.profiles?.map((profile, i) => (
-            <a
-              key={i}
-              href={profile.url}
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center gap-1.5 hover:text-slate-900 transition-colors"
-            >
-              {profile.network.toLowerCase().includes('github') ? (
-                <Github size={14} />
-              ) : profile.network.toLowerCase().includes('linkedin') ? (
-                <Linkedin size={14} />
-              ) : (
-                <LinkIcon size={14} />
-              )}
-              {profile.url.replace(/^https?:\/\/(www\.)?/, '').split('/')[1] || profile.network}
-            </a>
-          ))}
-        </div>
-      </header>
-
       {/* Main Content */}
       <div className="space-y-2">
         <DndContext
