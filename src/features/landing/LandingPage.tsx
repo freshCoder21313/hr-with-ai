@@ -23,7 +23,7 @@ const LandingPage: React.FC = () => {
         <div className="pt-4">
           <button
             onClick={() => navigate('/setup')}
-            className="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-primary-foreground bg-primary hover:bg-primary/90 transition-all transform hover:scale-105"
+            className="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-primary-foreground bg-primary hover:bg-primary/90 transition-all motion-safe:transform motion-safe:hover:scale-105"
           >
             Start Practice Now
             <ArrowRight className="ml-2 -mr-1 h-5 w-5" />

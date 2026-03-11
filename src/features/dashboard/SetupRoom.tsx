@@ -29,6 +29,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { db } from '@/lib/db';
 import ResumeList from './ResumeList';
 import { getErrorMessage } from '@/lib/utils';
+import { toast } from 'sonner';
 import SEO from '@/components/SEO';
 import ResumeAnalysisView from '@/features/resume-analysis/ResumeAnalysisView';
 
@@ -36,6 +37,7 @@ import JobRecommendationModal from '@/features/interview/JobRecommendationModal'
 import { useNavigate } from 'react-router-dom';
 import { TailorResumeModal } from './TailorResumeModal';
 import { LoadingButton } from '@/components/ui/loading-button';
+import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import {
   Dialog,
   DialogContent,
@@ -66,6 +68,19 @@ const SetupRoom: React.FC = () => {
 
   // Job Recommendation State
   const [isJobModalOpen, setIsJobModalOpen] = useState(false);
+
+  // Confirmation State
+  const [confirmState, setConfirmState] = useState<{
+    isOpen: boolean;
+    title: string;
+    description: string;
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: '',
+    description: '',
+    onConfirm: () => {},
+  });
 
   // Main CV Clone State
   const [showMainCVCloneDialog, setShowMainCVCloneDialog] = useState(false);
@@ -127,7 +142,7 @@ const SetupRoom: React.FC = () => {
 
   const handleSaveJob = async () => {
     if (!formData.jobTitle || !formData.company) {
-      alert('Please enter at least a Job Title and Company.');
+      toast.error('Please enter at least a Job Title and Company.');
       return;
     }
 
@@ -146,7 +161,7 @@ const SetupRoom: React.FC = () => {
       if (selectedJobId !== 'new') {
         // Update existing
         await db.jobs.update(parseInt(selectedJobId), baseJobData);
-        alert('Job updated successfully!');
+        toast.success('Job updated successfully!');
       } else {
         // Save as new
         const newJob: SavedJob = {
@@ -154,7 +169,7 @@ const SetupRoom: React.FC = () => {
           createdAt: timestamp,
         };
         const newId = await db.jobs.add(newJob);
-        alert('Job saved successfully!');
+        toast.success('Job saved successfully!');
 
         // Refresh list and select the new job
         await loadData();
@@ -165,24 +180,34 @@ const SetupRoom: React.FC = () => {
       loadData();
     } catch (error) {
       console.error('Failed to save job:', error);
-      alert('Failed to save job');
+      toast.error('Failed to save job');
     }
   };
 
   const handleDeleteJob = async (e: React.MouseEvent, id: number) => {
     e.preventDefault();
     e.stopPropagation(); // Prevent selection
-    if (!confirm('Delete this saved job template?')) return;
 
-    try {
-      await db.jobs.delete(id);
-      if (selectedJobId === id.toString()) {
-        setSelectedJobId('new');
-      }
-      loadData();
-    } catch (error) {
-      console.error('Failed to delete job:', error);
-    }
+    setConfirmState({
+      isOpen: true,
+      title: 'Delete Job Template',
+      description: 'Are you sure you want to delete this saved job template?',
+      onConfirm: async () => {
+        try {
+          await db.jobs.delete(id);
+          if (selectedJobId === id.toString()) {
+            setSelectedJobId('new');
+          }
+          loadData();
+          toast.success('Job deleted successfully');
+        } catch (error) {
+          console.error('Failed to delete job:', error);
+          toast.error('Failed to delete job');
+        } finally {
+          setConfirmState((prev) => ({ ...prev, isOpen: false }));
+        }
+      },
+    });
   };
 
   const handleSelectSavedJob = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -234,7 +259,7 @@ const SetupRoom: React.FC = () => {
         setFormData((prev) => ({ ...prev, resumeText: savedResume.rawText }));
       } catch (error) {
         console.error('Failed to clone resume:', error);
-        alert('Failed to clone resume');
+        toast.error('Failed to clone resume');
         // Fallback to original
         setSelectedResumeId(pendingMainResume.id);
         setFormData((prev) => ({ ...prev, resumeText: pendingMainResume.rawText }));
@@ -252,19 +277,27 @@ const SetupRoom: React.FC = () => {
   };
 
   const handleDeleteResume = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this resume?')) return;
-
-    try {
-      await db.resumes.delete(id);
-      setSavedResumes((prev) => prev.filter((r) => r.id !== id));
-      if (selectedResumeId === id) {
-        setSelectedResumeId(undefined);
-        setFormData((prev) => ({ ...prev, resumeText: '' }));
-      }
-    } catch (error) {
-      console.error('Failed to delete resume:', error);
-      alert('Failed to delete resume');
-    }
+    setConfirmState({
+      isOpen: true,
+      title: 'Delete Resume',
+      description: 'Are you sure you want to delete this resume?',
+      onConfirm: async () => {
+        try {
+          await db.resumes.delete(id);
+          setSavedResumes((prev) => prev.filter((r) => r.id !== id));
+          if (selectedResumeId === id) {
+            setSelectedResumeId(undefined);
+            setFormData((prev) => ({ ...prev, resumeText: '' }));
+          }
+          toast.success('Resume deleted successfully');
+        } catch (error) {
+          console.error('Failed to delete resume:', error);
+          toast.error('Failed to delete resume');
+        } finally {
+          setConfirmState((prev) => ({ ...prev, isOpen: false }));
+        }
+      },
+    });
   };
 
   const handleToggleMain = async (resume: Resume) => {
@@ -300,7 +333,7 @@ const SetupRoom: React.FC = () => {
 
     const config = getStoredAIConfig();
     if (!config.apiKey) {
-      alert('Please set your API Key first.');
+      toast.error('Please set your API Key first.');
       return;
     }
 
@@ -333,19 +366,19 @@ const SetupRoom: React.FC = () => {
       navigate(`/resumes/${newId}/edit`);
     } catch (error) {
       console.error(error);
-      alert('Failed to tailor resume: ' + getErrorMessage(error));
+      toast.error('Failed to tailor resume: ' + getErrorMessage(error));
     }
   };
 
   const handleAutoFill = async () => {
     if (!formData.jobDescription.trim()) {
-      alert('Please enter a Job Description first.');
+      toast.error('Please enter a Job Description first.');
       return;
     }
 
     const config = getStoredAIConfig();
     if (!config.apiKey) {
-      alert('Please set your API Key first.');
+      toast.error('Please set your API Key first.');
       return;
     }
 
@@ -362,7 +395,7 @@ const SetupRoom: React.FC = () => {
         interviewContext: extracted.interviewContext || prev.interviewContext,
       }));
     } catch (error) {
-      alert('Failed to extract info: ' + getErrorMessage(error));
+      toast.error('Failed to extract info: ' + getErrorMessage(error));
     } finally {
       setIsExtracting(false);
     }
@@ -370,13 +403,13 @@ const SetupRoom: React.FC = () => {
 
   const handleResearchCompany = async () => {
     if (!formData.company.trim()) {
-      alert('Please enter a Company name first.');
+      toast.error('Please enter a Company name first.');
       return;
     }
 
     const config = getStoredAIConfig();
     if (!config.apiKey) {
-      alert('Please set your API Key first.');
+      toast.error('Please set your API Key first.');
       return;
     }
 
@@ -389,9 +422,9 @@ const SetupRoom: React.FC = () => {
         // We can also append culture info to interviewerPersona or interviewContext
         interviewContext: `${intel.suggestedContext || prev.interviewContext}\n\nCulture: ${intel.culture}\nLatest News: ${intel.latestNews}`,
       }));
-      alert(`Research for ${formData.company} complete! Form updated.`);
+      toast.success(`Research for ${formData.company} complete! Form updated.`);
     } catch (error) {
-      alert('Failed to research company: ' + getErrorMessage(error));
+      toast.error('Failed to research company: ' + getErrorMessage(error));
     } finally {
       setIsResearching(false);
     }
@@ -421,7 +454,7 @@ const SetupRoom: React.FC = () => {
       setFormData((prev) => ({ ...prev, resumeText: text }));
       setResumeAnalysis(null); // Reset analysis on new upload
     } catch (error) {
-      alert('Failed to parse resume: ' + getErrorMessage(error));
+      toast.error('Failed to parse resume: ' + getErrorMessage(error));
     } finally {
       setIsParsing(false);
       e.target.value = '';
@@ -430,13 +463,13 @@ const SetupRoom: React.FC = () => {
 
   const handleAnalyzeResume = async () => {
     if (!formData.resumeText || !formData.jobDescription) {
-      alert('Please provide both Resume content and Job Description.');
+      toast.error('Please provide both Resume content and Job Description.');
       return;
     }
 
     const config = getStoredAIConfig();
     if (!config.apiKey) {
-      alert('Please set your API Key first.');
+      toast.error('Please set your API Key first.');
       return;
     }
 
@@ -450,7 +483,7 @@ const SetupRoom: React.FC = () => {
       );
       setResumeAnalysis(analysis);
     } catch (error) {
-      alert('Analysis failed: ' + (error instanceof Error ? error.message : String(error)));
+      toast.error('Analysis failed: ' + (error instanceof Error ? error.message : String(error)));
     } finally {
       setIsAnalyzing(false);
     }
@@ -911,6 +944,15 @@ const SetupRoom: React.FC = () => {
         onClose={() => setIsTailorModalOpen(false)}
         sourceResume={resumeToTailor}
         onGenerate={handleGenerateTailoredResume}
+      />
+
+      <ConfirmationDialog
+        isOpen={confirmState.isOpen}
+        title={confirmState.title}
+        description={confirmState.description}
+        onConfirm={confirmState.onConfirm}
+        onCancel={() => setConfirmState((prev) => ({ ...prev, isOpen: false }))}
+        isDestructive={true}
       />
     </div>
   );
