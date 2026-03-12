@@ -39,15 +39,12 @@ const MinimalistHeader = React.memo(function MinimalistHeader({
     <header className="mb-16">
       <InlineEdit
         as="h1"
-        className="text-4xl font-light tracking-tight text-slate-900 mb-3 inline-block"
-        value={basics.name || ''}
+        className="text-4xl font-light tracking-tight text-slate-900 mb-3 block w-full" value={basics.name || ''}
         onSave={(val) => onUpdate?.({ ...basics, name: val })}
       />
       <InlineEdit
         as="p"
-        className="text-lg text-slate-500 mb-6 inline-block"
-        style={{ color: themeColor }}
-        value={basics.label || ''}
+        className="text-lg text-slate-500 mb-6 block w-full" style={{ color: themeColor }} value={basics.label || ''}
         onSave={(val) => onUpdate?.({ ...basics, label: val })}
       />
 

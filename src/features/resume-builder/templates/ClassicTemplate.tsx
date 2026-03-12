@@ -20,22 +20,24 @@ import { InlineEdit } from '../components/InlineEdit';
 import { MapPin, Mail, Phone, Link as LinkIcon, Linkedin, Github } from 'lucide-react';
 
 interface TemplateProps {
+  themeColor?: string;
   onUpdate?: (newData: import('@/types/resume').ResumeData) => void;
   data: ResumeData;
   onOrderChange?: (newSidebar: string[], newMain: string[]) => void;
 }
 
-const SummarySection = React.memo(function SummarySection({
+const SummarySection = React.memo(function SummarySection({ themeColor,
   summary,
   onUpdate,
 }: {
   summary?: string;
   onUpdate?: (summary: string) => void;
+  themeColor?: string;
 }) {
   if (!summary) return null;
   return (
     <section className="mb-6 break-inside-avoid">
-      <h2 className="text-lg font-bold uppercase border-b border-slate-300 mb-3 pb-1">
+      <h2 className="text-lg font-bold uppercase border-b border-slate-300 mb-3 pb-1" style={{ color: themeColor }}>
         Professional Summary
       </h2>
       <div className="text-slate-700 leading-relaxed text-sm text-justify">
@@ -180,12 +182,13 @@ const ProjectsSection = React.memo(function ProjectsSection({
   );
 });
 
-const EducationSection = React.memo(function EducationSection({
+const EducationSection = React.memo(function EducationSection({ themeColor,
   education,
   onUpdate,
 }: {
   education: ResumeData['education'];
   onUpdate?: (education: ResumeData['education']) => void;
+  themeColor?: string;
 }) {
   if (!education || education.length === 0) return null;
   return (
@@ -243,25 +246,24 @@ const SkillsSection = React.memo(function SkillsSection({
   );
 });
 
-const HeaderSection = React.memo(function HeaderSection({
+const HeaderSection = React.memo(function HeaderSection({ themeColor,
   basics,
   onUpdate,
 }: {
   basics: ResumeData['basics'];
   onUpdate?: (basics: ResumeData['basics']) => void;
+  themeColor?: string;
 }) {
   return (
     <header className="border-b-2 border-slate-800 pb-4 mb-6">
       <InlineEdit
         as="h1"
-        className="text-4xl font-bold uppercase tracking-wide mb-2 inline-block"
-        value={basics.name || ''}
+        className="text-4xl font-bold uppercase tracking-wide mb-2 block w-full" style={{ color: themeColor }} value={basics.name || ''}
         onSave={(val) => onUpdate?.({ ...basics, name: val })}
       />
       <InlineEdit
         as="p"
-        className="text-xl text-slate-600 mb-4 inline-block"
-        value={basics.label || ''}
+        className="text-xl text-slate-600 mb-4 block w-full" value={basics.label || ''}
         onSave={(val) => onUpdate?.({ ...basics, label: val })}
       />
 
@@ -304,7 +306,7 @@ const HeaderSection = React.memo(function HeaderSection({
   );
 });
 
-const ClassicTemplate: React.FC<TemplateProps> = ({ data, onUpdate, onOrderChange }) => {
+const ClassicTemplate: React.FC<TemplateProps> = ({ data, onUpdate, onOrderChange, themeColor = '#1e293b' }) => {
   const { basics, work, education, skills, projects, meta } = data;
 
   const defaultOrder = ['header', 'summary', 'experience', 'projects', 'education', 'skills'];
@@ -339,6 +341,7 @@ const ClassicTemplate: React.FC<TemplateProps> = ({ data, onUpdate, onOrderChang
           <SummarySection
             key={id}
             summary={basics.summary}
+            themeColor={themeColor}
             onUpdate={(summary) => onUpdate?.({ ...data, basics: { ...basics, summary } })}
           />
         );
@@ -364,6 +367,7 @@ const ClassicTemplate: React.FC<TemplateProps> = ({ data, onUpdate, onOrderChang
           <EducationSection
             key={id}
             education={education}
+            themeColor={themeColor}
             onUpdate={(educationData) => onUpdate?.({ ...data, education: educationData })}
           />
         );

@@ -20,6 +20,7 @@ import {
 } from '@dnd-kit/sortable';
 
 interface TemplateProps {
+  themeColor?: string;
   onUpdate?: (newData: import('@/types/resume').ResumeData) => void;
   data: ResumeData;
   onOrderChange?: (newSidebar: string[], newMain: string[]) => void;
@@ -113,15 +114,17 @@ const SummarySection = React.memo(function SummarySection({
 const WorkSection = React.memo(function WorkSection({
   work,
   onUpdate,
+  themeColor,
 }: {
   work: ResumeData['work'];
   onUpdate?: (work: ResumeData['work']) => void;
+  themeColor?: string;
 }) {
   if (!work || work.length === 0) return null;
   return (
     <section className="mb-12 break-inside-avoid">
       <h2 className="text-sm font-bold text-slate-900 uppercase tracking-widest mb-6 flex items-center gap-3">
-        <span className="w-8 h-1 bg-blue-600 rounded-full"></span> Experience
+        <span className="w-8 h-1 rounded-full" style={{ backgroundColor: themeColor }}></span> Experience
       </h2>
       <div className="space-y-8 relative pl-2">
         <div className="absolute left-[3px] top-2 bottom-2 w-[2px] bg-slate-100"></div>
@@ -145,7 +148,7 @@ const WorkSection = React.memo(function WorkSection({
             </div>
             <InlineEdit
               as="p"
-              className="text-sm font-medium text-blue-600 mb-3 inline-block"
+              className="text-sm font-medium mb-3 inline-block" style={{ color: themeColor }}
               value={job.name || ''}
               onSave={(val) => {
                 const newWork = [...work];
@@ -185,17 +188,19 @@ const WorkSection = React.memo(function WorkSection({
 });
 
 const ProjectsSection = React.memo(function ProjectsSection({
-  onUpdate,
   projects,
+  onUpdate,
+  themeColor,
 }: {
   projects: ResumeData['projects'];
   onUpdate?: (projects: ResumeData['projects']) => void;
+  themeColor?: string;
 }) {
   if (!projects || projects.length === 0) return null;
   return (
     <section className="mb-12 break-inside-avoid">
       <h2 className="text-sm font-bold text-slate-900 uppercase tracking-widest mb-6 flex items-center gap-3">
-        <span className="w-8 h-1 bg-blue-600 rounded-full"></span> Projects
+        <span className="w-8 h-1 rounded-full" style={{ backgroundColor: themeColor }}></span> Projects
       </h2>
       <div className="grid grid-cols-1 gap-6">
         {projects.map((project, i) => (
@@ -302,9 +307,11 @@ const SidebarContactInfo = React.memo(function SidebarContactInfo({
 const MainHeader = React.memo(function MainHeader({
   basics,
   onUpdate,
+  themeColor,
 }: {
   basics: ResumeData['basics'];
   onUpdate?: (basics: ResumeData['basics']) => void;
+  themeColor?: string;
 }) {
   return (
     <header className="mb-10 pb-8 border-b border-slate-200">
@@ -321,14 +328,12 @@ const MainHeader = React.memo(function MainHeader({
         <div className="flex-1 min-w-0 pt-2">
           <InlineEdit
             as="h1"
-            className="text-4xl font-extrabold text-slate-900 tracking-tight leading-none mb-3 break-words inline-block"
-            value={basics.name || ''}
+            className="text-4xl font-extrabold text-slate-900 tracking-tight leading-none mb-3 break-words block w-full" value={basics.name || ''}
             onSave={(val) => onUpdate?.({ ...basics, name: val })}
           />
           <InlineEdit
             as="p"
-            className="text-xl text-blue-600 font-semibold tracking-wide uppercase text-sm mb-4 inline-block"
-            value={basics.label || ''}
+            className="text-xl font-semibold tracking-wide uppercase text-sm mb-4 block w-full" style={{ color: themeColor }} value={basics.label || ''}
             onSave={(val) => onUpdate?.({ ...basics, label: val })}
           />
         </div>
@@ -337,7 +342,7 @@ const MainHeader = React.memo(function MainHeader({
   );
 });
 
-const ModernTemplate: React.FC<TemplateProps> = ({ data, onUpdate, onOrderChange }) => {
+const ModernTemplate: React.FC<TemplateProps> = ({ data, onUpdate, onOrderChange, themeColor = '#2563eb' }) => {
   const { basics, work, education, skills, projects, meta } = data;
 
   const defaultSidebar = ['education', 'skills', 'contact'];

@@ -47,15 +47,12 @@ const CreativeSidebarHeader = React.memo(function CreativeSidebarHeader({
       )}
       <InlineEdit
         as="h1"
-        className="text-2xl font-bold tracking-wide mb-2 text-white inline-block"
-        value={basics.name || ''}
+        className="text-2xl font-bold tracking-wide mb-2 text-white block w-full" value={basics.name || ''}
         onSave={(val) => onUpdate?.({ ...basics, name: val })}
       />
       <InlineEdit
         as="p"
-        className="text-sm font-medium tracking-wider uppercase opacity-80 inline-block"
-        style={{ color: primaryColor }}
-        value={basics.label || ''}
+        className="text-sm font-medium tracking-wider uppercase opacity-80 block w-full" style={{ color: primaryColor }} value={basics.label || ''}
         onSave={(val) => onUpdate?.({ ...basics, label: val })}
       />
     </div>

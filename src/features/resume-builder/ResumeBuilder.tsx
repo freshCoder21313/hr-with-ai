@@ -19,6 +19,7 @@ import {
   List,
   Languages,
   Type as TypeIcon,
+  Palette,
 } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ResumePreview from './ResumePreview';
@@ -258,15 +259,24 @@ const ResumeBuilder: React.FC = () => {
     });
   };
 
+    const handleThemeColorChange = (color: string) => {
+    if (!data || !id) return;
+    const newData = { ...data, meta: { ...data.meta, themeColor: color } };
+    setData(newData);
+    db.resumes.update(parseInt(id), { parsedData: newData });
+  };
+
   const handleFontChange = (fontFamily: 'sans' | 'serif' | 'mono') => {
-    if (!data) return;
-    setData({
+    if (!data || !id) return;
+    const newData = {
       ...data,
       meta: {
         ...data.meta,
         fontFamily,
       },
-    });
+    };
+    setData(newData);
+    db.resumes.update(parseInt(id), { parsedData: newData });
   };
 
   const handlePrint = () => {
@@ -556,6 +566,61 @@ const ResumeBuilder: React.FC = () => {
                     <DropdownMenuItem onClick={() => setTemplate('academic')}>
                       Academic
                     </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                
+                <DropdownMenu>
+                  <Tooltip delayDuration={0}>
+                    <TooltipTrigger asChild>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-10 w-10 rounded-full bg-background shadow-sm hover:shadow-md transition-all relative overflow-hidden group"
+                        >
+                          <Palette className="w-5 h-5 z-10" />
+                          <div 
+                            className="absolute inset-0 opacity-20 group-hover:opacity-40 transition-opacity" 
+                            style={{ backgroundColor: data?.meta?.themeColor || '#2563eb' }}
+                          />
+                        </Button>
+                      </DropdownMenuTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent side="right">
+                      <p>Change Theme Color</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  <DropdownMenuContent side="right" align="start" className="w-48 p-2">
+                    <div className="grid grid-cols-4 gap-2">
+                      {[
+                        '#2563eb', // Blue
+                        '#1e40af', // Dark Blue
+                        '#0f172a', // Slate
+                        '#059669', // Emerald
+                        '#16a34a', // Green
+                        '#d97706', // Amber
+                        '#ea580c', // Orange
+                        '#dc2626', // Red
+                        '#e11d48', // Rose
+                        '#c026d3', // Rose/Pink
+                        '#9333ea', // Fuchsia
+                        '#7c3aed', // Purple
+                        '#4f46e5', // Violet
+                        '#0891b2', // Cyan
+                        '#0d9488', // Teal
+                        '#0284c7', // Light Blue
+                      ].map((color) => (
+                        <button
+                          key={color}
+                          className="w-8 h-8 rounded-full border border-border shadow-sm hover:scale-110 transition-transform focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                          style={{ backgroundColor: color }}
+                          onClick={() => handleThemeColorChange(color)}
+                          title={color}
+                        />
+                      ))}
+                    </div>
+                    <div className="col-span-4 mt-2 text-xs text-muted-foreground text-center">Color applied to all templates</div>
                   </DropdownMenuContent>
                 </DropdownMenu>
 

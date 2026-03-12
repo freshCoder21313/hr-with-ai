@@ -42,15 +42,12 @@ const AcademicHeader = React.memo(function AcademicHeader({
     >
       <InlineEdit
         as="h1"
-        className="text-3xl font-bold uppercase tracking-wider mb-2 inline-block"
-        style={{ color: themeColor }}
-        value={basics.name || ''}
+        className="text-3xl font-bold uppercase tracking-wider mb-2 block w-full" style={{ color: themeColor }} value={basics.name || ''}
         onSave={(val) => onUpdate?.({ ...basics, name: val })}
       />
       <InlineEdit
         as="p"
-        className="text-lg text-slate-600 italic mb-4 inline-block"
-        value={basics.label || ''}
+        className="text-lg text-slate-600 italic mb-4 block w-full" value={basics.label || ''}
         onSave={(val) => onUpdate?.({ ...basics, label: val })}
       />
 

@@ -50,7 +50,7 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({
         return <AcademicTemplate data={data} themeColor={themeColor} onUpdate={onUpdate} />;
       case 'modern':
       default:
-        return <ModernTemplate data={data} onUpdate={onUpdate} onOrderChange={handleOrderChange} />;
+        return <ModernTemplate data={data} themeColor={themeColor} onUpdate={onUpdate} onOrderChange={handleOrderChange} />;
     }
   };
 
