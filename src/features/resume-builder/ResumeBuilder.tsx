@@ -20,7 +20,9 @@ import {
   Languages,
   Type as TypeIcon,
   Palette,
+  Sliders,
 } from 'lucide-react';
+import StyleEditorPanel from './components/StyleEditorPanel';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ResumePreview from './ResumePreview';
 import SectionReorderDialog from './components/SectionReorderDialog';
@@ -65,6 +67,7 @@ const ResumeBuilder: React.FC = () => {
   const [isTranslating, setIsTranslating] = useState(false);
   const [viewLanguage, setViewLanguage] = useState<'vi' | 'en'>('en');
   const [runTour, setRunTour] = useState(false);
+  const [showStyleEditor, setShowStyleEditor] = useState(false);
 
   const tourSteps: Step[] = [
     {
@@ -259,7 +262,7 @@ const ResumeBuilder: React.FC = () => {
     });
   };
 
-    const handleThemeColorChange = (color: string) => {
+  const handleThemeColorChange = (color: string) => {
     if (!data || !id) return;
     const newData = { ...data, meta: { ...data.meta, themeColor: color } };
     setData(newData);
@@ -334,14 +337,14 @@ const ResumeBuilder: React.FC = () => {
       />
       {/* Hidden Print Container */}
       <div className="hidden print:block print:absolute print:inset-0 print:z-[9999] print:bg-white">
-        <ResumePreview 
-            data={data} 
-            template={template} 
-            onUpdate={(newData) => {
-              setData(newData);
-              db.resumes.update(parseInt(id!), { parsedData: newData });
-            }}
-          />
+        <ResumePreview
+          data={data}
+          template={template}
+          onUpdate={(newData) => {
+            setData(newData);
+            db.resumes.update(parseInt(id!), { parsedData: newData });
+          }}
+        />
       </div>
 
       <SectionReorderDialog
@@ -350,6 +353,21 @@ const ResumeBuilder: React.FC = () => {
         data={{ ...data, meta: { ...data.meta, template } }}
         onSave={handleOrderSave}
       />
+
+      {showStyleEditor && (
+        <StyleEditorPanel
+          data={data}
+          onUpdate={(updater) => {
+            setData((prev) => {
+              if (!prev) return prev;
+              const newData = updater(prev);
+              db.resumes.update(parseInt(id!), { parsedData: newData });
+              return newData;
+            });
+          }}
+          onClose={() => setShowStyleEditor(false)}
+        />
+      )}
 
       {/* Main UI */}
       <Joyride
@@ -436,6 +454,17 @@ const ResumeBuilder: React.FC = () => {
               </Button>
             </div>
 
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowStyleEditor(!showStyleEditor)}
+              className="mr-2"
+            >
+              <Sliders className="w-4 h-4 mr-2 md:hidden" />
+              <Sliders className="w-4 h-4 mr-2 hidden md:block" />
+              <span className="hidden md:inline">Settings</span>
+            </Button>
+
             {(showPreview || isSplitView) && (
               <div className="flex md:hidden items-center gap-2">
                 <DropdownMenu>
@@ -501,14 +530,14 @@ const ResumeBuilder: React.FC = () => {
                 </div>
                 <div className="flex-1 overflow-y-auto p-8 flex justify-center">
                   <div className="scale-[0.65] origin-top shadow-xl w-full max-w-[210mm]">
-                    <ResumePreview 
-    data={debouncedData || data} 
-    template={template} 
-    onUpdate={(newData) => {
-      setData(newData);
-      db.resumes.update(parseInt(id!), { parsedData: newData });
-    }}
-  />
+                    <ResumePreview
+                      data={debouncedData || data}
+                      template={template}
+                      onUpdate={(newData) => {
+                        setData(newData);
+                        db.resumes.update(parseInt(id!), { parsedData: newData });
+                      }}
+                    />
                   </div>
                 </div>
               </div>
@@ -569,7 +598,6 @@ const ResumeBuilder: React.FC = () => {
                   </DropdownMenuContent>
                 </DropdownMenu>
 
-                
                 <DropdownMenu>
                   <Tooltip delayDuration={0}>
                     <TooltipTrigger asChild>
@@ -580,8 +608,8 @@ const ResumeBuilder: React.FC = () => {
                           className="h-10 w-10 rounded-full bg-background shadow-sm hover:shadow-md transition-all relative overflow-hidden group"
                         >
                           <Palette className="w-5 h-5 z-10" />
-                          <div 
-                            className="absolute inset-0 opacity-20 group-hover:opacity-40 transition-opacity" 
+                          <div
+                            className="absolute inset-0 opacity-20 group-hover:opacity-40 transition-opacity"
                             style={{ backgroundColor: data?.meta?.themeColor || '#2563eb' }}
                           />
                         </Button>
@@ -620,7 +648,9 @@ const ResumeBuilder: React.FC = () => {
                         />
                       ))}
                     </div>
-                    <div className="col-span-4 mt-2 text-xs text-muted-foreground text-center">Color applied to all templates</div>
+                    <div className="col-span-4 mt-2 text-xs text-muted-foreground text-center">
+                      Color applied to all templates
+                    </div>
                   </DropdownMenuContent>
                 </DropdownMenu>
 
@@ -658,14 +688,14 @@ const ResumeBuilder: React.FC = () => {
               {/* Main Preview Area */}
               <div className="flex-1 overflow-y-auto p-8 flex justify-center">
                 <div className="scale-[0.8] md:scale-90 origin-top shadow-2xl h-fit">
-                  <ResumePreview 
-    data={debouncedData || data} 
-    template={template} 
-    onUpdate={(newData) => {
-      setData(newData);
-      db.resumes.update(parseInt(id!), { parsedData: newData });
-    }}
-  />
+                  <ResumePreview
+                    data={debouncedData || data}
+                    template={template}
+                    onUpdate={(newData) => {
+                      setData(newData);
+                      db.resumes.update(parseInt(id!), { parsedData: newData });
+                    }}
+                  />
                 </div>
               </div>
 

@@ -120,5 +120,12 @@ export interface ResumeData {
       main: string[]; // e.g. ['summary', 'work', 'projects']
       sidebar?: string[]; // e.g. ['skills', 'education']
     };
+    customStyles?: {
+      name?: { fontSize?: string; color?: string; fontFamily?: string; fontWeight?: string };
+      headings?: { fontSize?: string; color?: string; fontFamily?: string; fontWeight?: string };
+      body?: { fontSize?: string; color?: string; fontFamily?: string; lineHeight?: string };
+      globalText?: { color?: string };
+      spacing?: { sectionGap?: string; itemGap?: string };
+    };
   };
 }

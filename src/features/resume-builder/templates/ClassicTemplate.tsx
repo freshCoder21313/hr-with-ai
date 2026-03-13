@@ -37,10 +37,10 @@ const SummarySection = React.memo(function SummarySection({ themeColor,
   if (!summary) return null;
   return (
     <section className="mb-6 break-inside-avoid">
-      <h2 className="text-lg font-bold uppercase border-b border-slate-300 mb-3 pb-1" style={{ color: themeColor }}>
+      <h2 className="uppercase border-b border-slate-300 mb-3 pb-1" style={{ color: 'var(--color-heading)', fontSize: 'var(--size-heading)', fontFamily: 'var(--font-heading)', fontWeight: 'var(--weight-heading)' }}>
         Professional Summary
       </h2>
-      <div className="text-slate-700 leading-relaxed text-sm text-justify">
+      <div className="text-slate-700 text-justify" style={{ fontSize: 'var(--size-body)', fontFamily: 'var(--font-body)', color: 'var(--color-body)', lineHeight: 'var(--lh-body)' }}>
         <InlineEdit
           as="div"
           multiline
@@ -62,17 +62,18 @@ const WorkSection = React.memo(function WorkSection({
 }) {
   if (!work || work.length === 0) return null;
   return (
-    <section className="mb-6 break-inside-avoid">
-      <h2 className="text-lg font-bold uppercase border-b border-slate-300 mb-4 pb-1">
+    <section className="break-inside-avoid" style={{ marginBottom: 'var(--spacing-section)' }}>
+      <h2 className="uppercase border-b border-slate-300 mb-4 pb-1" style={{ color: 'var(--color-heading)', fontSize: 'var(--size-heading)', fontFamily: 'var(--font-heading)', fontWeight: 'var(--weight-heading)' }}>
         Experience
       </h2>
-      <div className="space-y-5">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-item)' }}>
         {work.map((job, i) => (
           <div key={i}>
             <div className="flex justify-between items-baseline mb-1">
               <InlineEdit
                 as="h3"
-                className="font-bold text-base inline-block"
+                className="font-bold inline-block"
+                style={{ fontSize: 'calc(var(--size-body) * 1.15)', color: 'var(--color-body)' }}
                 value={job.name || ''}
                 onSave={(val) => {
                   const newWork = [...work];
@@ -87,7 +88,8 @@ const WorkSection = React.memo(function WorkSection({
             <div className="flex justify-between items-baseline mb-2">
               <InlineEdit
                 as="p"
-                className="font-semibold text-sm text-slate-700 inline-block"
+                className="font-semibold inline-block"
+                style={{ fontSize: 'var(--size-body)', color: 'var(--color-body)' }}
                 value={job.position || ''}
                 onSave={(val) => {
                   const newWork = [...work];
@@ -99,7 +101,8 @@ const WorkSection = React.memo(function WorkSection({
             <InlineEdit
               as="p"
               multiline
-              className="text-sm text-slate-600 mb-2 w-full"
+              className="mb-2 w-full"
+              style={{ fontSize: 'calc(var(--size-body) * 0.95)', color: 'var(--color-body)', lineHeight: 'var(--lh-body)' }}
               value={job.summary || ''}
               onSave={(val) => {
                 const newWork = [...work];
@@ -110,7 +113,7 @@ const WorkSection = React.memo(function WorkSection({
             {job.highlights && job.highlights.length > 0 && (
               <ul className="list-disc ml-5 space-y-1">
                 {job.highlights.map((highlight, idx) => (
-                  <li key={idx} className="text-sm text-slate-600">
+                  <li key={idx} style={{ fontSize: 'calc(var(--size-body) * 0.95)', color: 'var(--color-body)', lineHeight: 'var(--lh-body)' }}>
                     {highlight}
                   </li>
                 ))}
@@ -132,13 +135,13 @@ const ProjectsSection = React.memo(function ProjectsSection({
 }) {
   if (!projects || projects.length === 0) return null;
   return (
-    <section className="mb-6 break-inside-avoid">
-      <h2 className="text-lg font-bold uppercase border-b border-slate-300 mb-4 pb-1">Projects</h2>
-      <div className="space-y-4">
+    <section className="break-inside-avoid" style={{ marginBottom: 'var(--spacing-section)' }}>
+      <h2 className="uppercase border-b border-slate-300 mb-4 pb-1" style={{ color: 'var(--color-heading)', fontSize: 'var(--size-heading)', fontFamily: 'var(--font-heading)', fontWeight: 'var(--weight-heading)' }}>Projects</h2>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-item)' }}>
         {projects.map((project, i) => (
           <div key={i}>
             <div className="flex justify-between items-baseline mb-1">
-              <h3 className="font-bold text-base">
+              <h3 className="font-bold" style={{ fontSize: 'calc(var(--size-body) * 1.15)', color: 'var(--color-body)' }}>
                 {project.name}
                 {project.url && (
                   <a
@@ -158,7 +161,8 @@ const ProjectsSection = React.memo(function ProjectsSection({
             <InlineEdit
               as="p"
               multiline
-              className="text-sm text-slate-600 mb-2 w-full"
+              className="mb-2 w-full"
+              style={{ fontSize: 'calc(var(--size-body) * 0.95)', color: 'var(--color-body)', lineHeight: 'var(--lh-body)' }}
               value={project.description || ''}
               onSave={(val) => {
                 const newProjects = [...projects];
@@ -169,7 +173,7 @@ const ProjectsSection = React.memo(function ProjectsSection({
             {project.highlights && project.highlights.length > 0 && (
               <ul className="list-disc ml-5 space-y-1">
                 {project.highlights.map((highlight, idx) => (
-                  <li key={idx} className="text-sm text-slate-600">
+                  <li key={idx} style={{ fontSize: 'calc(var(--size-body) * 0.95)', color: 'var(--color-body)', lineHeight: 'var(--lh-body)' }}>
                     {highlight}
                   </li>
                 ))}
@@ -192,15 +196,16 @@ const EducationSection = React.memo(function EducationSection({ themeColor,
 }) {
   if (!education || education.length === 0) return null;
   return (
-    <section className="mb-6 break-inside-avoid">
-      <h2 className="text-lg font-bold uppercase border-b border-slate-300 mb-4 pb-1">Education</h2>
-      <div className="space-y-3">
+    <section className="break-inside-avoid" style={{ marginBottom: 'var(--spacing-section)' }}>
+      <h2 className="uppercase border-b border-slate-300 mb-4 pb-1" style={{ color: 'var(--color-heading)', fontSize: 'var(--size-heading)', fontFamily: 'var(--font-heading)', fontWeight: 'var(--weight-heading)' }}>Education</h2>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-item)' }}>
         {education.map((edu, i) => (
           <div key={i}>
             <div className="flex justify-between items-baseline">
               <InlineEdit
                 as="h3"
-                className="font-bold text-base inline-block"
+                className="font-bold inline-block"
+                style={{ fontSize: 'calc(var(--size-body) * 1.15)', color: 'var(--color-body)' }}
                 value={edu.institution || ''}
                 onSave={(val) => {
                   const newEdu = [...education];
@@ -213,7 +218,7 @@ const EducationSection = React.memo(function EducationSection({ themeColor,
               </span>
             </div>
             <div className="flex justify-between">
-              <p className="text-sm text-slate-700">
+              <p style={{ fontSize: 'var(--size-body)', color: 'var(--color-body)' }}>
                 {edu.studyType} in {edu.area}
               </p>
               {edu.score && <span className="text-sm text-slate-500">GPA: {edu.score}</span>}
@@ -232,13 +237,13 @@ const SkillsSection = React.memo(function SkillsSection({
 }) {
   if (!skills || skills.length === 0) return null;
   return (
-    <section>
-      <h2 className="text-lg font-bold uppercase border-b border-slate-300 mb-4 pb-1">Skills</h2>
-      <div className="grid grid-cols-1 gap-y-2 gap-x-8">
+    <section style={{ marginBottom: 'var(--spacing-section)' }}>
+      <h2 className="uppercase border-b border-slate-300 mb-4 pb-1" style={{ color: 'var(--color-heading)', fontSize: 'var(--size-heading)', fontFamily: 'var(--font-heading)', fontWeight: 'var(--weight-heading)' }}>Skills</h2>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr', rowGap: 'calc(var(--spacing-item) * 0.75)' }}>
         {skills.map((skill, i) => (
           <div key={i} className="flex flex-col sm:items-baseline">
-            <span className="font-bold text-sm min-w-[120px]">{skill.name}:</span>
-            <p className="text-sm text-slate-600">{skill.keywords?.join(', ')}</p>
+            <span className="font-bold min-w-[120px]" style={{ fontSize: 'var(--size-body)', color: 'var(--color-body)' }}>{skill.name}:</span>
+            <p style={{ fontSize: 'calc(var(--size-body) * 0.95)', color: 'var(--color-body)', lineHeight: 'var(--lh-body)' }}>{skill.keywords?.join(', ')}</p>
           </div>
         ))}
       </div>
@@ -255,19 +260,23 @@ const HeaderSection = React.memo(function HeaderSection({ themeColor,
   themeColor?: string;
 }) {
   return (
-    <header className="border-b-2 border-slate-800 pb-4 mb-6">
+    <header className="border-b-2 border-slate-800 pb-4" style={{ marginBottom: 'var(--spacing-section)' }}>
       <InlineEdit
         as="h1"
-        className="text-4xl font-bold uppercase tracking-wide mb-2 block w-full" style={{ color: themeColor }} value={basics.name || ''}
+        className="uppercase tracking-wide mb-2 block w-full"
+        style={{ color: 'var(--color-name)', fontSize: 'var(--size-name)', fontFamily: 'var(--font-name)', fontWeight: 'var(--weight-name)' }}
+        value={basics.name || ''}
         onSave={(val) => onUpdate?.({ ...basics, name: val })}
       />
       <InlineEdit
         as="p"
-        className="text-xl text-slate-600 mb-4 block w-full" value={basics.label || ''}
+        className="mb-4 block w-full font-medium"
+        style={{ color: 'var(--color-heading)', fontSize: 'calc(var(--size-name) * 0.5)' }}
+        value={basics.label || ''}
         onSave={(val) => onUpdate?.({ ...basics, label: val })}
       />
 
-      <div className="flex flex-wrap gap-4 text-sm text-slate-600">
+      <div className="flex flex-wrap gap-4" style={{ fontSize: 'calc(var(--size-body) * 0.95)', color: 'var(--color-body)' }}>
         {basics.email && (
           <div className="flex items-center gap-1">
             <Mail size={14} /> {basics.email}
@@ -387,7 +396,7 @@ const ClassicTemplate: React.FC<TemplateProps> = ({ data, onUpdate, onOrderChang
   };
 
   return (
-    <div className="font-serif text-slate-900 bg-white p-8 max-w-[210mm] mx-auto min-h-[297mm] shadow-sm print:shadow-none print:p-0">
+    <div className="bg-white p-8 max-w-[210mm] mx-auto min-h-[297mm] shadow-sm print:shadow-none print:p-0 transition-all duration-300" style={{ color: 'var(--color-text-global)' }}>
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}

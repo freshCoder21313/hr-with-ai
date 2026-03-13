@@ -215,7 +215,7 @@ export const InputArea: React.FC<InputAreaProps> = ({
           <TooltipTrigger asChild>
             <Button
               onClick={onSendMessage}
-              disabled={!inputValue.trim()}
+              disabled={!inputValue.trim() || isProcessing}
               className="h-[44px] w-[44px] md:h-[50px] md:w-[50px] rounded-xl shrink-0"
               size="icon"
             >
