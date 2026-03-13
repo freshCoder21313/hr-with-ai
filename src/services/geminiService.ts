@@ -513,10 +513,12 @@ export const analyzeResumeSection = async (
 export const tailorResumeToJob = async (
   sourceResume: ResumeData,
   jobDescription: string,
-  configInput: AIConfigInput
+  configInput: AIConfigInput,
+  finalPrompt?: string
 ): Promise<ResumeData> => {
   const service = getService(configInput);
-  const prompt = getTailoredResumePrompt(sourceResume, jobDescription);
+  // If a final, combined prompt is provided, use it. Otherwise, generate the default.
+  const prompt = finalPrompt || getTailoredResumePrompt(sourceResume, jobDescription);
 
   try {
     const response = await service.generateText([{ role: 'user', content: prompt }], {
@@ -530,6 +532,29 @@ export const tailorResumeToJob = async (
     return JSON.parse(jsonText) as ResumeData;
   } catch (error) {
     console.error('Error tailoring resume:', error);
+    throw error;
+  }
+};
+
+// New function for Smart Tailor page to avoid breaking existing calls
+export const tailorResumeV2 = async (
+  configInput: AIConfigInput,
+  prompt: string
+): Promise<ResumeData> => {
+  const service = getService(configInput);
+
+  try {
+    const response = await service.generateText([{ role: 'user', content: prompt }], {
+      jsonMode: true,
+    });
+    let jsonText = response.text || '';
+
+    if (!jsonText) throw new Error('No tailored resume generated');
+
+    jsonText = jsonText.replace(/```json\n?|\n?```/g, '').trim();
+    return JSON.parse(jsonText) as ResumeData;
+  } catch (error) {
+    console.error('Error tailoring resume (V2):', error);
     throw error;
   }
 };
