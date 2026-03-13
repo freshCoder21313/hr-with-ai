@@ -1,4 +1,5 @@
 import { GitHubRepo } from '@/lib/github';
+import { ROOT_PROMPT } from '@/services/ai/rootPrompt';
 
 export const getRepoToProjectPrompt = (
   repo: GitHubRepo,
@@ -10,6 +11,8 @@ export const getRepoToProjectPrompt = (
   const truncatedTree = fileTree.slice(0, 5000);
 
   return `
+${ROOT_PROMPT}
+
 You are an expert technical writer specializing in developer resumes.
 Your task is to analyze a GitHub repository and transform it into a "Project" entry for a professional CV/Resume.
 
@@ -64,6 +67,8 @@ export const getGitHubInterviewPrompt = (
   readme: string,
   fileTree: string
 ): string => `
+${ROOT_PROMPT}
+
 You are an expert Technical Interviewer.
 The candidate has imported a GitHub repository: ${repo.name} (${repo.html_url}).
 

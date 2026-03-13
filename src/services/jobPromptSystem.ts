@@ -1,7 +1,10 @@
 import { ResumeData } from '@/types/resume';
+import { ROOT_PROMPT } from './ai/rootPrompt';
 
 // Prompt for generating job recommendations from resume data
 export const generateJobRecommendationsPrompt = (resumeData: ResumeData, language: string) => `
+${ROOT_PROMPT}
+
 Analyze the following resume and generate ${language === 'vi-VN' ? '3-5' : '3-5'} relevant job opportunities.
 
 Resume Data:
@@ -42,6 +45,8 @@ export const generateTailoredResumePrompt = (
   originalResumeData: ResumeData,
   jobDescription: string
 ) => `
+${ROOT_PROMPT}
+
 Generate a tailored version of this resume specifically for the following job:
 
 Job Description:

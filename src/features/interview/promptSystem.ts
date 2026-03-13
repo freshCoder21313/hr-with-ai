@@ -1,4 +1,5 @@
 import { Interview } from '@/types';
+import { ROOT_PROMPT } from '@/services/ai/rootPrompt';
 
 // INTERVIEW PROMPT SYSTEM
 
@@ -8,6 +9,8 @@ export const getSystemPrompt = (
   forceToolsEnabled: boolean = false,
   _userName?: string
 ) => `
+${ROOT_PROMPT}
+
 You are an expert technical interviewer conducting a realistic mock interview.
 Your goal is to simulate a high-pressure, professional interview environment while being fair and constructive.
 
@@ -169,6 +172,8 @@ export const getFeedbackPrompt = (
   conversationHistory: string,
   codeContext: string
 ) => `
+${ROOT_PROMPT}
+
 Analyze this interview transcript and provide detailed, actionable feedback.
 
 CONTEXT:
@@ -219,6 +224,8 @@ MERMAID GRAPH GUIDELINES:
 `;
 
 export const getParseResumePrompt = (rawText: string) => `
+${ROOT_PROMPT}
+
 You are an expert Data Parser. Convert the following Resume Text into a structured JSON object following the JSON Resume Schema.
 IMPORTANT: Clean up and format the text content to be professional. Remove excessive newlines, fix capitalization, and merge broken sentences.
 
@@ -270,6 +277,8 @@ Ensure all text values are properly spaced and formatted (e.g., "word1 word2" no
 `;
 
 export const getResumeAnalysisPrompt = (resumeText: string, jobDescription: string) => `
+${ROOT_PROMPT}
+
 You are an expert Talent Acquisition Specialist and Technical Recruiter.
 Analyze the following Candidate Resume against the Job Description (JD) and provide a "Pre-Interview Match Analysis".
 
@@ -295,6 +304,8 @@ Return a valid JSON object (NO MARKDOWN, NO \`\`\`json wrappers) matching exactl
 `;
 
 export const getAnalyzeSectionPrompt = (sectionName: string, sectionData: unknown) => `
+${ROOT_PROMPT}
+
 You are an expert Resume Writer and Career Coach.
 Analyze the following "${sectionName}" section from a candidate's resume and suggest improvements.
 
@@ -316,6 +327,8 @@ Return a valid JSON object (NO MARKDOWN, NO \`\`\`json wrappers):
 `;
 
 export const getHintPrompt = (lastQuestion: string, context: string) => `
+${ROOT_PROMPT}
+
 You are a helpful Interview Coach. The candidate is stuck on the following question.
 Provide 3 levels of "Answer Hints" to help them.
 
@@ -341,6 +354,8 @@ Return a valid JSON object (NO MARKDOWN, NO \`\`\`json wrappers):
 `;
 
 export const getExtractJDInfoPrompt = (jobDescription: string) => `
+${ROOT_PROMPT}
+
 Analyze the following Job Description (JD) and extract 6 pieces of information:
 1. Target Company (The company hiring)
 2. Job Title (The position name)
@@ -370,6 +385,8 @@ For the persona, create a professional and relevant one based on the seniority a
 `;
 
 export const getTailoredResumePrompt = (sourceResume: unknown, jobDescription: string) => `
+${ROOT_PROMPT}
+
 You are an expert Resume Strategist and Career Coach.
 Your task is to REWRITE and TAILOR the following Candidate Resume to specifically target the provided Job Description (JD).
 
@@ -404,6 +421,8 @@ Return a valid JSON object (NO MARKDOWN, NO \`\`\`json wrappers) matching exactl
 }
 `;
 export const getCompanyIntelPrompt = (companyName: string) => `
+${ROOT_PROMPT}
+
 You are an expert Corporate Researcher and HR Analyst.
 Your task is to provide a detailed "Company Intelligence" report for ${companyName} to help a candidate prepare for an interview.
 

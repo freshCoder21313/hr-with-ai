@@ -28,6 +28,7 @@ import SEO from '@/components/SEO';
 import { useJobStore, Job } from './stores/useJobStore';
 import { Checkbox } from '@/components/ui/checkbox';
 import { EditGlobalPromptModal } from './components/EditGlobalPromptModal';
+import { ROOT_PROMPT } from '@/services/ai/rootPrompt';
 
 type JobProcessStatus = 'idle' | 'processing' | 'completed' | 'error';
 
@@ -189,6 +190,8 @@ const SmartTailorPage: React.FC = () => {
       try {
         // Construct the final, complete prompt
         const finalPrompt = `
+${ROOT_PROMPT}
+
 You are an expert Resume Strategist and Career Coach.
 Your task is to REWRITE and TAILOR the following Candidate Resume to specifically target the provided Job Description (JD).
 ${globalPrompt}
