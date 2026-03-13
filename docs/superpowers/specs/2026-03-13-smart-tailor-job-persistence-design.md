@@ -86,12 +86,23 @@ A persistent note will be displayed in the "Actions" section:
 - **Import:**
   1.  Clicking "Import Jobs" opens the system file picker.
   2.  The user selects a valid `.json` file.
-  3.  The file is read, parsed, and validated.
-  4.  The `importJobs` action is called, which appends the new jobs to the existing list in the store.
+  3.  The file content is read and processed within a `try...catch` block to handle errors gracefully.
+  4.  If the file is not valid JSON or if the data structure is incorrect, an error notification will be shown to the user, and the import process will be aborted.
+  5.  For each valid job object in the imported file, a **new unique ID will be generated** before it is added to the store. This prevents ID conflicts.
+  6.  The `importJobs` action is called, which appends the new, sanitized jobs to the existing list in the store.
 
 ### 4.3. Batch Tailoring Workflow
 
 1.  The "Start Tailoring All" button will be renamed to **"Start Tailoring Selected Jobs"**.
 2.  When clicked, the application will filter the `jobs` from the store based on which ones are selected via the new checkboxes.
 3.  The tailoring process will then run only on this filtered list of jobs.
-4.  For each job, the final AI prompt will be a combination of the `globalPrompt` and the job's `customPrompt`.
+4.  For each job, the final AI prompt will be constructed by combining the `globalPrompt` and the job's `customPrompt` using the following template:
+
+    ```
+    ${globalPrompt}
+
+    --- Job-Specific Instructions ---
+    ${customPrompt}
+    ```
+
+    If the `customPrompt` is empty, the "Job-Specific Instructions" section will be omitted.
