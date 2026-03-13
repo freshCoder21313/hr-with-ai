@@ -3,7 +3,7 @@ import { AIProviderStrategy, ChatMessage, AIResponse, AIRequestOptions } from '@
 
 export class GoogleGeminiStrategy implements AIProviderStrategy {
   private client: GoogleGenAI;
-  private defaultModel = 'gemini-2.0-flash'; // Updated to 2.0-flash as per recent defaults or user preference
+  private defaultModel = 'gemini-3.1-pro-preview'; // Updated to 3.1-pro-preview as per recent defaults or user preference
   private apiKey: string;
   private baseUrl?: string;
 

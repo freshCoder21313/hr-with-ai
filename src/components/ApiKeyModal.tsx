@@ -5,12 +5,14 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { ShieldCheck, X } from 'lucide-react';
+import { ShieldCheck, X, RefreshCw } from 'lucide-react';
 
 const ApiKeyModal: React.FC = () => {
   const [apiKey, setApiKey] = useState(() => localStorage.getItem('gemini_api_key') || '');
   const [baseUrl, setBaseUrl] = useState(() => localStorage.getItem('custom_base_url') || '');
   const [modelId, setModelId] = useState(() => localStorage.getItem('custom_model_id') || '');
+  const [geminiModels, setGeminiModels] = useState<string[]>([]);
+  const [isFetchingModels, setIsFetchingModels] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [provider, setProvider] = useState<any>(
     () => localStorage.getItem('ai_provider') || 'google'
@@ -34,6 +36,38 @@ const ApiKeyModal: React.FC = () => {
 
     return () => unsubscribe();
   }, []);
+
+  const handleFetchModels = async () => {
+    if (!apiKey) {
+      alert('Please enter your API Key first.');
+      return;
+    }
+    setIsFetchingModels(true);
+    setGeminiModels([]);
+    try {
+      // Use custom baseUrl if provided, otherwise default
+      const effectiveBaseUrl = (baseUrl || 'https://generativelanguage.googleapis.com').replace(
+        /\/$/,
+        ''
+      );
+      const url = `${effectiveBaseUrl}/v1beta/models?key=${apiKey}`;
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch models: ${response.statusText}`);
+      }
+      const data = await response.json();
+      const models = data.models
+        .map((m: any) => m.name)
+        .filter((name: string) => name.includes('gemini'));
+      setGeminiModels(models);
+    } catch (error) {
+      console.error('Failed to fetch Gemini models:', error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      alert(`Failed to fetch models. Check your API Key and Base URL. Error: ${errorMessage}`);
+    } finally {
+      setIsFetchingModels(false);
+    }
+  };
 
   const handleSave = async () => {
     if (apiKey.trim()) {
@@ -97,7 +131,7 @@ const ApiKeyModal: React.FC = () => {
                 Google Gemini (Default)
               </option>
               <option value="openai" className="bg-popover text-popover-foreground">
-                OpenAI / Compatible
+                Custom (OpenAI Compatible)
               </option>
               <option value="openrouter" className="bg-popover text-popover-foreground">
                 OpenRouter
@@ -118,58 +152,82 @@ const ApiKeyModal: React.FC = () => {
             />
           </div>
 
-          <button
-            type="button"
-            onClick={() => setShowAdvanced(!showAdvanced)}
-            className="text-xs text-primary hover:underline flex items-center gap-1"
-          >
-            {showAdvanced ? 'Hide Advanced Options' : 'Show Advanced Options (Custom URL / Model)'}
-          </button>
+          {/* --- Google Provider Specific --- */}
+          {provider === 'google' && (
+            <div className="space-y-2">
+              <Label className="mb-1 block">Model ID (Optional)</Label>
+              <div className="flex items-center gap-2">
+                <Input
+                  type="text"
+                  value={modelId}
+                  onChange={(e) => setModelId(e.target.value)}
+                  placeholder={'Fetch models or enter a custom ID'}
+                  className="text-sm"
+                />
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={handleFetchModels}
+                  disabled={isFetchingModels || !apiKey}
+                  title="Fetch available models"
+                >
+                  <RefreshCw className={`w-4 h-4 ${isFetchingModels ? 'animate-spin' : ''}`} />
+                </Button>
+              </div>
+              {geminiModels.length > 0 && (
+                <select
+                  value={modelId}
+                  onChange={(e) => setModelId(e.target.value)}
+                  className="mt-2 flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors"
+                >
+                  <option value="" disabled={modelId !== ''}>
+                    Select a fetched model to populate ID
+                  </option>
+                  {geminiModels.map((m) => (
+                    <option key={m} value={m} className="bg-popover text-popover-foreground">
+                      {m.replace('models/', '')}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+          )}
 
-          {/* Force show advanced for OpenRouter since Model ID is required */}
-          {(showAdvanced || provider === 'openrouter') && (
-            <div className="space-y-3 bg-muted/50 p-3 rounded-lg border border-border">
+          {/* --- Custom / OpenAI / OpenRouter --- */}
+          {(provider === 'openai' || provider === 'openrouter') && (
+            <div className="space-y-3 rounded-lg border border-border bg-muted/50 p-3">
               <div>
-                <Label className="mb-1 block">Base URL (Optional)</Label>
+                <Label className="mb-1 block">
+                  Base URL <span className="text-destructive">*</span>
+                </Label>
                 <Input
                   type="text"
                   value={baseUrl}
                   onChange={(e) => setBaseUrl(e.target.value)}
                   placeholder={
-                    provider === 'google'
-                      ? 'https://generativelanguage.googleapis.com'
-                      : provider === 'openrouter'
-                        ? 'https://openrouter.ai/api/v1'
-                        : 'https://api.openai.com/v1'
+                    provider === 'openrouter'
+                      ? 'https://openrouter.ai/api/v1'
+                      : 'http://localhost:11434/v1'
                   }
                   className="text-sm"
                 />
-                <p className="text-[10px] text-muted-foreground mt-1">
-                  Leave empty for default endpoint.
-                </p>
-                <p className="text-[10px] text-orange-600 dark:text-orange-400 font-medium mt-1">
-                  ⚠️ Security Warning: Only use URLs you trust. Your API Key will be sent here.
+                <p className="mt-1 text-[10px] font-medium text-orange-600 dark:text-orange-400">
+                  ⚠️ Your API Key will be sent to this URL. Only use URLs you trust.
                 </p>
               </div>
               <div>
                 <Label className="mb-1 block">
                   Model ID{' '}
-                  {provider === 'openrouter' ? (
-                    <span className="text-destructive">*</span>
-                  ) : (
-                    '(Optional)'
-                  )}
+                  {provider === 'openrouter' && <span className="text-destructive">*</span>}
                 </Label>
                 <Input
                   type="text"
                   value={modelId}
                   onChange={(e) => setModelId(e.target.value)}
                   placeholder={
-                    provider === 'google'
-                      ? 'gemini-3-flash-preview'
-                      : provider === 'openrouter'
-                        ? 'e.g. liquid/lfm-2.5-1.2b-thinking:free'
-                        : 'gpt-4o'
+                    provider === 'openrouter'
+                      ? 'e.g. liquid/lfm-2.5-1.2b-thinking:free'
+                      : 'e.g. llama3'
                   }
                   className="text-sm"
                 />
@@ -177,7 +235,40 @@ const ApiKeyModal: React.FC = () => {
             </div>
           )}
 
-          <div className="flex gap-2">
+          {/* --- Advanced Button for Google --- */}
+          {provider === 'google' && (
+            <button
+              type="button"
+              onClick={() => setShowAdvanced(!showAdvanced)}
+              className="flex items-center gap-1 text-xs text-primary hover:underline"
+            >
+              {showAdvanced ? 'Hide Advanced Options' : 'Show Advanced Options (Custom URL)'}
+            </button>
+          )}
+
+          {/* --- Advanced section for Google --- */}
+          {showAdvanced && provider === 'google' && (
+            <div className="space-y-3 rounded-lg border border-border bg-muted/50 p-3">
+              <div>
+                <Label className="mb-1 block">Base URL (Optional)</Label>
+                <Input
+                  type="text"
+                  value={baseUrl}
+                  onChange={(e) => setBaseUrl(e.target.value)}
+                  placeholder="https://generativelanguage.googleapis.com"
+                  className="text-sm"
+                />
+                <p className="mt-1 text-[10px] text-muted-foreground">
+                  Leave empty for default endpoint. For proxies, enter the root proxy URL.
+                </p>
+                <p className="mt-1 text-[10px] font-medium text-orange-600 dark:text-orange-400">
+                  ⚠️ Security Warning: Only use URLs you trust. Your API Key will be sent here.
+                </p>
+              </div>
+            </div>
+          )}
+
+          <div className="mt-6 flex gap-2">
             {!apiKey && (
               <Button variant="outline" onClick={() => setIsOpen(false)} className="w-full">
                 Skip
