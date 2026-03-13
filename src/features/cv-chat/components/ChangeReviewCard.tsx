@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ProposedChange } from './cvChatUtils';
+import { ProposedChange } from '../cvChatUtils';
 import { Check, X, ArrowRight, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';

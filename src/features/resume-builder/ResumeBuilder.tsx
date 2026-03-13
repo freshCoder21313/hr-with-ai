@@ -22,7 +22,7 @@ import {
   Palette,
   Sliders,
 } from 'lucide-react';
-import StyleEditorPanel from './components/StyleEditorPanel';
+
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ResumePreview from './ResumePreview';
 import SectionReorderDialog from './components/SectionReorderDialog';
@@ -353,21 +353,6 @@ const ResumeBuilder: React.FC = () => {
         data={{ ...data, meta: { ...data.meta, template } }}
         onSave={handleOrderSave}
       />
-
-      {showStyleEditor && (
-        <StyleEditorPanel
-          data={data}
-          onUpdate={(updater) => {
-            setData((prev) => {
-              if (!prev) return prev;
-              const newData = updater(prev);
-              db.resumes.update(parseInt(id!), { parsedData: newData });
-              return newData;
-            });
-          }}
-          onClose={() => setShowStyleEditor(false)}
-        />
-      )}
 
       {/* Main UI */}
       <Joyride
