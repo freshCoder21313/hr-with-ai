@@ -1,5 +1,7 @@
 import { ResumeData } from './types/resume';
 
+export type { ResumeData };
+
 export type InterviewMode = 'standard' | 'coding' | 'system_design' | 'behavioral';
 
 export interface Message {

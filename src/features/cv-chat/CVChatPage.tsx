@@ -3,7 +3,7 @@ import { db } from '@/lib/db';
 import { Resume, Message } from '@/types';
 import { ResumeData } from '@/types/resume';
 import { ChatArea } from '@/features/interview/components/ChatArea';
-import { SimpleInputArea } from './components/SimpleInputArea';
+import { SimpleInputArea } from '@/components/shared/SimpleInputArea';
 import { streamCVChatMessage } from '@/services/cvChatService';
 import { extractProposedChanges, ProposedChange } from './cvChatUtils';
 import ResumePreview from '@/features/resume-builder/ResumePreview';
