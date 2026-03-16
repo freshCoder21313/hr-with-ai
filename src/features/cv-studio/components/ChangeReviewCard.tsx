@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ProposedChange } from '../cvChatUtils';
+import { ProposedChange } from '../utils/cvChatUtils';
 import {
   Check, X, ChevronDown, ChevronUp,
   User, Briefcase, GraduationCap, Code,

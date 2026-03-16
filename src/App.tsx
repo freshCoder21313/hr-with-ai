@@ -13,12 +13,9 @@ const SetupRoom = lazy(() => import('./features/dashboard/SetupRoom'));
 const InterviewRoom = lazy(() => import('./features/interview/InterviewRoom'));
 const FeedbackView = lazy(() => import('./features/interview/FeedbackView'));
 const ResumeBuilder = lazy(() => import('./features/resume-builder/ResumeBuilder'));
-const CVChatPage = lazy(() => import('./features/cv-chat/CVChatPage'));
 const CVStudioPage = lazy(() => import('./features/cv-studio/CVStudioPage'));
 const LandingPage = lazy(() => import('./features/landing/LandingPage'));
 const HistoryPage = lazy(() => import('./features/history/HistoryPage'));
-const SmartTailorPage = lazy(() => import('./features/smart-tailor/SmartTailorPage'));
-const CVManagementPage = lazy(() => import('./features/cv-management/components/CVPage'));
 
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-[50vh]">
@@ -45,10 +42,7 @@ const App: React.FC = () => {
                     <Route path="/setup" element={<SetupRoom />} />
                     <Route path="/history" element={<HistoryPage />} />
                     <Route path="/resumes/:id/edit" element={<ResumeBuilder />} />
-                    <Route path="/cv-chat" element={<CVChatPage />} />
                     <Route path="/studio" element={<CVStudioPage />} />
-                    <Route path="/tools/smart-tailor" element={<SmartTailorPage />} />
-                    <Route path="/dashboard/cv" element={<CVManagementPage />} />
                     <Route path="/interview/:id" element={<InterviewRoom />} />
                     <Route path="/feedback/:id" element={<FeedbackView />} />
                     <Route path="*" element={<Navigate to="/" replace />} />

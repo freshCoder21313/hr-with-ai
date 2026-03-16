@@ -1,6 +1,6 @@
 import { Message } from '@/types';
 import { ResumeData } from '@/types/resume';
-import { getCVChatSystemPrompt } from '@/features/cv-chat/cvPrompt';
+import { getCVChatSystemPrompt } from '@/features/cv-studio/utils/cvPrompt';
 import { resolveConfig, AIConfigInput } from '@/services/geminiService';
 import { AIService } from '@/features/ai-provider/ai.service';
 import { AIConfig, ChatMessage } from '@/types';

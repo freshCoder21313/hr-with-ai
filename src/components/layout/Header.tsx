@@ -25,36 +25,12 @@ const NavLinks = ({ mobile = false, closeMenu }: { mobile?: boolean; closeMenu?:
       Home
     </a>
     <a
-      href="#/dashboard/cv"
-      className={`text-sm font-medium transition-colors hover:text-primary ${mobile ? 'text-lg py-2 border-b border-border' : 'text-muted-foreground'
-        }`}
-      onClick={() => mobile && closeMenu?.()}
-    >
-      CV Dashboard
-    </a>
-    <a
       href="#/studio"
-      className={`text-sm font-semibold transition-colors hover:text-primary ${mobile ? 'text-lg py-2 border-b border-border' : 'text-primary'
+      className={`text-sm font-medium transition-colors hover:text-primary ${mobile ? 'text-lg py-2 border-b border-border' : 'text-muted-foreground'
         }`}
       onClick={() => mobile && closeMenu?.()}
     >
       CV Studio
-    </a>
-    <a
-      href="#/tools/smart-tailor"
-      className={`text-sm font-medium transition-colors hover:text-primary ${mobile ? 'text-lg py-2 border-b border-border' : 'text-muted-foreground'
-        }`}
-      onClick={() => mobile && closeMenu?.()}
-    >
-      CV Tailor
-    </a>
-    <a
-      href="#/cv-chat"
-      className={`text-sm font-medium transition-colors hover:text-primary ${mobile ? 'text-lg py-2 border-b border-border' : 'text-muted-foreground'
-        }`}
-      onClick={() => mobile && closeMenu?.()}
-    >
-      CV Chat
     </a>
     <a
       href="#/history"
