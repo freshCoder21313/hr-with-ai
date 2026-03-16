@@ -18,45 +18,40 @@ const NavLinks = ({ mobile = false, closeMenu }: { mobile?: boolean; closeMenu?:
   <>
     <a
       href="#/"
-      className={`text-sm font-medium transition-colors hover:text-primary ${
-        mobile ? 'text-lg py-2 border-b border-border' : 'text-muted-foreground'
-      }`}
+      className={`text-sm font-medium transition-colors hover:text-primary ${mobile ? 'text-lg py-2 border-b border-border' : 'text-muted-foreground'
+        }`}
       onClick={() => mobile && closeMenu?.()}
     >
       Home
     </a>
     <a
       href="#/dashboard/cv"
-      className={`text-sm font-medium transition-colors hover:text-primary ${
-        mobile ? 'text-lg py-2 border-b border-border' : 'text-muted-foreground'
-      }`}
+      className={`text-sm font-medium transition-colors hover:text-primary ${mobile ? 'text-lg py-2 border-b border-border' : 'text-muted-foreground'
+        }`}
       onClick={() => mobile && closeMenu?.()}
     >
       CV Dashboard
     </a>
     <a
       href="#/tools/smart-tailor"
-      className={`text-sm font-medium transition-colors hover:text-primary ${
-        mobile ? 'text-lg py-2 border-b border-border' : 'text-muted-foreground'
-      }`}
+      className={`text-sm font-medium transition-colors hover:text-primary ${mobile ? 'text-lg py-2 border-b border-border' : 'text-muted-foreground'
+        }`}
       onClick={() => mobile && closeMenu?.()}
     >
       CV Tailor
     </a>
     <a
       href="#/cv-chat"
-      className={`text-sm font-medium transition-colors hover:text-primary ${
-        mobile ? 'text-lg py-2 border-b border-border' : 'text-muted-foreground'
-      }`}
+      className={`text-sm font-medium transition-colors hover:text-primary ${mobile ? 'text-lg py-2 border-b border-border' : 'text-muted-foreground'
+        }`}
       onClick={() => mobile && closeMenu?.()}
     >
       CV Chat
     </a>
     <a
       href="#/history"
-      className={`text-sm font-medium transition-colors hover:text-primary ${
-        mobile ? 'text-lg py-2 border-b border-border' : 'text-muted-foreground'
-      }`}
+      className={`text-sm font-medium transition-colors hover:text-primary ${mobile ? 'text-lg py-2 border-b border-border' : 'text-muted-foreground'
+        }`}
       onClick={() => mobile && closeMenu?.()}
     >
       History
@@ -76,7 +71,7 @@ const Header: React.FC = () => {
     <>
       <CloudSyncModal isOpen={isSyncModalOpen} onClose={() => setIsSyncModalOpen(false)} />
 
-      <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 print:hidden">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center gap-2 font-bold text-xl">

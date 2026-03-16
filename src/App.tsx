@@ -31,12 +31,13 @@ const App: React.FC = () => {
       <HelmetProvider>
         <TooltipProvider>
           <HashRouter>
-            <div className="min-h-[100dvh] flex flex-col bg-background text-foreground pt-[var(--safe-top)] pb-[var(--safe-bottom)] pl-[var(--safe-left)] pr-[var(--safe-right)]">
+            <div className="min-h-[100dvh] flex flex-col bg-background text-foreground pt-[var(--safe-top)] pb-[var(--safe-bottom)] pl-[var(--safe-left)] pr-[var(--safe-right)] print:block print:bg-white print:min-h-0">
               <ApiKeyModal />
               <Header />
+
               <Toaster position="bottom-center" toastOptions={{ className: 'mb-safe' }} />
 
-              <main className="flex-1 container mx-auto px-0 md:px-4 py-0 md:py-6">
+              <main className="flex-1 container mx-auto px-0 md:px-4 py-0 md:py-6 print:p-0 print:m-0 print:max-w-none print:block print:flex-none">
                 <Suspense fallback={<PageLoader />}>
                   <Routes>
                     <Route path="/" element={<LandingPage />} />

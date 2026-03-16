@@ -128,7 +128,7 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({
         }
       `}</style>
       <div
-        className={`resume-preview-container print:w-full print:h-full print:absolute print:top-0 print:left-0 print:z-50 print:bg-white ${fontClass} ${className || ''}`}
+        className={`resume-preview-container print:block print:m-0 print:p-0 print:bg-white ${fontClass} ${className || ''}`}
       >
         {renderTemplate()}
       </div>

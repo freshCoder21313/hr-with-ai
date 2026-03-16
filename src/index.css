@@ -141,32 +141,35 @@ body {
 
 /* Utility classes mapping to variables */
 
+@page {
+  size: A4;
+  margin: 0;
+}
+
 @media print {
-  /* Hide non-essential elements */
+  /* Hide only non-resume UI elements.
+     NOTE: Do NOT hide `aside` or `header` here — resume templates
+     use those HTML tags for sidebar and CV header sections. */
   .no-print,
   button,
-  header,
   nav,
-  aside,
   .print\:hidden {
     display: none !important;
   }
 
-  /* Reset colors for printing */
-  body,
-  .card {
+  /* Prevent browser-default body bg/color from overriding themed templates */
+  body {
     background: white !important;
-    color: black !important;
     box-shadow: none !important;
   }
 
-  /* Ensure charts and text are visible */
+  /* Ensure colors (backgrounds, borders, text) are printed faithfully */
   * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
 
-  /* Expand layout */
+  /* Expand any constrained layout containers */
   .max-w-5xl {
     max-width: none !important;
     padding: 0 !important;

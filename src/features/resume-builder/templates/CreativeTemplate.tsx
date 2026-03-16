@@ -430,9 +430,9 @@ const CreativeTemplate: React.FC<TemplateProps> = ({
   };
 
   return (
-    <div className="font-sans text-slate-800 bg-white max-w-[210mm] mx-auto min-h-[297mm] shadow-sm print:shadow-none grid grid-cols-[35%_65%] h-full">
+    <div className="font-sans text-slate-800 bg-white max-w-[210mm] mx-auto min-h-[297mm] shadow-sm print:shadow-none print:max-w-none print:mx-0 grid grid-cols-[35%_65%]">
       {/* Sidebar (Left) */}
-      <aside className="text-white p-8 h-full flex flex-col" style={{ backgroundColor: '#1e293b' }}>
+      <aside className="text-white p-8 min-h-full flex flex-col" style={{ backgroundColor: '#1e293b' }}>
         {' '}
         {/* Slate-800 */}
         {/* Dynamic Sidebar Sections */}

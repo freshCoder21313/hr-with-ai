@@ -174,11 +174,11 @@ const MinimalistTemplate: React.FC<TemplateProps> = ({
             </h2>
             <div className="space-y-8">
               {work.map((job, i) => (
-                <div key={i} className="flex flex-col md:flex-row gap-4">
-                  <div className="md:w-1/4 shrink-0 text-sm text-slate-500 pt-1">
+                <div key={i} className="flex flex-col md:flex-row print:flex-row gap-4">
+                  <div className="md:w-1/4 print:w-1/4 shrink-0 text-sm text-slate-500 pt-1">
                     {[job.startDate, job.endDate].filter(Boolean).join(' — ')}
                   </div>
-                  <div className="md:w-3/4">
+                  <div className="md:w-3/4 print:w-3/4">
                     <InlineEdit
                       as="h3"
                       className="font-semibold text-slate-900 text-base inline-block"
@@ -234,11 +234,11 @@ const MinimalistTemplate: React.FC<TemplateProps> = ({
             </h2>
             <div className="space-y-8">
               {projects.map((project, i) => (
-                <div key={i} className="flex flex-col md:flex-row gap-4">
-                  <div className="md:w-1/4 shrink-0 text-sm text-slate-500 pt-1">
+                <div key={i} className="flex flex-col md:flex-row print:flex-row gap-4">
+                  <div className="md:w-1/4 print:w-1/4 shrink-0 text-sm text-slate-500 pt-1">
                     {[project.startDate, project.endDate].filter(Boolean).join(' — ')}
                   </div>
-                  <div className="md:w-3/4">
+                  <div className="md:w-3/4 print:w-3/4">
                     <h3 className="font-semibold text-slate-900 text-base flex items-center gap-2">
                       {project.name}
                       {project.url && (
@@ -298,11 +298,11 @@ const MinimalistTemplate: React.FC<TemplateProps> = ({
             </h2>
             <div className="space-y-6">
               {education.map((edu, i) => (
-                <div key={i} className="flex flex-col md:flex-row gap-4">
-                  <div className="md:w-1/4 shrink-0 text-sm text-slate-500 pt-1">
+                <div key={i} className="flex flex-col md:flex-row print:flex-row gap-4">
+                  <div className="md:w-1/4 print:w-1/4 shrink-0 text-sm text-slate-500 pt-1">
                     {[edu.startDate, edu.endDate].filter(Boolean).join(' — ')}
                   </div>
-                  <div className="md:w-3/4">
+                  <div className="md:w-3/4 print:w-3/4">
                     <InlineEdit
                       as="h3"
                       className="font-semibold text-slate-900 text-base inline-block"
@@ -335,11 +335,11 @@ const MinimalistTemplate: React.FC<TemplateProps> = ({
             </h2>
             <div className="space-y-4">
               {skills.map((skill, i) => (
-                <div key={i} className="flex flex-col md:flex-row gap-4">
-                  <div className="md:w-1/4 shrink-0 font-medium text-sm text-slate-900 pt-1">
+                <div key={i} className="flex flex-col md:flex-row print:flex-row gap-4">
+                  <div className="md:w-1/4 print:w-1/4 shrink-0 font-medium text-sm text-slate-900 pt-1">
                     {skill.name}
                   </div>
-                  <div className="md:w-3/4 text-sm text-slate-700 leading-relaxed pt-1">
+                  <div className="md:w-3/4 print:w-3/4 text-sm text-slate-700 leading-relaxed pt-1">
                     {skill.keywords?.join(', ')}
                   </div>
                 </div>
@@ -354,7 +354,7 @@ const MinimalistTemplate: React.FC<TemplateProps> = ({
   };
 
   return (
-    <div className="bg-white p-12 max-w-[210mm] mx-auto min-h-[297mm] shadow-sm print:shadow-none print:p-8">
+    <div className="bg-white p-12 max-w-[210mm] mx-auto min-h-[297mm] shadow-sm print:shadow-none print:p-8 print:max-w-none print:mx-0">
       {/* Main Content */}
       <div className="space-y-2">
         <DndContext

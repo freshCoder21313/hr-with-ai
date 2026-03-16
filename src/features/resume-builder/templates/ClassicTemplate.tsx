@@ -514,7 +514,7 @@ const ClassicTemplate: React.FC<TemplateProps> = ({
 
   return (
     <div
-      className="bg-white p-8 max-w-[210mm] mx-auto min-h-[297mm] shadow-sm print:shadow-none print:p-0 transition-all duration-300"
+      className="bg-white p-8 max-w-[210mm] mx-auto min-h-[297mm] shadow-sm print:shadow-none print:p-10 print:max-w-none print:mx-0 transition-all duration-300"
       style={{ color: 'var(--color-text-global)' }}
     >
       <DndContext

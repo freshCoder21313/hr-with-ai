@@ -427,9 +427,9 @@ const ModernTemplate: React.FC<TemplateProps> = ({
   };
 
   return (
-    <div className="font-sans text-slate-800 bg-white max-w-[210mm] mx-auto min-h-[297mm] shadow-sm print:shadow-none grid grid-cols-[32%_68%]">
+    <div className="font-sans text-slate-800 bg-white max-w-[210mm] mx-auto min-h-[297mm] shadow-sm print:shadow-none print:max-w-none print:mx-0 grid grid-cols-[32%_68%]">
       {/* Sidebar (Left Column) */}
-      <aside className="bg-slate-900 text-white p-6 print:bg-slate-900 print:text-white h-full">
+      <aside className="bg-slate-900 text-white p-6 print:bg-slate-900 print:text-white min-h-full">
         <SidebarContactInfo basics={basics} />
         <DndContext
           sensors={sensors}

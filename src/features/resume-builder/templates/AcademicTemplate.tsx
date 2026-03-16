@@ -317,7 +317,7 @@ const AcademicTemplate: React.FC<TemplateProps> = ({
             >
               Technical Skills
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 print:grid-cols-2 gap-x-8 gap-y-2">
               {skills.map((skill, i) => (
                 <div key={i} className="flex justify-between border-b border-slate-100 pb-1">
                   <span className="font-bold text-sm text-slate-900">{skill.name}</span>
@@ -336,7 +336,7 @@ const AcademicTemplate: React.FC<TemplateProps> = ({
   };
 
   return (
-    <div className="font-serif bg-white p-10 max-w-[210mm] mx-auto min-h-[297mm] shadow-sm print:shadow-none print:p-8 text-slate-900">
+    <div className="font-serif bg-white p-10 max-w-[210mm] mx-auto min-h-[297mm] shadow-sm print:shadow-none print:p-8 print:max-w-none print:mx-0 text-slate-900">
       {/* Main Content */}
       <div className="space-y-6">
         <DndContext

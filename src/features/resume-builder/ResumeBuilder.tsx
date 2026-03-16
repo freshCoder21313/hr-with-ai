@@ -336,7 +336,7 @@ const ResumeBuilder: React.FC = () => {
         description="Build ATS-friendly resumes with AI assistance. Smart formatting and real-time preview."
       />
       {/* Hidden Print Container */}
-      <div className="hidden print:block print:absolute print:inset-0 print:z-[9999] print:bg-white">
+      <div className="hidden print:block">
         <ResumePreview
           data={data}
           template={template}
@@ -689,43 +689,43 @@ const ResumeBuilder: React.FC = () => {
                 {(template === 'creative' ||
                   template === 'minimalist' ||
                   template === 'academic') && (
-                  <Tooltip delayDuration={0}>
-                    <TooltipTrigger asChild>
-                      <div className="relative flex items-center justify-center">
-                        <div className="h-10 w-10 rounded-full bg-background shadow-sm flex items-center justify-center cursor-pointer overflow-hidden border border-input hover:shadow-md transition-all">
-                          <input
-                            type="color"
-                            value={
-                              data?.meta?.themeColor ||
-                              (template === 'minimalist'
-                                ? '#1e293b'
-                                : template === 'academic'
-                                  ? '#1e3a8a'
-                                  : '#8b5cf6')
-                            }
-                            onChange={(e) => handleThemeChange(e.target.value)}
-                            className="absolute inset-0 opacity-0 cursor-pointer h-full w-full"
-                          />
-                          <div
-                            className="w-6 h-6 rounded-full border border-black/10"
-                            style={{
-                              backgroundColor:
+                    <Tooltip delayDuration={0}>
+                      <TooltipTrigger asChild>
+                        <div className="relative flex items-center justify-center">
+                          <div className="h-10 w-10 rounded-full bg-background shadow-sm flex items-center justify-center cursor-pointer overflow-hidden border border-input hover:shadow-md transition-all">
+                            <input
+                              type="color"
+                              value={
                                 data?.meta?.themeColor ||
                                 (template === 'minimalist'
                                   ? '#1e293b'
                                   : template === 'academic'
                                     ? '#1e3a8a'
-                                    : '#8b5cf6'),
-                            }}
-                          />
+                                    : '#8b5cf6')
+                              }
+                              onChange={(e) => handleThemeChange(e.target.value)}
+                              className="absolute inset-0 opacity-0 cursor-pointer h-full w-full"
+                            />
+                            <div
+                              className="w-6 h-6 rounded-full border border-black/10"
+                              style={{
+                                backgroundColor:
+                                  data?.meta?.themeColor ||
+                                  (template === 'minimalist'
+                                    ? '#1e293b'
+                                    : template === 'academic'
+                                      ? '#1e3a8a'
+                                      : '#8b5cf6'),
+                              }}
+                            />
+                          </div>
                         </div>
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent side="left">
-                      <p>Theme Color</p>
-                    </TooltipContent>
-                  </Tooltip>
-                )}
+                      </TooltipTrigger>
+                      <TooltipContent side="left">
+                        <p>Theme Color</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
 
                 <Tooltip delayDuration={0}>
                   <TooltipTrigger asChild>
