@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { db } from '@/lib/db';
 import { Resume, Message } from '@/types';
 import { ResumeData } from '@/types/resume';
@@ -9,8 +9,6 @@ import { extractProposedChanges, ProposedChange } from './cvChatUtils';
 import ResumePreview from '@/features/resume-builder/ResumePreview';
 import {
   Loader2,
-  Save,
-  Undo2,
   ArrowRight,
   Upload,
   Sparkles,
@@ -20,7 +18,6 @@ import {
   LayoutTemplate,
   Github,
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { parseResume } from '@/services/resumeParser';
 import { getStoredAIConfig, parseResumeToJSON } from '@/services/geminiService';
@@ -47,7 +44,6 @@ const ALLOWED_SECTIONS = [
 ];
 
 const CVChatPage: React.FC = () => {
-  const navigate = useNavigate();
   const [mainCV, setMainCV] = useState<Resume | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -147,7 +143,7 @@ const CVChatPage: React.FC = () => {
           timestamp: Date.now(),
         },
       ]);
-    } catch (error) {
+    } catch (_error) {
       alert('Failed to parse resume');
     } finally {
       setIsParsing(false);
@@ -205,7 +201,7 @@ const CVChatPage: React.FC = () => {
           prev.map((m) => (m.timestamp === aiMsgId ? { ...m, content: cleanResponse } : m))
         );
       }
-    } catch (error) {
+    } catch (_error) {
       setMessages((prev) => [
         ...prev,
         { role: 'model', content: 'Sorry, something went wrong.', timestamp: Date.now() },

@@ -44,7 +44,6 @@ const AnalysisResult = ({ result }: { result: string }) => {
         <ul className="space-y-2">
           {suggestions.map((item, index) => {
             const isMatch = item.includes('Matched');
-            const isRec = item.includes('Recommend') || item.includes('Consider');
             return (
               <li key={index} className="flex items-start space-x-2 text-sm">
                 {isMatch ? (

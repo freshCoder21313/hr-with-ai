@@ -21,7 +21,6 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({
 }) => {
   const themeColor = data.meta?.themeColor;
   const fontFamily = data.meta?.fontFamily || 'sans';
-  const customStyles = data.meta?.customStyles;
 
   const handleOrderChange = (newSidebar: string[], newMain: string[]) => {
     if (onUpdate) {
@@ -69,7 +68,7 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({
     // 1. Gather Font Families
     const fontsToLoad = new Set<string>();
 
-    // Add base fontFamily (sans, serif, mono) are usually system fonts, 
+    // Add base fontFamily (sans, serif, mono) are usually system fonts,
     // but if the user explicitly set a Google Font in customStyles, we load it.
     if (styles.name?.fontFamily) fontsToLoad.add(styles.name.fontFamily);
     if (styles.headings?.fontFamily) fontsToLoad.add(styles.headings.fontFamily);
@@ -78,7 +77,7 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({
     let fontsUrl = '';
     if (fontsToLoad.size > 0) {
       const familyParams = Array.from(fontsToLoad)
-        .map(font => `family=${font.replace(/\s+/g, '+')}:wght@300;400;500;600;700`)
+        .map((font) => `family=${font.replace(/\s+/g, '+')}:wght@300;400;500;600;700`)
         .join('&');
       fontsUrl = `https://fonts.googleapis.com/css2?${familyParams}&display=swap`;
     }
@@ -88,17 +87,23 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({
       '--color-primary': themeColor || '#3b82f6',
       '--color-text-global': styles.globalText?.color || defaultColor,
 
-      '--font-name': styles.name?.fontFamily ? `"${styles.name.fontFamily}", sans-serif` : 'inherit',
+      '--font-name': styles.name?.fontFamily
+        ? `"${styles.name.fontFamily}", sans-serif`
+        : 'inherit',
       '--color-name': styles.name?.color || defaultColor,
       '--size-name': styles.name?.fontSize || '24px',
       '--weight-name': styles.name?.fontWeight || 'bold',
 
-      '--font-heading': styles.headings?.fontFamily ? `"${styles.headings.fontFamily}", sans-serif` : 'inherit',
+      '--font-heading': styles.headings?.fontFamily
+        ? `"${styles.headings.fontFamily}", sans-serif`
+        : 'inherit',
       '--color-heading': styles.headings?.color || defaultColor,
       '--size-heading': styles.headings?.fontSize || '16px',
       '--weight-heading': styles.headings?.fontWeight || 'bold',
 
-      '--font-body': styles.body?.fontFamily ? `"${styles.body.fontFamily}", sans-serif` : 'inherit',
+      '--font-body': styles.body?.fontFamily
+        ? `"${styles.body.fontFamily}", sans-serif`
+        : 'inherit',
       '--color-body': styles.body?.color || defaultColor,
       '--size-body': styles.body?.fontSize || '12px',
       '--lh-body': styles.body?.lineHeight || '1.5',
@@ -114,12 +119,9 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({
     return { googleFontsUrl: fontsUrl, cssVariables: cssString };
   }, [data.meta?.customStyles, themeColor]);
 
-
   return (
     <>
-      {googleFontsUrl && (
-        <link href={googleFontsUrl} rel="stylesheet" />
-      )}
+      {googleFontsUrl && <link href={googleFontsUrl} rel="stylesheet" />}
       <style>{`
         .resume-preview-container {
           ${cssVariables}

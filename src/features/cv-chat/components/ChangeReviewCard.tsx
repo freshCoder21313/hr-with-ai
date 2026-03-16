@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ProposedChange } from '../cvChatUtils';
-import { Check, X, ArrowRight, ChevronDown, ChevronUp } from 'lucide-react';
+import { Check, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
@@ -37,7 +37,7 @@ export const ChangeReviewCard: React.FC<ChangeReviewCardProps> = ({
 
   // Helper to render readable diff content
   const renderContent = () => {
-    const { section, newData, action } = change;
+    const { newData, action } = change;
 
     if (action === 'delete') {
       return <div className="text-sm text-red-600 italic">This section will be removed.</div>;

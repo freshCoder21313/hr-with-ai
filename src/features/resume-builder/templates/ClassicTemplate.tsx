@@ -26,7 +26,8 @@ interface TemplateProps {
   onOrderChange?: (newSidebar: string[], newMain: string[]) => void;
 }
 
-const SummarySection = React.memo(function SummarySection({ themeColor,
+const SummarySection = React.memo(function SummarySection({
+  themeColor,
   summary,
   onUpdate,
 }: {
@@ -37,10 +38,26 @@ const SummarySection = React.memo(function SummarySection({ themeColor,
   if (!summary) return null;
   return (
     <section className="mb-6 break-inside-avoid">
-      <h2 className="uppercase border-b border-slate-300 mb-3 pb-1" style={{ color: 'var(--color-heading)', fontSize: 'var(--size-heading)', fontFamily: 'var(--font-heading)', fontWeight: 'var(--weight-heading)' }}>
+      <h2
+        className="uppercase border-b border-slate-300 mb-3 pb-1"
+        style={{
+          color: 'var(--color-heading)',
+          fontSize: 'var(--size-heading)',
+          fontFamily: 'var(--font-heading)',
+          fontWeight: 'var(--weight-heading)',
+        }}
+      >
         Professional Summary
       </h2>
-      <div className="text-slate-700 text-justify" style={{ fontSize: 'var(--size-body)', fontFamily: 'var(--font-body)', color: 'var(--color-body)', lineHeight: 'var(--lh-body)' }}>
+      <div
+        className="text-slate-700 text-justify"
+        style={{
+          fontSize: 'var(--size-body)',
+          fontFamily: 'var(--font-body)',
+          color: 'var(--color-body)',
+          lineHeight: 'var(--lh-body)',
+        }}
+      >
         <InlineEdit
           as="div"
           multiline
@@ -63,7 +80,15 @@ const WorkSection = React.memo(function WorkSection({
   if (!work || work.length === 0) return null;
   return (
     <section className="break-inside-avoid" style={{ marginBottom: 'var(--spacing-section)' }}>
-      <h2 className="uppercase border-b border-slate-300 mb-4 pb-1" style={{ color: 'var(--color-heading)', fontSize: 'var(--size-heading)', fontFamily: 'var(--font-heading)', fontWeight: 'var(--weight-heading)' }}>
+      <h2
+        className="uppercase border-b border-slate-300 mb-4 pb-1"
+        style={{
+          color: 'var(--color-heading)',
+          fontSize: 'var(--size-heading)',
+          fontFamily: 'var(--font-heading)',
+          fontWeight: 'var(--weight-heading)',
+        }}
+      >
         Experience
       </h2>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-item)' }}>
@@ -102,7 +127,11 @@ const WorkSection = React.memo(function WorkSection({
               as="p"
               multiline
               className="mb-2 w-full"
-              style={{ fontSize: 'calc(var(--size-body) * 0.95)', color: 'var(--color-body)', lineHeight: 'var(--lh-body)' }}
+              style={{
+                fontSize: 'calc(var(--size-body) * 0.95)',
+                color: 'var(--color-body)',
+                lineHeight: 'var(--lh-body)',
+              }}
               value={job.summary || ''}
               onSave={(val) => {
                 const newWork = [...work];
@@ -113,7 +142,14 @@ const WorkSection = React.memo(function WorkSection({
             {job.highlights && job.highlights.length > 0 && (
               <ul className="list-disc ml-5 space-y-1">
                 {job.highlights.map((highlight, idx) => (
-                  <li key={idx} style={{ fontSize: 'calc(var(--size-body) * 0.95)', color: 'var(--color-body)', lineHeight: 'var(--lh-body)' }}>
+                  <li
+                    key={idx}
+                    style={{
+                      fontSize: 'calc(var(--size-body) * 0.95)',
+                      color: 'var(--color-body)',
+                      lineHeight: 'var(--lh-body)',
+                    }}
+                  >
                     {highlight}
                   </li>
                 ))}
@@ -136,12 +172,25 @@ const ProjectsSection = React.memo(function ProjectsSection({
   if (!projects || projects.length === 0) return null;
   return (
     <section className="break-inside-avoid" style={{ marginBottom: 'var(--spacing-section)' }}>
-      <h2 className="uppercase border-b border-slate-300 mb-4 pb-1" style={{ color: 'var(--color-heading)', fontSize: 'var(--size-heading)', fontFamily: 'var(--font-heading)', fontWeight: 'var(--weight-heading)' }}>Projects</h2>
+      <h2
+        className="uppercase border-b border-slate-300 mb-4 pb-1"
+        style={{
+          color: 'var(--color-heading)',
+          fontSize: 'var(--size-heading)',
+          fontFamily: 'var(--font-heading)',
+          fontWeight: 'var(--weight-heading)',
+        }}
+      >
+        Projects
+      </h2>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-item)' }}>
         {projects.map((project, i) => (
           <div key={i}>
             <div className="flex justify-between items-baseline mb-1">
-              <h3 className="font-bold" style={{ fontSize: 'calc(var(--size-body) * 1.15)', color: 'var(--color-body)' }}>
+              <h3
+                className="font-bold"
+                style={{ fontSize: 'calc(var(--size-body) * 1.15)', color: 'var(--color-body)' }}
+              >
                 {project.name}
                 {project.url && (
                   <a
@@ -162,7 +211,11 @@ const ProjectsSection = React.memo(function ProjectsSection({
               as="p"
               multiline
               className="mb-2 w-full"
-              style={{ fontSize: 'calc(var(--size-body) * 0.95)', color: 'var(--color-body)', lineHeight: 'var(--lh-body)' }}
+              style={{
+                fontSize: 'calc(var(--size-body) * 0.95)',
+                color: 'var(--color-body)',
+                lineHeight: 'var(--lh-body)',
+              }}
               value={project.description || ''}
               onSave={(val) => {
                 const newProjects = [...projects];
@@ -173,7 +226,14 @@ const ProjectsSection = React.memo(function ProjectsSection({
             {project.highlights && project.highlights.length > 0 && (
               <ul className="list-disc ml-5 space-y-1">
                 {project.highlights.map((highlight, idx) => (
-                  <li key={idx} style={{ fontSize: 'calc(var(--size-body) * 0.95)', color: 'var(--color-body)', lineHeight: 'var(--lh-body)' }}>
+                  <li
+                    key={idx}
+                    style={{
+                      fontSize: 'calc(var(--size-body) * 0.95)',
+                      color: 'var(--color-body)',
+                      lineHeight: 'var(--lh-body)',
+                    }}
+                  >
                     {highlight}
                   </li>
                 ))}
@@ -186,7 +246,8 @@ const ProjectsSection = React.memo(function ProjectsSection({
   );
 });
 
-const EducationSection = React.memo(function EducationSection({ themeColor,
+const EducationSection = React.memo(function EducationSection({
+  themeColor,
   education,
   onUpdate,
 }: {
@@ -197,7 +258,17 @@ const EducationSection = React.memo(function EducationSection({ themeColor,
   if (!education || education.length === 0) return null;
   return (
     <section className="break-inside-avoid" style={{ marginBottom: 'var(--spacing-section)' }}>
-      <h2 className="uppercase border-b border-slate-300 mb-4 pb-1" style={{ color: 'var(--color-heading)', fontSize: 'var(--size-heading)', fontFamily: 'var(--font-heading)', fontWeight: 'var(--weight-heading)' }}>Education</h2>
+      <h2
+        className="uppercase border-b border-slate-300 mb-4 pb-1"
+        style={{
+          color: 'var(--color-heading)',
+          fontSize: 'var(--size-heading)',
+          fontFamily: 'var(--font-heading)',
+          fontWeight: 'var(--weight-heading)',
+        }}
+      >
+        Education
+      </h2>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-item)' }}>
         {education.map((edu, i) => (
           <div key={i}>
@@ -238,12 +309,41 @@ const SkillsSection = React.memo(function SkillsSection({
   if (!skills || skills.length === 0) return null;
   return (
     <section style={{ marginBottom: 'var(--spacing-section)' }}>
-      <h2 className="uppercase border-b border-slate-300 mb-4 pb-1" style={{ color: 'var(--color-heading)', fontSize: 'var(--size-heading)', fontFamily: 'var(--font-heading)', fontWeight: 'var(--weight-heading)' }}>Skills</h2>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr', rowGap: 'calc(var(--spacing-item) * 0.75)' }}>
+      <h2
+        className="uppercase border-b border-slate-300 mb-4 pb-1"
+        style={{
+          color: 'var(--color-heading)',
+          fontSize: 'var(--size-heading)',
+          fontFamily: 'var(--font-heading)',
+          fontWeight: 'var(--weight-heading)',
+        }}
+      >
+        Skills
+      </h2>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr',
+          rowGap: 'calc(var(--spacing-item) * 0.75)',
+        }}
+      >
         {skills.map((skill, i) => (
           <div key={i} className="flex flex-col sm:items-baseline">
-            <span className="font-bold min-w-[120px]" style={{ fontSize: 'var(--size-body)', color: 'var(--color-body)' }}>{skill.name}:</span>
-            <p style={{ fontSize: 'calc(var(--size-body) * 0.95)', color: 'var(--color-body)', lineHeight: 'var(--lh-body)' }}>{skill.keywords?.join(', ')}</p>
+            <span
+              className="font-bold min-w-[120px]"
+              style={{ fontSize: 'var(--size-body)', color: 'var(--color-body)' }}
+            >
+              {skill.name}:
+            </span>
+            <p
+              style={{
+                fontSize: 'calc(var(--size-body) * 0.95)',
+                color: 'var(--color-body)',
+                lineHeight: 'var(--lh-body)',
+              }}
+            >
+              {skill.keywords?.join(', ')}
+            </p>
           </div>
         ))}
       </div>
@@ -251,7 +351,8 @@ const SkillsSection = React.memo(function SkillsSection({
   );
 });
 
-const HeaderSection = React.memo(function HeaderSection({ themeColor,
+const HeaderSection = React.memo(function HeaderSection({
+  themeColor,
   basics,
   onUpdate,
 }: {
@@ -260,11 +361,19 @@ const HeaderSection = React.memo(function HeaderSection({ themeColor,
   themeColor?: string;
 }) {
   return (
-    <header className="border-b-2 border-slate-800 pb-4" style={{ marginBottom: 'var(--spacing-section)' }}>
+    <header
+      className="border-b-2 border-slate-800 pb-4"
+      style={{ marginBottom: 'var(--spacing-section)' }}
+    >
       <InlineEdit
         as="h1"
         className="uppercase tracking-wide mb-2 block w-full"
-        style={{ color: 'var(--color-name)', fontSize: 'var(--size-name)', fontFamily: 'var(--font-name)', fontWeight: 'var(--weight-name)' }}
+        style={{
+          color: 'var(--color-name)',
+          fontSize: 'var(--size-name)',
+          fontFamily: 'var(--font-name)',
+          fontWeight: 'var(--weight-name)',
+        }}
         value={basics.name || ''}
         onSave={(val) => onUpdate?.({ ...basics, name: val })}
       />
@@ -276,7 +385,10 @@ const HeaderSection = React.memo(function HeaderSection({ themeColor,
         onSave={(val) => onUpdate?.({ ...basics, label: val })}
       />
 
-      <div className="flex flex-wrap gap-4" style={{ fontSize: 'calc(var(--size-body) * 0.95)', color: 'var(--color-body)' }}>
+      <div
+        className="flex flex-wrap gap-4"
+        style={{ fontSize: 'calc(var(--size-body) * 0.95)', color: 'var(--color-body)' }}
+      >
         {basics.email && (
           <div className="flex items-center gap-1">
             <Mail size={14} /> {basics.email}
@@ -315,7 +427,12 @@ const HeaderSection = React.memo(function HeaderSection({ themeColor,
   );
 });
 
-const ClassicTemplate: React.FC<TemplateProps> = ({ data, onUpdate, onOrderChange, themeColor = '#1e293b' }) => {
+const ClassicTemplate: React.FC<TemplateProps> = ({
+  data,
+  onUpdate,
+  onOrderChange,
+  themeColor = '#1e293b',
+}) => {
   const { basics, work, education, skills, projects, meta } = data;
 
   const defaultOrder = ['header', 'summary', 'experience', 'projects', 'education', 'skills'];
@@ -396,7 +513,10 @@ const ClassicTemplate: React.FC<TemplateProps> = ({ data, onUpdate, onOrderChang
   };
 
   return (
-    <div className="bg-white p-8 max-w-[210mm] mx-auto min-h-[297mm] shadow-sm print:shadow-none print:p-0 transition-all duration-300" style={{ color: 'var(--color-text-global)' }}>
+    <div
+      className="bg-white p-8 max-w-[210mm] mx-auto min-h-[297mm] shadow-sm print:shadow-none print:p-0 transition-all duration-300"
+      style={{ color: 'var(--color-text-global)' }}
+    >
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}

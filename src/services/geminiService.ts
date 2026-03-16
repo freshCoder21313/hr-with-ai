@@ -471,6 +471,7 @@ export const parseResumeToJSON = async (
 
 export const analyzeResumeSection = async (
   sectionName: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sectionData: any,
   configInput: AIConfigInput
 ): Promise<{ critique: string; suggestions: string[]; rewrittenExample: string }> => {

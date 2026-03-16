@@ -1,5 +1,18 @@
 import { AIProviderStrategy, ChatMessage, AIResponse, AIRequestOptions } from '@/types';
 
+interface OpenAIMessage {
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+}
+
+interface OpenAIRequestBody {
+  model: string;
+  messages: OpenAIMessage[];
+  stream: boolean;
+  temperature: number;
+  response_format?: { type: 'json_object' };
+}
+
 export class OpenAICustomStrategy implements AIProviderStrategy {
   private apiKey: string;
   private baseUrl: string;
@@ -12,12 +25,12 @@ export class OpenAICustomStrategy implements AIProviderStrategy {
   }
 
   private async callOpenAI(
-    messages: any[],
+    messages: OpenAIMessage[],
     model: string,
     stream: boolean,
     options?: AIRequestOptions
   ): Promise<Response> {
-    const body: any = {
+    const body: OpenAIRequestBody = {
       model: options?.modelId || model,
       messages: messages,
       stream: stream,
@@ -45,9 +58,9 @@ export class OpenAICustomStrategy implements AIProviderStrategy {
       });
       clearTimeout(timeoutId);
       return response;
-    } catch (error: any) {
+    } catch (error: unknown) {
       clearTimeout(timeoutId);
-      if (error.name === 'AbortError') {
+      if (error instanceof Error && error.name === 'AbortError') {
         throw new Error('Request timed out');
       }
       throw error;

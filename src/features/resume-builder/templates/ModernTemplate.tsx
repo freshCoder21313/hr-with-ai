@@ -27,11 +27,9 @@ interface TemplateProps {
 }
 
 const EducationSection = React.memo(function EducationSection({
-  onUpdate,
   education,
 }: {
   education: ResumeData['education'];
-  onUpdate?: (education: ResumeData['education']) => void;
 }) {
   if (!education || education.length === 0) return null;
   return (
@@ -57,11 +55,9 @@ const EducationSection = React.memo(function EducationSection({
 });
 
 const SkillsSection = React.memo(function SkillsSection({
-  onUpdate,
   skills,
 }: {
   skills: ResumeData['skills'];
-  onUpdate?: (skills: ResumeData['skills']) => void;
 }) {
   if (!skills || skills.length === 0) return null;
   return (
@@ -124,7 +120,8 @@ const WorkSection = React.memo(function WorkSection({
   return (
     <section className="mb-12 break-inside-avoid">
       <h2 className="text-sm font-bold text-slate-900 uppercase tracking-widest mb-6 flex items-center gap-3">
-        <span className="w-8 h-1 rounded-full" style={{ backgroundColor: themeColor }}></span> Experience
+        <span className="w-8 h-1 rounded-full" style={{ backgroundColor: themeColor }}></span>{' '}
+        Experience
       </h2>
       <div className="space-y-8 relative pl-2">
         <div className="absolute left-[3px] top-2 bottom-2 w-[2px] bg-slate-100"></div>
@@ -148,7 +145,8 @@ const WorkSection = React.memo(function WorkSection({
             </div>
             <InlineEdit
               as="p"
-              className="text-sm font-medium mb-3 inline-block" style={{ color: themeColor }}
+              className="text-sm font-medium mb-3 inline-block"
+              style={{ color: themeColor }}
               value={job.name || ''}
               onSave={(val) => {
                 const newWork = [...work];
@@ -200,7 +198,8 @@ const ProjectsSection = React.memo(function ProjectsSection({
   return (
     <section className="mb-12 break-inside-avoid">
       <h2 className="text-sm font-bold text-slate-900 uppercase tracking-widest mb-6 flex items-center gap-3">
-        <span className="w-8 h-1 rounded-full" style={{ backgroundColor: themeColor }}></span> Projects
+        <span className="w-8 h-1 rounded-full" style={{ backgroundColor: themeColor }}></span>{' '}
+        Projects
       </h2>
       <div className="grid grid-cols-1 gap-6">
         {projects.map((project, i) => (
@@ -307,11 +306,9 @@ const SidebarContactInfo = React.memo(function SidebarContactInfo({
 const MainHeader = React.memo(function MainHeader({
   basics,
   onUpdate,
-  themeColor,
 }: {
   basics: ResumeData['basics'];
   onUpdate?: (basics: ResumeData['basics']) => void;
-  themeColor?: string;
 }) {
   return (
     <header className="mb-10 pb-8 border-b border-slate-200">
@@ -328,12 +325,14 @@ const MainHeader = React.memo(function MainHeader({
         <div className="flex-1 min-w-0 pt-2">
           <InlineEdit
             as="h1"
-            className="text-4xl font-extrabold text-slate-900 tracking-tight leading-none mb-3 break-words block w-full" value={basics.name || ''}
+            className="text-4xl font-extrabold text-slate-900 tracking-tight leading-none mb-3 break-words block w-full"
+            value={basics.name || ''}
             onSave={(val) => onUpdate?.({ ...basics, name: val })}
           />
           <InlineEdit
             as="p"
-            className="text-xl font-semibold tracking-wide uppercase text-sm mb-4 block w-full" style={{ color: themeColor }} value={basics.label || ''}
+            className="text-xl font-semibold tracking-wide uppercase text-sm mb-4 block w-full"
+            value={basics.label || ''}
             onSave={(val) => onUpdate?.({ ...basics, label: val })}
           />
         </div>
@@ -342,7 +341,12 @@ const MainHeader = React.memo(function MainHeader({
   );
 });
 
-const ModernTemplate: React.FC<TemplateProps> = ({ data, onUpdate, onOrderChange, themeColor = '#2563eb' }) => {
+const ModernTemplate: React.FC<TemplateProps> = ({
+  data,
+  onUpdate,
+  onOrderChange,
+  themeColor = '#2563eb',
+}) => {
   const { basics, work, education, skills, projects, meta } = data;
 
   const defaultSidebar = ['education', 'skills', 'contact'];
@@ -381,21 +385,9 @@ const ModernTemplate: React.FC<TemplateProps> = ({ data, onUpdate, onOrderChange
   const renderSection = (id: string) => {
     switch (id) {
       case 'education':
-        return (
-          <EducationSection
-            key={id}
-            education={education}
-            onUpdate={(educationData) => onUpdate?.({ ...data, education: educationData })}
-          />
-        );
+        return <EducationSection key={id} education={education} />;
       case 'skills':
-        return (
-          <SkillsSection
-            key={id}
-            skills={skills}
-            onUpdate={(skillsData) => onUpdate?.({ ...data, skills: skillsData })}
-          />
-        );
+        return <SkillsSection key={id} skills={skills} />;
       case 'summary':
         return (
           <SummarySection

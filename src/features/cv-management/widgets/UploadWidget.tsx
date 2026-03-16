@@ -50,10 +50,6 @@ export const UploadWidget: React.FC = () => {
     }
   };
 
-  const onButtonClick = () => {
-    inputRef.current?.click();
-  };
-
   const handleReset = () => {
     setFile(null);
     // Potentially call a function to clear the upload status in the store if needed

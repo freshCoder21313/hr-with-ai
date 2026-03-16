@@ -215,7 +215,7 @@ export class GoogleGeminiStrategy implements AIProviderStrategy {
                   const data = JSON.parse(jsonStr);
                   const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
                   if (text) yield text;
-                } catch (e) {
+                } catch (_e) {
                   // Ignore parse errors, maybe not a valid object or different structure
                 }
 
@@ -230,9 +230,9 @@ export class GoogleGeminiStrategy implements AIProviderStrategy {
             buffer = buffer.substring(processedIndex);
           }
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         clearTimeout(timeoutId);
-        if (error.name === 'AbortError') {
+        if (error instanceof Error && error.name === 'AbortError') {
           throw new Error('Request timed out');
         }
         console.error('Custom Gemini Stream Error:', error);

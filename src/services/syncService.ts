@@ -150,7 +150,7 @@ export const syncService = {
       );
 
       return { success: true };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Upload error:', error);
       let message = 'Unknown error';
 
@@ -202,7 +202,7 @@ export const syncService = {
       }
 
       return { success: true, data: finalData };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Download error:', error);
       let message = 'Unknown error';
 

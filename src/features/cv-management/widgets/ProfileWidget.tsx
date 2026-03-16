@@ -121,7 +121,7 @@ export const ProfileWidget: React.FC = () => {
     return <EmptyState />;
   }
 
-  const handleSave = (field: keyof Basics, value: any) => {
+  const handleSave = (field: keyof Basics, value: Basics[keyof Basics]) => {
     if (parsedData.basics) {
       const updatedBasics = { ...parsedData.basics, [field]: value };
       updateParsedData('basics', updatedBasics);

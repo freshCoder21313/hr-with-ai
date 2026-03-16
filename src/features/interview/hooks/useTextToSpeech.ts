@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { textToSpeechService } from '@/services/textToSpeechService';
 import { VoiceSettings } from '@/types';
 

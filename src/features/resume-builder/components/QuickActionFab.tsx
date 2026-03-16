@@ -5,12 +5,10 @@ import {
   GraduationCap,
   Code,
   FolderGit2,
-  User,
   ChevronUp,
   ChevronDown,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
 import {
   DropdownMenu,
   DropdownMenuContent,

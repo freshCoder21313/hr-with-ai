@@ -47,12 +47,15 @@ const CreativeSidebarHeader = React.memo(function CreativeSidebarHeader({
       )}
       <InlineEdit
         as="h1"
-        className="text-2xl font-bold tracking-wide mb-2 text-white block w-full" value={basics.name || ''}
+        className="text-2xl font-bold tracking-wide mb-2 text-white block w-full"
+        value={basics.name || ''}
         onSave={(val) => onUpdate?.({ ...basics, name: val })}
       />
       <InlineEdit
         as="p"
-        className="text-sm font-medium tracking-wider uppercase opacity-80 block w-full" style={{ color: primaryColor }} value={basics.label || ''}
+        className="text-sm font-medium tracking-wider uppercase opacity-80 block w-full"
+        style={{ color: primaryColor }}
+        value={basics.label || ''}
         onSave={(val) => onUpdate?.({ ...basics, label: val })}
       />
     </div>
@@ -66,8 +69,6 @@ const CreativeTemplate: React.FC<TemplateProps> = ({
   onOrderChange,
 }) => {
   const { basics, work, education, skills, projects, meta } = data;
-
-  const defaultOrder = ['summary', 'experience', 'projects', 'education', 'skills'];
 
   // Merge main/sidebar for single column flow or keep distinct if desired.
   // Creative template might be a single column with a strong header, or 2 columns.

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { AIModelProvider } from '@/types';
 import { loadUserSettings, saveUserSettings } from '@/services/settingsService';
 import { subscribeToApiKeyModal } from '@/events/apiKeyEvents';
 import { Input } from '@/components/ui/input';
@@ -7,15 +8,18 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { ShieldCheck, X, RefreshCw } from 'lucide-react';
 
+type GeminiModel = {
+  name: string;
+};
+
 const ApiKeyModal: React.FC = () => {
   const [apiKey, setApiKey] = useState(() => localStorage.getItem('gemini_api_key') || '');
   const [baseUrl, setBaseUrl] = useState(() => localStorage.getItem('custom_base_url') || '');
   const [modelId, setModelId] = useState(() => localStorage.getItem('custom_model_id') || '');
   const [geminiModels, setGeminiModels] = useState<string[]>([]);
   const [isFetchingModels, setIsFetchingModels] = useState(false);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [provider, setProvider] = useState<any>(
-    () => localStorage.getItem('ai_provider') || 'google'
+  const [provider, setProvider] = useState<AIModelProvider>(
+    () => (localStorage.getItem('ai_provider') as AIModelProvider) || 'google'
   );
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [isOpen, setIsOpen] = useState(() => !localStorage.getItem('gemini_api_key'));
@@ -57,7 +61,7 @@ const ApiKeyModal: React.FC = () => {
       }
       const data = await response.json();
       const models = data.models
-        .map((m: any) => m.name)
+        .map((m: GeminiModel) => m.name)
         .filter((name: string) => name.includes('gemini'));
       setGeminiModels(models);
     } catch (error) {
@@ -124,7 +128,7 @@ const ApiKeyModal: React.FC = () => {
             <Label className="mb-1 block">AI Service Provider</Label>
             <select
               value={provider}
-              onChange={(e) => setProvider(e.target.value)}
+              onChange={(e) => setProvider(e.target.value as AIModelProvider)}
               className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
             >
               <option value="google" className="bg-popover text-popover-foreground">

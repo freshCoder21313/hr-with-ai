@@ -308,7 +308,7 @@ const ResumeBuilder: React.FC = () => {
       projects: { name: 'New Project', description: '' },
     };
 
-    const currentList = (data[section] as any[]) || [];
+    const currentList = (data[section] as unknown[]) || [];
     updateSection(section, [...currentList, newItems[section]]);
   };
 
