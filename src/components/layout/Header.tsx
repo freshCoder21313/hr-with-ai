@@ -33,6 +33,14 @@ const NavLinks = ({ mobile = false, closeMenu }: { mobile?: boolean; closeMenu?:
       CV Dashboard
     </a>
     <a
+      href="#/studio"
+      className={`text-sm font-semibold transition-colors hover:text-primary ${mobile ? 'text-lg py-2 border-b border-border' : 'text-primary'
+        }`}
+      onClick={() => mobile && closeMenu?.()}
+    >
+      CV Studio
+    </a>
+    <a
       href="#/tools/smart-tailor"
       className={`text-sm font-medium transition-colors hover:text-primary ${mobile ? 'text-lg py-2 border-b border-border' : 'text-muted-foreground'
         }`}

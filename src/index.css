@@ -52,8 +52,10 @@
   variable compatibility, we often map them directly in the CSS.
 */
 :root {
-  --background: 0 0% 100%; /* white */
-  --foreground: 222.2 84% 4.9%; /* slate-950 */
+  --background: 0 0% 100%;
+  /* white */
+  --foreground: 222.2 84% 4.9%;
+  /* slate-950 */
 
   --card: 0 0% 100%;
   --card-foreground: 222.2 84% 4.9%;
@@ -61,22 +63,27 @@
   --popover: 0 0% 100%;
   --popover-foreground: 222.2 84% 4.9%;
 
-  --primary: 221.2 83.2% 53.3%; /* blue-600 */
+  --primary: 221.2 83.2% 53.3%;
+  /* blue-600 */
   --primary-foreground: 210 40% 98%;
 
-  --secondary: 210 40% 96.1%; /* slate-100 */
+  --secondary: 210 40% 96.1%;
+  /* slate-100 */
   --secondary-foreground: 222.2 47.4% 11.2%;
 
   --muted: 210 40% 96.1%;
-  --muted-foreground: 215.4 16.3% 46.9%; /* slate-500 */
+  --muted-foreground: 215.4 16.3% 46.9%;
+  /* slate-500 */
 
   --accent: 210 40% 96.1%;
   --accent-foreground: 222.2 47.4% 11.2%;
 
-  --destructive: 0 84.2% 60.2%; /* red-500 */
+  --destructive: 0 84.2% 60.2%;
+  /* red-500 */
   --destructive-foreground: 210 40% 98%;
 
-  --border: 214.3 31.8% 91.4%; /* slate-200 */
+  --border: 214.3 31.8% 91.4%;
+  /* slate-200 */
   --input: 214.3 31.8% 91.4%;
   --ring: 221.2 83.2% 53.3%;
 
@@ -84,8 +91,10 @@
 }
 
 .dark {
-  --background: 222.2 84% 4.9%; /* slate-950 */
-  --foreground: 210 40% 98%; /* slate-50 */
+  --background: 222.2 84% 4.9%;
+  /* slate-950 */
+  --foreground: 210 40% 98%;
+  /* slate-50 */
 
   --card: 222.2 84% 4.9%;
   --card-foreground: 210 40% 98%;
@@ -93,14 +102,17 @@
   --popover: 222.2 84% 4.9%;
   --popover-foreground: 210 40% 98%;
 
-  --primary: 217.2 91.2% 59.8%; /* blue-500 */
+  --primary: 217.2 91.2% 59.8%;
+  /* blue-500 */
   --primary-foreground: 222.2 47.4% 11.2%;
 
-  --secondary: 217.2 32.6% 17.5%; /* slate-800 */
+  --secondary: 217.2 32.6% 17.5%;
+  /* slate-800 */
   --secondary-foreground: 210 40% 98%;
 
   --muted: 217.2 32.6% 17.5%;
-  --muted-foreground: 215 20.2% 65.1%; /* slate-400 */
+  --muted-foreground: 215 20.2% 65.1%;
+  /* slate-400 */
 
   --accent: 217.2 32.6% 17.5%;
   --accent-foreground: 210 40% 98%;
@@ -108,7 +120,8 @@
   --destructive: 0 62.8% 30.6%;
   --destructive-foreground: 210 40% 98%;
 
-  --border: 217.2 32.6% 17.5%; /* slate-800 */
+  --border: 217.2 32.6% 17.5%;
+  /* slate-800 */
   --input: 217.2 32.6% 17.5%;
   --ring: 224.3 76.3% 48%;
 }
@@ -117,6 +130,7 @@
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -147,6 +161,7 @@ body {
 }
 
 @media print {
+
   /* Hide only non-resume UI elements.
      NOTE: Do NOT hide `aside` or `header` here — resume templates
      use those HTML tags for sidebar and CV header sections. */
@@ -161,6 +176,8 @@ body {
   body {
     background: white !important;
     box-shadow: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
   /* Ensure colors (backgrounds, borders, text) are printed faithfully */
@@ -174,5 +191,22 @@ body {
     max-width: none !important;
     padding: 0 !important;
     margin: 0 !important;
+  }
+
+  /* Resume print container — A4 width, let browser paginate naturally */
+  .resume-preview-container {
+    width: 210mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+  }
+
+  /* Avoid breaking inside key resume sections */
+  .work-item,
+  .education-item,
+  .project-item,
+  .skill-group {
+    page-break-inside: avoid;
+    break-inside: avoid;
   }
 }

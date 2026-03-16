@@ -108,17 +108,16 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
                     </div>
                   )}
                   <div
-                    className={`p-3 md:p-4 rounded-2xl text-xs md:text-sm leading-relaxed shadow-sm ${
-                      msg.role === 'user'
+                    className={`p-3 md:p-4 rounded-2xl text-xs md:text-sm leading-relaxed shadow-sm ${msg.role === 'user'
                         ? 'bg-primary text-primary-foreground rounded-tr-none'
                         : msg.isError
                           ? 'bg-destructive/10 text-destructive border-destructive/50 border rounded-tl-none'
                           : 'bg-card text-foreground border border-border rounded-tl-none'
-                    }`}
+                      }`}
                   >
                     {msg.role === 'model' ? (
                       msg.isError ||
-                      (!cleanContent && (!isProcessing || idx !== messages.length - 1)) ? (
+                        (!cleanContent && (!isProcessing || idx !== messages.length - 1)) ? (
                         <div className="flex flex-col gap-2">
                           <div className="flex items-center gap-2 font-semibold">
                             <AlertCircle size={16} />
@@ -171,9 +170,8 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
               {/* Inline Feedback Section */}
               {feedback && (
                 <div
-                  className={`mt-3 max-w-[95%] md:max-w-[75%] ${
-                    msg.role === 'user' ? 'mr-10 md:mr-12' : 'ml-10 md:ml-12'
-                  } animate-in fade-in slide-in-from-top-2 duration-300`}
+                  className={`mt-3 max-w-[95%] md:max-w-[75%] ${msg.role === 'user' ? 'mr-10 md:mr-12' : 'ml-10 md:ml-12'
+                    } animate-in fade-in slide-in-from-top-2 duration-300`}
                 >
                   {!isExpanded ? (
                     <Button
@@ -229,6 +227,20 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
             </div>
           );
         })}
+        {isProcessing && (
+          <div className="flex items-start gap-3 animate-in fade-in slide-in-from-left-2 duration-300">
+            <div className="flex-shrink-0 w-6 h-6 md:w-8 md:h-8 rounded-full bg-card text-muted-foreground border border-border flex items-center justify-center shadow-sm">
+              <Bot size={14} className="animate-pulse" />
+            </div>
+            <div className="bg-card text-foreground border border-border rounded-2xl rounded-tl-none p-3 px-4 shadow-sm">
+              <div className="flex gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground animate-bounce [animation-delay:-0.3s]"></span>
+                <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground animate-bounce [animation-delay:-0.15s]"></span>
+                <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground animate-bounce"></span>
+              </div>
+            </div>
+          </div>
+        )}
         <div ref={messagesEndRef} />
       </div>
     </div>

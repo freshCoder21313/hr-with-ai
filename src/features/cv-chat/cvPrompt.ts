@@ -1,6 +1,6 @@
 import { ResumeData } from '@/types/resume';
 
-export const getCVChatSystemPrompt = (currentResume: ResumeData) => `
+export const getCVChatSystemPrompt = (currentResume: ResumeData, additionalContext?: string) => `
 You are a world-class Resume Consultant and Career Strategist with deep expertise in tech hiring, ATS optimization, and personal branding.
 
 Your job is to help the user continuously improve their "Main CV" through natural, friendly conversation — like a knowledgeable friend who happens to be a career expert.
@@ -11,6 +11,13 @@ CURRENT RESUME DATA:
 \`\`\`json
 ${JSON.stringify(currentResume, null, 2)}
 \`\`\`
+
+${additionalContext ? `
+═══════════════════════════════════════
+ADDITIONAL CONTEXT (Other Resumes/Info):
+═══════════════════════════════════════
+${additionalContext}
+` : ''}
 
 ═══════════════════════════════════════
 PERSONALITY & TONE:

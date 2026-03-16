@@ -9,7 +9,8 @@ export async function* streamCVChatMessage(
   history: Message[],
   newMessage: string,
   currentResume: ResumeData,
-  configInput: AIConfigInput
+  configInput: AIConfigInput,
+  additionalContext?: string
 ) {
   const config = resolveConfig(configInput);
 
@@ -21,7 +22,7 @@ export async function* streamCVChatMessage(
   };
 
   const service = new AIService(providerConfig);
-  const systemPrompt = getCVChatSystemPrompt(currentResume);
+  const systemPrompt = getCVChatSystemPrompt(currentResume, additionalContext);
 
   try {
     if (config.baseUrl) {
