@@ -201,12 +201,24 @@ body {
     box-shadow: none !important;
   }
 
-  /* Avoid breaking inside key resume sections */
+  /* Avoid breaking inside key resume items */
   .work-item,
   .education-item,
   .project-item,
+  .skill-item,
   .skill-group {
-    page-break-inside: avoid;
-    break-inside: avoid;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* Prevent headings from being orphaned at the bottom of a page */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    break-after: avoid !important;
+    page-break-after: avoid !important;
   }
 }

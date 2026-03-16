@@ -37,7 +37,7 @@ const SummarySection = React.memo(function SummarySection({
 }) {
   if (!summary) return null;
   return (
-    <section className="mb-6 break-inside-avoid">
+    <section className="mb-6">
       <h2
         className="uppercase border-b border-slate-300 mb-3 pb-1"
         style={{
@@ -79,7 +79,7 @@ const WorkSection = React.memo(function WorkSection({
 }) {
   if (!work || work.length === 0) return null;
   return (
-    <section className="break-inside-avoid" style={{ marginBottom: 'var(--spacing-section)' }}>
+    <section style={{ marginBottom: 'var(--spacing-section)' }}>
       <h2
         className="uppercase border-b border-slate-300 mb-4 pb-1"
         style={{
@@ -93,7 +93,7 @@ const WorkSection = React.memo(function WorkSection({
       </h2>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-item)' }}>
         {work.map((job, i) => (
-          <div key={i}>
+          <div key={i} className="work-item">
             <div className="flex justify-between items-baseline mb-1">
               <InlineEdit
                 as="h3"
@@ -171,7 +171,7 @@ const ProjectsSection = React.memo(function ProjectsSection({
 }) {
   if (!projects || projects.length === 0) return null;
   return (
-    <section className="break-inside-avoid" style={{ marginBottom: 'var(--spacing-section)' }}>
+    <section style={{ marginBottom: 'var(--spacing-section)' }}>
       <h2
         className="uppercase border-b border-slate-300 mb-4 pb-1"
         style={{
@@ -185,7 +185,7 @@ const ProjectsSection = React.memo(function ProjectsSection({
       </h2>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-item)' }}>
         {projects.map((project, i) => (
-          <div key={i}>
+          <div key={i} className="project-item">
             <div className="flex justify-between items-baseline mb-1">
               <h3
                 className="font-bold"
@@ -257,7 +257,7 @@ const EducationSection = React.memo(function EducationSection({
 }) {
   if (!education || education.length === 0) return null;
   return (
-    <section className="break-inside-avoid" style={{ marginBottom: 'var(--spacing-section)' }}>
+    <section style={{ marginBottom: 'var(--spacing-section)' }}>
       <h2
         className="uppercase border-b border-slate-300 mb-4 pb-1"
         style={{
@@ -271,7 +271,7 @@ const EducationSection = React.memo(function EducationSection({
       </h2>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-item)' }}>
         {education.map((edu, i) => (
-          <div key={i}>
+          <div key={i} className="education-item">
             <div className="flex justify-between items-baseline">
               <InlineEdit
                 as="h3"

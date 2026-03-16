@@ -33,13 +33,13 @@ const EducationSection = React.memo(function EducationSection({
 }) {
   if (!education || education.length === 0) return null;
   return (
-    <section className="mb-8 break-inside-avoid">
+    <section className="mb-8">
       <h3 className="text-white font-bold uppercase tracking-wider border-b border-slate-700 pb-2 mb-4 text-sm">
         Education
       </h3>
       <div className="space-y-4">
         {education.map((edu, i) => (
-          <div key={i}>
+          <div key={i} className="education-item">
             <h4 className="font-bold text-sm text-white">{edu.institution}</h4>
             <p className="text-xs text-slate-400">
               {edu.studyType} in {edu.area}
@@ -61,13 +61,13 @@ const SkillsSection = React.memo(function SkillsSection({
 }) {
   if (!skills || skills.length === 0) return null;
   return (
-    <section className="mb-8 break-inside-avoid">
+    <section className="mb-8">
       <h3 className="text-white font-bold uppercase tracking-wider border-b border-slate-700 pb-2 mb-4 text-sm">
         Skills
       </h3>
       <div className="space-y-3">
         {skills.map((skill, i) => (
-          <div key={i}>
+          <div key={i} className="skill-item">
             <h4 className="font-semibold text-xs text-slate-200 mb-1">{skill.name}</h4>
             <div className="flex flex-wrap gap-1">
               {skill.keywords?.map((kw, k) => (
@@ -118,7 +118,7 @@ const WorkSection = React.memo(function WorkSection({
 }) {
   if (!work || work.length === 0) return null;
   return (
-    <section className="mb-12 break-inside-avoid">
+    <section className="mb-12">
       <h2 className="text-sm font-bold text-slate-900 uppercase tracking-widest mb-6 flex items-center gap-3">
         <span className="w-8 h-1 rounded-full" style={{ backgroundColor: themeColor }}></span>{' '}
         Experience
@@ -126,7 +126,7 @@ const WorkSection = React.memo(function WorkSection({
       <div className="space-y-8 relative pl-2">
         <div className="absolute left-[3px] top-2 bottom-2 w-[2px] bg-slate-100"></div>
         {work.map((job, i) => (
-          <div key={i} className="relative pl-8 group">
+          <div key={i} className="relative pl-8 group work-item">
             <div className="absolute -left-[5px] top-1.5 w-4 h-4 rounded-full bg-white border-4 border-slate-200 group-hover:border-blue-400 transition-colors"></div>
             <div className="flex justify-between items-baseline mb-2">
               <InlineEdit
@@ -196,14 +196,14 @@ const ProjectsSection = React.memo(function ProjectsSection({
 }) {
   if (!projects || projects.length === 0) return null;
   return (
-    <section className="mb-12 break-inside-avoid">
+    <section className="mb-12">
       <h2 className="text-sm font-bold text-slate-900 uppercase tracking-widest mb-6 flex items-center gap-3">
         <span className="w-8 h-1 rounded-full" style={{ backgroundColor: themeColor }}></span>{' '}
         Projects
       </h2>
       <div className="grid grid-cols-1 gap-6">
         {projects.map((project, i) => (
-          <div key={i} className="group">
+          <div key={i} className="group project-item">
             <div className="flex justify-between items-baseline mb-2">
               <h3 className="font-bold text-slate-800 text-base flex items-center gap-2">
                 {project.name}

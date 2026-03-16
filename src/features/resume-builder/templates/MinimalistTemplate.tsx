@@ -148,7 +148,7 @@ const MinimalistTemplate: React.FC<TemplateProps> = ({
       case 'summary':
         if (!basics.summary) return null;
         return (
-          <section key="summary" className="mb-10 break-inside-avoid">
+          <section key="summary" className="mb-10">
             <h2 className="text-xs tracking-widest uppercase font-bold text-slate-400 mb-4">
               Summary
             </h2>
@@ -168,13 +168,13 @@ const MinimalistTemplate: React.FC<TemplateProps> = ({
       case 'experience':
         if (work.length === 0) return null;
         return (
-          <section key="work" className="mb-10 break-inside-avoid">
+          <section key="work" className="mb-10">
             <h2 className="text-xs tracking-widest uppercase font-bold text-slate-400 mb-6">
               Experience
             </h2>
             <div className="space-y-8">
               {work.map((job, i) => (
-                <div key={i} className="flex flex-col md:flex-row print:flex-row gap-4">
+                <div key={i} className="flex flex-col md:flex-row print:flex-row gap-4 work-item">
                   <div className="md:w-1/4 print:w-1/4 shrink-0 text-sm text-slate-500 pt-1">
                     {[job.startDate, job.endDate].filter(Boolean).join(' — ')}
                   </div>
@@ -228,13 +228,13 @@ const MinimalistTemplate: React.FC<TemplateProps> = ({
       case 'projects':
         if (projects.length === 0) return null;
         return (
-          <section key="projects" className="mb-10 break-inside-avoid">
+          <section key="projects" className="mb-10">
             <h2 className="text-xs tracking-widest uppercase font-bold text-slate-400 mb-6">
               Projects
             </h2>
             <div className="space-y-8">
               {projects.map((project, i) => (
-                <div key={i} className="flex flex-col md:flex-row print:flex-row gap-4">
+                <div key={i} className="flex flex-col md:flex-row print:flex-row gap-4 project-item">
                   <div className="md:w-1/4 print:w-1/4 shrink-0 text-sm text-slate-500 pt-1">
                     {[project.startDate, project.endDate].filter(Boolean).join(' — ')}
                   </div>
@@ -292,13 +292,13 @@ const MinimalistTemplate: React.FC<TemplateProps> = ({
       case 'education':
         if (education.length === 0) return null;
         return (
-          <section key="education" className="mb-10 break-inside-avoid">
+          <section key="education" className="mb-10">
             <h2 className="text-xs tracking-widest uppercase font-bold text-slate-400 mb-6">
               Education
             </h2>
             <div className="space-y-6">
               {education.map((edu, i) => (
-                <div key={i} className="flex flex-col md:flex-row print:flex-row gap-4">
+                <div key={i} className="flex flex-col md:flex-row print:flex-row gap-4 education-item">
                   <div className="md:w-1/4 print:w-1/4 shrink-0 text-sm text-slate-500 pt-1">
                     {[edu.startDate, edu.endDate].filter(Boolean).join(' — ')}
                   </div>
@@ -329,13 +329,13 @@ const MinimalistTemplate: React.FC<TemplateProps> = ({
       case 'skills':
         if (skills.length === 0) return null;
         return (
-          <section key="skills" className="mb-10 break-inside-avoid">
+          <section key="skills" className="mb-10">
             <h2 className="text-xs tracking-widest uppercase font-bold text-slate-400 mb-6">
               Skills
             </h2>
             <div className="space-y-4">
               {skills.map((skill, i) => (
-                <div key={i} className="flex flex-col md:flex-row print:flex-row gap-4">
+                <div key={i} className="flex flex-col md:flex-row print:flex-row gap-4 skill-item">
                   <div className="md:w-1/4 print:w-1/4 shrink-0 font-medium text-sm text-slate-900 pt-1">
                     {skill.name}
                   </div>

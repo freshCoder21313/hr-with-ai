@@ -132,7 +132,7 @@ const AcademicTemplate: React.FC<TemplateProps> = ({
       case 'summary':
         if (!basics.summary) return null;
         return (
-          <section key="summary" className="mb-6 break-inside-avoid">
+          <section key="summary" className="mb-6">
             <h2
               className="text-lg font-bold uppercase border-b-2 border-slate-300 mb-3 pb-1 tracking-wide"
               style={{ borderColor: themeColor, color: themeColor }}
@@ -154,7 +154,7 @@ const AcademicTemplate: React.FC<TemplateProps> = ({
       case 'education':
         if (education.length === 0) return null;
         return (
-          <section key="education" className="mb-6 break-inside-avoid">
+          <section key="education" className="mb-6">
             <h2
               className="text-lg font-bold uppercase border-b-2 border-slate-300 mb-4 pb-1 tracking-wide"
               style={{ borderColor: themeColor, color: themeColor }}
@@ -163,7 +163,7 @@ const AcademicTemplate: React.FC<TemplateProps> = ({
             </h2>
             <div className="space-y-4">
               {education.map((edu, i) => (
-                <div key={i} className="flex justify-between items-start">
+                <div key={i} className="flex justify-between items-start education-item">
                   <div>
                     <InlineEdit
                       as="h3"
@@ -193,7 +193,7 @@ const AcademicTemplate: React.FC<TemplateProps> = ({
       case 'experience':
         if (work.length === 0) return null;
         return (
-          <section key="work" className="mb-6 break-inside-avoid">
+          <section key="work" className="mb-6">
             <h2
               className="text-lg font-bold uppercase border-b-2 border-slate-300 mb-4 pb-1 tracking-wide"
               style={{ borderColor: themeColor, color: themeColor }}
@@ -202,7 +202,7 @@ const AcademicTemplate: React.FC<TemplateProps> = ({
             </h2>
             <div className="space-y-6">
               {work.map((job, i) => (
-                <div key={i}>
+                <div key={i} className="work-item">
                   <div className="flex justify-between items-baseline mb-1">
                     <InlineEdit
                       as="h3"
@@ -255,7 +255,7 @@ const AcademicTemplate: React.FC<TemplateProps> = ({
       case 'projects':
         if (projects.length === 0) return null;
         return (
-          <section key="projects" className="mb-6 break-inside-avoid">
+          <section key="projects" className="mb-6">
             <h2
               className="text-lg font-bold uppercase border-b-2 border-slate-300 mb-4 pb-1 tracking-wide"
               style={{ borderColor: themeColor, color: themeColor }}
@@ -264,7 +264,7 @@ const AcademicTemplate: React.FC<TemplateProps> = ({
             </h2>
             <div className="space-y-5">
               {projects.map((project, i) => (
-                <div key={i}>
+                <div key={i} className="project-item">
                   <div className="flex justify-between items-baseline mb-1">
                     <h3 className="font-bold text-base text-slate-900">
                       {project.name}
@@ -310,7 +310,7 @@ const AcademicTemplate: React.FC<TemplateProps> = ({
       case 'skills':
         if (skills.length === 0) return null;
         return (
-          <section key="skills" className="mb-6 break-inside-avoid">
+          <section key="skills" className="mb-6">
             <h2
               className="text-lg font-bold uppercase border-b-2 border-slate-300 mb-4 pb-1 tracking-wide"
               style={{ borderColor: themeColor, color: themeColor }}
@@ -319,7 +319,7 @@ const AcademicTemplate: React.FC<TemplateProps> = ({
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 print:grid-cols-2 gap-x-8 gap-y-2">
               {skills.map((skill, i) => (
-                <div key={i} className="flex justify-between border-b border-slate-100 pb-1">
+                <div key={i} className="flex justify-between border-b border-slate-100 pb-1 skill-item">
                   <span className="font-bold text-sm text-slate-900">{skill.name}</span>
                   <span className="text-sm text-slate-600 italic text-right">
                     {skill.keywords?.join(', ')}

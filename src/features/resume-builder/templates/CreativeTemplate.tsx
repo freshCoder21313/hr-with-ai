@@ -146,7 +146,7 @@ const CreativeTemplate: React.FC<TemplateProps> = ({
       case 'experience':
         if (work.length === 0) return null;
         return (
-          <section key="work" className="mb-10 break-inside-avoid">
+          <section key="work" className="mb-10">
             <h3
               className="text-lg font-bold uppercase mb-6 flex items-center gap-2"
               style={{ color: primaryColor }}
@@ -158,7 +158,7 @@ const CreativeTemplate: React.FC<TemplateProps> = ({
               style={{ borderColor: primaryColor + '40' }}
             >
               {work.map((job, i) => (
-                <div key={i} className="relative">
+                <div key={i} className="relative work-item">
                   <div
                     className="absolute -left-[29px] top-1.5 w-3 h-3 rounded-full border-2 bg-white"
                     style={{ borderColor: primaryColor }}
@@ -218,7 +218,7 @@ const CreativeTemplate: React.FC<TemplateProps> = ({
       case 'projects':
         if (projects.length === 0) return null;
         return (
-          <section key="projects" className="mb-10 break-inside-avoid">
+          <section key="projects" className="mb-10">
             <h3
               className="text-lg font-bold uppercase mb-6 flex items-center gap-2"
               style={{ color: primaryColor }}
@@ -227,7 +227,7 @@ const CreativeTemplate: React.FC<TemplateProps> = ({
             </h3>
             <div className="grid gap-6">
               {projects.map((project, i) => (
-                <div key={i} className="bg-slate-50 p-4 rounded-lg border border-slate-100">
+                <div key={i} className="bg-slate-50 p-4 rounded-lg border border-slate-100 project-item">
                   <div className="flex justify-between items-start mb-2">
                     <h4 className="font-bold text-slate-800 text-sm">
                       {project.name}
@@ -278,7 +278,7 @@ const CreativeTemplate: React.FC<TemplateProps> = ({
       case 'education':
         if (education.length === 0) return null;
         return (
-          <section key="education" className="mb-8 break-inside-avoid">
+          <section key="education" className="mb-8">
             <h3
               className={cn(
                 'text-sm font-bold uppercase mb-4',
@@ -290,7 +290,7 @@ const CreativeTemplate: React.FC<TemplateProps> = ({
             </h3>
             <div className="space-y-4">
               {education.map((edu, i) => (
-                <div key={i}>
+                <div key={i} className="education-item">
                   <div
                     className={cn('font-bold text-sm', isSidebar ? 'text-white' : 'text-slate-800')}
                   >
@@ -324,7 +324,7 @@ const CreativeTemplate: React.FC<TemplateProps> = ({
       case 'skills':
         if (skills.length === 0) return null;
         return (
-          <section key="skills" className="mb-8 break-inside-avoid">
+          <section key="skills" className="mb-8">
             <h3
               className={cn(
                 'text-sm font-bold uppercase mb-4',
@@ -336,7 +336,7 @@ const CreativeTemplate: React.FC<TemplateProps> = ({
             </h3>
             <div className="space-y-4">
               {skills.map((skill, i) => (
-                <div key={i}>
+                <div key={i} className="skill-item">
                   <div
                     className={cn(
                       'text-xs font-semibold mb-1',
