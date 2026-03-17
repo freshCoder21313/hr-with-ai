@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import InterviewHintView from '../InterviewHintView';
-import { InterviewHints } from '@/services/geminiService';
+import { InterviewHints } from '@/services/interview/interviewAIService';
 import { LoadingButton } from '@/components/ui/loading-button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useSpeechToText } from '@/hooks/useSpeechToText';

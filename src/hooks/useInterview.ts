@@ -5,8 +5,8 @@ import {
   startInterviewSession,
   streamInterviewMessage,
   generateInterviewFeedback,
-  getStoredAIConfig,
-} from '../services/geminiService';
+} from '@/services/interview/interviewAIService';
+import { getStoredAIConfig } from '@/services/ai/aiConfigService';
 import { db } from '../lib/db';
 import { InterviewStatus, SetupFormData, Interview, Message } from '@/types';
 import { getActiveScenario } from '@/features/interview/scenarios';

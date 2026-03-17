@@ -1,6 +1,6 @@
 import { GitHubRepo } from '@/lib/github';
 import { Project } from '@/types/resume';
-import { AIConfigInput, resolveConfig } from '@/services/geminiService';
+import { AIConfigInput, resolveConfig } from '@/services/ai/aiConfigService';
 import { getRepoToProjectPrompt, getGitHubInterviewPrompt } from './githubPrompt';
 import { fetchFileTree } from '@/lib/github';
 import { Type } from '@google/genai';

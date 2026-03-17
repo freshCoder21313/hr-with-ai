@@ -3,7 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { db } from '@/lib/db';
 import { Resume } from '@/types';
 import { ResumeData } from '@/types/resume';
-import { getStoredAIConfig, parseResumeToJSON, translateResume } from '@/services/geminiService';
+import { getStoredAIConfig } from '@/services/ai/aiConfigService';
+import { parseResumeToJSON, translateResume } from '@/services/resume/resumeAIService';
 import { openApiKeyModal } from '@/events/apiKeyEvents';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -689,43 +690,43 @@ const ResumeBuilder: React.FC = () => {
                 {(template === 'creative' ||
                   template === 'minimalist' ||
                   template === 'academic') && (
-                    <Tooltip delayDuration={0}>
-                      <TooltipTrigger asChild>
-                        <div className="relative flex items-center justify-center">
-                          <div className="h-10 w-10 rounded-full bg-background shadow-sm flex items-center justify-center cursor-pointer overflow-hidden border border-input hover:shadow-md transition-all">
-                            <input
-                              type="color"
-                              value={
+                  <Tooltip delayDuration={0}>
+                    <TooltipTrigger asChild>
+                      <div className="relative flex items-center justify-center">
+                        <div className="h-10 w-10 rounded-full bg-background shadow-sm flex items-center justify-center cursor-pointer overflow-hidden border border-input hover:shadow-md transition-all">
+                          <input
+                            type="color"
+                            value={
+                              data?.meta?.themeColor ||
+                              (template === 'minimalist'
+                                ? '#1e293b'
+                                : template === 'academic'
+                                  ? '#1e3a8a'
+                                  : '#8b5cf6')
+                            }
+                            onChange={(e) => handleThemeChange(e.target.value)}
+                            className="absolute inset-0 opacity-0 cursor-pointer h-full w-full"
+                          />
+                          <div
+                            className="w-6 h-6 rounded-full border border-black/10"
+                            style={{
+                              backgroundColor:
                                 data?.meta?.themeColor ||
                                 (template === 'minimalist'
                                   ? '#1e293b'
                                   : template === 'academic'
                                     ? '#1e3a8a'
-                                    : '#8b5cf6')
-                              }
-                              onChange={(e) => handleThemeChange(e.target.value)}
-                              className="absolute inset-0 opacity-0 cursor-pointer h-full w-full"
-                            />
-                            <div
-                              className="w-6 h-6 rounded-full border border-black/10"
-                              style={{
-                                backgroundColor:
-                                  data?.meta?.themeColor ||
-                                  (template === 'minimalist'
-                                    ? '#1e293b'
-                                    : template === 'academic'
-                                      ? '#1e3a8a'
-                                      : '#8b5cf6'),
-                              }}
-                            />
-                          </div>
+                                    : '#8b5cf6'),
+                            }}
+                          />
                         </div>
-                      </TooltipTrigger>
-                      <TooltipContent side="left">
-                        <p>Theme Color</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  )}
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent side="left">
+                      <p>Theme Color</p>
+                    </TooltipContent>
+                  </Tooltip>
+                )}
 
                 <Tooltip delayDuration={0}>
                   <TooltipTrigger asChild>

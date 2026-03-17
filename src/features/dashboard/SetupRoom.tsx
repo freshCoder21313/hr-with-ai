@@ -12,13 +12,13 @@ import {
   Users,
 } from 'lucide-react';
 import { parseResume } from '@/services/resumeParser';
+import { getStoredAIConfig } from '@/services/ai/aiConfigService';
 import {
-  extractInfoFromJD,
-  getStoredAIConfig,
   analyzeResume,
   tailorResumeToJob,
   parseResumeToJSON,
-} from '@/services/geminiService';
+} from '@/services/resume/resumeAIService';
+import { extractInfoFromJD } from '@/services/jobs/jobAIService';
 import { researchCompany } from '@/services/aiResearcherService';
 import { useInterview } from '@/hooks/useInterview';
 import { Button } from '@/components/ui/button';

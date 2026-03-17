@@ -6,7 +6,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Work } from '@/types/resume';
 import { Plus, Trash2, Wand2 } from 'lucide-react';
-import { analyzeResumeSection, getStoredAIConfig } from '@/services/geminiService';
+import { analyzeResumeSection } from '@/services/resume/resumeAIService';
+import { getStoredAIConfig } from '@/services/ai/aiConfigService';
 import { LoadingButton } from '@/components/ui/loading-button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 

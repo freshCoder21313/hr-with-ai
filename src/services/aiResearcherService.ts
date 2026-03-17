@@ -1,6 +1,6 @@
 import { getCompanyIntelPrompt } from '@/features/interview/promptSystem';
 import { AIService } from '@/features/ai-provider/ai.service';
-import { getStoredAIConfig } from './geminiService';
+import { getStoredAIConfig } from './ai/aiConfigService';
 
 export interface CompanyIntel {
   culture: string;

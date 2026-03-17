@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { X, Lightbulb } from 'lucide-react';
-import { InterviewHints } from '@/services/geminiService';
+import { InterviewHints } from '@/services/interview/interviewAIService';
 import MarkdownRenderer from '@/components/MarkdownRenderer';
 
 interface InterviewHintViewProps {

@@ -5,11 +5,8 @@ import { Editor, TLShapeId } from 'tldraw';
 import { db } from '@/lib/db';
 import { useInterview } from '@/hooks/useInterview';
 
-import {
-  generateInterviewHints,
-  InterviewHints,
-  getStoredAIConfig,
-} from '@/services/geminiService';
+import { generateInterviewHints, InterviewHints } from '@/services/interview/interviewAIService';
+import { getStoredAIConfig } from '@/services/ai/aiConfigService';
 import { loadUserSettings } from '@/services/settingsService';
 import { useInterviewStore } from './interviewStore';
 import { UserSettings, Resume, JobRecommendation } from '@/types';

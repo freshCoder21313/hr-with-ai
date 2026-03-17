@@ -16,8 +16,11 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { Resume, JobRecommendation } from '@/types';
-import { generateJobRecommendations, generateTailoredResumeForJob } from '@/services/geminiService';
-import { getStoredAIConfig } from '@/services/geminiService';
+import {
+  generateJobRecommendations,
+  generateTailoredResumeForJob,
+} from '@/services/jobs/jobAIService';
+import { getStoredAIConfig } from '@/services/ai/aiConfigService';
 import { LoadingButton } from '@/components/ui/loading-button';
 
 import { ResumeData } from '@/types/resume';
@@ -25,7 +28,11 @@ import { ResumeData } from '@/types/resume';
 interface JobRecommendationModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSelectJob: (job: JobRecommendation, tailoredResumeText: string, tailoredResumeData?: ResumeData) => void;
+  onSelectJob: (
+    job: JobRecommendation,
+    tailoredResumeText: string,
+    tailoredResumeData?: ResumeData
+  ) => void;
   existingResumeId?: number;
   availableResumes?: Resume[];
   currentInterviewId?: number;
@@ -134,20 +141,22 @@ const JobRecommendationModal: React.FC<JobRecommendationModalProps> = ({
 
       // Convert tailored resume back to text format
       let tailoredText = `Tailored Resume for ${job.title} @ ${job.company}\n\n`;
-      
+
       if (tailoredData.basics?.summary) {
         tailoredText += `Professional Summary:\n${tailoredData.basics.summary}\n\n`;
       }
-      
+
       if (tailoredData.skills?.length) {
-         tailoredText += `Skills: ${tailoredData.skills.map((s) => s.name).join(', ')}\n\n`;
+        tailoredText += `Skills: ${tailoredData.skills.map((s) => s.name).join(', ')}\n\n`;
       }
-      
+
       if (tailoredData.work?.length) {
-        tailoredText += `Experience:\n${tailoredData.work.map((w) => {
+        tailoredText += `Experience:\n${tailoredData.work
+          .map((w) => {
             const dateStr = w.startDate ? ` (${w.startDate} - ${w.endDate || 'Present'})` : '';
             return `- ${w.position} at ${w.name}${dateStr}\n  ${w.summary || ''}`;
-        }).join('\n')}\n\n`;
+          })
+          .join('\n')}\n\n`;
       }
 
       if (tailoredData.education?.length) {
