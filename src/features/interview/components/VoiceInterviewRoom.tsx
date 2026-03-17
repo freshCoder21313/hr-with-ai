@@ -10,6 +10,7 @@ import { Settings, PhoneMissed, MessageSquare, X, Send } from 'lucide-react';
 import { useInterviewStore } from '../interviewStore';
 import { ChatArea } from './ChatArea';
 import { Input } from '@/components/ui/input';
+import MarkdownRenderer from '@/components/MarkdownRenderer';
 
 interface VoiceInterviewRoomProps {
   onSwitchToText?: () => void;
@@ -118,14 +119,15 @@ export const VoiceInterviewRoom: React.FC<VoiceInterviewRoomProps> = ({ onSwitch
           <AIAvatarSpeaking isSpeaking={isSpeaking} size="lg" />
           <div
             className={cn(
-              'text-center max-w-2xl px-6 py-3 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 transition-opacity duration-300',
+              'text-left max-w-2xl px-6 py-4 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 transition-opacity duration-300',
               isSpeaking ? 'opacity-100' : 'opacity-0 invisible'
             )}
           >
-            <p className="text-lg text-slate-200 leading-relaxed font-light">
-              {/* Display latest AI message content */}
-              {messages.filter((m) => m.role === 'model').slice(-1)[0]?.content || '...'}
-            </p>
+            <div className="text-base text-slate-200 leading-relaxed font-light [&_p]:mb-2 [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4 [&_code]:bg-white/10 [&_code]:px-1 [&_code]:rounded [&_pre]:bg-black/30 [&_pre]:p-3 [&_pre]:rounded-lg [&_pre]:overflow-x-auto">
+              <MarkdownRenderer
+                content={messages.filter((m) => m.role === 'model').slice(-1)[0]?.content || '...'}
+              />
+            </div>
           </div>
         </div>
 

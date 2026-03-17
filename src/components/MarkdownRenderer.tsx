@@ -1,13 +1,89 @@
-import React, { memo } from 'react';
+import React, { memo, useEffect, useRef, useState, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { Search } from 'lucide-react';
+import { Search, Copy, Check, AlertTriangle } from 'lucide-react';
+import mermaid from 'mermaid';
 
 interface MarkdownRendererProps {
   content: string;
 }
+
+mermaid.initialize({
+  startOnLoad: false,
+  theme: 'default',
+  securityLevel: 'loose',
+});
+
+const CopyButton: React.FC<{ text: string }> = ({ text }) => {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  }, [text]);
+
+  return (
+    <button
+      onClick={handleCopy}
+      className="absolute top-2 right-2 p-1.5 rounded-md bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white transition-colors"
+      title="Copy code"
+    >
+      {copied ? <Check size={14} /> : <Copy size={14} />}
+    </button>
+  );
+};
+
+const MermaidBlock: React.FC<{ code: string }> = ({ code }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    const renderDiagram = async () => {
+      if (!containerRef.current) return;
+      try {
+        const id = `mermaid-${Math.random().toString(36).substring(2, 9)}`;
+        const { svg } = await mermaid.render(id, code);
+        if (containerRef.current) {
+          containerRef.current.innerHTML = svg;
+          setError(false);
+        }
+      } catch (e) {
+        console.error('Mermaid rendering error:', e);
+        setError(true);
+        if (containerRef.current) {
+          containerRef.current.innerHTML = '';
+        }
+      }
+    };
+
+    renderDiagram();
+  }, [code]);
+
+  if (error) {
+    return (
+      <div className="my-4 p-4 rounded-lg bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 text-sm flex items-start gap-2">
+        <AlertTriangle size={16} className="mt-0.5 shrink-0" />
+        <div>
+          <p className="font-medium">Failed to render diagram</p>
+          <pre className="mt-2 text-xs overflow-x-auto opacity-70">{code}</pre>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="my-4 p-4 rounded-lg bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 overflow-x-auto flex justify-center">
+      <div ref={containerRef} />
+    </div>
+  );
+};
 
 const MarkdownRenderer: React.FC<MarkdownRendererProps> = memo(({ content }) => {
   // Pre-process content to convert [[Keyword]] to [Keyword](search:Keyword)
@@ -41,16 +117,30 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = memo(({ content }) => 
           [key: string]: any;
         }) {
           const match = /language-(\w+)/.exec(className || '');
+          const lang = match ? match[1] : '';
+          const codeText = String(children).replace(/\n$/, '');
+
+          // Mermaid diagram support
+          if (!inline && lang === 'mermaid') {
+            return <MermaidBlock code={codeText} />;
+          }
+
           return !inline && match ? (
-            <SyntaxHighlighter
-              style={vscDarkPlus as any}
-              language={match[1]}
-              PreTag="div"
-              className="rounded-lg !my-4 !bg-[#1e1e1e] border border-slate-700 shadow-sm"
-              {...props}
-            >
-              {String(children).replace(/\n$/, '')}
-            </SyntaxHighlighter>
+            <div className="relative my-4 group">
+              <CopyButton text={codeText} />
+              <div className="absolute top-2 left-3 text-xs text-slate-400 font-mono uppercase tracking-wider">
+                {lang}
+              </div>
+              <SyntaxHighlighter
+                style={vscDarkPlus as any}
+                language={match[1]}
+                PreTag="div"
+                className="rounded-lg !my-0 !bg-[#1e1e1e] border border-slate-700 shadow-sm pt-8"
+                {...props}
+              >
+                {codeText}
+              </SyntaxHighlighter>
+            </div>
           ) : (
             <code
               className={`${
@@ -76,6 +166,22 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = memo(({ content }) => 
         ),
         h2: ({ children }) => <h2 className="text-xl font-bold mb-3 mt-5">{children}</h2>,
         h3: ({ children }) => <h3 className="text-lg font-bold mb-2 mt-4">{children}</h3>,
+        h4: ({ children }) => (
+          <h4 className="text-base font-bold mb-2 mt-3 text-slate-700 dark:text-slate-300">
+            {children}
+          </h4>
+        ),
+        h5: ({ children }) => (
+          <h5 className="text-sm font-bold mb-1 mt-2 text-slate-600 dark:text-slate-400">
+            {children}
+          </h5>
+        ),
+        h6: ({ children }) => (
+          <h6 className="text-sm font-semibold mb-1 mt-2 text-slate-500 dark:text-slate-500">
+            {children}
+          </h6>
+        ),
+        hr: () => <hr className="my-6 border-t border-slate-200 dark:border-slate-700" />,
         blockquote: ({ children }) => (
           <blockquote className="border-l-4 border-blue-400 pl-4 py-1 my-3 bg-blue-50/50 italic text-slate-700 rounded-r">
             {children}
@@ -127,6 +233,13 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = memo(({ content }) => 
           <td className="px-4 py-2 whitespace-nowrap text-sm border-b border-slate-100">
             {children}
           </td>
+        ),
+        del: ({ children }) => (
+          <del className="line-through text-slate-500 dark:text-slate-400">{children}</del>
+        ),
+        strong: ({ children }) => <strong className="font-bold text-foreground">{children}</strong>,
+        em: ({ children }) => (
+          <em className="italic text-slate-700 dark:text-slate-300">{children}</em>
         ),
       }}
     >
