@@ -17,7 +17,12 @@ import {
 import { SortableSection } from '../components/SortableSection';
 import { ResumeData } from '@/types/resume';
 import { InlineEdit } from '../components/InlineEdit';
-import { MapPin, Mail, Phone, Link as LinkIcon, Linkedin, Github } from 'lucide-react';
+import { WorkSection } from '../components/shared/WorkSection';
+import { EducationSection } from '../components/shared/EducationSection';
+import { ProjectsSection } from '../components/shared/ProjectsSection';
+import { ResumeHeader } from '../components/shared/ResumeHeader';
+import { SummarySection } from '../components/shared/SummarySection';
+import { SkillsSection } from '../components/shared/SkillsSection';
 
 interface TemplateProps {
   onUpdate?: (newData: import('@/types/resume').ResumeData) => void;
@@ -25,81 +30,6 @@ interface TemplateProps {
   themeColor?: string;
   onOrderChange?: (newSidebar: string[], newMain: string[]) => void;
 }
-
-const MinimalistHeader = React.memo(function MinimalistHeader({
-  basics,
-  onUpdate,
-  themeColor,
-}: {
-  basics: ResumeData['basics'];
-  onUpdate?: (basics: ResumeData['basics']) => void;
-  themeColor: string;
-}) {
-  return (
-    <header className="mb-16">
-      <InlineEdit
-        as="h1"
-        className="text-4xl font-light tracking-tight text-slate-900 mb-3 block w-full" value={basics.name || ''}
-        onSave={(val) => onUpdate?.({ ...basics, name: val })}
-      />
-      <InlineEdit
-        as="p"
-        className="text-lg text-slate-500 mb-6 block w-full" style={{ color: themeColor }} value={basics.label || ''}
-        onSave={(val) => onUpdate?.({ ...basics, label: val })}
-      />
-
-      <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-500">
-        {basics.email && (
-          <a
-            href={`mailto:${basics.email}`}
-            className="flex items-center gap-1.5 hover:text-slate-900 transition-colors"
-          >
-            <Mail size={14} /> {basics.email}
-          </a>
-        )}
-        {basics.phone && (
-          <span className="flex items-center gap-1.5">
-            <Phone size={14} /> {basics.phone}
-          </span>
-        )}
-        {basics.location && (
-          <span className="flex items-center gap-1.5">
-            <MapPin size={14} />
-            {[basics.location.city, basics.location.countryCode].filter(Boolean).join(', ')}
-          </span>
-        )}
-        {basics.url && (
-          <a
-            href={basics.url}
-            target="_blank"
-            rel="noreferrer"
-            className="flex items-center gap-1.5 hover:text-slate-900 transition-colors"
-          >
-            <LinkIcon size={14} /> {basics.url.replace(/^https?:\/\//, '')}
-          </a>
-        )}
-        {basics.profiles?.map((profile, i) => (
-          <a
-            key={i}
-            href={profile.url}
-            target="_blank"
-            rel="noreferrer"
-            className="flex items-center gap-1.5 hover:text-slate-900 transition-colors"
-          >
-            {profile.network.toLowerCase().includes('github') ? (
-              <Github size={14} />
-            ) : profile.network.toLowerCase().includes('linkedin') ? (
-              <Linkedin size={14} />
-            ) : (
-              <LinkIcon size={14} />
-            )}
-            {profile.url.replace(/^https?:\/\/(www\.)?/, '').split('/')[1] || profile.network}
-          </a>
-        ))}
-      </div>
-    </header>
-  );
-});
 
 const MinimalistTemplate: React.FC<TemplateProps> = ({
   data,
@@ -138,216 +68,56 @@ const MinimalistTemplate: React.FC<TemplateProps> = ({
     switch (id) {
       case 'header':
         return (
-          <MinimalistHeader
-            key={id}
+          <ResumeHeader
+            key="header"
             basics={basics}
             onUpdate={(newBasics) => onUpdate?.({ ...data, basics: newBasics })}
             themeColor={themeColor}
+            layout="minimalist"
           />
         );
       case 'summary':
-        if (!basics.summary) return null;
         return (
-          <section key="summary" className="mb-10">
-            <h2 className="text-xs tracking-widest uppercase font-bold text-slate-400 mb-4">
-              Summary
-            </h2>
-            <div className="text-sm text-slate-700 leading-loose">
-              <InlineEdit
-                as="div"
-                multiline
-                className="w-full"
-                value={basics.summary || ''}
-                onSave={(val) => onUpdate?.({ ...data, basics: { ...basics, summary: val } })}
-              />
-            </div>
-          </section>
+          <SummarySection
+            key="summary"
+            summary={basics.summary || ''}
+            onUpdate={(newSummary) =>
+              onUpdate?.({ ...data, basics: { ...basics, summary: newSummary } })
+            }
+            layout="minimalist"
+          />
         );
-
       case 'work':
       case 'experience':
-        if (work.length === 0) return null;
         return (
-          <section key="work" className="mb-10">
-            <h2 className="text-xs tracking-widest uppercase font-bold text-slate-400 mb-6">
-              Experience
-            </h2>
-            <div className="space-y-8">
-              {work.map((job, i) => (
-                <div key={i} className="flex flex-col md:flex-row print:flex-row gap-4 work-item">
-                  <div className="md:w-1/4 print:w-1/4 shrink-0 text-sm text-slate-500 pt-1">
-                    {[job.startDate, job.endDate].filter(Boolean).join(' — ')}
-                  </div>
-                  <div className="md:w-3/4 print:w-3/4">
-                    <InlineEdit
-                      as="h3"
-                      className="font-semibold text-slate-900 text-base inline-block"
-                      value={job.position || ''}
-                      onSave={(val) => {
-                        const newWork = [...work];
-                        newWork[i] = { ...job, position: val };
-                        onUpdate?.({ ...data, work: newWork });
-                      }}
-                    />
-                    <InlineEdit
-                      as="div"
-                      className="text-sm text-slate-600 mb-3 inline-block"
-                      style={{ color: themeColor }}
-                      value={job.name || ''}
-                      onSave={(val) => {
-                        const newWork = [...work];
-                        newWork[i] = { ...job, name: val };
-                        onUpdate?.({ ...data, work: newWork });
-                      }}
-                    />
-                    <InlineEdit
-                      as="p"
-                      multiline
-                      className="text-sm text-slate-700 leading-relaxed mb-3 w-full"
-                      value={job.summary || ''}
-                      onSave={(val) => {
-                        const newWork = [...work];
-                        newWork[i] = { ...job, summary: val };
-                        onUpdate?.({ ...data, work: newWork });
-                      }}
-                    />
-                    {job.highlights && (
-                      <ul className="list-disc ml-4 space-y-1.5 text-sm text-slate-700">
-                        {job.highlights.map((h, k) => (
-                          <li key={k}>{h}</li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
+          <WorkSection
+            key="work"
+            work={work}
+            onUpdate={(newWork) => onUpdate?.({ ...data, work: newWork })}
+            themeColor={themeColor}
+            layout="minimalist"
+          />
         );
-
       case 'projects':
-        if (projects.length === 0) return null;
         return (
-          <section key="projects" className="mb-10">
-            <h2 className="text-xs tracking-widest uppercase font-bold text-slate-400 mb-6">
-              Projects
-            </h2>
-            <div className="space-y-8">
-              {projects.map((project, i) => (
-                <div key={i} className="flex flex-col md:flex-row print:flex-row gap-4 project-item">
-                  <div className="md:w-1/4 print:w-1/4 shrink-0 text-sm text-slate-500 pt-1">
-                    {[project.startDate, project.endDate].filter(Boolean).join(' — ')}
-                  </div>
-                  <div className="md:w-3/4 print:w-3/4">
-                    <h3 className="font-semibold text-slate-900 text-base flex items-center gap-2">
-                      {project.name}
-                      {project.url && (
-                        <a
-                          href={project.url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-slate-400 hover:text-slate-900 transition-colors"
-                        >
-                          <LinkIcon size={12} />
-                        </a>
-                      )}
-                    </h3>
-                    <InlineEdit
-                      as="p"
-                      multiline
-                      className="text-sm text-slate-700 leading-relaxed mt-2 mb-3 w-full"
-                      value={project.description || ''}
-                      onSave={(val) => {
-                        const newProjects = [...projects];
-                        newProjects[i] = { ...project, description: val };
-                        onUpdate?.({ ...data, projects: newProjects });
-                      }}
-                    />
-                    {project.highlights && (
-                      <ul className="list-disc ml-4 space-y-1.5 text-sm text-slate-700 mb-3">
-                        {project.highlights.map((h, k) => (
-                          <li key={k}>{h}</li>
-                        ))}
-                      </ul>
-                    )}
-                    {project.keywords && (
-                      <div className="flex flex-wrap gap-2">
-                        {project.keywords.map((kw, k) => (
-                          <span
-                            key={k}
-                            className="text-xs text-slate-500 border border-slate-200 px-2 py-1 rounded"
-                          >
-                            {kw}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
+          <ProjectsSection
+            key="projects"
+            projects={projects}
+            onUpdate={(newProjects) => onUpdate?.({ ...data, projects: newProjects })}
+            layout="minimalist"
+          />
         );
-
       case 'education':
-        if (education.length === 0) return null;
         return (
-          <section key="education" className="mb-10">
-            <h2 className="text-xs tracking-widest uppercase font-bold text-slate-400 mb-6">
-              Education
-            </h2>
-            <div className="space-y-6">
-              {education.map((edu, i) => (
-                <div key={i} className="flex flex-col md:flex-row print:flex-row gap-4 education-item">
-                  <div className="md:w-1/4 print:w-1/4 shrink-0 text-sm text-slate-500 pt-1">
-                    {[edu.startDate, edu.endDate].filter(Boolean).join(' — ')}
-                  </div>
-                  <div className="md:w-3/4 print:w-3/4">
-                    <InlineEdit
-                      as="h3"
-                      className="font-semibold text-slate-900 text-base inline-block"
-                      value={edu.institution || ''}
-                      onSave={(val) => {
-                        const newEdu = [...education];
-                        newEdu[i] = { ...edu, institution: val };
-                        onUpdate?.({ ...data, education: newEdu });
-                      }}
-                    />
-                    <div className="text-sm text-slate-700 mt-1">
-                      {edu.studyType} in {edu.area}
-                    </div>
-                    {edu.score && (
-                      <div className="text-sm text-slate-500 mt-1">Score: {edu.score}</div>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
+          <EducationSection
+            key="education"
+            education={education}
+            onUpdate={(newEducation) => onUpdate?.({ ...data, education: newEducation })}
+            layout="minimalist"
+          />
         );
-
       case 'skills':
-        if (skills.length === 0) return null;
-        return (
-          <section key="skills" className="mb-10">
-            <h2 className="text-xs tracking-widest uppercase font-bold text-slate-400 mb-6">
-              Skills
-            </h2>
-            <div className="space-y-4">
-              {skills.map((skill, i) => (
-                <div key={i} className="flex flex-col md:flex-row print:flex-row gap-4 skill-item">
-                  <div className="md:w-1/4 print:w-1/4 shrink-0 font-medium text-sm text-slate-900 pt-1">
-                    {skill.name}
-                  </div>
-                  <div className="md:w-3/4 print:w-3/4 text-sm text-slate-700 leading-relaxed pt-1">
-                    {skill.keywords?.join(', ')}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-        );
-
+        return <SkillsSection key="skills" skills={skills} layout="minimalist" />;
       default:
         return null;
     }
