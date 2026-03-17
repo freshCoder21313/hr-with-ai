@@ -18,6 +18,7 @@ import { AIService } from '@/features/ai-provider/ai.service';
 import { AIConfig as ProviderConfig, ChatMessage } from '@/types';
 
 import { AIModelProvider } from '@/types';
+import { cleanJsonString } from '@/services/aiUtils';
 
 export interface AIConfig {
   apiKey: string;
@@ -285,9 +286,7 @@ export const generateInterviewFeedback = async (
 
     if (!jsonText) throw new Error('No feedback generated');
 
-    jsonText = jsonText.replace(/```json\n?|\n?```/g, '').trim();
-
-    return JSON.parse(jsonText) as InterviewFeedback;
+    return JSON.parse(cleanJsonString(jsonText)) as InterviewFeedback;
   } catch (error) {
     console.error('Error generating feedback:', error);
     throw error;
@@ -316,8 +315,7 @@ export const extractInfoFromJD = async (
 
     if (!jsonText) throw new Error('No information extracted');
 
-    jsonText = jsonText.replace(/```json\n?|\n?```/g, '').trim();
-    return JSON.parse(jsonText);
+    return JSON.parse(cleanJsonString(jsonText));
   } catch (error) {
     console.error('Error extracting info from JD:', error);
     throw error;
@@ -377,8 +375,7 @@ export const analyzeResume = async (
 
     if (!jsonText) throw new Error('No analysis generated');
 
-    jsonText = jsonText.replace(/```json\n?|\n?```/g, '').trim();
-    const result = JSON.parse(jsonText) as ResumeAnalysis;
+    const result = JSON.parse(cleanJsonString(jsonText)) as ResumeAnalysis;
 
     // Save to Cache
     if (resumeId) {
@@ -436,8 +433,7 @@ export const generateInterviewHints = async (
 
     if (!jsonText) throw new Error('No hints generated');
 
-    jsonText = jsonText.replace(/```json\n?|\n?```/g, '').trim();
-    return JSON.parse(jsonText) as InterviewHints;
+    return JSON.parse(cleanJsonString(jsonText)) as InterviewHints;
   } catch (error) {
     console.error('Error generating hints:', error);
     throw error;
@@ -461,8 +457,7 @@ export const parseResumeToJSON = async (
 
     if (!jsonText) throw new Error('No parsed data generated');
 
-    jsonText = jsonText.replace(/```json\n?|\n?```/g, '').trim();
-    return JSON.parse(jsonText) as ResumeData;
+    return JSON.parse(cleanJsonString(jsonText)) as ResumeData;
   } catch (error) {
     console.error('Error parsing resume:', error);
     throw error;
@@ -503,8 +498,7 @@ export const analyzeResumeSection = async (
 
     if (!jsonText) throw new Error('No analysis generated');
 
-    jsonText = jsonText.replace(/```json\n?|\n?```/g, '').trim();
-    return JSON.parse(jsonText);
+    return JSON.parse(cleanJsonString(jsonText));
   } catch (error) {
     console.error('Error analyzing section:', error);
     throw error;
@@ -529,8 +523,7 @@ export const tailorResumeToJob = async (
 
     if (!jsonText) throw new Error('No tailored resume generated');
 
-    jsonText = jsonText.replace(/```json\n?|\n?```/g, '').trim();
-    return JSON.parse(jsonText) as ResumeData;
+    return JSON.parse(cleanJsonString(jsonText)) as ResumeData;
   } catch (error) {
     console.error('Error tailoring resume:', error);
     throw error;
@@ -552,8 +545,7 @@ export const tailorResumeV2 = async (
 
     if (!jsonText) throw new Error('No tailored resume generated');
 
-    jsonText = jsonText.replace(/```json\n?|\n?```/g, '').trim();
-    return JSON.parse(jsonText) as ResumeData;
+    return JSON.parse(cleanJsonString(jsonText)) as ResumeData;
   } catch (error) {
     console.error('Error tailoring resume (V2):', error);
     throw error;
@@ -575,9 +567,8 @@ export const translateResume = async (
   configInput: AIConfigInput
 ): Promise<ResumeData> => {
   const service = getService(configInput);
-  const prompt = `Translate the following JSON resume data into ${
-    targetLanguage === 'vi' ? 'Vietnamese' : 'English'
-  }. Keep the exact same JSON structure, keys, and formatting. Only translate the values (text content).
+  const prompt = `Translate the following JSON resume data into ${targetLanguage === 'vi' ? 'Vietnamese' : 'English'
+    }. Keep the exact same JSON structure, keys, and formatting. Only translate the values (text content).
 
 Resume JSON:
 ${JSON.stringify(resumeData)}`;
@@ -590,8 +581,7 @@ ${JSON.stringify(resumeData)}`;
 
     if (!jsonText) throw new Error('No translated data generated');
 
-    jsonText = jsonText.replace(/```json\n?|\n?```/g, '').trim();
-    const translated = JSON.parse(jsonText) as ResumeData;
+    const translated = JSON.parse(cleanJsonString(jsonText)) as ResumeData;
     translated.language = targetLanguage;
     return translated;
   } catch (error) {
@@ -674,8 +664,7 @@ export const generateJobRecommendations = async (
 
     if (!jsonText) throw new Error('No job recommendations generated');
 
-    jsonText = jsonText.replace(/```json\n?|\n?```/g, '').trim();
-    const recommendations = JSON.parse(jsonText);
+    const recommendations = JSON.parse(cleanJsonString(jsonText));
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const mappedRecommendations = recommendations.map((job: any, index: number) => ({
@@ -724,8 +713,7 @@ export const generateTailoredResumeForJob = async (
 
     if (!jsonText) throw new Error('No tailored resume generated');
 
-    jsonText = jsonText.replace(/```json\n?|\n?```/g, '').trim();
-    return JSON.parse(jsonText) as ResumeData;
+    return JSON.parse(cleanJsonString(jsonText)) as ResumeData;
   } catch (error) {
     console.error('Error generating tailored resume:', error);
     throw error;
