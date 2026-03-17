@@ -218,6 +218,7 @@ export const InputArea: React.FC<InputAreaProps> = ({
               disabled={!inputValue.trim() || isProcessing}
               className="h-[44px] w-[44px] md:h-[50px] md:w-[50px] rounded-xl shrink-0"
               size="icon"
+              data-testid="send-button"
             >
               <Send size={18} />
             </Button>
