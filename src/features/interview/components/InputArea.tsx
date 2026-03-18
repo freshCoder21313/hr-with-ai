@@ -3,7 +3,7 @@ import { Code2, PenTool, Send, Lightbulb, Sparkles, Mic } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
-import InterviewHintView from '../InterviewHintView';
+import InterviewHintView from '@/features/interview/InterviewHintView';
 import { InterviewHints } from '@/services/interview/interviewAIService';
 import { LoadingButton } from '@/components/ui/loading-button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';

@@ -14,15 +14,15 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { SortableSection } from '../components/SortableSection';
+import { SortableSection } from '@/features/resume-builder/components/SortableSection';
 import { ResumeData } from '@/types/resume';
-import { InlineEdit } from '../components/InlineEdit';
-import { WorkSection } from '../components/shared/WorkSection';
-import { EducationSection } from '../components/shared/EducationSection';
-import { ProjectsSection } from '../components/shared/ProjectsSection';
-import { ResumeHeader } from '../components/shared/ResumeHeader';
-import { SummarySection } from '../components/shared/SummarySection';
-import { SkillsSection } from '../components/shared/SkillsSection';
+import { InlineEdit } from '@/features/resume-builder/components/InlineEdit';
+import { WorkSection } from '@/features/resume-builder/components/shared/WorkSection';
+import { EducationSection } from '@/features/resume-builder/components/shared/EducationSection';
+import { ProjectsSection } from '@/features/resume-builder/components/shared/ProjectsSection';
+import { ResumeHeader } from '@/features/resume-builder/components/shared/ResumeHeader';
+import { SummarySection } from '@/features/resume-builder/components/shared/SummarySection';
+import { SkillsSection } from '@/features/resume-builder/components/shared/SkillsSection';
 
 interface TemplateProps {
   onUpdate?: (newData: import('@/types/resume').ResumeData) => void;

@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { analyzeResume } from './resumeAIService';
-import { getService, resolveConfig } from '../ai/aiConfigService';
+import { getService, resolveConfig } from '@/services/ai/aiConfigService';
 import { ResumeAnalysis } from '@/types';
 import { db } from '@/lib/db';
 
-vi.mock('../ai/aiConfigService');
+vi.mock('@/services/ai/aiConfigService');
 vi.mock('@/lib/db');
 
 describe('resumeAIService', () => {

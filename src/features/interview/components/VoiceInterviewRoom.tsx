@@ -1,13 +1,13 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useVoiceInterview } from '../hooks/useVoiceInterview';
+import { useVoiceInterview } from '@/features/interview/hooks/useVoiceInterview';
 import { VoiceMicButton } from './VoiceMicButton';
 import { AudioVisualizer } from './AudioVisualizer';
 import { AIAvatarSpeaking } from './AIAvatarSpeaking';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Settings, PhoneMissed, MessageSquare, X, Send } from 'lucide-react';
-import { useInterviewStore } from '../interviewStore';
+import { useInterviewStore } from '@/features/interview/interviewStore';
 import { ChatArea } from './ChatArea';
 import { Input } from '@/components/ui/input';
 import MarkdownRenderer from '@/components/MarkdownRenderer';

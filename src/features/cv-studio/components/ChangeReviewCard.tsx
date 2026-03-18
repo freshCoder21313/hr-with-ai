@@ -1,10 +1,24 @@
 import React, { useState } from 'react';
-import { ProposedChange } from '../utils/cvChatUtils';
+import { ProposedChange } from '@/features/cv-studio/utils/cvChatUtils';
 import {
-  Check, X, ChevronDown, ChevronUp,
-  User, Briefcase, GraduationCap, Code,
-  Globe, Heart, Quote, Award, BookOpen,
-  Info, Sparkles, Plus, Trash2, RefreshCw
+  Check,
+  X,
+  ChevronDown,
+  ChevronUp,
+  User,
+  Briefcase,
+  GraduationCap,
+  Code,
+  Globe,
+  Heart,
+  Quote,
+  Award,
+  BookOpen,
+  Info,
+  Sparkles,
+  Plus,
+  Trash2,
+  RefreshCw,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -21,7 +35,7 @@ const SECTION_ICONS: Record<string, any> = {
   references: Quote,
   awards: Award,
   publications: BookOpen,
-  meta: Info
+  meta: Info,
 };
 
 interface ChangeReviewCardProps {
@@ -44,28 +58,28 @@ export const ChangeReviewCard: React.FC<ChangeReviewCardProps> = ({
           icon: Plus,
           label: 'Add',
           color: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-          indicator: 'bg-emerald-500'
+          indicator: 'bg-emerald-500',
         };
       case 'delete':
         return {
           icon: Trash2,
           label: 'Delete',
           color: 'bg-rose-50 text-rose-700 border-rose-200',
-          indicator: 'bg-rose-500'
+          indicator: 'bg-rose-500',
         };
       case 'rewrite':
         return {
           icon: RefreshCw,
           label: 'Rewrite',
           color: 'bg-violet-50 text-violet-700 border-violet-200',
-          indicator: 'bg-violet-500'
+          indicator: 'bg-violet-500',
         };
       default:
         return {
           icon: RefreshCw,
           label: 'Update',
           color: 'bg-sky-50 text-sky-700 border-sky-200',
-          indicator: 'bg-sky-500'
+          indicator: 'bg-sky-500',
         };
     }
   };
@@ -141,7 +155,9 @@ export const ChangeReviewCard: React.FC<ChangeReviewCardProps> = ({
       });
 
       if (filteredEntries.length === 0) {
-        return <div className="text-xs text-muted-foreground italic px-1">Updating core fields...</div>;
+        return (
+          <div className="text-xs text-muted-foreground italic px-1">Updating core fields...</div>
+        );
       }
 
       return (
@@ -150,7 +166,9 @@ export const ChangeReviewCard: React.FC<ChangeReviewCardProps> = ({
             if (typeof value === 'object' && !Array.isArray(value)) return null;
             return (
               <div key={key} className="grid grid-cols-[70px_1fr] gap-3 items-start">
-                <span className="text-muted-foreground font-medium uppercase tracking-tighter opacity-70 mt-0.5">{key}</span>
+                <span className="text-muted-foreground font-medium uppercase tracking-tighter opacity-70 mt-0.5">
+                  {key}
+                </span>
                 <span className="text-foreground break-words leading-normal">
                   {Array.isArray(value) ? `${value.length} items` : String(value)}
                 </span>
@@ -170,7 +188,9 @@ export const ChangeReviewCard: React.FC<ChangeReviewCardProps> = ({
   };
 
   return (
-    <Card className={`w-full shadow-sm border-l-4 ${actionInfo.color.split(' ')[2].replace('border-', 'border-l-')} overflow-hidden transition-all hover:shadow-md`}>
+    <Card
+      className={`w-full shadow-sm border-l-4 ${actionInfo.color.split(' ')[2].replace('border-', 'border-l-')} overflow-hidden transition-all hover:shadow-md`}
+    >
       <CardHeader className="p-3 pb-2 flex flex-row items-center justify-between space-y-0 gap-3">
         <div className="flex items-center gap-2.5 min-w-0">
           <div className={`p-1.5 rounded-md ${actionInfo.color} shrink-0`}>
@@ -185,7 +205,10 @@ export const ChangeReviewCard: React.FC<ChangeReviewCardProps> = ({
             </span>
           </div>
         </div>
-        <Badge variant="outline" className={`${actionInfo.color} border-none font-bold text-[10px] uppercase h-5`}>
+        <Badge
+          variant="outline"
+          className={`${actionInfo.color} border-none font-bold text-[10px] uppercase h-5`}
+        >
           {actionInfo.label}
         </Badge>
       </CardHeader>
@@ -212,4 +235,3 @@ export const ChangeReviewCard: React.FC<ChangeReviewCardProps> = ({
     </Card>
   );
 };
-

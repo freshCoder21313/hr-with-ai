@@ -7,8 +7,8 @@ import {
   getHintPrompt,
 } from '@/features/interview/promptSystem';
 import { ChatMessage } from '@/types';
-import { getService, resolveConfig, AIConfigInput } from '../ai/aiConfigService';
-import { cleanJsonString } from '../aiUtils';
+import { getService, resolveConfig, AIConfigInput } from '@/services/ai/aiConfigService';
+import { cleanJsonString } from '@/services/aiUtils';
 
 export const startInterviewSession = async (
   interview: Interview,

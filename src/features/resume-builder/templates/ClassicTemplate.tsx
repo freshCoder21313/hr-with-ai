@@ -14,14 +14,14 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { SortableSection } from '../components/SortableSection';
+import { SortableSection } from '@/features/resume-builder/components/SortableSection';
 import { ResumeData } from '@/types/resume';
-import { WorkSection } from '../components/shared/WorkSection';
-import { EducationSection } from '../components/shared/EducationSection';
-import { ProjectsSection } from '../components/shared/ProjectsSection';
-import { SkillsSection } from '../components/shared/SkillsSection';
-import { SummarySection } from '../components/shared/SummarySection';
-import { ResumeHeader } from '../components/shared/ResumeHeader';
+import { WorkSection } from '@/features/resume-builder/components/shared/WorkSection';
+import { EducationSection } from '@/features/resume-builder/components/shared/EducationSection';
+import { ProjectsSection } from '@/features/resume-builder/components/shared/ProjectsSection';
+import { SkillsSection } from '@/features/resume-builder/components/shared/SkillsSection';
+import { SummarySection } from '@/features/resume-builder/components/shared/SummarySection';
+import { ResumeHeader } from '@/features/resume-builder/components/shared/ResumeHeader';
 
 interface TemplateProps {
   themeColor?: string;

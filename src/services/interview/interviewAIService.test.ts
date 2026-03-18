@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { startInterviewSession, generateInterviewFeedback } from './interviewAIService';
-import { getService, resolveConfig } from '../ai/aiConfigService';
+import { getService, resolveConfig } from '@/services/ai/aiConfigService';
 import { Interview, InterviewStatus } from '@/types';
 
-vi.mock('../ai/aiConfigService');
+vi.mock('@/services/ai/aiConfigService');
 
 describe('interviewAIService', () => {
   afterEach(() => {

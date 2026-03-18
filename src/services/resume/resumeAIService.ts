@@ -8,8 +8,8 @@ import {
   getTailoredResumePrompt,
 } from '@/features/interview/promptSystem';
 import { ResumeData } from '@/types/resume';
-import { getService, resolveConfig, AIConfigInput } from '../ai/aiConfigService';
-import { cleanJsonString } from '../aiUtils';
+import { getService, resolveConfig, AIConfigInput } from '@/services/ai/aiConfigService';
+import { cleanJsonString } from '@/services/aiUtils';
 
 export const analyzeResume = async (
   resumeText: string,

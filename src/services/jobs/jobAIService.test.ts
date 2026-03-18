@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { extractInfoFromJD } from './jobAIService';
-import { getService, resolveConfig } from '../ai/aiConfigService';
+import { getService, resolveConfig } from '@/services/ai/aiConfigService';
 
-vi.mock('../ai/aiConfigService');
+vi.mock('@/services/ai/aiConfigService');
 
 describe('jobAIService', () => {
   afterEach(() => {

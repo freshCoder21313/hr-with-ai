@@ -14,9 +14,9 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { SortableSection } from '../components/SortableSection';
+import { SortableSection } from '@/features/resume-builder/components/SortableSection';
 import { ResumeData } from '@/types/resume';
-import { InlineEdit } from '../components/InlineEdit';
+import { InlineEdit } from '@/features/resume-builder/components/InlineEdit';
 import { MapPin, Mail, Phone, Link as LinkIcon } from 'lucide-react';
 
 interface TemplateProps {
@@ -42,12 +42,15 @@ const AcademicHeader = React.memo(function AcademicHeader({
     >
       <InlineEdit
         as="h1"
-        className="text-3xl font-bold uppercase tracking-wider mb-2 block w-full" style={{ color: themeColor }} value={basics.name || ''}
+        className="text-3xl font-bold uppercase tracking-wider mb-2 block w-full"
+        style={{ color: themeColor }}
+        value={basics.name || ''}
         onSave={(val) => onUpdate?.({ ...basics, name: val })}
       />
       <InlineEdit
         as="p"
-        className="text-lg text-slate-600 italic mb-4 block w-full" value={basics.label || ''}
+        className="text-lg text-slate-600 italic mb-4 block w-full"
+        value={basics.label || ''}
         onSave={(val) => onUpdate?.({ ...basics, label: val })}
       />
 
@@ -319,7 +322,10 @@ const AcademicTemplate: React.FC<TemplateProps> = ({
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 print:grid-cols-2 gap-x-8 gap-y-2">
               {skills.map((skill, i) => (
-                <div key={i} className="flex justify-between border-b border-slate-100 pb-1 skill-item">
+                <div
+                  key={i}
+                  className="flex justify-between border-b border-slate-100 pb-1 skill-item"
+                >
                   <span className="font-bold text-sm text-slate-900">{skill.name}</span>
                   <span className="text-sm text-slate-600 italic text-right">
                     {skill.keywords?.join(', ')}

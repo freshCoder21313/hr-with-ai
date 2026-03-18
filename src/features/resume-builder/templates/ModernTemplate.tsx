@@ -1,8 +1,8 @@
 import React from 'react';
 import { ResumeData } from '@/types/resume';
 import { MapPin, Mail, Phone, Link as LinkIcon, Linkedin, Github, Globe } from 'lucide-react';
-import { InlineEdit } from '../components/InlineEdit';
-import { SortableSection } from '../components/SortableSection';
+import { InlineEdit } from '@/features/resume-builder/components/InlineEdit';
+import { SortableSection } from '@/features/resume-builder/components/SortableSection';
 import {
   DndContext,
   closestCenter,
@@ -18,12 +18,12 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { WorkSection } from '../components/shared/WorkSection';
-import { EducationSection } from '../components/shared/EducationSection';
-import { ProjectsSection } from '../components/shared/ProjectsSection';
-import { SkillsSection } from '../components/shared/SkillsSection';
-import { SummarySection } from '../components/shared/SummarySection';
-import { ResumeHeader } from '../components/shared/ResumeHeader';
+import { WorkSection } from '@/features/resume-builder/components/shared/WorkSection';
+import { EducationSection } from '@/features/resume-builder/components/shared/EducationSection';
+import { ProjectsSection } from '@/features/resume-builder/components/shared/ProjectsSection';
+import { SkillsSection } from '@/features/resume-builder/components/shared/SkillsSection';
+import { SummarySection } from '@/features/resume-builder/components/shared/SummarySection';
+import { ResumeHeader } from '@/features/resume-builder/components/shared/ResumeHeader';
 
 interface TemplateProps {
   themeColor?: string;

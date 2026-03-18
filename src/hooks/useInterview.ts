@@ -1,13 +1,13 @@
 import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useInterviewStore } from '../features/interview/interviewStore';
+import { useInterviewStore } from '@/features/interview/interviewStore';
 import {
   startInterviewSession,
   streamInterviewMessage,
   generateInterviewFeedback,
 } from '@/services/interview/interviewAIService';
 import { getStoredAIConfig } from '@/services/ai/aiConfigService';
-import { db } from '../lib/db';
+import { db } from '@/lib/db';
 import { InterviewStatus, SetupFormData, Interview, Message } from '@/types';
 import { getActiveScenario } from '@/features/interview/scenarios';
 import { openApiKeyModal } from '@/events/apiKeyEvents';

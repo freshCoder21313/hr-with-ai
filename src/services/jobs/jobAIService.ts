@@ -2,10 +2,18 @@ import { Type } from '@google/genai';
 import { UserSettings } from '@/types';
 import { db } from '@/lib/db';
 import { getExtractJDInfoPrompt } from '@/features/interview/promptSystem';
-import { generateJobRecommendationsPrompt, generateTailoredResumePrompt } from '../jobPromptSystem';
+import {
+  generateJobRecommendationsPrompt,
+  generateTailoredResumePrompt,
+} from '@/services/jobPromptSystem';
 import { ResumeData } from '@/types/resume';
-import { getService, resolveConfig, AIConfigInput, getStoredAIConfig } from '../ai/aiConfigService';
-import { cleanJsonString } from '../aiUtils';
+import {
+  getService,
+  resolveConfig,
+  AIConfigInput,
+  getStoredAIConfig,
+} from '@/services/ai/aiConfigService';
+import { cleanJsonString } from '@/services/aiUtils';
 
 export const extractInfoFromJD = async (
   jobDescription: string,
