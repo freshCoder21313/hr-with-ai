@@ -45,7 +45,7 @@ export const syncService = {
         return s;
       }
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { apiKey, githubToken, ...safe } = s;
+      const { id, apiKey, githubToken, ...safe } = s;
       return safe;
     });
 
@@ -87,7 +87,8 @@ export const syncService = {
 
           if (!localMatch) {
             // New item, delete local 'id' to let Dexie auto-increment
-            const { id: _id, ...dataToSave } = cloudInterview;
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { id, ...dataToSave } = cloudInterview;
             await db.interviews.add(dataToSave as Interview);
           } else {
             const cloudTime = cloudInterview.updatedAt || 0;
@@ -107,7 +108,8 @@ export const syncService = {
           const localMatch = localResumes.find((l) => l.createdAt === cloudResume.createdAt);
 
           if (!localMatch) {
-            const { id: _id, ...dataToSave } = cloudResume;
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { id, ...dataToSave } = cloudResume;
             await db.resumes.add(dataToSave as Resume);
           } else {
             const cloudTime = cloudResume.updatedAt || 0;

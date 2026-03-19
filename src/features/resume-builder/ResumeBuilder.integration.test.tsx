@@ -1,12 +1,10 @@
-import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { db } from '@/lib/db';
 import * as aiConfigService from '@/services/ai/aiConfigService';
-import * as resumeAIService from '@/services/resume/resumeAIService';
 import ResumeBuilder from './ResumeBuilder';
-import { Resume, ResumeData, InterviewStatus } from '@/types';
+import { Resume, ResumeData } from '@/types';
 
 // Mock services
 vi.mock('@/lib/db');

@@ -35,7 +35,7 @@ export class AudioRecorderService {
   }
 
   public async stopRecording(): Promise<Blob> {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       if (!this.mediaRecorder || this.mediaRecorder.state === 'inactive') {
         // If not recording, resolve with empty blob or existing chunks?
         // If we are here, likely we want to finish up.

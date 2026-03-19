@@ -1,7 +1,6 @@
 import React from 'react';
 import { ResumeData } from '@/types/resume';
 import { InlineEdit } from '@/features/resume-builder/components/InlineEdit';
-import { cn } from '@/lib/utils';
 
 interface WorkItemProps {
   item: ResumeData['work'][0];

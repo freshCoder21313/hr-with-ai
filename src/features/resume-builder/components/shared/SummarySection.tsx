@@ -1,5 +1,4 @@
 import React from 'react';
-import { ResumeData } from '@/types/resume';
 import { Section } from './Section';
 import { InlineEdit } from '@/features/resume-builder/components/InlineEdit';
 

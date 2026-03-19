@@ -1,7 +1,6 @@
 import React from 'react';
 import { ResumeData } from '@/types/resume';
 import { MapPin, Mail, Phone, Link as LinkIcon, Linkedin, Github, Globe } from 'lucide-react';
-import { InlineEdit } from '@/features/resume-builder/components/InlineEdit';
 import { SortableSection } from '@/features/resume-builder/components/SortableSection';
 import {
   DndContext,

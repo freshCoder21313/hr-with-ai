@@ -16,7 +16,6 @@ import {
 } from '@dnd-kit/sortable';
 import { SortableSection } from '@/features/resume-builder/components/SortableSection';
 import { ResumeData } from '@/types/resume';
-import { InlineEdit } from '@/features/resume-builder/components/InlineEdit';
 import { WorkSection } from '@/features/resume-builder/components/shared/WorkSection';
 import { EducationSection } from '@/features/resume-builder/components/shared/EducationSection';
 import { ProjectsSection } from '@/features/resume-builder/components/shared/ProjectsSection';

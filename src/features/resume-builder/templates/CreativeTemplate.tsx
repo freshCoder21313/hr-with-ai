@@ -16,8 +16,6 @@ import {
 } from '@dnd-kit/sortable';
 import { SortableSection } from '@/features/resume-builder/components/SortableSection';
 import { ResumeData } from '@/types/resume';
-import { cn } from '@/lib/utils';
-import { InlineEdit } from '@/features/resume-builder/components/InlineEdit';
 import { WorkSection } from '@/features/resume-builder/components/shared/WorkSection';
 import { EducationSection } from '@/features/resume-builder/components/shared/EducationSection';
 import { ProjectsSection } from '@/features/resume-builder/components/shared/ProjectsSection';
@@ -72,7 +70,7 @@ const CreativeTemplate: React.FC<TemplateProps> = ({
 
   const primaryColor = themeColor || '#8b5cf6';
 
-  const renderSection = (id: string, isSidebar: boolean) => {
+  const renderSection = (id: string) => {
     switch (id) {
       case 'header':
         return (
@@ -150,7 +148,7 @@ const CreativeTemplate: React.FC<TemplateProps> = ({
             <SortableContext items={sidebarOrder} strategy={verticalListSortingStrategy}>
               {sidebarOrder.map((id) => (
                 <SortableSection key={id} id={id}>
-                  {renderSection(id, true)}
+                  {renderSection(id)}
                 </SortableSection>
               ))}
             </SortableContext>
@@ -173,7 +171,7 @@ const CreativeTemplate: React.FC<TemplateProps> = ({
             <SortableContext items={mainOrder} strategy={verticalListSortingStrategy}>
               {mainOrder.map((id) => (
                 <SortableSection key={id} id={id}>
-                  {renderSection(id, false)}
+                  {renderSection(id)}
                 </SortableSection>
               ))}
             </SortableContext>

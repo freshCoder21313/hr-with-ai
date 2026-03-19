@@ -215,7 +215,7 @@ export class GoogleGeminiStrategy implements AIProviderStrategy {
                   const data = JSON.parse(jsonStr);
                   const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
                   if (text) yield text;
-                } catch (_e) {
+                } catch {
                   // Ignore parse errors, maybe not a valid object or different structure
                 }
 

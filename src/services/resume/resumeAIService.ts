@@ -94,7 +94,7 @@ export const parseResumeToJSON = async (
     const response = await service.generateText([{ role: 'user', content: prompt }], {
       jsonMode: true,
     });
-    let jsonText = response.text || '';
+    const jsonText = response.text || '';
 
     if (!jsonText) throw new Error('No parsed data generated');
 
@@ -159,7 +159,7 @@ export const tailorResumeToJob = async (
     const response = await service.generateText([{ role: 'user', content: prompt }], {
       jsonMode: true,
     });
-    let jsonText = response.text || '';
+    const jsonText = response.text || '';
 
     if (!jsonText) throw new Error('No tailored resume generated');
 
@@ -181,7 +181,7 @@ export const tailorResumeV2 = async (
     const response = await service.generateText([{ role: 'user', content: prompt }], {
       jsonMode: true,
     });
-    let jsonText = response.text || '';
+    const jsonText = response.text || '';
 
     if (!jsonText) throw new Error('No tailored resume generated');
 
@@ -209,7 +209,7 @@ ${JSON.stringify(resumeData)}`;
     const response = await service.generateText([{ role: 'user', content: prompt }], {
       jsonMode: true,
     });
-    let jsonText = response.text || '';
+    const jsonText = response.text || '';
 
     if (!jsonText) throw new Error('No translated data generated');
 

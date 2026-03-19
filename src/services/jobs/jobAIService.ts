@@ -31,7 +31,7 @@ export const extractInfoFromJD = async (
 
   try {
     const response = await service.generateText([{ role: 'user', content: prompt }]);
-    let jsonText = response.text || '';
+    const jsonText = response.text || '';
 
     if (!jsonText) throw new Error('No information extracted');
 
@@ -161,7 +161,7 @@ export const generateTailoredResumeForJob = async (
     const response = await service.generateText([{ role: 'user', content: prompt }], {
       jsonMode: true,
     });
-    let jsonText = response.text || '';
+    const jsonText = response.text || '';
 
     if (!jsonText) throw new Error('No tailored resume generated');
 

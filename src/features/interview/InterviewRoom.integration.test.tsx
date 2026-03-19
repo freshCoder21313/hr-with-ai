@@ -1,4 +1,3 @@
-import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
@@ -7,7 +6,6 @@ import * as interviewAIService from '@/services/interview/interviewAIService';
 import InterviewRoom from './InterviewRoom';
 import { Interview, InterviewStatus, Message } from '@/types';
 import { useInterviewStore } from './interviewStore';
-import { useInterview } from '@/hooks/useInterview';
 import { TooltipProvider } from '@/components/ui/tooltip';
 
 // Mock services and hooks

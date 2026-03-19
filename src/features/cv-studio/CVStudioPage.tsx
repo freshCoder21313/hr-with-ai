@@ -9,7 +9,6 @@ import { streamCVChatMessage } from '@/services/cvChatService';
 import { extractProposedChanges, ProposedChange } from './utils/cvChatUtils';
 import ResumePreview from '@/features/resume-builder/ResumePreview';
 import { ChangeReviewCard } from './components/ChangeReviewCard';
-import { ResumeFormView } from './components/ResumeFormView';
 import { GitHubImportModal } from '@/features/resume-builder/github-import/GitHubImportModal';
 import SectionReorderDialog from '@/features/resume-builder/components/SectionReorderDialog';
 import BasicsForm from '@/features/resume-builder/SectionForms/BasicsForm';
@@ -770,7 +769,11 @@ const CVStudioPage: React.FC = () => {
                       isProcessing={isProcessing}
                       onSelect={(checked) => {
                         const s = new Set(selectedJobs);
-                        checked ? s.add(job.id) : s.delete(job.id);
+                        if (checked) {
+                          s.add(job.id);
+                        } else {
+                          s.delete(job.id);
+                        }
                         setSelectedJobs(s);
                       }}
                       onRemove={() => handleRemoveJob(job.id)}
