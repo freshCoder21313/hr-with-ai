@@ -9,6 +9,7 @@ import {
 import { ChatMessage } from '@/types';
 import { getService, resolveConfig, AIConfigInput } from '@/services/ai/aiConfigService';
 import { cleanJsonString } from '@/services/aiUtils';
+import { getAIResponseOptions, getArrayAIResponseOptions } from '@/lib/aiResponseHelper';
 
 export const startInterviewSession = async (
   interview: Interview,
@@ -143,86 +144,79 @@ export const generateInterviewFeedback = async (
   const prompt = getFeedbackPrompt(interview, conversationHistory, codeContext);
 
   try {
-    let jsonText = '';
-
-    if (config.baseUrl) {
-      // OpenAI - uses jsonMode
-      const response = await service.generateText([{ role: 'user', content: prompt }], {
-        jsonMode: true,
-      });
-      jsonText = response.text;
-    } else {
-      // Gemini - uses schema
-      const schema = {
-        type: Type.OBJECT,
-        properties: {
-          score: { type: Type.NUMBER, description: 'Score out of 10' },
-          summary: { type: Type.STRING },
-          strengths: { type: Type.ARRAY, items: { type: Type.STRING } },
-          weaknesses: { type: Type.ARRAY, items: { type: Type.STRING } },
-          keyQuestionAnalysis: {
-            type: Type.ARRAY,
-            items: {
-              type: Type.OBJECT,
-              properties: {
-                question: { type: Type.STRING },
-                analysis: { type: Type.STRING },
-                improvement: { type: Type.STRING },
-              },
-            },
-          },
-          mermaidGraphCurrent: {
-            type: Type.STRING,
-            description: 'Mermaid graph definition for current performance',
-          },
-          mermaidGraphPotential: {
-            type: Type.STRING,
-            description: 'Mermaid graph definition for improved potential performance',
-          },
-          resilienceScore: {
-            type: Type.NUMBER,
-            description: 'Score 0-10 on ability to handle pressure/gaslighting (optional)',
-          },
-          cultureFitScore: {
-            type: Type.NUMBER,
-            description: 'Score 0-10 on fit for the specific Company Status (optional)',
-          },
-          badges: {
-            type: Type.ARRAY,
-            items: { type: Type.STRING },
-            description:
-              "Awards like 'Survivor' (finished hardcore), 'Culture Fit King', 'Tech Wizard'",
-          },
-          recommendedResources: {
-            type: Type.ARRAY,
-            items: {
-              type: Type.OBJECT,
-              properties: {
-                topic: { type: Type.STRING },
-                description: { type: Type.STRING },
-                searchQuery: { type: Type.STRING },
-              },
+    const responseOptions = getAIResponseOptions(
+      config,
+      {
+        score: { type: Type.NUMBER, description: 'Score out of 10' },
+        summary: { type: Type.STRING },
+        strengths: { type: Type.ARRAY, items: { type: Type.STRING } },
+        weaknesses: { type: Type.ARRAY, items: { type: Type.STRING } },
+        keyQuestionAnalysis: {
+          type: Type.ARRAY,
+          items: {
+            type: Type.OBJECT,
+            properties: {
+              question: { type: Type.STRING },
+              analysis: { type: Type.STRING },
+              improvement: { type: Type.STRING },
             },
           },
         },
-        required: [
-          'score',
-          'summary',
-          'strengths',
-          'weaknesses',
-          'keyQuestionAnalysis',
-          'mermaidGraphCurrent',
-          'mermaidGraphPotential',
-          'recommendedResources',
-          'resilienceScore',
-          'cultureFitScore',
-          'badges',
-        ],
-      };
+        mermaidGraphCurrent: {
+          type: Type.STRING,
+          description: 'Mermaid graph definition for current performance',
+        },
+        mermaidGraphPotential: {
+          type: Type.STRING,
+          description: 'Mermaid graph definition for improved potential performance',
+        },
+        resilienceScore: {
+          type: Type.NUMBER,
+          description: 'Score 0-10 on ability to handle pressure/gaslighting (optional)',
+        },
+        cultureFitScore: {
+          type: Type.NUMBER,
+          description: 'Score 0-10 on fit for the specific Company Status (optional)',
+        },
+        badges: {
+          type: Type.ARRAY,
+          items: { type: Type.STRING },
+          description:
+            "Awards like 'Survivor' (finished hardcore), 'Culture Fit King', 'Tech Wizard'",
+        },
+        recommendedResources: {
+          type: Type.ARRAY,
+          items: {
+            type: Type.OBJECT,
+            properties: {
+              topic: { type: Type.STRING },
+              description: { type: Type.STRING },
+              searchQuery: { type: Type.STRING },
+            },
+          },
+        },
+      },
+      [
+        'score',
+        'summary',
+        'strengths',
+        'weaknesses',
+        'keyQuestionAnalysis',
+        'mermaidGraphCurrent',
+        'mermaidGraphPotential',
+        'recommendedResources',
+        'resilienceScore',
+        'cultureFitScore',
+        'badges',
+      ]
+    );
 
-      const response = await service.generateText([{ role: 'user', content: prompt }], { schema });
-      jsonText = response.text;
-    }
+    let jsonText = '';
+    const response = await service.generateText(
+      [{ role: 'user', content: prompt }],
+      responseOptions
+    );
+    jsonText = response.text;
 
     if (!jsonText) throw new Error('No feedback generated');
 
@@ -249,26 +243,22 @@ export const generateInterviewHints = async (
   const prompt = getHintPrompt(lastQuestion, context);
 
   try {
-    let jsonText = '';
+    const responseOptions = getAIResponseOptions(
+      config,
+      {
+        level1: { type: Type.STRING },
+        level2: { type: Type.STRING },
+        level3: { type: Type.STRING },
+      },
+      ['level1', 'level2', 'level3']
+    );
 
-    if (config.baseUrl) {
-      const response = await service.generateText([{ role: 'user', content: prompt }], {
-        jsonMode: true,
-      });
-      jsonText = response.text;
-    } else {
-      const schema = {
-        type: Type.OBJECT,
-        properties: {
-          level1: { type: Type.STRING },
-          level2: { type: Type.STRING },
-          level3: { type: Type.STRING },
-        },
-        required: ['level1', 'level2', 'level3'],
-      };
-      const response = await service.generateText([{ role: 'user', content: prompt }], { schema });
-      jsonText = response.text;
-    }
+    let jsonText = '';
+    const response = await service.generateText(
+      [{ role: 'user', content: prompt }],
+      responseOptions
+    );
+    jsonText = response.text;
 
     if (!jsonText) throw new Error('No hints generated');
 

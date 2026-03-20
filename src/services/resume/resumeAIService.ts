@@ -10,6 +10,7 @@ import {
 import { ResumeData } from '@/types/resume';
 import { getService, resolveConfig, AIConfigInput } from '@/services/ai/aiConfigService';
 import { cleanJsonString } from '@/services/aiUtils';
+import { getAIResponseOptions } from '@/lib/aiResponseHelper';
 
 export const analyzeResume = async (
   resumeText: string,
@@ -40,27 +41,23 @@ export const analyzeResume = async (
   const prompt = getResumeAnalysisPrompt(resumeText, jobDescription);
 
   try {
-    let jsonText = '';
+    const responseOptions = getAIResponseOptions(
+      config,
+      {
+        matchScore: { type: Type.NUMBER },
+        summary: { type: Type.STRING },
+        missingKeywords: { type: Type.ARRAY, items: { type: Type.STRING } },
+        improvements: { type: Type.ARRAY, items: { type: Type.STRING } },
+      },
+      ['matchScore', 'summary', 'missingKeywords', 'improvements']
+    );
 
-    if (config.baseUrl) {
-      const response = await service.generateText([{ role: 'user', content: prompt }], {
-        jsonMode: true,
-      });
-      jsonText = response.text;
-    } else {
-      const schema = {
-        type: Type.OBJECT,
-        properties: {
-          matchScore: { type: Type.NUMBER },
-          summary: { type: Type.STRING },
-          missingKeywords: { type: Type.ARRAY, items: { type: Type.STRING } },
-          improvements: { type: Type.ARRAY, items: { type: Type.STRING } },
-        },
-        required: ['matchScore', 'summary', 'missingKeywords', 'improvements'],
-      };
-      const response = await service.generateText([{ role: 'user', content: prompt }], { schema });
-      jsonText = response.text;
-    }
+    let jsonText = '';
+    const response = await service.generateText(
+      [{ role: 'user', content: prompt }],
+      responseOptions
+    );
+    jsonText = response.text;
 
     if (!jsonText) throw new Error('No analysis generated');
 
@@ -116,26 +113,22 @@ export const analyzeResumeSection = async (
   const prompt = getAnalyzeSectionPrompt(sectionName, sectionData);
 
   try {
-    let jsonText = '';
+    const responseOptions = getAIResponseOptions(
+      config,
+      {
+        critique: { type: Type.STRING },
+        suggestions: { type: Type.ARRAY, items: { type: Type.STRING } },
+        rewrittenExample: { type: Type.STRING },
+      },
+      ['critique', 'suggestions', 'rewrittenExample']
+    );
 
-    if (config.baseUrl) {
-      const response = await service.generateText([{ role: 'user', content: prompt }], {
-        jsonMode: true,
-      });
-      jsonText = response.text;
-    } else {
-      const schema = {
-        type: Type.OBJECT,
-        properties: {
-          critique: { type: Type.STRING },
-          suggestions: { type: Type.ARRAY, items: { type: Type.STRING } },
-          rewrittenExample: { type: Type.STRING },
-        },
-        required: ['critique', 'suggestions', 'rewrittenExample'],
-      };
-      const response = await service.generateText([{ role: 'user', content: prompt }], { schema });
-      jsonText = response.text;
-    }
+    let jsonText = '';
+    const response = await service.generateText(
+      [{ role: 'user', content: prompt }],
+      responseOptions
+    );
+    jsonText = response.text;
 
     if (!jsonText) throw new Error('No analysis generated');
 

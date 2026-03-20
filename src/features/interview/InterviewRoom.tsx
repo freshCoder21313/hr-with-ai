@@ -4,6 +4,8 @@ import { Loader2 } from 'lucide-react';
 import { Editor, TLShapeId } from 'tldraw';
 import { db } from '@/lib/db';
 import { useInterview } from '@/hooks/useInterview';
+import { useInterviewLoader } from '@/hooks/useInterviewLoader';
+import { svgToPngBase64 } from '@/lib/svgUtils';
 
 import { generateInterviewHints, InterviewHints } from '@/services/interview/interviewAIService';
 import { getStoredAIConfig } from '@/services/ai/aiConfigService';
@@ -24,43 +26,6 @@ import { VoiceInterviewRoom } from './components/VoiceInterviewRoom';
 
 // Hooks
 import { useInterviewTimer } from './hooks/useInterviewTimer';
-
-// Helper
-const svgToPngBase64 = (svg: SVGElement): Promise<string> => {
-  return new Promise((resolve) => {
-    try {
-      const svgStr = new XMLSerializer().serializeToString(svg);
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      const img = new Image();
-      const width = parseFloat(svg.getAttribute('width') || '1000');
-      const height = parseFloat(svg.getAttribute('height') || '1000');
-      canvas.width = width;
-      canvas.height = height;
-      const blob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      img.onload = () => {
-        if (ctx) {
-          ctx.fillStyle = '#ffffff';
-          ctx.fillRect(0, 0, width, height);
-          ctx.drawImage(img, 0, 0);
-        }
-        const dataUrl = canvas.toDataURL('image/png');
-        URL.revokeObjectURL(url);
-        resolve(dataUrl);
-      };
-      img.onerror = (e) => {
-        URL.revokeObjectURL(url);
-        console.error('Image loading failed', e);
-        resolve('');
-      };
-      img.src = url;
-    } catch (e) {
-      console.error('SVG conversion failed', e);
-      resolve('');
-    }
-  });
-};
 
 const InterviewRoom: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -181,21 +146,8 @@ const InterviewRoom: React.FC = () => {
     // Hybrid defaults to text unless configured otherwise, or we can add logic later
   }, [currentInterview?.mode]);
 
-  // Load Data
-  useEffect(() => {
-    const loadInterview = async () => {
-      if (!id) return;
-      if (currentInterview && currentInterview.id === parseInt(id)) return;
-
-      const data = await db.interviews.get(parseInt(id));
-      if (data) {
-        setInterview(data);
-      } else {
-        navigate('/');
-      }
-    };
-    loadInterview();
-  }, [id, currentInterview, setInterview, navigate]);
+  // Load Interview Data
+  const { isLoading: isInterviewLoading } = useInterviewLoader();
 
   // Load settings on mount and restore TTS preference
   useEffect(() => {
@@ -380,6 +332,13 @@ const InterviewRoom: React.FC = () => {
   };
 
   if (!currentInterview)
+    return (
+      <div className="h-screen flex items-center justify-center text-slate-500">
+        Loading room...
+      </div>
+    );
+
+  if (isInterviewLoading)
     return (
       <div className="h-screen flex items-center justify-center text-slate-500">
         Loading room...

@@ -14,6 +14,7 @@ import {
   getStoredAIConfig,
 } from '@/services/ai/aiConfigService';
 import { cleanJsonString } from '@/services/aiUtils';
+import { getArrayAIResponseOptions } from '@/lib/aiResponseHelper';
 
 export const extractInfoFromJD = async (
   jobDescription: string,
@@ -74,45 +75,38 @@ export const generateJobRecommendations = async (
   const prompt = generateJobRecommendationsPrompt(resumeData, language);
 
   try {
-    let jsonText = '';
+    const responseOptions = getArrayAIResponseOptions(
+      config,
+      {
+        title: { type: Type.STRING },
+        company: { type: Type.STRING },
+        industry: { type: Type.STRING },
+        location: { type: Type.STRING },
+        salaryRange: { type: Type.STRING },
+        keyRequirements: { type: Type.ARRAY, items: { type: Type.STRING } },
+        whyItFits: { type: Type.STRING },
+        matchScore: { type: Type.NUMBER },
+        jobDescription: { type: Type.STRING },
+      },
+      [
+        'title',
+        'company',
+        'industry',
+        'location',
+        'salaryRange',
+        'keyRequirements',
+        'whyItFits',
+        'matchScore',
+        'jobDescription',
+      ]
+    );
 
-    if (config.baseUrl) {
-      const response = await service.generateText([{ role: 'user', content: prompt }], {
-        jsonMode: true,
-      });
-      jsonText = response.text;
-    } else {
-      const schema = {
-        type: Type.ARRAY,
-        items: {
-          type: Type.OBJECT,
-          properties: {
-            title: { type: Type.STRING },
-            company: { type: Type.STRING },
-            industry: { type: Type.STRING },
-            location: { type: Type.STRING },
-            salaryRange: { type: Type.STRING },
-            keyRequirements: { type: Type.ARRAY, items: { type: Type.STRING } },
-            whyItFits: { type: Type.STRING },
-            matchScore: { type: Type.NUMBER },
-            jobDescription: { type: Type.STRING },
-          },
-          required: [
-            'title',
-            'company',
-            'industry',
-            'location',
-            'salaryRange',
-            'keyRequirements',
-            'whyItFits',
-            'matchScore',
-            'jobDescription',
-          ],
-        },
-      };
-      const response = await service.generateText([{ role: 'user', content: prompt }], { schema });
-      jsonText = response.text;
-    }
+    let jsonText = '';
+    const response = await service.generateText(
+      [{ role: 'user', content: prompt }],
+      responseOptions
+    );
+    jsonText = response.text;
 
     if (!jsonText) throw new Error('No job recommendations generated');
 
