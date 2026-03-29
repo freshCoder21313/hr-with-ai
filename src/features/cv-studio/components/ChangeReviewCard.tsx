@@ -23,8 +23,9 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+import type { LucideIcon } from 'lucide-react';
 
-const SECTION_ICONS: Record<string, any> = {
+const SECTION_ICONS: Record<string, LucideIcon> = {
   basics: User,
   work: Briefcase,
   education: GraduationCap,

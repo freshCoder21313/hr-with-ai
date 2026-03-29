@@ -61,14 +61,13 @@ export const generateJobRecommendations = async (
       const cachedJobs = await db.job_recommendations.where('resumeId').equals(resumeId).toArray();
 
       if (cachedJobs && cachedJobs.length > 0) {
-        console.log('Using cached job recommendations');
         return cachedJobs.map((job) => ({
           ...job,
           id: `job-${job.createdAt}-${job.id}`,
         }));
       }
-    } catch (e) {
-      console.warn('Failed to check job cache:', e);
+    } catch {
+      // Cache check failed, will fetch fresh data
     }
   }
 
@@ -131,7 +130,9 @@ export const generateJobRecommendations = async (
           id: undefined,
         }));
         await db.job_recommendations.bulkAdd(dbJobs);
-      }).catch((e) => console.warn('Failed to cache jobs:', e));
+      }).catch(() => {
+        // Cache write failed, non-critical
+      });
     }
 
     return mappedRecommendations;

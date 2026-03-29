@@ -1,6 +1,5 @@
 import { vi } from 'vitest';
 import { Interview, Message, Resume, UserSettings, InterviewStatus } from '@/types';
-import { ResumeData } from '@/types/resume';
 
 export const createMockAIResponse = (text: string) => ({
   text,

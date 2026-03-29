@@ -30,11 +30,10 @@ export const analyzeResume = async (
         cachedResume.analysisResult &&
         cachedResume.analyzedJobDescription === jobDescription
       ) {
-        console.log('Using cached resume analysis');
         return cachedResume.analysisResult;
       }
-    } catch (e) {
-      console.warn('Failed to check cache:', e);
+    } catch {
+      // Cache check failed, will fetch fresh data
     }
   }
 
@@ -70,7 +69,9 @@ export const analyzeResume = async (
           analysisResult: result,
           analyzedJobDescription: jobDescription,
         })
-        .catch((e) => console.warn('Failed to cache analysis:', e));
+        .catch(() => {
+          // Cache write failed, non-critical
+        });
     }
 
     return result;

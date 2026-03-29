@@ -24,8 +24,6 @@ class SpeechToTextService {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       this.recognition = new SpeechRecognition();
       this.setupRecognition();
-    } else {
-      console.warn('Speech Recognition API not supported in this browser.');
     }
   }
 
@@ -136,7 +134,6 @@ class SpeechToTextService {
         // Better to just let the consumer handle the timeout logic based on results?
         // Re-reading requirements: "Tự động phát hiện khi người dùng ngừng nói (silence detection) để kết thúc input"
         // If we stop here, we should probably treat it as final.
-        console.log('Silence detected, stopping...');
         this.stop();
       }, this.config.silenceTimeout);
     }

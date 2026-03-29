@@ -24,7 +24,8 @@ export const useInterviewLoader = (): UseInterviewLoaderReturn => {
       return;
     }
 
-    if (currentInterview && currentInterview.id === parseInt(id)) {
+    const interviewId = currentInterview?.id;
+    if (interviewId && interviewId === parseInt(id)) {
       setIsLoading(false);
       return;
     }
@@ -45,7 +46,7 @@ export const useInterviewLoader = (): UseInterviewLoaderReturn => {
     } finally {
       setIsLoading(false);
     }
-  }, [id, currentInterview, setInterview, navigate]);
+  }, [id, currentInterview?.id, setInterview, navigate]);
 
   useEffect(() => {
     loadInterview();

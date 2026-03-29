@@ -1,6 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
 import { Editor, TLShapeId } from 'tldraw';
-import { useInterviewStore } from '../interviewStore';
 import { svgToPngBase64 } from '@/lib/svgUtils';
 import { Interview, JobRecommendation } from '@/types';
 import { db } from '@/lib/db';
@@ -32,7 +31,6 @@ export const useToolHandlers = (
   const [isCodeOpen, setIsCodeOpen] = useState(false);
   const [isWhiteboardOpen, setIsWhiteboardOpen] = useState(false);
   const editorRef = useRef<Editor | null>(null);
-  const { updateCode, updateWhiteboard } = useInterviewStore();
 
   const handleRunCode = useCallback(() => {
     alert('This feature is coming soon! (Backend integration in progress)');

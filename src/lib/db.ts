@@ -180,7 +180,6 @@ class HRDatabase extends Dexie {
       if (oldResumes.length > 0) {
         const ids = oldResumes.map((r) => r.id!);
         await this.resumes.bulkDelete(ids);
-        console.log(`🧹 Cleaned up ${ids.length} old resumes.`);
       }
     } catch (e) {
       console.error('Failed to clean old resumes:', e);

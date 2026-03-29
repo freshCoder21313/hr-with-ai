@@ -105,17 +105,9 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = memo(({ content }) => 
         return url;
       }}
       components={{
-        code({
-          inline,
-          className,
-          children,
-          ...props
-        }: {
-          inline?: boolean;
-          className?: string;
-          children?: React.ReactNode;
-          [key: string]: any;
-        }) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        code(props: any) {
+          const { inline, className, children } = props;
           const match = /language-(\w+)/.exec(className || '');
           const lang = match ? match[1] : '';
           const codeText = String(children).replace(/\n$/, '');
@@ -132,11 +124,11 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = memo(({ content }) => 
                 {lang}
               </div>
               <SyntaxHighlighter
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 style={vscDarkPlus as any}
                 language={match[1]}
                 PreTag="div"
                 className="rounded-lg !my-0 !bg-[#1e1e1e] border border-slate-700 shadow-sm pt-8"
-                {...props}
               >
                 {codeText}
               </SyntaxHighlighter>
@@ -148,7 +140,6 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = memo(({ content }) => 
                   ? 'bg-slate-100 text-slate-900 px-1.5 py-0.5 rounded font-mono text-[0.9em] border border-slate-200 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-700'
                   : 'block bg-slate-100 text-slate-900 p-4 rounded-lg my-2 overflow-x-auto text-sm border border-slate-200 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-700'
               }`}
-              {...props}
             >
               {children}
             </code>

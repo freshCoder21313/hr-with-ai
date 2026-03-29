@@ -234,14 +234,7 @@ export const GitHubImportModal: React.FC<GitHubImportModalProps> = ({
         return !isDuplicate;
       });
 
-      if (newProjects.length < projectsToAdd.length) {
-        // Warn about duplicates? Or just silently skip?
-        // For now, let's just append non-duplicates to be safe and clean.
-        console.log(`Skipped ${projectsToAdd.length - newProjects.length} duplicates.`);
-      }
-
       if (newProjects.length === 0) {
-        // All were duplicates
         setError('All selected projects already exist in your CV.');
         setIsLoading(false);
         return;
@@ -253,12 +246,6 @@ export const GitHubImportModal: React.FC<GitHubImportModalProps> = ({
         parsedData,
         updatedAt: Date.now(),
       });
-
-      if (newProjects.length < projectsToAdd.length) {
-        // Warn about duplicates? Or just silently skip?
-        // For now, let's just append non-duplicates to be safe and clean.
-        console.log(`Skipped ${projectsToAdd.length - newProjects.length} duplicates.`);
-      }
 
       if (newProjects.length === 0) {
         // All were duplicates
@@ -277,7 +264,9 @@ export const GitHubImportModal: React.FC<GitHubImportModalProps> = ({
       if (onImportComplete) onImportComplete();
       onClose();
     } catch (err) {
-      setError('Failed to save projects to CV: ' + (err instanceof Error ? err.message : String(err)));
+      setError(
+        'Failed to save projects to CV: ' + (err instanceof Error ? err.message : String(err))
+      );
     } finally {
       setIsLoading(false);
     }
@@ -498,28 +487,35 @@ export const GitHubImportModal: React.FC<GitHubImportModalProps> = ({
                         </span>
                       )}
                     </div>
-                    
-                    {project.suggestedInterviewQuestions && project.suggestedInterviewQuestions.length > 0 && (
-                      <div className="mt-4 p-3 bg-indigo-50/50 rounded-md border border-indigo-100">
-                        <h5 className="text-xs font-bold text-indigo-700 flex items-center gap-1 mb-2">
-                          <Zap className="w-3 h-3" /> Technical Deep-Dive (Target Questions)
-                        </h5>
-                        <div className="space-y-2">
-                          {project.suggestedInterviewQuestions.map((q, qidx) => (
-                            <div key={qidx} className="text-[11px]">
-                              <span className="font-semibold text-indigo-900">Q: {q.question}</span>
-                              <div className="flex flex-wrap gap-1 mt-1">
-                                {q.topics.map(t => (
-                                  <Badge key={t} variant="outline" className="text-[9px] py-0 h-4 bg-white/50">
-                                    {t}
-                                  </Badge>
-                                ))}
+
+                    {project.suggestedInterviewQuestions &&
+                      project.suggestedInterviewQuestions.length > 0 && (
+                        <div className="mt-4 p-3 bg-indigo-50/50 rounded-md border border-indigo-100">
+                          <h5 className="text-xs font-bold text-indigo-700 flex items-center gap-1 mb-2">
+                            <Zap className="w-3 h-3" /> Technical Deep-Dive (Target Questions)
+                          </h5>
+                          <div className="space-y-2">
+                            {project.suggestedInterviewQuestions.map((q, qidx) => (
+                              <div key={qidx} className="text-[11px]">
+                                <span className="font-semibold text-indigo-900">
+                                  Q: {q.question}
+                                </span>
+                                <div className="flex flex-wrap gap-1 mt-1">
+                                  {q.topics.map((t) => (
+                                    <Badge
+                                      key={t}
+                                      variant="outline"
+                                      className="text-[9px] py-0 h-4 bg-white/50"
+                                    >
+                                      {t}
+                                    </Badge>
+                                  ))}
+                                </div>
                               </div>
-                            </div>
-                          ))}
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
                   </CardContent>
                 </Card>
               ))}

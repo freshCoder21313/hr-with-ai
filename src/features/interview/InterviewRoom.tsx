@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { Editor, TLShapeId } from 'tldraw';
 import { db } from '@/lib/db';
@@ -29,7 +29,6 @@ import { useInterviewTimer } from './hooks/useInterviewTimer';
 
 const InterviewRoom: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
 
   // Custom Hooks
   const {
@@ -119,11 +118,11 @@ const InterviewRoom: React.FC = () => {
         }
       }
     }
-  }, [currentInterview?.messages]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentInterview?.messages?.length]);
 
   // Auto-open tools based on Mode
   useEffect(() => {
-    // Check type first, fallback to mode (legacy)
     const interviewType = currentInterview?.type || currentInterview?.mode;
 
     if (interviewType === 'coding') {
@@ -143,7 +142,6 @@ const InterviewRoom: React.FC = () => {
     } else if (currentInterview?.mode === 'text') {
       setViewMode('text');
     }
-    // Hybrid defaults to text unless configured otherwise, or we can add logic later
   }, [currentInterview?.mode]);
 
   // Load Interview Data

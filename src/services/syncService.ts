@@ -174,7 +174,7 @@ export const syncService = {
     id: string
   ): Promise<{ success: boolean; data?: SyncData; message?: string }> => {
     try {
-      const result = await apiClient.get<{ data: any }>(`/sync`, {
+      const result = await apiClient.get<{ data: CompressedSyncData }>(`/sync`, {
         params: { id },
       });
 
@@ -184,12 +184,12 @@ export const syncService = {
 
       // However, if the API returns the data directly (without wrapper), adjust accordingly.
       // Assuming existing API returns JSON: { data: { compressed: "..." } }
-      const rawData = (result as any).data;
+      const rawData = result.data.data;
 
       // Check if data is compressed
       let finalData: SyncData;
 
-      if (rawData && typeof rawData === 'object' && rawData.compressed) {
+      if (rawData && typeof rawData === 'object' && 'compressed' in rawData && rawData.compressed) {
         // Decompress - Try Base64 first (new format), then UTF16 (legacy/fallback)
         let decompressed = LZString.decompressFromBase64(rawData.compressed);
         if (!decompressed) {
@@ -197,10 +197,10 @@ export const syncService = {
         }
 
         if (!decompressed) throw new Error('Failed to decompress data');
-        finalData = JSON.parse(decompressed);
+        finalData = JSON.parse(decompressed) as SyncData;
       } else {
         // Fallback for legacy uncompressed data
-        finalData = rawData;
+        finalData = rawData as unknown as SyncData;
       }
 
       return { success: true, data: finalData };

@@ -3,7 +3,7 @@ import { VoiceSettings } from '@/types';
 export interface TTSConfig extends VoiceSettings {
   onStart?: () => void;
   onEnd?: () => void;
-  onError?: (error: any) => void;
+  onError?: (error: unknown) => void;
 }
 
 class TextToSpeechService {

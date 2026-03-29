@@ -9,7 +9,7 @@ import {
 import { ChatMessage } from '@/types';
 import { getService, resolveConfig, AIConfigInput } from '@/services/ai/aiConfigService';
 import { cleanJsonString } from '@/services/aiUtils';
-import { getAIResponseOptions, getArrayAIResponseOptions } from '@/lib/aiResponseHelper';
+import { getAIResponseOptions } from '@/lib/aiResponseHelper';
 
 export const startInterviewSession = async (
   interview: Interview,

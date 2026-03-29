@@ -79,8 +79,8 @@ export const convertRepoToProject = async (
         fileTree,
         configInput
       );
-    } catch (e) {
-      console.warn('Failed to generate interview questions for repo', e);
+    } catch {
+      // AI generation failed, project will use basic info
     }
 
     return project;

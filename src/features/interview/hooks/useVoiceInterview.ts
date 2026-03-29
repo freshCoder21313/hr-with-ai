@@ -71,7 +71,8 @@ export const useVoiceInterview = () => {
       // We need to know if generation is done.
       // Handled in the generation loop.
     }
-  }, [ttsQueue, tts.isSpeaking, currentState, tts]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ttsQueue.length, tts.isSpeaking, currentState]);
 
   // Sync transcript from STT to Store
   useEffect(() => {
@@ -81,7 +82,8 @@ export const useVoiceInterview = () => {
         !!stt.interimTranscript
       );
     }
-  }, [stt.transcript, stt.interimTranscript, updateTranscript]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stt.transcript, stt.interimTranscript]);
 
   // Action: Start Listening
   const startListening = useCallback(async () => {
@@ -212,12 +214,9 @@ export const useVoiceInterview = () => {
       ttsQueue.length === 0 &&
       !useInterviewStore.getState().isLoading
     ) {
-      // AI finished speaking
       if (voiceSettings.pushToTalk) {
         setCurrentState('idle');
       } else {
-        // Continuous -> Start listening again
-        // Add a small delay
         const timer = setTimeout(() => {
           startListening();
         }, 500);
@@ -229,16 +228,14 @@ export const useVoiceInterview = () => {
     tts.isSpeaking,
     ttsQueue.length,
     voiceSettings.pushToTalk,
-    startListening,
     setCurrentState,
+    startListening,
   ]);
 
   const interruptAI = useCallback(() => {
     tts.stop();
     clearTTSQueue();
     setCurrentState('idle');
-    // Maybe cancel Gemini stream if possible? (Simulate by ignoring rest)
-    // Hard to cancel generator loop from outside unless built-in support.
   }, [tts, clearTTSQueue, setCurrentState]);
 
   const endInterview = useCallback(() => {

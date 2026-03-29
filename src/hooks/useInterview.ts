@@ -181,20 +181,15 @@ export const useInterview = () => {
           const settings = await db.userSettings.orderBy('id').first();
           if (settings?.autoFinishEnabled) autoFinish = true;
           if (settings?.forceToolsEnabled) forceTools = true;
-        } catch (e) {
-          console.warn('Failed to load settings', e);
+        } catch {
+          // Settings load failed, using defaults
         }
 
         // --- HIDDEN SCENARIO CHECK ---
         let systemInjection: string | null = null;
         if (latestInterview.companyStatus) {
-          // Calculate turn count (user messages / 2 roughly)
           const turnCount = Math.floor(latestInterview.messages.length / 2);
           systemInjection = getActiveScenario(latestInterview.companyStatus, turnCount);
-
-          if (systemInjection) {
-            console.log('🎲 [SCENARIO TRIGGERED]', systemInjection);
-          }
         }
 
         const stream = streamInterviewMessage(
@@ -225,11 +220,9 @@ export const useInterview = () => {
               cleanContent.endsWith('?"') ||
               cleanContent.endsWith("?'")
             ) {
-              console.warn(
-                '⚠️ Auto-finish signal detected but ignored because message asks a question.'
-              );
-              fullResponse = cleanContent; // Remove token from UI
-              shouldAutoEnd = false; // Override: Do NOT end session
+              // Auto-finish signal detected but ignored because message asks a question
+              fullResponse = cleanContent;
+              shouldAutoEnd = false;
             } else {
               fullResponse = cleanContent;
               shouldAutoEnd = true;
