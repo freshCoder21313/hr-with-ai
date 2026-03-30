@@ -8,13 +8,37 @@ import bcrypt from 'bcryptjs';
 // Neon SQL client - handles connection pooling automatically
 const sql = neon(process.env.DATABASE_URL!);
 
+// Simple in-memory rate limiter (per-instance, works best with consistent server warm-up)
+// For production, use Redis: https://vercel.com/docs/concepts/vercel-edge-network/rate-limiting
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+const RATE_LIMIT = parseInt(process.env.RATE_LIMIT || '20');
+const RATE_WINDOW_MS = 60 * 1000; // 1 minute
+
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const record = rateLimitMap.get(ip);
+
+  if (!record || now > record.resetTime) {
+    rateLimitMap.set(ip, { count: 1, resetTime: now + RATE_WINDOW_MS });
+    return true;
+  }
+
+  if (record.count >= RATE_LIMIT) {
+    return false;
+  }
+
+  record.count++;
+  return true;
+}
+
 // Helper for CORS
 const allowCors =
   (fn: (req: VercelRequest, res: VercelResponse) => Promise<void>) =>
   async (req: VercelRequest, res: VercelResponse) => {
+    const allowedOrigin = process.env.ALLOWED_ORIGIN || 'https://hr-with-ai.vercel.app';
     res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+    res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
+    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST');
     res.setHeader(
       'Access-Control-Allow-Headers',
       'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, x-sync-id'
@@ -27,25 +51,18 @@ const allowCors =
   };
 
 const handler = async (req: VercelRequest, res: VercelResponse): Promise<void> => {
-  const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+  const ip =
+    (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
+    req.socket?.remoteAddress ||
+    'unknown';
   const syncId = (req.headers['x-sync-id'] as string) || (req.query.id as string);
 
-  // Rate Limiting Check (Disabled for performance - Technical Debt Fix)
-  // In production, use Redis or dedicated rate limit service
-  /*
-  try {
-     const rateCheck = await sql`SELECT COUNT(*) FROM rate_limits WHERE ip = ${ip} AND timestamp > NOW() - INTERVAL '1 hour'`;
-     if (parseInt(rateCheck[0].count) > 100) { // High limit for dev, strict for prod (e.g., 10)
-         res.status(429).json({ error: 'Rate limit exceeded' });
-         return;
-     }
-     // Log action
-     await sql`INSERT INTO rate_limits (ip, action) VALUES (${ip}, ${req.method})`;
-  } catch (err) {
-      console.error('Rate limit error', err);
-      // Fail open if rate limit DB fails? Or close. Let's proceed for now.
+  // Rate Limiting Check
+  if (!checkRateLimit(ip)) {
+    res.setHeader('Retry-After', '60');
+    res.status(429).json({ error: 'Rate limit exceeded. Please try again later.' });
+    return;
   }
-  */
 
   // 1. GET (Download)
   if (req.method === 'GET') {
