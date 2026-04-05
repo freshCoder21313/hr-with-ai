@@ -2,6 +2,8 @@ import React from 'react';
 import { useSkillAssessmentStore } from './stores/useSkillAssessmentStore';
 import { UploadStep } from './components/UploadStep';
 import { SelectSkillStep } from './components/SelectSkillStep';
+import { QuizStep } from './components/QuizStep';
+import { ResultStep } from './components/ResultStep';
 
 const SkillAssessmentPage: React.FC = () => {
   const step = useSkillAssessmentStore((state) => state.step);
@@ -11,7 +13,8 @@ const SkillAssessmentPage: React.FC = () => {
       <h1 className="text-3xl font-bold mb-8 text-center">Skill Assessment</h1>
       {step === 'upload' && <UploadStep />}
       {step === 'select_skill' && <SelectSkillStep />}
-      {/* Quiz and Result steps will be added here */}
+      {step === 'quiz' && <QuizStep />}
+      {step === 'result' && <ResultStep />}
     </div>
   );
 };
