@@ -16,6 +16,7 @@ const ResumeBuilder = lazy(() => import('./features/resume-builder/ResumeBuilder
 const CVStudioPage = lazy(() => import('./features/cv-studio/CVStudioPage'));
 const LandingPage = lazy(() => import('./features/landing/LandingPage'));
 const HistoryPage = lazy(() => import('./features/history/HistoryPage'));
+const SkillAssessmentPage = lazy(() => import('./features/skill-assessment/SkillAssessmentPage'));
 
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-[50vh]">
@@ -43,6 +44,7 @@ const App: React.FC = () => {
                     <Route path="/history" element={<HistoryPage />} />
                     <Route path="/resumes/:id/edit" element={<ResumeBuilder />} />
                     <Route path="/studio" element={<CVStudioPage />} />
+                    <Route path="/skill-assessment" element={<SkillAssessmentPage />} />
                     <Route path="/interview/:id" element={<InterviewRoom />} />
                     <Route path="/feedback/:id" element={<FeedbackView />} />
                     <Route path="*" element={<Navigate to="/" replace />} />
