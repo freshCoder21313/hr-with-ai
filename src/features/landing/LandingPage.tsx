@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FileText, MessageSquare, BarChart3, ArrowRight } from 'lucide-react';
+import { FileText, MessageSquare, BarChart3, ArrowRight, CheckCircle } from 'lucide-react';
 import SEO from '@/components/SEO';
 
 const LandingPage: React.FC = () => {
@@ -31,7 +31,7 @@ const LandingPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-8 sm:grid-cols-3 max-w-5xl w-full">
+      <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4 max-w-7xl w-full">
         <div className="bg-card p-6 rounded-xl shadow-sm border border-border flex flex-col items-center text-center">
           <div className="p-3 bg-blue-50/50 dark:bg-blue-900/20 rounded-full mb-4">
             <FileText className="h-8 w-8 text-blue-600 dark:text-blue-400" />
@@ -57,6 +57,19 @@ const LandingPage: React.FC = () => {
           <h3 className="text-lg font-bold mb-2 text-foreground">Visual Feedback</h3>
           <p className="text-muted-foreground text-sm">
             Get deep insights and Mermaid charts analyzing your thought process structure.
+          </p>
+        </div>
+        <div
+          className="bg-card p-6 rounded-xl shadow-sm border border-border flex flex-col items-center text-center cursor-pointer hover:border-primary/50 transition-colors"
+          onClick={() => navigate('/skill-assessment')}
+        >
+          <div className="p-3 bg-orange-50/50 dark:bg-orange-900/20 rounded-full mb-4">
+            <CheckCircle className="h-8 w-8 text-orange-600 dark:text-orange-400" />
+          </div>
+          <h3 className="text-lg font-bold mb-2 text-foreground">Skill Assessment</h3>
+          <p className="text-muted-foreground text-sm">
+            Extract skills from your CV and take AI-generated quick quizzes to validate your
+            knowledge.
           </p>
         </div>
       </div>
