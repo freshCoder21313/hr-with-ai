@@ -23,6 +23,7 @@ interface State {
   setIsLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   reset: () => void;
+  testAnotherSkill: () => void;
 }
 
 export const useSkillAssessmentStore = create<State>((set, get) => ({
@@ -67,5 +68,16 @@ export const useSkillAssessmentStore = create<State>((set, get) => ({
       isLoading: false,
       error: null,
       quizQuestionCount: 5,
+    }),
+  testAnotherSkill: () =>
+    set({
+      step: 'select_skill',
+      selectedSkill: null,
+      subSkills: [],
+      quizQuestions: [],
+      userAnswers: {},
+      quizScore: null,
+      isLoading: false,
+      error: null,
     }),
 }));

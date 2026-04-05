@@ -9,6 +9,7 @@ import {
   CardTitle,
   CardFooter,
 } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
 
 export const QuizStep: React.FC = () => {
   const { quizQuestions, userAnswers, answerQuestion, calculateScore } = useSkillAssessmentStore();
@@ -26,18 +27,41 @@ export const QuizStep: React.FC = () => {
     if (!isFirstQuestion) setCurrentIndex((prev) => prev - 1);
   };
 
+  const handleAnswer = (option: string) => {
+    // Only auto-advance if the question was previously unanswered
+    const isNewAnswer = !userAnswers[question.id];
+    answerQuestion(question.id, option);
+
+    if (!isLastQuestion && isNewAnswer) {
+      setTimeout(() => {
+        handleNext();
+      }, 500);
+    }
+  };
+
   const handleSubmit = () => {
     calculateScore();
   };
 
   if (!question) return <div>Loading...</div>;
 
+  const answeredCount = Object.keys(userAnswers).length;
+  const totalCount = quizQuestions.length;
+  const progress = (answeredCount / totalCount) * 100;
+  const isAllAnswered = answeredCount === totalCount;
+
   return (
     <Card className="max-w-3xl mx-auto mt-10">
       <CardHeader>
-        <CardTitle>
-          Question {currentIndex + 1} of {quizQuestions.length}
-        </CardTitle>
+        <div className="flex items-center justify-between mb-4">
+          <CardTitle>
+            Question {currentIndex + 1} of {totalCount}
+          </CardTitle>
+          <span className="text-sm text-muted-foreground">
+            {answeredCount} / {totalCount} answered
+          </span>
+        </div>
+        <Progress value={progress} className="h-2 mb-4" />
         <CardDescription className="text-lg font-medium text-foreground mt-2">
           {question.question}
         </CardDescription>
@@ -54,7 +78,7 @@ export const QuizStep: React.FC = () => {
                 name={`question-${question.id}`}
                 value={option}
                 checked={userAnswers[question.id] === option}
-                onChange={(e) => answerQuestion(question.id, e.target.value)}
+                onChange={(e) => handleAnswer(e.target.value)}
                 className="w-4 h-4 text-primary focus:ring-primary"
               />
               <span className="flex-1 cursor-pointer font-normal text-base">{option}</span>
@@ -62,12 +86,12 @@ export const QuizStep: React.FC = () => {
           ))}
         </div>
       </CardContent>
-      <CardFooter className="flex justify-between">
+      <CardFooter className="flex justify-between mt-6">
         <Button variant="outline" onClick={handlePrev} disabled={isFirstQuestion}>
           Previous
         </Button>
         {isLastQuestion ? (
-          <Button onClick={handleSubmit} disabled={!userAnswers[question.id]}>
+          <Button onClick={handleSubmit} disabled={!isAllAnswered}>
             Submit Assessment
           </Button>
         ) : (

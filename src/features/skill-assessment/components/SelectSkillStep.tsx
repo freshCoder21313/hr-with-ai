@@ -21,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Loader2 } from 'lucide-react';
+import { Search, Check, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 export const SelectSkillStep: React.FC = () => {
@@ -42,6 +42,11 @@ export const SelectSkillStep: React.FC = () => {
   } = useSkillAssessmentStore();
 
   const [manualSkill, setManualSkill] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredSkills = extractedSkills.filter((skill) =>
+    skill.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const handleStartAssessment = async () => {
     if (!selectedSkill) {
@@ -114,17 +119,32 @@ export const SelectSkillStep: React.FC = () => {
       <CardContent className="space-y-6">
         <div className="space-y-3">
           <Label>Extracted Skills</Label>
-          <div className="flex flex-wrap gap-2">
-            {extractedSkills.map((skill, index) => (
+          <div className="relative">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search skills..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+          <div className="flex flex-wrap gap-2 max-h-[250px] overflow-y-auto p-1 border border-transparent rounded-md">
+            {filteredSkills.map((skill, index) => (
               <Badge
                 key={index}
                 variant={selectedSkill === skill ? 'default' : 'secondary'}
-                className="cursor-pointer text-sm py-1.5 px-3"
+                className="cursor-pointer text-sm py-1.5 px-3 flex items-center gap-1.5"
                 onClick={() => setSelectedSkill(skill)}
               >
                 {skill}
+                {selectedSkill === skill && <Check className="w-3.5 h-3.5" />}
               </Badge>
             ))}
+            {filteredSkills.length === 0 && (
+              <div className="text-sm text-muted-foreground p-4 text-center w-full">
+                No skills found matching &quot;{searchQuery}&quot;
+              </div>
+            )}
           </div>
         </div>
 
