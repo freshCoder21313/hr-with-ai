@@ -79,18 +79,21 @@ export const UploadStep: React.FC = () => {
       try {
         const data = JSON.parse(text);
         if (Array.isArray(data.skills)) {
-          data.skills.forEach((section: any) => {
+          data.skills.forEach((section: { keywords?: string[] }) => {
             if (Array.isArray(section.keywords)) {
               skills.push(...section.keywords);
             }
           });
         }
-      } catch (e) {
+      } catch {
         // Fallback to simple comma‑separated parsing
-        skills = text.split(',').map(s => s.trim()).filter(Boolean);
+        skills = text
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean);
       }
       // Remove duplicates and empty strings
-      skills = Array.from(new Set(skills.map(s => s.trim()))).filter(Boolean);
+      skills = Array.from(new Set(skills.map((s) => s.trim()))).filter(Boolean);
       if (skills.length > 0) {
         setExtractedSkills(skills);
         setStep('select_skill');
@@ -106,10 +109,7 @@ export const UploadStep: React.FC = () => {
     }
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
+  const processFile = async (file: File) => {
     if (file.size > 5 * 1024 * 1024) {
       toast.error('File size exceeds 5MB limit');
       return;
@@ -158,6 +158,25 @@ export const UploadStep: React.FC = () => {
     }
   };
 
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      await processFile(file);
+    }
+  };
+
+  const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      await processFile(file);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+  };
+
   const handleAnalyzeSelected = () => {
     const resume = savedResumes.find((r) => r.id === selectedResumeId);
     if (resume) {
@@ -202,6 +221,8 @@ export const UploadStep: React.FC = () => {
           <div
             className={`border-2 border-dashed border-muted-foreground/25 rounded-lg p-10 flex flex-col items-center justify-center cursor-pointer transition-colors ${isLoading ? 'opacity-50 pointer-events-none' : 'hover:bg-muted/50'}`}
             onClick={() => !isLoading && fileInputRef.current?.click()}
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
           >
             <UploadCloud className="w-12 h-12 text-muted-foreground mb-4" />
             <p className="text-sm text-muted-foreground mb-2">

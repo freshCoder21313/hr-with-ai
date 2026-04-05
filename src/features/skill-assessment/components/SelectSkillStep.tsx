@@ -49,40 +49,40 @@ export const SelectSkillStep: React.FC = () => {
       return;
     }
 
-      try {
-        setIsLoading(true);
-        setError(null);
-        const config = getStoredAIConfig();
-        
-        if (!config?.apiKey) {
-          // Khi không có API key thì dùng danh sách sub skill cứng mặc định
-          setSubSkills([
-            'Core Concepts',
-            'Best Practices',
-            'Problem Solving',
-            'Performance Optimization',
-            'Integration Patterns'
-          ]);
-          
-          // Giả lập câu hỏi trắc nghiệm đơn giản không cần AI
-          const mockQuestions = Array.from({ length: quizQuestionCount }, (_, i) => ({
-            id: `q-${i}`,
-            question: `Câu hỏi ${i + 1} về ${selectedSkill}`,
-            options: ['Đáp án A', 'Đáp án B', 'Đáp án C', 'Đáp án D'],
-            correct_answer: 'Đáp án A',
-            explanation: 'Giải thích chi tiết sẽ được cập nhật khi có kết nối AI',
-            sub_skill: 'General Knowledge'
-          }));
-          
-          setQuizQuestions(mockQuestions);
-          setStep('quiz');
-          return;
-        }
+    try {
+      setIsLoading(true);
+      setError(null);
+      const config = getStoredAIConfig();
 
-        const subSkills = await generateSubSkills(selectedSkill, config);
-        setSubSkills(subSkills);
+      if (!config?.apiKey) {
+        // Khi không có API key thì dùng danh sách sub skill cứng mặc định
+        setSubSkills([
+          'Core Concepts',
+          'Best Practices',
+          'Problem Solving',
+          'Performance Optimization',
+          'Integration Patterns',
+        ]);
 
-        const questions = await generateQuiz(selectedSkill, subSkills, quizQuestionCount, config);
+        // Giả lập câu hỏi trắc nghiệm đơn giản không cần AI
+        const mockQuestions = Array.from({ length: quizQuestionCount }, (_, i) => ({
+          id: `q-${i}`,
+          question: `Câu hỏi ${i + 1} về ${selectedSkill}`,
+          options: ['Đáp án A', 'Đáp án B', 'Đáp án C', 'Đáp án D'],
+          correct_answer: 'Đáp án A',
+          explanation: 'Giải thích chi tiết sẽ được cập nhật khi có kết nối AI',
+          sub_skill: 'General Knowledge',
+        }));
+
+        setQuizQuestions(mockQuestions);
+        setStep('quiz');
+        return;
+      }
+
+      const subSkills = await generateSubSkills(selectedSkill, config);
+      setSubSkills(subSkills);
+
+      const questions = await generateQuiz(selectedSkill, subSkills, quizQuestionCount, config);
       if (!questions || questions.length === 0) {
         throw new Error('Failed to generate quiz questions');
       }

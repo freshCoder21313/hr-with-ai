@@ -13,7 +13,7 @@ describe('skillAssessmentAiService', () => {
     const mockGenerateText = vi.fn().mockResolvedValue({ text: '["React", "TypeScript"]' });
     vi.mocked(aiConfigService.getService).mockReturnValue({
       generateText: mockGenerateText,
-    } as any);
+    } as unknown as ReturnType<typeof aiConfigService.getService>);
 
     const skills = await extractSkills('I know React and TypeScript', mockConfig);
     expect(skills).toEqual(['React', 'TypeScript']);
@@ -24,7 +24,7 @@ describe('skillAssessmentAiService', () => {
     const mockGenerateText = vi.fn().mockResolvedValue({ text: '["Hooks", "State"]' });
     vi.mocked(aiConfigService.getService).mockReturnValue({
       generateText: mockGenerateText,
-    } as any);
+    } as unknown as ReturnType<typeof aiConfigService.getService>);
 
     const subSkills = await generateSubSkills('React', mockConfig);
     expect(subSkills).toEqual(['Hooks', 'State']);
@@ -45,7 +45,7 @@ describe('skillAssessmentAiService', () => {
     const mockGenerateText = vi.fn().mockResolvedValue({ text: JSON.stringify(mockQuiz) });
     vi.mocked(aiConfigService.getService).mockReturnValue({
       generateText: mockGenerateText,
-    } as any);
+    } as unknown as ReturnType<typeof aiConfigService.getService>);
 
     const quiz = await generateQuiz('React', ['Hooks'], 1, mockConfig);
     expect(quiz).toEqual(mockQuiz);
