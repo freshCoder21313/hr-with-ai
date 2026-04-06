@@ -10,7 +10,8 @@ import {
   CardFooter,
 } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { ChevronLeft, ChevronRight, Play } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Play, Lightbulb } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 export const QuizStep: React.FC = () => {
   const { quizQuestions, userAnswers, answerQuestion, calculateScore, selectedSkill } =
@@ -71,8 +72,32 @@ export const QuizStep: React.FC = () => {
                 </div>
               </div>
               <Progress value={progress} className="h-2 mb-6 bg-muted" />
-              <CardDescription className="text-xl font-medium text-foreground mt-4 leading-relaxed">
+              <CardDescription className="text-xl font-medium text-foreground mt-4 leading-relaxed relative pr-8">
                 {question.question}
+                {question.hint && (
+                  <div className="absolute right-0 top-0">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 rounded-full text-amber-500 hover:text-amber-600 hover:bg-amber-100/50"
+                          >
+                            <Lightbulb className="h-5 w-5" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent
+                          className="max-w-xs bg-amber-500 text-white border-none"
+                          side="bottom"
+                        >
+                          <p className="font-medium text-sm">Hint</p>
+                          <p className="text-xs">{question.hint}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                )}
               </CardDescription>
             </CardHeader>
             <CardContent className="flex-1">
