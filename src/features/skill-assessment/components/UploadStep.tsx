@@ -210,94 +210,138 @@ export const UploadStep: React.FC = () => {
 
   return (
     <>
-      <Card className="max-w-2xl mx-auto mt-10">
-        <CardHeader>
-          <CardTitle>Skill Assessment</CardTitle>
-          <CardDescription>
-            Select a saved CV or upload a new one to extract skills and start the assessment.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div
-            className={`border-2 border-dashed border-muted-foreground/25 rounded-lg p-10 flex flex-col items-center justify-center cursor-pointer transition-colors ${isLoading ? 'opacity-50 pointer-events-none' : 'hover:bg-muted/50'}`}
-            onClick={() => !isLoading && fileInputRef.current?.click()}
-            onDragOver={handleDragOver}
-            onDrop={handleDrop}
-          >
-            <UploadCloud className="w-12 h-12 text-muted-foreground mb-4" />
-            <p className="text-sm text-muted-foreground mb-2">
-              Click or drag file to this area to upload new CV
-            </p>
-            <p className="text-xs text-muted-foreground">
-              Supported formats: PDF, TXT, DOCX (Max 5MB)
-            </p>
-            <input
-              type="file"
-              ref={fileInputRef}
-              className="hidden"
-              accept=".pdf,.txt,.docx"
-              onChange={handleFileUpload}
-              disabled={isLoading}
-            />
-          </div>
+      <div className="max-w-5xl mx-auto mt-4 md:mt-10">
+        <div className="mb-8 text-center sm:text-left px-2">
+          <h2 className="text-3xl font-bold tracking-tight">Upload Resume</h2>
+          <p className="text-muted-foreground mt-2">
+            Upload a new CV or select a previously saved one to extract skills and start the
+            assessment.
+          </p>
+        </div>
 
-          {savedResumes.length > 0 && (
-            <div className="space-y-2 pt-2">
-              <Label>Or select a previously saved CV:</Label>
-              <ResumeList
-                resumes={savedResumes}
-                selectedResumeId={selectedResumeId}
-                onSelect={(r) => setSelectedResumeId(r.id === selectedResumeId ? undefined : r.id)}
-                onDelete={handleDeleteResume}
-                onToggleMain={handleToggleMain}
-                onRefresh={loadData}
-              />
-            </div>
-          )}
-
-          {selectedResumeId && (
-            <div className="pt-2">
-              <LoadingButton
-                type="button"
-                onClick={handleAnalyzeSelected}
-                disabled={isLoading}
-                isLoading={isLoading}
-                loadingText="Extracting Skills..."
-                className="w-full"
-                leftIcon={<Sparkles className="w-4 h-4 text-primary-foreground" />}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 px-2">
+          {/* Column 1: Upload */}
+          <Card className="h-fit">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <UploadCloud className="w-5 h-5 text-primary" />
+                New Upload
+              </CardTitle>
+              <CardDescription>Upload a PDF, TXT, or DOCX file (Max 5MB)</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div
+                className={`border-2 border-dashed border-muted-foreground/25 rounded-xl p-12 flex flex-col items-center justify-center cursor-pointer transition-all ${isLoading ? 'opacity-50 pointer-events-none' : 'hover:bg-muted/50 hover:border-primary/50'}`}
+                onClick={() => !isLoading && fileInputRef.current?.click()}
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
               >
-                Extract Skills from Selected CV
-              </LoadingButton>
-            </div>
-          )}
-
-          {isLoading && !selectedResumeId && (
-            <div className="flex items-center justify-center text-sm text-muted-foreground">
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Extracting skills...
-            </div>
-          )}
-
-          {error && <div className="text-sm text-destructive text-center">{error}</div>}
-
-          {showManual && (
-            <div className="space-y-4 pt-4 border-t">
-              <Label>
-                AI extraction failed. Please enter your skills manually (comma separated):
-              </Label>
-              <div className="flex gap-2">
-                <Input
-                  value={manualSkills}
-                  onChange={(e) => setManualSkills(e.target.value)}
-                  placeholder="e.g. React, TypeScript, Node.js"
-                  onKeyDown={(e) => e.key === 'Enter' && handleManualSubmit()}
+                <div className="p-4 bg-primary/10 rounded-full mb-4">
+                  <UploadCloud className="w-8 h-8 text-primary" />
+                </div>
+                <p className="text-base font-medium text-foreground mb-1 text-center">
+                  Click or drag file to this area
+                </p>
+                <p className="text-sm text-muted-foreground text-center">
+                  We&apos;ll use AI to extract your skills automatically
+                </p>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  className="hidden"
+                  accept=".pdf,.txt,.docx"
+                  onChange={handleFileUpload}
+                  disabled={isLoading}
                 />
-                <Button onClick={handleManualSubmit}>Continue</Button>
               </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+
+              {isLoading && !selectedResumeId && (
+                <div className="flex flex-col items-center justify-center p-4 bg-muted/30 rounded-lg">
+                  <Loader2 className="w-6 h-6 animate-spin text-primary mb-2" />
+                  <p className="text-sm font-medium">Extracting skills via AI...</p>
+                  <p className="text-xs text-muted-foreground">This may take a few seconds</p>
+                </div>
+              )}
+
+              {error && (
+                <div className="p-4 bg-destructive/10 text-destructive rounded-lg text-sm text-center">
+                  {error}
+                </div>
+              )}
+
+              {showManual && (
+                <div className="space-y-4 pt-4 border-t">
+                  <Label className="text-sm font-medium">
+                    AI extraction failed. Please enter your skills manually (comma separated):
+                  </Label>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <Input
+                      value={manualSkills}
+                      onChange={(e) => setManualSkills(e.target.value)}
+                      placeholder="e.g. React, TypeScript, Node.js"
+                      onKeyDown={(e) => e.key === 'Enter' && handleManualSubmit()}
+                      className="flex-1"
+                    />
+                    <Button onClick={handleManualSubmit} className="w-full sm:w-auto">
+                      Continue
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Column 2: Saved Resumes */}
+          <div className="space-y-6">
+            <Card className="h-full flex flex-col">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-primary" />
+                  Saved Resumes
+                </CardTitle>
+                <CardDescription>Select an existing resume to reuse</CardDescription>
+              </CardHeader>
+              <CardContent className="flex-1 flex flex-col">
+                {savedResumes.length > 0 ? (
+                  <div className="space-y-4 flex-1 flex flex-col">
+                    <ResumeList
+                      resumes={savedResumes}
+                      selectedResumeId={selectedResumeId}
+                      onSelect={(r) =>
+                        setSelectedResumeId(r.id === selectedResumeId ? undefined : r.id)
+                      }
+                      onDelete={handleDeleteResume}
+                      onToggleMain={handleToggleMain}
+                      onRefresh={loadData}
+                    />
+
+                    {selectedResumeId && (
+                      <div className="pt-6 mt-auto border-t">
+                        <LoadingButton
+                          type="button"
+                          onClick={handleAnalyzeSelected}
+                          disabled={isLoading}
+                          isLoading={isLoading}
+                          loadingText="Extracting Skills..."
+                          className="w-full"
+                          leftIcon={<Sparkles className="w-4 h-4 text-primary-foreground" />}
+                        >
+                          Extract Skills from Selected CV
+                        </LoadingButton>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-48 text-center text-muted-foreground bg-muted/20 rounded-lg border border-dashed">
+                    <p className="text-sm">No saved resumes found.</p>
+                    <p className="text-xs mt-1">Upload a new one on the left to get started.</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
 
       <ConfirmationDialog
         isOpen={confirmState.isOpen}
