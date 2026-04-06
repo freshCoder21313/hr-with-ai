@@ -10,8 +10,8 @@ import {
   SheetDescription,
   SheetHeader,
 } from '@/components/ui/sheet';
-import { ThemeToggle } from '@/components/theme-toggle';
-import { CloudSyncModal } from '@/components/CloudSyncModal';
+import { ThemeToggle } from '@/components/shared/theme-toggle';
+import { CloudSyncModal } from '@/components/shared/CloudSyncModal';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 const NavLinks = ({ mobile = false, closeMenu }: { mobile?: boolean; closeMenu?: () => void }) => (

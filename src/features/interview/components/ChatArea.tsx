@@ -10,7 +10,7 @@ import {
   Code2,
   PenTool,
 } from 'lucide-react';
-import MarkdownRenderer from '@/components/MarkdownRenderer';
+import MarkdownRenderer from '@/components/shared/MarkdownRenderer';
 import { Message } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';

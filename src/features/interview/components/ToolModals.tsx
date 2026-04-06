@@ -5,8 +5,8 @@ import { Code2, PenTool, X } from 'lucide-react';
 // import { Editor } from 'tldraw'; // Removed direct import to avoid typing issues if not needed here
 
 // Lazy load components
-const CodeEditor = React.lazy(() => import('../CodeEditor'));
-const Whiteboard = React.lazy(() => import('../Whiteboard'));
+const CodeEditor = React.lazy(() => import('@/features/interview/CodeEditor'));
+const Whiteboard = React.lazy(() => import('@/features/interview/Whiteboard'));
 
 interface ToolModalsProps {
   isCodeOpen: boolean;

@@ -8,7 +8,7 @@ import {
 } from '@/features/interview/promptSystem';
 import { ChatMessage } from '@/types';
 import { getService, resolveConfig, AIConfigInput } from '@/services/ai/aiConfigService';
-import { cleanJsonString } from '@/services/aiUtils';
+import { cleanJsonString } from '@/services/ai/aiUtils';
 import { getAIResponseOptions } from '@/lib/aiResponseHelper';
 
 export const startInterviewSession = async (

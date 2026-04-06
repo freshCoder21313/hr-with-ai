@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FileText, MessageSquare, BarChart3, ArrowRight, CheckCircle } from 'lucide-react';
-import SEO from '@/components/SEO';
+import SEO from '@/components/shared/SEO';
 
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();

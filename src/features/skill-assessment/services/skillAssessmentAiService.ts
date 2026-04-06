@@ -1,6 +1,6 @@
 import { getService, AIConfigInput } from '@/services/ai/aiConfigService';
-import { cleanJsonString } from '@/services/aiUtils';
-import { QuizQuestion } from '../types';
+import { cleanJsonString } from '@/services/ai/aiUtils';
+import { QuizQuestion } from '@/features/skill-assessment/types';
 import {
   SKILL_EXTRACTOR_PROMPT,
   SUB_SKILL_GENERATOR_PROMPT,

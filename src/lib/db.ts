@@ -1,6 +1,6 @@
 import Dexie, { Table } from 'dexie';
 import { Interview, UserSettings, Resume, SavedJob } from '@/types';
-import { DBJobRecommendation } from '@/services/jobRecommendationService';
+import { DBJobRecommendation } from '@/services/jobs/jobRecommendationService';
 import LZString from 'lz-string';
 
 class HRDatabase extends Dexie {

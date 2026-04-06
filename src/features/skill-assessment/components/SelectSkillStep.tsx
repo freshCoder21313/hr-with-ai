@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { useSkillAssessmentStore } from '../stores/useSkillAssessmentStore';
-import { generateSubSkills, generateQuiz } from '../services/skillAssessmentAiService';
+import { useSkillAssessmentStore } from '@/features/skill-assessment/stores/useSkillAssessmentStore';
+import { generateSubSkills, generateQuiz } from '@/features/skill-assessment/services/skillAssessmentAiService';
 import { getStoredAIConfig } from '@/services/ai/aiConfigService';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';

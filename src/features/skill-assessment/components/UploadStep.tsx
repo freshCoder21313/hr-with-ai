@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { useSkillAssessmentStore } from '../stores/useSkillAssessmentStore';
-import { parseResume } from '@/services/resumeParser';
+import { useSkillAssessmentStore } from '@/features/skill-assessment/stores/useSkillAssessmentStore';
+import { parseResume } from '@/services/resume/resumeParser';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';

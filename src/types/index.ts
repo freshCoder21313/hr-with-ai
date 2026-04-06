@@ -1,4 +1,4 @@
-import { ResumeData } from './types/resume';
+import { ResumeData } from './resume';
 
 export type { ResumeData };
 

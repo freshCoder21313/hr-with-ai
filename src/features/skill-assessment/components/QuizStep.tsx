@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useSkillAssessmentStore } from '../stores/useSkillAssessmentStore';
+import { useSkillAssessmentStore } from '@/features/skill-assessment/stores/useSkillAssessmentStore';
 import { Button } from '@/components/ui/button';
 import {
   Card,

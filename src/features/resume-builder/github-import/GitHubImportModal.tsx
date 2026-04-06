@@ -26,7 +26,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { fetchGitHubRepos, fetchReadme, GitHubRepo } from '@/lib/github';
-import { loadUserSettings, saveUserSettings } from '@/services/settingsService';
+import { loadUserSettings, saveUserSettings } from '@/services/core/settingsService';
 import { convertRepoToProject } from './githubAIService';
 import { Project } from '@/types/resume';
 import { db } from '@/lib/db';
@@ -227,7 +227,7 @@ export const GitHubImportModal: React.FC<GitHubImportModalProps> = ({
       const newProjects = projectsToAdd.filter((newP) => {
         // Check if a project with the same name or URL already exists
         const isDuplicate = parsedData.projects.some(
-          (existingP) =>
+          (existingP: Project) =>
             existingP.name.toLowerCase() === newP.name.toLowerCase() ||
             (existingP.url && newP.url && existingP.url === newP.url)
         );

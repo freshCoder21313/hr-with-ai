@@ -6,7 +6,7 @@ import { useAudioRecorder } from './useAudioRecorder';
 import { useInterviewStore } from '@/features/interview/interviewStore';
 import { streamInterviewMessage } from '@/services/interview/interviewAIService';
 import { getStoredAIConfig } from '@/services/ai/aiConfigService';
-import { voiceInterviewService } from '@/services/voiceInterviewService';
+import { voiceInterviewService } from '@/services/voice/voiceInterviewService';
 import { Message } from '@/types';
 import { getErrorMessage } from '@/lib/utils';
 

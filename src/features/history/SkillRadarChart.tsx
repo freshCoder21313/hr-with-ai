@@ -11,7 +11,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Interview } from '@/types';
 import { Shield } from 'lucide-react';
-import { useTheme } from '@/lib/hooks/useTheme';
+import { useTheme } from '@/hooks/useTheme';
 
 interface SkillRadarChartProps {
   interviews: Interview[];

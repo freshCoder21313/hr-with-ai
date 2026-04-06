@@ -32,7 +32,7 @@ import {
   PolarRadiusAxis,
   Radar,
 } from 'recharts';
-import SEO from '@/components/SEO';
+import SEO from '@/components/shared/SEO';
 
 const FeedbackView: React.FC = () => {
   const { id } = useParams<{ id: string }>();

@@ -5,7 +5,7 @@ import { Resume, Message } from '@/types';
 import { ResumeData } from '@/types/resume';
 import { ChatArea } from '@/features/interview/components/ChatArea';
 import { SimpleInputArea } from '@/components/shared/SimpleInputArea';
-import { streamCVChatMessage } from '@/services/cvChatService';
+import { streamCVChatMessage } from '@/services/resume/cvChatService';
 import { extractProposedChanges, ProposedChange } from './utils/cvChatUtils';
 import ResumePreview from '@/features/resume-builder/ResumePreview';
 import { ChangeReviewCard } from './components/ChangeReviewCard';
@@ -36,7 +36,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import SEO from '@/components/SEO';
+import SEO from '@/components/shared/SEO';
 import {
   PanelLeftClose,
   PanelLeftOpen,

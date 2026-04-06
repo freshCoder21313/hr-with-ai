@@ -9,7 +9,7 @@ import {
 } from '@/features/interview/promptSystem';
 import { ResumeData } from '@/types/resume';
 import { getService, resolveConfig, AIConfigInput } from '@/services/ai/aiConfigService';
-import { cleanJsonString } from '@/services/aiUtils';
+import { cleanJsonString } from '@/services/ai/aiUtils';
 import { getAIResponseOptions } from '@/lib/aiResponseHelper';
 
 export const analyzeResume = async (

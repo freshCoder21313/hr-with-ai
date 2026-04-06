@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { X, Lightbulb } from 'lucide-react';
 import { InterviewHints } from '@/services/interview/interviewAIService';
-import MarkdownRenderer from '@/components/MarkdownRenderer';
+import MarkdownRenderer from '@/components/shared/MarkdownRenderer';
 
 interface InterviewHintViewProps {
   hints: InterviewHints;

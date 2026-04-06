@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { audioRecorderService } from '@/services/audioRecorderService'; // Assuming service is exported as singleton
+import { audioRecorderService } from '@/services/voice/audioRecorderService'; // Assuming service is exported as singleton
 
 export const useAudioRecorder = () => {
   const [isRecording, setIsRecording] = useState(false);

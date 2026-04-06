@@ -5,7 +5,7 @@ import { getExtractJDInfoPrompt } from '@/features/interview/promptSystem';
 import {
   generateJobRecommendationsPrompt,
   generateTailoredResumePrompt,
-} from '@/services/jobPromptSystem';
+} from './jobPromptSystem';
 import { ResumeData } from '@/types/resume';
 import {
   getService,
@@ -13,7 +13,7 @@ import {
   AIConfigInput,
   getStoredAIConfig,
 } from '@/services/ai/aiConfigService';
-import { cleanJsonString } from '@/services/aiUtils';
+import { cleanJsonString } from '@/services/ai/aiUtils';
 import { getArrayAIResponseOptions } from '@/lib/aiResponseHelper';
 
 export const extractInfoFromJD = async (
