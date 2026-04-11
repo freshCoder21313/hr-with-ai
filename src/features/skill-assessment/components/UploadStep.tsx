@@ -80,8 +80,17 @@ export const UploadStep: React.FC = () => {
       let skills: string[] = [];
 
       const fallbackExtractSkillsFromText = (rawText: string): string[] => {
-        const rawTokens = rawText
-          .split(/[\n,]/) // split on newlines and commas
+        // Try to locate a "Skills" section
+        let textToParse = rawText;
+        const skillsSectionMatch = rawText.match(
+          /(?:skills|technologies|tools|expertise)(?:[\s\S]*?)(?=\n[A-Z][a-z]+:|\n\n[A-Z]|$)/i
+        );
+        if (skillsSectionMatch) {
+          textToParse = skillsSectionMatch[0];
+        }
+
+        const rawTokens = textToParse
+          .split(/[\n,•|;]/) // split on newlines, commas, bullets, pipes, semicolons
           .map((token) => token.trim())
           .filter((token) => token.length > 1 && token.length <= 40) // filter out empty, 1-char noise, and long phrases
           .filter((token) => /^[a-zA-Z0-9\s.+#-]{2,40}$/.test(token)); // pattern validation to avoid arbitrary sentences
