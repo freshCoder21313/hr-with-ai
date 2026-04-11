@@ -1,22 +1,22 @@
 import React, { Suspense, lazy } from 'react';
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
-import ApiKeyModal from './components/ApiKeyModal';
+import ApiKeyModal from '@/components/shared/ApiKeyModal';
 import { Loader2 } from 'lucide-react';
-import { ThemeProvider } from './components/theme-provider';
-import Header from './components/layout/Header';
+import { ThemeProvider } from '@/components/shared/theme-provider';
+import Header from '@/components/layout/Header';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Toaster } from 'sonner';
 
 // Lazy load features
-const SetupRoom = lazy(() => import('./features/dashboard/SetupRoom'));
-const InterviewRoom = lazy(() => import('./features/interview/InterviewRoom'));
-const FeedbackView = lazy(() => import('./features/interview/FeedbackView'));
-const ResumeBuilder = lazy(() => import('./features/resume-builder/ResumeBuilder'));
-const CVStudioPage = lazy(() => import('./features/cv-studio/CVStudioPage'));
-const LandingPage = lazy(() => import('./features/landing/LandingPage'));
-const HistoryPage = lazy(() => import('./features/history/HistoryPage'));
-const SkillAssessmentPage = lazy(() => import('./features/skill-assessment/SkillAssessmentPage'));
+const SetupRoom = lazy(() => import('@/features/dashboard/SetupRoom'));
+const InterviewRoom = lazy(() => import('@/features/interview/InterviewRoom'));
+const FeedbackView = lazy(() => import('@/features/interview/FeedbackView'));
+const ResumeBuilder = lazy(() => import('@/features/resume-builder/ResumeBuilder'));
+const CVStudioPage = lazy(() => import('@/features/cv-studio/CVStudioPage'));
+const LandingPage = lazy(() => import('@/features/landing/LandingPage'));
+const HistoryPage = lazy(() => import('@/features/history/HistoryPage'));
+const SkillAssessmentPage = lazy(() => import('@/features/skill-assessment/SkillAssessmentPage'));
 
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-[50vh]">

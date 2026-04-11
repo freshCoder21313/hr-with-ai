@@ -12,7 +12,7 @@ import {
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Interview } from '@/types';
-import { useTheme } from '@/lib/hooks/useTheme';
+import { useTheme } from '@/hooks/useTheme';
 import { Trophy, Target, Zap, TrendingUp } from 'lucide-react';
 
 interface ProgressChartsProps {

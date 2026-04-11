@@ -10,7 +10,7 @@ import { Settings, PhoneMissed, MessageSquare, X, Send } from 'lucide-react';
 import { useInterviewStore } from '@/features/interview/interviewStore';
 import { ChatArea } from './ChatArea';
 import { Input } from '@/components/ui/input';
-import MarkdownRenderer from '@/components/MarkdownRenderer';
+import MarkdownRenderer from '@/components/shared/MarkdownRenderer';
 
 interface VoiceInterviewRoomProps {
   onSwitchToText?: () => void;

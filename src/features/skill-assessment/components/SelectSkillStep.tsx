@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
-import { useSkillAssessmentStore } from '../stores/useSkillAssessmentStore';
-import { generateSubSkills, generateQuiz } from '../services/skillAssessmentAiService';
+import { useSkillAssessmentStore } from '@/features/skill-assessment/stores/useSkillAssessmentStore';
+import {
+  generateSubSkills,
+  generateQuiz,
+} from '@/features/skill-assessment/services/skillAssessmentAiService';
 import { getStoredAIConfig } from '@/services/ai/aiConfigService';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -95,15 +98,24 @@ export const SelectSkillStep: React.FC = () => {
   };
 
   const handleAddManualSkill = () => {
-    if (manualSkill.trim()) {
-      const newSkill = manualSkill.trim();
-      if (!extractedSkills.includes(newSkill)) {
-        setExtractedSkills([newSkill, ...extractedSkills]);
-      }
-      setSelectedSkill(newSkill);
-      setManualSkill('');
+    const newSkill = manualSkill.trim();
+
+    if (!newSkill) {
+      return;
+    }
+
+    const normalizedNewSkill = newSkill.toLowerCase();
+    const alreadyExists = extractedSkills.some(
+      (skill) => skill.trim().toLowerCase() === normalizedNewSkill
+    );
+
+    if (!alreadyExists) {
+      setExtractedSkills([newSkill, ...extractedSkills]);
       toast.success(`Added ${newSkill} to skills`);
     }
+
+    setSelectedSkill(newSkill);
+    setManualSkill('');
   };
 
   return (

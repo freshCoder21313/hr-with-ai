@@ -11,7 +11,7 @@ import {
   Search,
   Users,
 } from 'lucide-react';
-import { parseResume } from '@/services/resumeParser';
+import { parseResume } from '@/services/resume/resumeParser';
 import { getStoredAIConfig } from '@/services/ai/aiConfigService';
 import {
   analyzeResume,
@@ -19,7 +19,7 @@ import {
   parseResumeToJSON,
 } from '@/services/resume/resumeAIService';
 import { extractInfoFromJD } from '@/services/jobs/jobAIService';
-import { researchCompany } from '@/services/aiResearcherService';
+import { researchCompany } from '@/services/ai/aiResearcherService';
 import { useInterview } from '@/hooks/useInterview';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,7 +30,7 @@ import { db } from '@/lib/db';
 import ResumeList from './ResumeList';
 import { getErrorMessage } from '@/lib/utils';
 import { toast } from 'sonner';
-import SEO from '@/components/SEO';
+import SEO from '@/components/shared/SEO';
 import ResumeAnalysisView from '@/features/resume-analysis/ResumeAnalysisView';
 
 import JobRecommendationModal from '@/features/interview/JobRecommendationModal';

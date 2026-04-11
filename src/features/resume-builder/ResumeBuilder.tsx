@@ -42,7 +42,7 @@ import WorkForm from './SectionForms/WorkForm';
 import EducationForm from './SectionForms/EducationForm';
 import SkillsForm from './SectionForms/SkillsForm';
 import ProjectsForm from './SectionForms/ProjectsForm';
-import SEO from '@/components/SEO';
+import SEO from '@/components/shared/SEO';
 import { getErrorMessage } from '@/lib/utils';
 
 import Joyride, { Step } from 'react-joyride';

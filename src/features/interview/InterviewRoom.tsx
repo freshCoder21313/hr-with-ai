@@ -9,13 +9,13 @@ import { svgToPngBase64 } from '@/lib/svgUtils';
 
 import { generateInterviewHints, InterviewHints } from '@/services/interview/interviewAIService';
 import { getStoredAIConfig } from '@/services/ai/aiConfigService';
-import { loadUserSettings } from '@/services/settingsService';
+import { loadUserSettings } from '@/services/core/settingsService';
 import { useInterviewStore } from './interviewStore';
 import { UserSettings, Resume, JobRecommendation } from '@/types';
-import SettingsModal from '@/components/SettingsModal';
+import SettingsModal from '@/components/shared/SettingsModal';
 import JobRecommendationModal from './JobRecommendationModal';
 import { openApiKeyModal } from '@/events/apiKeyEvents';
-import SEO from '@/components/SEO';
+import SEO from '@/components/shared/SEO';
 
 // Components
 import { InterviewHeader } from './components/InterviewHeader';

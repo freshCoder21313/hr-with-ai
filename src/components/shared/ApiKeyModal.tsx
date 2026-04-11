@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AIModelProvider } from '@/types';
-import { loadUserSettings, saveUserSettings } from '@/services/settingsService';
+import { loadUserSettings, saveUserSettings } from '@/services/core/settingsService';
 import { subscribeToApiKeyModal } from '@/events/apiKeyEvents';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';

@@ -11,7 +11,7 @@ import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { loadUserSettings, saveUserSettings } from '@/services/settingsService';
+import { loadUserSettings, saveUserSettings } from '@/services/core/settingsService';
 import { UserSettings } from '@/types';
 import { CollapsibleSection } from '@/components/ui/collapsible-section';
 import { Settings2, Sparkles } from 'lucide-react';

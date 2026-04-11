@@ -10,7 +10,7 @@ import { Resume, ResumeData } from '@/types';
 vi.mock('@/lib/db');
 vi.mock('@/services/ai/aiConfigService');
 vi.mock('@/services/resume/resumeAIService');
-vi.mock('@/components/SEO', () => ({
+vi.mock('@/components/shared/SEO', () => ({
   default: () => <></>,
 }));
 

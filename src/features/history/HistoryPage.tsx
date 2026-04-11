@@ -9,8 +9,8 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import ProgressCharts from './ProgressCharts';
 import LearningPath from './LearningPath';
 import SkillRadarChart from './SkillRadarChart';
-import SEO from '@/components/SEO';
-import ShareModal from '@/features/history/components/ShareModal';
+import SEO from '@/components/shared/SEO';
+import ShareModal from './components/ShareModal';
 import { Share2 } from 'lucide-react';
 
 const HistoryPage: React.FC = () => {

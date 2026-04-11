@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FileText, MessageSquare, BarChart3, ArrowRight, CheckCircle } from 'lucide-react';
-import SEO from '@/components/SEO';
+import SEO from '@/components/shared/SEO';
 
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
@@ -19,12 +19,12 @@ const LandingPage: React.FC = () => {
 
       {/* Hero Section */}
       <div className="text-center space-y-6 max-w-3xl pt-10">
-        <div
+        <button
           className="inline-flex items-center rounded-full border px-3 py-1 text-sm font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80 mb-4 cursor-pointer"
           onClick={() => navigate('/skill-assessment')}
         >
           🚀 New Feature: Skill Assessment
-        </div>
+        </button>
         <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-foreground leading-tight">
           Master Your{' '}
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-500 dark:from-blue-400 dark:to-indigo-400">

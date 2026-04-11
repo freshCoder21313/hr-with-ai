@@ -1,5 +1,5 @@
 import { ResumeData } from '@/types/resume';
-import { ROOT_PROMPT } from './ai/rootPrompt';
+import { ROOT_PROMPT } from '@/services/ai/rootPrompt';
 
 // Prompt for generating job recommendations from resume data
 export const generateJobRecommendationsPrompt = (resumeData: ResumeData, language: string) => `

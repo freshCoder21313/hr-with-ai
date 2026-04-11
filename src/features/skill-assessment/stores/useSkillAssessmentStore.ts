@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { QuizQuestion, AssessmentStep } from '../types';
+import { QuizQuestion, AssessmentStep } from '@/features/skill-assessment/types';
 
 interface State {
   step: AssessmentStep;

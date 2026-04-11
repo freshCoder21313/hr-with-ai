@@ -11,7 +11,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 // Mock services and hooks
 vi.mock('@/lib/db');
 vi.mock('@/services/interview/interviewAIService');
-vi.mock('@/components/SEO', () => ({
+vi.mock('@/components/shared/SEO', () => ({
   default: () => <></>,
 }));
 

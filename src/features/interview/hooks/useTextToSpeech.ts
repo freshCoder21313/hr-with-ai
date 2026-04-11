@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { textToSpeechService } from '@/services/textToSpeechService';
+import { textToSpeechService } from '@/services/voice/textToSpeechService';
 import { VoiceSettings } from '@/types';
 
 export const useTextToSpeech = (config: VoiceSettings) => {
