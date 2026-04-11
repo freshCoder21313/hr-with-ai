@@ -83,7 +83,8 @@ export const UploadStep: React.FC = () => {
         const rawTokens = rawText
           .split(/[\n,]/) // split on newlines and commas
           .map((token) => token.trim())
-          .filter((token) => token.length > 1); // filter out empty / 1-char noise
+          .filter((token) => token.length > 1 && token.length <= 40) // filter out empty, 1-char noise, and long phrases
+          .filter((token) => /^[a-zA-Z0-9\s.+#-]{2,40}$/.test(token)); // pattern validation to avoid arbitrary sentences
 
         const unique: string[] = [];
         const seen = new Set<string>();
