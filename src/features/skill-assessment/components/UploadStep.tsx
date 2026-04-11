@@ -1,6 +1,8 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { useSkillAssessmentStore } from '@/features/skill-assessment/stores/useSkillAssessmentStore';
 import { parseResume } from '@/services/resume/resumeParser';
+import { getStoredAIConfig } from '@/services/ai/aiConfigService';
+import { extractSkills } from '@/features/skill-assessment/services/skillAssessmentAiService';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -76,24 +78,43 @@ export const UploadStep: React.FC = () => {
       setError(null);
 
       let skills: string[] = [];
-      try {
-        const data = JSON.parse(text);
-        if (Array.isArray(data.skills)) {
-          data.skills.forEach((section: { keywords?: string[] }) => {
-            if (Array.isArray(section.keywords)) {
-              skills.push(...section.keywords);
-            }
-          });
+
+      const fallbackExtractSkillsFromText = (rawText: string): string[] => {
+        const rawTokens = rawText
+          .split(/[\n,]/) // split on newlines and commas
+          .map((token) => token.trim())
+          .filter((token) => token.length > 1); // filter out empty / 1-char noise
+
+        const unique: string[] = [];
+        const seen = new Set<string>();
+
+        rawTokens.forEach((token) => {
+          const normalized = token.toLowerCase();
+          if (!seen.has(normalized)) {
+            seen.add(normalized);
+            unique.push(token);
+          }
+        });
+
+        return unique;
+      };
+
+      const skillExtractionConfig = getStoredAIConfig();
+
+      if (skillExtractionConfig?.apiKey) {
+        try {
+          skills = await extractSkills(text, skillExtractionConfig);
+        } catch (skillExtractionError) {
+          console.warn(
+            'AI skill extraction failed, falling back to heuristic parsing:',
+            skillExtractionError
+          );
+          skills = fallbackExtractSkillsFromText(text);
         }
-      } catch {
-        // Fallback to simple comma‑separated parsing
-        skills = text
-          .split(',')
-          .map((s) => s.trim())
-          .filter(Boolean);
+      } else {
+        skills = fallbackExtractSkillsFromText(text);
       }
-      // Remove duplicates and empty strings
-      skills = Array.from(new Set(skills.map((s) => s.trim()))).filter(Boolean);
+
       if (skills.length > 0) {
         setExtractedSkills(skills);
         setStep('select_skill');

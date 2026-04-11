@@ -33,15 +33,17 @@ export default defineConfig(({ mode }) => {
     build: {
       rollupOptions: {
         output: {
-          manualChunks: {
-            'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-            'ui-vendor': ['lucide-react', 'clsx', 'tailwind-merge', 'class-variance-authority'],
-            'monaco-vendor': ['@monaco-editor/react'],
-            'markdown-vendor': ['react-markdown', 'react-syntax-highlighter'],
-            'chart-vendor': ['mermaid', 'tldraw'],
-            'ai-vendor': ['@google/genai'],
-            'pdf-vendor': ['pdfjs-dist'],
-          },
+            manualChunks: {
+              'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+              'ui-vendor': ['lucide-react', 'clsx', 'tailwind-merge', 'class-variance-authority'],
+              'monaco-vendor': ['@monaco-editor/react'],
+              'markdown-vendor': ['react-markdown', 'react-syntax-highlighter'],
+              'recharts-vendor': ['recharts'],
+              'mermaid-vendor': ['mermaid'],
+              'tldraw-vendor': ['tldraw'],
+              'ai-vendor': ['@google/genai'],
+              'pdf-vendor': ['pdfjs-dist'],
+            },
         },
       },
       chunkSizeWarningLimit: 1000,
