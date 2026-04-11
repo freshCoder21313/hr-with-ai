@@ -161,7 +161,6 @@ body {
 }
 
 @media print {
-
   /* Hide only non-resume UI elements.
      NOTE: Do NOT hide `aside` or `header` here — resume templates
      use those HTML tags for sidebar and CV header sections. */

@@ -18,24 +18,36 @@ const NavLinks = ({ mobile = false, closeMenu }: { mobile?: boolean; closeMenu?:
   <>
     <a
       href="#/"
-      className={`text-sm font-medium transition-colors hover:text-primary ${mobile ? 'text-lg py-2 border-b border-border' : 'text-muted-foreground'
-        }`}
+      className={`text-sm font-medium transition-colors hover:text-primary ${
+        mobile ? 'text-lg py-2 border-b border-border' : 'text-muted-foreground'
+      }`}
       onClick={() => mobile && closeMenu?.()}
     >
       Home
     </a>
     <a
       href="#/studio"
-      className={`text-sm font-medium transition-colors hover:text-primary ${mobile ? 'text-lg py-2 border-b border-border' : 'text-muted-foreground'
-        }`}
+      className={`text-sm font-medium transition-colors hover:text-primary ${
+        mobile ? 'text-lg py-2 border-b border-border' : 'text-muted-foreground'
+      }`}
       onClick={() => mobile && closeMenu?.()}
     >
       CV Studio
     </a>
     <a
+      href="#/skill-assessment"
+      className={`text-sm font-medium transition-colors hover:text-primary ${
+        mobile ? 'text-lg py-2 border-b border-border' : 'text-muted-foreground'
+      }`}
+      onClick={() => mobile && closeMenu?.()}
+    >
+      Skill Assessment
+    </a>
+    <a
       href="#/history"
-      className={`text-sm font-medium transition-colors hover:text-primary ${mobile ? 'text-lg py-2 border-b border-border' : 'text-muted-foreground'
-        }`}
+      className={`text-sm font-medium transition-colors hover:text-primary ${
+        mobile ? 'text-lg py-2 border-b border-border' : 'text-muted-foreground'
+      }`}
       onClick={() => mobile && closeMenu?.()}
     >
       History

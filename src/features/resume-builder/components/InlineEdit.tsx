@@ -70,7 +70,11 @@ export const InlineEdit: React.FC<InlineEditProps> = ({
   };
 
   if (readOnly) {
-    return <Tag className={className} style={style}>{value}</Tag>;
+    return (
+      <Tag className={className} style={style}>
+        {value}
+      </Tag>
+    );
   }
 
   if (isEditing) {

@@ -12,12 +12,16 @@ CURRENT RESUME DATA:
 ${JSON.stringify(currentResume, null, 2)}
 \`\`\`
 
-${additionalContext ? `
+${
+  additionalContext
+    ? `
 ═══════════════════════════════════════
 ADDITIONAL CONTEXT (Other Resumes/Info):
 ═══════════════════════════════════════
 ${additionalContext}
-` : ''}
+`
+    : ''
+}
 
 ═══════════════════════════════════════
 PERSONALITY & TONE:
