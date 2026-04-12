@@ -46,9 +46,14 @@ export const generateQuiz = async (
   configInput: AIConfigInput
 ): Promise<QuizQuestion[]> => {
   const service = getService(configInput);
+  const countInstruction =
+    count > 0
+      ? `generate exactly ${count} multiple-choice questions.`
+      : `generate a suitable, random number of multiple-choice questions (e.g. 5 to 30, depending on the complexity of the skill).`;
+
   const prompt = QUIZ_GENERATOR_PROMPT.replace('{skill}', skill)
     .replace('{subSkills}', JSON.stringify(subSkills))
-    .replace('{count}', count.toString());
+    .replace('{countInstruction}', countInstruction);
 
   const response = await service.generateText([{ role: 'user', content: prompt }], {
     jsonMode: true,

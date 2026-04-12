@@ -65,7 +65,8 @@ export const SelectSkillStep: React.FC = () => {
           'Integration Patterns',
         ]);
 
-        const mockQuestions = Array.from({ length: quizQuestionCount }, (_, i) => ({
+        const mockCount = quizQuestionCount > 0 ? quizQuestionCount : 7;
+        const mockQuestions = Array.from({ length: mockCount }, (_, i) => ({
           id: `q-${i}`,
           question: `Mock Question ${i + 1} about ${selectedSkill}`,
           options: ['Option A', 'Option B', 'Option C', 'Option D'],
@@ -235,6 +236,7 @@ export const SelectSkillStep: React.FC = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="0">Auto (Let AI decide based on skill)</SelectItem>
                     <SelectItem value="5">5 Questions (Quick)</SelectItem>
                     <SelectItem value="10">10 Questions (Standard)</SelectItem>
                     <SelectItem value="15">15 Questions (Thorough)</SelectItem>
