@@ -100,9 +100,9 @@ export const useInterview = () => {
 
         // 4. Navigate
         navigate(`/interview/${id}`);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } catch (err: any) {
-        setError(err.message || 'Failed to start interview');
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : 'Failed to start interview';
+        setError(msg);
         console.error(err);
       } finally {
         setLoading(false);
@@ -130,9 +130,9 @@ export const useInterview = () => {
       // Update store (though we might just navigate away)
       // We can navigate to feedback view
       navigate(`/feedback/${currentInterview.id}`);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to end interview';
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -263,11 +263,11 @@ export const useInterview = () => {
             endSession();
           }, 2000);
         }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } catch (err: any) {
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : 'An unexpected error occurred.';
         console.error('Error sending message:', err);
         // Mark the last message (the placeholder) as error
-        markLastMessageAsError(err.message || 'An unexpected error occurred.');
+        markLastMessageAsError(msg);
       } finally {
         setLoading(false); // Stop loading
       }

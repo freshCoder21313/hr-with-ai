@@ -10,7 +10,6 @@ import {
   Plus,
   ArrowRight,
   Clock,
-  TrendingUp,
   Award,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';

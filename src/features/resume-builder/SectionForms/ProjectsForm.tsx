@@ -54,9 +54,9 @@ const ProjectsForm: React.FC<ProjectsFormProps> = ({ data, onChange }) => {
     try {
       const result = await analyzeResumeSection('Project Entry', entry, config);
       alert(`AI Critique:\n${result.critique}\n\nRewritten Example:\n${result.rewrittenExample}`);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (e: any) {
-      alert('Analysis failed: ' + e.message);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Analysis failed';
+      alert('Analysis failed: ' + msg);
     } finally {
       setAnalyzingIndex(null);
     }

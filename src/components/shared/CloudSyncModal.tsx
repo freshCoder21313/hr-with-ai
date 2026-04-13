@@ -173,8 +173,7 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({ isOpen, onClose 
       await syncService.importData(data);
       setSuccess('Data imported successfully! The page will reload momentarily.');
       setTimeout(() => window.location.reload(), 2000);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
       setError('Failed to process file. Make sure it is a valid backup JSON.');
     } finally {
