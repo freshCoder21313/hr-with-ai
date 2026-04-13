@@ -2,7 +2,17 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '@/lib/db';
 import { Interview } from '@/types';
-import { Calendar, Building, Briefcase, Download, Plus, ArrowRight } from 'lucide-react';
+import {
+  Calendar,
+  Building,
+  Briefcase,
+  Download,
+  Plus,
+  ArrowRight,
+  Clock,
+  TrendingUp,
+  Award,
+} from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -24,6 +34,22 @@ const HistoryPage: React.FC = () => {
     };
     fetchHistory();
   }, []);
+
+  const stats = {
+    total: interviews.length,
+    companies: new Set(interviews.map((i) => i.company)).size,
+    avgScore:
+      interviews.length > 0
+        ? Math.round(
+            (interviews
+              .filter((i) => i.feedback?.score)
+              .reduce((sum, i) => sum + (i.feedback?.score || 0), 0) /
+              interviews.filter((i) => i.feedback?.score).length) *
+              10
+          ) / 10
+        : 0,
+    hours: Math.round(interviews.length * 0.5 * 10) / 10,
+  };
 
   const handleExport = (interview: Interview, e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent navigation
@@ -57,6 +83,40 @@ const HistoryPage: React.FC = () => {
           New Session
         </Button>
       </div>
+
+      {/* Stats Summary */}
+      {interviews.length > 0 && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+          <div className="p-4 rounded-lg bg-card border border-border/50">
+            <div className="flex items-center gap-2 text-muted-foreground text-sm">
+              <Briefcase className="h-4 w-4" />
+              <span>Total Sessions</span>
+            </div>
+            <div className="text-2xl font-bold">{stats.total}</div>
+          </div>
+          <div className="p-4 rounded-lg bg-card border border-border/50">
+            <div className="flex items-center gap-2 text-muted-foreground text-sm">
+              <Building className="h-4 w-4" />
+              <span>Companies</span>
+            </div>
+            <div className="text-2xl font-bold">{stats.companies}</div>
+          </div>
+          <div className="p-4 rounded-lg bg-card border border-border/50">
+            <div className="flex items-center gap-2 text-muted-foreground text-sm">
+              <Award className="h-4 w-4" />
+              <span>Avg Score</span>
+            </div>
+            <div className="text-2xl font-bold">{stats.avgScore || '-'}</div>
+          </div>
+          <div className="p-4 rounded-lg bg-card border border-border/50">
+            <div className="flex items-center gap-2 text-muted-foreground text-sm">
+              <Clock className="h-4 w-4" />
+              <span>Hours</span>
+            </div>
+            <div className="text-2xl font-bold">{stats.hours}</div>
+          </div>
+        </div>
+      )}
 
       {/* Progress Charts Section */}
       {interviews.length > 0 && (

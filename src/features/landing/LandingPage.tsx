@@ -1,10 +1,37 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FileText, MessageSquare, BarChart3, ArrowRight, CheckCircle } from 'lucide-react';
+import {
+  FileText,
+  MessageSquare,
+  BarChart3,
+  ArrowRight,
+  CheckCircle,
+  Clock,
+  Target,
+  Zap,
+  BookOpen,
+  Users,
+  TrendingUp,
+} from 'lucide-react';
+import { db } from '@/lib/db';
 import SEO from '@/components/shared/SEO';
 
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
+  const [stats, setStats] = useState({ interviews: 0, resumes: 0, hours: 0 });
+
+  useEffect(() => {
+    const loadStats = async () => {
+      const interviews = await db.interviews.count();
+      const resumes = await db.resumes.count();
+      setStats({
+        interviews,
+        resumes,
+        hours: Math.round(interviews * 0.5 * 10) / 10,
+      });
+    };
+    loadStats();
+  }, []);
 
   return (
     <div className="relative min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center py-12 space-y-16 px-4 md:px-6 overflow-hidden">
@@ -49,6 +76,57 @@ const LandingPage: React.FC = () => {
           >
             Take Skill Assessment
           </button>
+        </div>
+      </div>
+
+      {/* Quick Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full max-w-3xl z-10">
+        <div className="flex flex-col items-center p-4 rounded-xl bg-card/30 border border-border/30">
+          <Clock className="h-5 w-5 text-blue-500 mb-2" />
+          <span className="text-2xl font-bold">{stats.interviews}</span>
+          <span className="text-xs text-muted-foreground">Interviews</span>
+        </div>
+        <div className="flex flex-col items-center p-4 rounded-xl bg-card/30 border border-border/30">
+          <Target className="h-5 w-5 text-indigo-500 mb-2" />
+          <span className="text-2xl font-bold">{stats.hours}</span>
+          <span className="text-xs text-muted-foreground">Hours Practiced</span>
+        </div>
+        <div className="flex flex-col items-center p-4 rounded-xl bg-card/30 border border-border/30">
+          <FileText className="h-5 w-5 text-emerald-500 mb-2" />
+          <span className="text-2xl font-bold">{stats.resumes}</span>
+          <span className="text-xs text-muted-foreground">Resumes</span>
+        </div>
+        <div className="flex flex-col items-center p-4 rounded-xl bg-card/30 border border-border/30">
+          <Zap className="h-5 w-5 text-orange-500 mb-2" />
+          <span className="text-2xl font-bold">{stats.resumes > 0 ? '✓' : '-'}</span>
+          <span className="text-xs text-muted-foreground">AI Analyzed</span>
+        </div>
+      </div>
+
+      {/* Benefits */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-4xl z-10">
+        <div className="flex items-start gap-3 p-4 rounded-xl bg-card/30 border border-border/30">
+          <BookOpen className="h-5 w-5 text-blue-500 shrink-0 mt-0.5" />
+          <div>
+            <h4 className="font-medium text-sm">Learn by Doing</h4>
+            <p className="text-xs text-muted-foreground">
+              Practice real scenarios, not just reading
+            </p>
+          </div>
+        </div>
+        <div className="flex items-start gap-3 p-4 rounded-xl bg-card/30 border border-border/30">
+          <Users className="h-5 w-5 text-indigo-500 shrink-0 mt-0.5" />
+          <div>
+            <h4 className="font-medium text-sm">Personalized Feedback</h4>
+            <p className="text-xs text-muted-foreground">AI adapts to your target role</p>
+          </div>
+        </div>
+        <div className="flex items-start gap-3 p-4 rounded-xl bg-card/30 border border-border/30">
+          <TrendingUp className="h-5 w-5 text-emerald-500 shrink-0 mt-0.5" />
+          <div>
+            <h4 className="font-medium text-sm">Track Progress</h4>
+            <p className="text-xs text-muted-foreground">Visual charts show improvement</p>
+          </div>
         </div>
       </div>
 
