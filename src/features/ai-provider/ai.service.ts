@@ -1,6 +1,8 @@
 import { AIProviderStrategy, AIConfig, ChatMessage, AIResponse, AIRequestOptions } from '@/types';
 import { GoogleGeminiStrategy } from './strategies/google-gemini';
 import { OpenAICustomStrategy } from './strategies/openai-custom';
+import { AnthropicStrategy } from './strategies/anthropic';
+import { OpenRouterStrategy } from './strategies/openrouter';
 
 export class AIService {
   private strategy: AIProviderStrategy;
@@ -16,9 +18,13 @@ export class AIService {
         }
         this.strategy = new OpenAICustomStrategy(config.apiKey, config.baseUrl, config.modelId);
         break;
+      case 'anthropic':
+        this.strategy = new AnthropicStrategy(config.apiKey, config.baseUrl);
+        break;
+      case 'openrouter':
+        this.strategy = new OpenRouterStrategy(config.apiKey, config.modelId);
+        break;
       default:
-        // Default to Google if something goes wrong or fallback
-        // But better to throw
         throw new Error(`Provider '${config.provider}' is not supported`);
     }
   }

@@ -7,6 +7,8 @@ import { ThemeProvider } from '@/components/shared/theme-provider';
 import Header from '@/components/layout/Header';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Toaster } from 'sonner';
+import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
+import { GlobalErrorHandler } from '@/components/shared/GlobalErrorHandler';
 
 // Lazy load features
 const SetupRoom = lazy(() => import('@/features/dashboard/SetupRoom'));
@@ -30,28 +32,31 @@ const App: React.FC = () => {
       <HelmetProvider>
         <TooltipProvider>
           <HashRouter>
-            <div className="min-h-[100dvh] flex flex-col bg-background text-foreground pt-[var(--safe-top)] pb-[var(--safe-bottom)] pl-[var(--safe-left)] pr-[var(--safe-right)] print:block print:bg-white print:min-h-0">
-              <ApiKeyModal />
-              <Header />
+            <GlobalErrorHandler />
+            <ErrorBoundary>
+              <div className="min-h-[100dvh] flex flex-col bg-background text-foreground pt-[var(--safe-top)] pb-[var(--safe-bottom)] pl-[var(--safe-left)] pr-[var(--safe-right)] print:block print:bg-white print:min-h-0">
+                <ApiKeyModal />
+                <Header />
 
-              <Toaster position="bottom-center" toastOptions={{ className: 'mb-safe' }} />
+                <Toaster position="bottom-center" toastOptions={{ className: 'mb-safe' }} />
 
-              <main className="flex-1 container mx-auto px-0 md:px-4 py-0 md:py-6 print:p-0 print:m-0 print:max-w-none print:block print:flex-none">
-                <Suspense fallback={<PageLoader />}>
-                  <Routes>
-                    <Route path="/" element={<LandingPage />} />
-                    <Route path="/setup" element={<SetupRoom />} />
-                    <Route path="/history" element={<HistoryPage />} />
-                    <Route path="/resumes/:id/edit" element={<ResumeBuilder />} />
-                    <Route path="/studio" element={<CVStudioPage />} />
-                    <Route path="/skill-assessment" element={<SkillAssessmentPage />} />
-                    <Route path="/interview/:id" element={<InterviewRoom />} />
-                    <Route path="/feedback/:id" element={<FeedbackView />} />
-                    <Route path="*" element={<Navigate to="/" replace />} />
-                  </Routes>
-                </Suspense>
-              </main>
-            </div>
+                <main className="flex-1 container mx-auto px-0 md:px-4 py-0 md:py-6 print:p-0 print:m-0 print:max-w-none print:block print:flex-none">
+                  <Suspense fallback={<PageLoader />}>
+                    <Routes>
+                      <Route path="/" element={<LandingPage />} />
+                      <Route path="/setup" element={<SetupRoom />} />
+                      <Route path="/history" element={<HistoryPage />} />
+                      <Route path="/resumes/:id/edit" element={<ResumeBuilder />} />
+                      <Route path="/studio" element={<CVStudioPage />} />
+                      <Route path="/skill-assessment" element={<SkillAssessmentPage />} />
+                      <Route path="/interview/:id" element={<InterviewRoom />} />
+                      <Route path="/feedback/:id" element={<FeedbackView />} />
+                      <Route path="*" element={<Navigate to="/" replace />} />
+                    </Routes>
+                  </Suspense>
+                </main>
+              </div>
+            </ErrorBoundary>
           </HashRouter>
         </TooltipProvider>
       </HelmetProvider>
