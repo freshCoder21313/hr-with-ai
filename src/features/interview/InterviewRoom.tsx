@@ -36,6 +36,7 @@ const InterviewRoom: React.FC = () => {
     sendMessage,
     endSession,
     retryLastMessage,
+    regenerateLastResponse,
     isLoading: isProcessing,
   } = useInterview();
   const { setInterview, updateCode, updateWhiteboard } = useInterviewStore();
@@ -387,6 +388,7 @@ const InterviewRoom: React.FC = () => {
       <ChatArea
         messages={currentInterview.messages}
         onRetry={retryLastMessage}
+        onRegenerate={regenerateLastResponse}
         isProcessing={isProcessing}
         onOpenTool={(tool) => {
           if (tool === 'code') setIsCodeOpen(true);

@@ -23,8 +23,9 @@ export interface AnalysisItem {
 
 interface ChatAreaProps {
   messages: Message[];
-  analysisMap?: Record<number, AnalysisItem>; // Key is message index
+  analysisMap?: Record<number, AnalysisItem>;
   onRetry?: () => void;
+  onRegenerate?: () => void;
   isProcessing?: boolean;
   onOpenTool?: (tool: 'code' | 'whiteboard') => void;
 }
@@ -33,6 +34,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
   messages,
   analysisMap,
   onRetry,
+  onRegenerate,
   isProcessing,
   onOpenTool,
 }) => {
@@ -162,6 +164,18 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
                             >
                               {action.type === 'CODE' ? <Code2 size={14} /> : <PenTool size={14} />}
                               {action.type === 'CODE' ? 'Open Code Editor' : 'Open Whiteboard'}
+                            </Button>
+                          )}
+                          {onRegenerate && idx === messages.length - 1 && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={onRegenerate}
+                              disabled={isProcessing}
+                              className="self-start mt-1 gap-2 h-8"
+                            >
+                              <RefreshCw size={14} />
+                              Regenerate
                             </Button>
                           )}
                         </div>

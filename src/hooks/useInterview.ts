@@ -289,17 +289,10 @@ export const useInterview = () => {
     const messages = latestInterview.messages;
     const lastMsg = messages[messages.length - 1];
 
-    // Check if last message is error OR empty (from silent failure)
     const isErrorOrEmpty = lastMsg.role === 'model' && (lastMsg.isError || !lastMsg.content.trim());
 
     if (isErrorOrEmpty) {
-      // Remove the error message from UI/Store
       removeLastMessage();
-
-      // Need to fetch state again or rely on index?
-      // removeLastMessage updates store synchronously usually in zustand (but React re-render is async)
-      // Since we are in an async callback, let's be careful.
-      // Actually, removing from store is instant.
 
       const updatedInterviewAfterErrorRemoval = useInterviewStore.getState().currentInterview;
       if (!updatedInterviewAfterErrorRemoval) return;
@@ -310,21 +303,47 @@ export const useInterview = () => {
       if (lastMsgIndex >= 0) {
         const userMsg = newMessages[lastMsgIndex];
         if (userMsg.role === 'user') {
-          // Remove the user message now so sendMessage can re-add it
           removeLastMessage();
-
-          // Wait a tick to ensure store update propagates if needed, though Zustand is sync.
-          // Just calling sendMessage now.
           await sendMessage(userMsg.content, userMsg.image);
         }
       }
     }
   }, [removeLastMessage, sendMessage]);
 
+  const regenerateLastResponse = useCallback(async () => {
+    const latestInterview = useInterviewStore.getState().currentInterview;
+    if (!latestInterview || latestInterview.messages.length < 2) return;
+
+    const messages = latestInterview.messages;
+    const lastAiMsg = messages[messages.length - 1];
+    const lastUserMsg = messages[messages.length - 2];
+
+    if (lastAiMsg.role !== 'model' || lastUserMsg.role !== 'user') return;
+
+    setLoading(true);
+    try {
+      removeLastMessage();
+
+      const updatedMessages = useInterviewStore.getState().currentInterview?.messages;
+      if (!updatedMessages || updatedMessages.length === 0) return;
+
+      const userMsg = updatedMessages[updatedMessages.length - 1];
+      if (userMsg.role !== 'user') return;
+
+      removeLastMessage();
+
+      await sendMessage(userMsg.content, userMsg.image);
+    } catch (error) {
+      console.error('Error regenerating response:', error);
+      setError((error as Error).message);
+    }
+  }, [removeLastMessage, sendMessage, setLoading, setError]);
+
   return {
     startNewInterview,
     sendMessage,
     retryLastMessage,
+    regenerateLastResponse,
     endSession,
     isLoading: useInterviewStore((state) => state.isLoading),
     error: useInterviewStore((state) => state.error),
