@@ -92,23 +92,29 @@ export interface SetupFormData {
 
 export interface UserSettings {
   id?: number;
-  updatedAt?: number; // Added for sync merging
+  updatedAt?: number;
   apiKey?: string;
   githubUsername?: string;
   githubToken?: string;
   defaultModel?: string;
   hintsEnabled?: boolean;
   autoFinishEnabled?: boolean;
-  forceToolsEnabled?: boolean; // Added this
+  forceToolsEnabled?: boolean;
   baseUrl?: string;
   modelId?: string;
   provider?: AIModelProvider;
 
+  // Retry Settings
+  maxRetries?: number;
+  retryDelay?: number; // ms
+  retryOnTimeout?: boolean;
+  retryOnRateLimit?: boolean;
+
   // Voice Settings & Keys
   defaultVoiceSettings?: VoiceSettings;
-  googleCloudApiKey?: string; // Optional, for Google Cloud STT/TTS
-  elevenLabsApiKey?: string; // Optional, for ElevenLabs TTS
-  deepgramApiKey?: string; // Optional, for Deepgram STT
+  googleCloudApiKey?: string;
+  elevenLabsApiKey?: string;
+  deepgramApiKey?: string;
 }
 
 export interface Resume {

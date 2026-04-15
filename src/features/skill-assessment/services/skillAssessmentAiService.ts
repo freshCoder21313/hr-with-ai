@@ -11,7 +11,7 @@ export const extractSkills = async (
   text: string,
   configInput: AIConfigInput
 ): Promise<string[]> => {
-  const service = getService(configInput);
+  const service = await getService(configInput);
   const prompt = `${SKILL_EXTRACTOR_PROMPT}\n\nText:\n${text}`;
 
   const response = await service.generateText([{ role: 'user', content: prompt }], {
@@ -27,7 +27,7 @@ export const generateSubSkills = async (
   skill: string,
   configInput: AIConfigInput
 ): Promise<string[]> => {
-  const service = getService(configInput);
+  const service = await getService(configInput);
   const prompt = SUB_SKILL_GENERATOR_PROMPT.replace('{skill}', skill);
 
   const response = await service.generateText([{ role: 'user', content: prompt }], {
@@ -45,7 +45,7 @@ export const generateQuiz = async (
   count: number,
   configInput: AIConfigInput
 ): Promise<QuizQuestion[]> => {
-  const service = getService(configInput);
+  const service = await getService(configInput);
   const countInstruction =
     count > 0
       ? `generate exactly ${count} multiple-choice questions.`

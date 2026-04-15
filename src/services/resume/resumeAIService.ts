@@ -19,7 +19,7 @@ export const analyzeResume = async (
   resumeId?: number
 ): Promise<ResumeAnalysis> => {
   const config = resolveConfig(configInput);
-  const service = getService(configInput);
+  const service = await getService(configInput);
 
   // Check Cache
   if (resumeId) {
@@ -85,7 +85,7 @@ export const parseResumeToJSON = async (
   rawText: string,
   configInput: AIConfigInput
 ): Promise<ResumeData> => {
-  const service = getService(configInput);
+  const service = await getService(configInput);
   const prompt = getParseResumePrompt(rawText);
 
   try {
@@ -110,7 +110,7 @@ export const analyzeResumeSection = async (
   configInput: AIConfigInput
 ): Promise<{ critique: string; suggestions: string[]; rewrittenExample: string }> => {
   const config = resolveConfig(configInput);
-  const service = getService(configInput);
+  const service = await getService(configInput);
   const prompt = getAnalyzeSectionPrompt(sectionName, sectionData);
 
   try {
@@ -146,7 +146,7 @@ export const tailorResumeToJob = async (
   configInput: AIConfigInput,
   finalPrompt?: string
 ): Promise<ResumeData> => {
-  const service = getService(configInput);
+  const service = await getService(configInput);
   const prompt = finalPrompt || getTailoredResumePrompt(sourceResume, jobDescription);
 
   try {
@@ -169,7 +169,7 @@ export const tailorResumeV2 = async (
   configInput: AIConfigInput,
   prompt: string
 ): Promise<ResumeData> => {
-  const service = getService(configInput);
+  const service = await getService(configInput);
 
   try {
     const response = await service.generateText([{ role: 'user', content: prompt }], {
@@ -191,7 +191,7 @@ export const translateResume = async (
   targetLanguage: 'vi' | 'en',
   configInput: AIConfigInput
 ): Promise<ResumeData> => {
-  const service = getService(configInput);
+  const service = await getService(configInput);
   const prompt = `Translate the following JSON resume data into ${
     targetLanguage === 'vi' ? 'Vietnamese' : 'English'
   }. Keep the exact same JSON structure, keys, and formatting. Only translate the values (text content).

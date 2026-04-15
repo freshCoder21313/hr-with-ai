@@ -42,7 +42,14 @@ export const useAIStore = create<AIState>((set, get) => ({
         provider,
       };
 
-      const service = new AIService(config);
+      const service = new AIService(config, {
+        retry: {
+          maxRetries: settings.maxRetries,
+          delay: settings.retryDelay,
+          retryOnTimeout: settings.retryOnTimeout,
+          retryOnRateLimit: settings.retryOnRateLimit,
+        },
+      });
       set({ instance: service, isLoading: false });
     } catch (e) {
       console.error('Failed to init AI Service', e);

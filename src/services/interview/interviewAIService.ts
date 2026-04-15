@@ -17,7 +17,7 @@ export const startInterviewSession = async (
   forceToolsEnabled: boolean = false
 ): Promise<string> => {
   const prompt = getStartPrompt(interview, forceToolsEnabled);
-  const service = getService(configInput);
+  const service = await getService(configInput);
 
   try {
     const response = await service.generateText([{ role: 'user', content: prompt }]);
@@ -40,7 +40,7 @@ export async function* streamInterviewMessage(
   systemInjection?: string | null
 ) {
   try {
-    const service = getService(configInput);
+    const service = await getService(configInput);
 
     // Construct Context
     let codeContext = '';
@@ -126,7 +126,7 @@ export const generateInterviewFeedback = async (
   interview: Interview,
   configInput: AIConfigInput
 ): Promise<InterviewFeedback> => {
-  const service = getService(configInput);
+  const service = await getService(configInput);
   const config = resolveConfig(configInput); // Need raw config to check if OpenAI
 
   const conversationHistory = interview.messages
@@ -239,7 +239,7 @@ export const generateInterviewHints = async (
   configInput: AIConfigInput
 ): Promise<InterviewHints> => {
   const config = resolveConfig(configInput);
-  const service = getService(configInput);
+  const service = await getService(configInput);
   const prompt = getHintPrompt(lastQuestion, context);
 
   try {

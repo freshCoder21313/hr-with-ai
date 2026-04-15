@@ -6,6 +6,30 @@ import { fetchFileTree } from '@/lib/github';
 import { Type } from '@google/genai';
 import { AIService } from '@/features/ai-provider/ai.service';
 import { AIConfig, UserSettings } from '@/types';
+import { loadUserSettings } from '@/services/core/settingsService';
+
+const createServiceWithRetry = async (config: AIConfigInput) => {
+  const resolved = resolveConfig(config);
+  const settings = await loadUserSettings();
+  const providerConfig: AIConfig = {
+    apiKey: resolved.apiKey,
+    baseUrl: resolved.baseUrl,
+    modelId: resolved.modelId,
+    provider: resolved.baseUrl ? 'openai' : 'google',
+  };
+  const retryOptions =
+    settings.maxRetries && settings.maxRetries > 0
+      ? {
+          retry: {
+            maxRetries: settings.maxRetries,
+            delay: settings.retryDelay,
+            retryOnTimeout: settings.retryOnTimeout,
+            retryOnRateLimit: settings.retryOnRateLimit,
+          },
+        }
+      : undefined;
+  return new AIService(providerConfig, retryOptions);
+};
 
 export const convertRepoToProject = async (
   repo: GitHubRepo,
@@ -13,13 +37,7 @@ export const convertRepoToProject = async (
   configInput: AIConfigInput
 ): Promise<Project> => {
   const config = resolveConfig(configInput);
-  const providerConfig: AIConfig = {
-    apiKey: config.apiKey,
-    baseUrl: config.baseUrl,
-    modelId: config.modelId,
-    provider: config.baseUrl ? 'openai' : 'google',
-  };
-  const service = new AIService(providerConfig);
+  const service = await createServiceWithRetry(configInput);
 
   // Fetch file tree for deeper analysis
   const fileTree = await fetchFileTree(
@@ -105,13 +123,7 @@ export const generateGitHubInterviewQuestions = async (
   fileTree: string,
   configInput: AIConfigInput
 ) => {
-  const config = resolveConfig(configInput);
-  const service = new AIService({
-    apiKey: config.apiKey,
-    baseUrl: config.baseUrl,
-    modelId: config.modelId,
-    provider: config.baseUrl ? 'openai' : 'google',
-  });
+  const service = await createServiceWithRetry(configInput);
 
   const prompt = getGitHubInterviewPrompt(repo, readme, fileTree);
 

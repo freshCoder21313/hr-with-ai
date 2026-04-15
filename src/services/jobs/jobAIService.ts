@@ -2,10 +2,7 @@ import { Type } from '@google/genai';
 import { UserSettings } from '@/types';
 import { db } from '@/lib/db';
 import { getExtractJDInfoPrompt } from '@/features/interview/promptSystem';
-import {
-  generateJobRecommendationsPrompt,
-  generateTailoredResumePrompt,
-} from './jobPromptSystem';
+import { generateJobRecommendationsPrompt, generateTailoredResumePrompt } from './jobPromptSystem';
 import { ResumeData } from '@/types/resume';
 import {
   getService,
@@ -27,7 +24,7 @@ export const extractInfoFromJD = async (
   companyStatus?: string;
   interviewContext?: string;
 }> => {
-  const service = getService(configInput);
+  const service = await getService(configInput);
   const prompt = getExtractJDInfoPrompt(jobDescription);
 
   try {
@@ -53,7 +50,7 @@ export const generateJobRecommendations = async (
 ): Promise<any[]> => {
   const aiConfig = getStoredAIConfig();
   const config = resolveConfig(aiConfig);
-  const service = getService(aiConfig);
+  const service = await getService(aiConfig);
 
   // Check Cache
   if (resumeId) {
@@ -149,7 +146,7 @@ export const generateTailoredResumeForJob = async (
   _config: UserSettings
 ): Promise<ResumeData> => {
   const aiConfig = getStoredAIConfig();
-  const service = getService(aiConfig);
+  const service = await getService(aiConfig);
   const prompt = generateTailoredResumePrompt(originalResumeData, jobDescription);
 
   try {

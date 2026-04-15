@@ -4,6 +4,7 @@ import { getCVChatSystemPrompt } from '@/features/cv-studio/utils/cvPrompt';
 import { resolveConfig, AIConfigInput } from '@/services/ai/aiConfigService';
 import { AIService } from '@/features/ai-provider/ai.service';
 import { AIConfig, ChatMessage } from '@/types';
+import { loadUserSettings } from '@/services/core/settingsService';
 
 export async function* streamCVChatMessage(
   history: Message[],
@@ -21,7 +22,20 @@ export async function* streamCVChatMessage(
     provider: config.baseUrl ? 'openai' : 'google',
   };
 
-  const service = new AIService(providerConfig);
+  const settings = await loadUserSettings();
+  const retryOptions =
+    settings.maxRetries && settings.maxRetries > 0
+      ? {
+          retry: {
+            maxRetries: settings.maxRetries,
+            delay: settings.retryDelay,
+            retryOnTimeout: settings.retryOnTimeout,
+            retryOnRateLimit: settings.retryOnRateLimit,
+          },
+        }
+      : undefined;
+
+  const service = new AIService(providerConfig, retryOptions);
   const systemPrompt = getCVChatSystemPrompt(currentResume, additionalContext);
 
   try {

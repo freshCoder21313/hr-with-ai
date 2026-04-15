@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { loadUserSettings, saveUserSettings } from '@/services/core/settingsService';
 import { UserSettings } from '@/types';
 import { CollapsibleSection } from '@/components/ui/collapsible-section';
-import { Settings2, Sparkles } from 'lucide-react';
+import { Settings2, Sparkles, RotateCcw } from 'lucide-react';
 
 interface SettingsModalProps {
   open: boolean;
@@ -30,6 +30,10 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onOpenChange, onSet
     apiKey: '',
     baseUrl: '',
     modelId: '',
+    maxRetries: 3,
+    retryDelay: 1000,
+    retryOnTimeout: true,
+    retryOnRateLimit: true,
   });
   const [isLoading, setIsLoading] = useState(true);
 
@@ -58,7 +62,6 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onOpenChange, onSet
 
   const handleSave = async () => {
     try {
-      // Prepare settings object for saving
       const settingsToSave: UserSettings = {
         id: settings.id,
         hintsEnabled: settings.hintsEnabled ?? false,
@@ -67,6 +70,10 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onOpenChange, onSet
         apiKey: settings.apiKey || '',
         baseUrl: settings.baseUrl || '',
         defaultModel: settings.modelId || '',
+        maxRetries: settings.maxRetries,
+        retryDelay: settings.retryDelay,
+        retryOnTimeout: settings.retryOnTimeout,
+        retryOnRateLimit: settings.retryOnRateLimit,
       };
 
       // Save using centralized service
@@ -157,6 +164,86 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onOpenChange, onSet
                       onCheckedChange={(c) => setSettings((s) => ({ ...s, forceToolsEnabled: c }))}
                     />
                   </div>
+
+                  <CollapsibleSection
+                    title={
+                      <span className="text-xs text-muted-foreground flex items-center gap-1">
+                        <RotateCcw className="w-3 h-3" /> Retry Settings
+                      </span>
+                    }
+                    defaultOpen={false}
+                    className="border-border"
+                    headerClassName="py-2 bg-transparent border-none hover:bg-muted/50"
+                    contentClassName="pt-0"
+                  >
+                    <div className="space-y-3 bg-muted/30 p-3 rounded-lg border border-border">
+                      <div className="flex items-center justify-between space-x-2">
+                        <div className="flex flex-col space-y-1">
+                          <Label htmlFor="retry-timeout" className="text-xs">
+                            Retry on Timeout
+                          </Label>
+                        </div>
+                        <Switch
+                          id="retry-timeout"
+                          checked={settings.retryOnTimeout === true}
+                          onCheckedChange={(c) => setSettings((s) => ({ ...s, retryOnTimeout: c }))}
+                        />
+                      </div>
+                      <div className="flex items-center justify-between space-x-2">
+                        <div className="flex flex-col space-y-1">
+                          <Label htmlFor="retry-rate" className="text-xs">
+                            Retry on Rate Limit (429)
+                          </Label>
+                        </div>
+                        <Switch
+                          id="retry-rate"
+                          checked={settings.retryOnRateLimit === true}
+                          onCheckedChange={(c) =>
+                            setSettings((s) => ({ ...s, retryOnRateLimit: c }))
+                          }
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label htmlFor="maxRetries" className="text-xs">
+                          Max Retries
+                        </Label>
+                        <Input
+                          id="maxRetries"
+                          type="number"
+                          min={0}
+                          max={10}
+                          value={settings.maxRetries ?? 3}
+                          onChange={(e) =>
+                            setSettings((s) => ({
+                              ...s,
+                              maxRetries: parseInt(e.target.value) || 0,
+                            }))
+                          }
+                          className="h-8 text-xs bg-background"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label htmlFor="retryDelay" className="text-xs">
+                          Initial Delay (ms)
+                        </Label>
+                        <Input
+                          id="retryDelay"
+                          type="number"
+                          min={100}
+                          max={30000}
+                          step={100}
+                          value={settings.retryDelay ?? 1000}
+                          onChange={(e) =>
+                            setSettings((s) => ({
+                              ...s,
+                              retryDelay: parseInt(e.target.value) || 1000,
+                            }))
+                          }
+                          className="h-8 text-xs bg-background"
+                        />
+                      </div>
+                    </div>
+                  </CollapsibleSection>
                 </div>
 
                 {/* API Configuration */}

@@ -1,6 +1,7 @@
 import { getCompanyIntelPrompt } from '@/features/interview/promptSystem';
 import { AIService } from '@/features/ai-provider/ai.service';
 import { getStoredAIConfig } from './aiConfigService';
+import { loadUserSettings } from '@/services/core/settingsService';
 
 export interface CompanyIntel {
   culture: string;
@@ -13,14 +14,30 @@ export interface CompanyIntel {
 
 export const researchCompany = async (companyName: string): Promise<CompanyIntel> => {
   const aiConfig = getStoredAIConfig();
+  const settings = await loadUserSettings();
 
   const provider = aiConfig.provider || (aiConfig.baseUrl ? 'openai' : 'google');
-  const service = new AIService({
-    apiKey: aiConfig.apiKey,
-    baseUrl: aiConfig.baseUrl,
-    modelId: aiConfig.modelId,
-    provider: provider,
-  });
+  const retryOptions =
+    settings.maxRetries && settings.maxRetries > 0
+      ? {
+          retry: {
+            maxRetries: settings.maxRetries,
+            delay: settings.retryDelay,
+            retryOnTimeout: settings.retryOnTimeout,
+            retryOnRateLimit: settings.retryOnRateLimit,
+          },
+        }
+      : undefined;
+
+  const service = new AIService(
+    {
+      apiKey: aiConfig.apiKey,
+      baseUrl: aiConfig.baseUrl,
+      modelId: aiConfig.modelId,
+      provider: provider,
+    },
+    retryOptions
+  );
 
   const prompt = getCompanyIntelPrompt(companyName);
 
