@@ -175,7 +175,12 @@ export const syncService = {
   ): Promise<{ success: boolean; data?: SyncData; message?: string }> => {
     try {
       const result = await apiClient.get<{ data: CompressedSyncData }>(`/sync`, {
-        params: { id },
+        params: { id, t: Date.now() }, // Thêm timestamp để bypass browser cache
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+        },
       });
 
       // The response interceptor returns 'response.data', but our API structure might be { data: ... }
@@ -184,7 +189,7 @@ export const syncService = {
 
       // However, if the API returns the data directly (without wrapper), adjust accordingly.
       // Assuming existing API returns JSON: { data: { compressed: "..." } }
-      const rawData = result.data.data;
+      const rawData = result.data;
 
       // Check if data is compressed
       let finalData: SyncData;
