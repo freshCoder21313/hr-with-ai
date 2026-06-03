@@ -904,6 +904,69 @@ const CVStudioPage: React.FC = () => {
                     variant="outline"
                     size="sm"
                     className="h-7 text-xs gap-1"
+                    onClick={async () => {
+                      const newResume: Resume = {
+                        createdAt: Date.now(),
+                        fileName: 'New Resume',
+                        rawText: '',
+                        parsedData: {
+                          basics: { name: '', email: '', label: '', summary: '' },
+                          work: [],
+                          education: [],
+                          skills: [],
+                          projects: [],
+                        },
+                        formatted: true,
+                        isMain: resumes.length === 0,
+                      };
+                      const id = await db.resumes.add(newResume);
+                      const fullResume = { ...newResume, id };
+                      setResumes((prev) => [fullResume, ...prev]);
+                      setChatResumeId(id);
+                      setMainCV(fullResume);
+                    }}
+                  >
+                    <Plus size={12} /> New CV
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Create Blank CV</TooltipContent>
+              </Tooltip>
+              <Tooltip delayDuration={0}>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 text-xs gap-1 text-destructive hover:bg-destructive/10 hover:text-destructive border-destructive/20"
+                    onClick={async () => {
+                      if (!chatResumeId) return;
+                      if (!confirm('Are you sure you want to delete this CV?')) return;
+                      
+                      await db.resumes.delete(chatResumeId);
+                      const updatedResumes = resumes.filter((r) => r.id !== chatResumeId);
+                      setResumes(updatedResumes);
+                      
+                      if (updatedResumes.length > 0) {
+                        const nextCv = updatedResumes[0];
+                        setChatResumeId(nextCv.id);
+                        setMainCV(nextCv);
+                      } else {
+                        setChatResumeId(undefined);
+                        setMainCV(null);
+                      }
+                    }}
+                    disabled={!chatResumeId}
+                  >
+                    <Trash2 size={12} />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Delete Current CV</TooltipContent>
+              </Tooltip>
+              <Tooltip delayDuration={0}>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 text-xs gap-1"
                     onClick={() => setIsGitHubModalOpen(true)}
                   >
                     <Github size={12} /> Import

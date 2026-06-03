@@ -52,7 +52,7 @@ export const GitHubImportModal: React.FC<GitHubImportModalProps> = ({
   const [error, setError] = useState<string | null>(null);
 
   // Credentials State
-  const [username, setUsername] = useState('');
+  const [usernamesText, setUsernamesText] = useState('');
   const [token, setToken] = useState('');
   const [settings, setSettings] = useState<UserSettings | null>(null);
 
@@ -75,10 +75,8 @@ export const GitHubImportModal: React.FC<GitHubImportModalProps> = ({
     if (isOpen) {
       loadUserSettings().then((s) => {
         setSettings(s);
-        if (s.githubUsername) setUsername(s.githubUsername);
+        if (s.githubUsername) setUsernamesText(s.githubUsername);
         if (s.githubToken) setToken(s.githubToken);
-        // If credentials exist, maybe skip to selection?
-        // Let's force user to confirm credentials for now
       });
       // Reset state
       setStep('credentials');
@@ -109,14 +107,35 @@ export const GitHubImportModal: React.FC<GitHubImportModalProps> = ({
     setIsLoading(true);
     setError(null);
     try {
-      const fetchedRepos = await fetchGitHubRepos(username, token);
-      setRepos(fetchedRepos);
+      const usernames = usernamesText
+        .split(',')
+        .map((u) => u.trim())
+        .filter((u) => u.length > 0);
 
-      // Save credentials
+      if (usernames.length === 0) {
+        throw new Error('Please enter at least one GitHub username.');
+      }
+
+      let allRepos: GitHubRepo[] = [];
+      for (const username of usernames) {
+        const fetchedRepos = await fetchGitHubRepos(username, token);
+        allRepos = [...allRepos, ...fetchedRepos];
+      }
+
+      // Deduplicate repositories by full name (owner/repo)
+      const uniqueReposMap = new Map<string, GitHubRepo>();
+      allRepos.forEach(repo => {
+        uniqueReposMap.set(repo.full_name, repo);
+      });
+      const uniqueRepos = Array.from(uniqueReposMap.values());
+      
+      setRepos(uniqueRepos);
+
+      // Save credentials (using the first username or the joined string as preference)
       if (settings) {
         await saveUserSettings({
           ...settings,
-          githubUsername: username,
+          githubUsername: usernamesText,
           githubToken: token,
         });
       }
@@ -307,12 +326,15 @@ export const GitHubImportModal: React.FC<GitHubImportModalProps> = ({
           {step === 'credentials' && (
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label>GitHub Username</Label>
+                <Label>GitHub Usernames</Label>
                 <Input
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="e.g. octocat"
+                  value={usernamesText}
+                  onChange={(e) => setUsernamesText(e.target.value)}
+                  placeholder="e.g. octocat, facebook, microsoft"
                 />
+                <p className="text-xs text-muted-foreground">
+                  Separate multiple usernames or organizations with commas.
+                </p>
               </div>
               <div className="space-y-2">
                 <Label>Personal Access Token (Optional)</Label>
@@ -525,7 +547,7 @@ export const GitHubImportModal: React.FC<GitHubImportModalProps> = ({
 
         <DialogFooter className="p-6 border-t bg-muted/20">
           {step === 'credentials' && (
-            <Button onClick={handleConnect} disabled={isLoading || !username}>
+            <Button onClick={handleConnect} disabled={isLoading || !usernamesText}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Connect to GitHub
             </Button>
