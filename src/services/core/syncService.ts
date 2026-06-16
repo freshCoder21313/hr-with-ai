@@ -45,7 +45,16 @@ export const syncService = {
         return s;
       }
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { id, apiKey, githubToken, ...safe } = s;
+      const {
+        id,
+        apiKey,
+        githubToken,
+        githubUsername,
+        googleCloudApiKey,
+        elevenLabsApiKey,
+        deepgramApiKey,
+        ...safe
+      } = s;
       return safe;
     });
 
@@ -72,9 +81,35 @@ export const syncService = {
             const cloudTime = cloudSetting.updatedAt || 0;
             const localTime = localMatch.updatedAt || 0;
             if (cloudTime > localTime) {
-              await db.userSettings.put(cloudSetting); // Overwrite with newer cloud version
+              // Overwrite with newer cloud version, but PRESERVE local keys
+              // if cloud version is from a 'safe' export (stripped keys)
+              await db.userSettings.put({
+                ...cloudSetting,
+                apiKey: cloudSetting.apiKey || localMatch.apiKey,
+                githubToken: cloudSetting.githubToken || localMatch.githubToken,
+                githubUsername: cloudSetting.githubUsername || localMatch.githubUsername,
+                googleCloudApiKey:
+                  cloudSetting.googleCloudApiKey || localMatch.googleCloudApiKey,
+                elevenLabsApiKey:
+                  cloudSetting.elevenLabsApiKey || localMatch.elevenLabsApiKey,
+                deepgramApiKey:
+                  cloudSetting.deepgramApiKey || localMatch.deepgramApiKey,
+              });
             }
           }
+        }
+
+        // Sync to localStorage after import to prevent 'split brain' with AI services
+        const latestSettings = await db.userSettings.orderBy('id').first();
+        if (latestSettings) {
+          if (latestSettings.apiKey)
+            localStorage.setItem('gemini_api_key', latestSettings.apiKey);
+          if (latestSettings.baseUrl)
+            localStorage.setItem('custom_base_url', latestSettings.baseUrl);
+          if (latestSettings.modelId)
+            localStorage.setItem('custom_model_id', latestSettings.modelId);
+          if (latestSettings.provider)
+            localStorage.setItem('ai_provider', latestSettings.provider);
         }
       }
 

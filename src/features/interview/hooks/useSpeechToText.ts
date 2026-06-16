@@ -12,6 +12,13 @@ export const useSpeechToText = (config: VoiceSettings) => {
     speechToTextService.setConfig(config);
   }, [config]);
 
+  // Cleanup: Stop listening on unmount
+  useEffect(() => {
+    return () => {
+      speechToTextService.stop();
+    };
+  }, []);
+
   const startListening = useCallback(() => {
     setError(null);
     speechToTextService.start(

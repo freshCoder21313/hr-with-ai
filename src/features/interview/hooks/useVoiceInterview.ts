@@ -1,4 +1,5 @@
 import { useEffect, useCallback } from 'react';
+import { toast } from 'sonner';
 import { useVoiceInterviewStore } from '@/features/interview/stores/voiceInterviewStore';
 import { useSpeechToText } from './useSpeechToText';
 import { useTextToSpeech } from './useTextToSpeech';
@@ -58,6 +59,14 @@ export const useVoiceInterview = () => {
     setAudioLevel(recorder.audioLevel);
   }, [recorder.audioLevel, setAudioLevel]);
 
+  // Cleanup: Clear singleton callbacks on unmount to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      voiceInterviewService.setOnSentenceCallback(null);
+      voiceInterviewService.reset();
+    };
+  }, []);
+
   // Queue Processing for TTS
   useEffect(() => {
     if (ttsQueue.length > 0 && !tts.isSpeaking && currentState === 'speaking_tts') {
@@ -93,8 +102,20 @@ export const useVoiceInterview = () => {
     stt.startListening();
 
     // Optional: Start visualizer
-    recorder.startRecording().catch(console.error);
+    recorder.startRecording().catch((err) => {
+      console.error('Failed to start recording', err);
+      toast.error('Could not access microphone. Please check permissions.');
+      setCurrentState('idle');
+      stt.stopListening();
+    });
   }, [stt, recorder, setCurrentState, clearTranscript]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      voiceInterviewService.setOnSentenceCallback(null);
+    };
+  }, []);
 
   // Process AI Response
   const processAIResponse = useCallback(

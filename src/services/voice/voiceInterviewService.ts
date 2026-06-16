@@ -12,7 +12,7 @@ export class VoiceInterviewService {
     this.sentenceBuffer = '';
   }
 
-  public setOnSentenceCallback(cb: (sentence: string) => void) {
+  public setOnSentenceCallback(cb: ((sentence: string) => void) | null) {
     this.onSentence = cb;
   }
 

@@ -239,10 +239,10 @@ export const useInterview = () => {
 
         // 4. Update DB (Background)
         if (latestInterview.id) {
-          // Create a fresh copy of messages to save
-          // Note: we need the absolute latest messages including the ones we just added to store
-          // But addMessage is async/state update.
-          // Actually, we can just construct it here based on logic:
+          // IMPORTANT: Fetch the absolute latest state from the store again
+          // to include any code/whiteboard changes that happened DURING streaming.
+          const currentStoreState = useInterviewStore.getState().currentInterview;
+
           const updatedMessages = [
             ...latestInterview.messages,
             userMsg,
@@ -251,8 +251,8 @@ export const useInterview = () => {
 
           await db.interviews.update(latestInterview.id, {
             messages: updatedMessages,
-            code: latestInterview.code, // Save latest code too
-            whiteboard: latestInterview.whiteboard, // Save latest whiteboard
+            code: currentStoreState?.code || latestInterview.code,
+            whiteboard: currentStoreState?.whiteboard || latestInterview.whiteboard,
           });
         }
 

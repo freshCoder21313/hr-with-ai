@@ -13,13 +13,22 @@ import { getErrorMessage } from '@/lib/utils';
 
 export type TemplateType = 'classic' | 'modern' | 'creative' | 'minimalist' | 'academic';
 
+const TOUR_STEPS: Step[] = [
+  { target: 'body', content: "Welcome to the AI Resume Builder! Let's take a quick tour.", placement: 'center' },
+  { target: '.tour-magic-format', content: 'Uploaded a raw text resume? Click here to let AI automatically format it for you!' },
+  { target: '.tour-layout-switch', content: 'Switch between Modern, Classic, Creative, Minimalist, or Academic templates instantly.' },
+  { target: '.tour-translate', content: 'Translate your entire resume between English and Vietnamese with one click.' },
+  { target: '.tour-preview-toggle', content: 'Toggle between Editor, Full Preview, or Split View side-by-side.' },
+  { target: '.tour-fab', content: 'Use this button to quickly add new Work Experience, Education, or Skills.' },
+];
+
 export const useResumeBuilder = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
   const [resume, setResume] = useState<Resume | null>(null);
   const [data, setData] = useState<ResumeData | null>(null);
-  const debouncedData = useDebounce(data, 500);
+  const debouncedData = useDebounce(data, 1000);
   const [isLoading, setIsLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
   const [activeTab, setActiveTab] = useState('basics');
@@ -32,50 +41,68 @@ export const useResumeBuilder = () => {
   const [runTour, setRunTour] = useState(false);
   const [showStyleEditor, setShowStyleEditor] = useState(false);
 
-  const tourSteps: Step[] = [
-    { target: 'body', content: "Welcome to the AI Resume Builder! Let's take a quick tour.", placement: 'center' },
-    { target: '.tour-magic-format', content: 'Uploaded a raw text resume? Click here to let AI automatically format it for you!' },
-    { target: '.tour-layout-switch', content: 'Switch between Modern, Classic, Creative, Minimalist, or Academic templates instantly.' },
-    { target: '.tour-translate', content: 'Translate your entire resume between English and Vietnamese with one click.' },
-    { target: '.tour-preview-toggle', content: 'Toggle between Editor, Full Preview, or Split View side-by-side.' },
-    { target: '.tour-fab', content: 'Use this button to quickly add new Work Experience, Education, or Skills.' },
-  ];
-
   useEffect(() => {
-    const hasSeenTour = localStorage.getItem('hasSeenResumeBuilderTour');
-    if (!hasSeenTour && !isLoading && data) setRunTour(true);
-  }, [isLoading, data]);
-
-  const handleTourFinish = useCallback(() => {
-    setRunTour(false);
-    localStorage.setItem('hasSeenResumeBuilderTour', 'true');
-  }, []);
-
-  useEffect(() => {
+    let ignore = false;
     const loadResume = async () => {
       if (!id) return;
+
+      const resumeId = parseInt(id);
+      if (isNaN(resumeId)) {
+        navigate('/resumes');
+        return;
+      }
+
       try {
-        const doc = await db.resumes.get(parseInt(id));
-        if (doc) {
+        setIsLoading(true);
+        const doc = await db.resumes.get(resumeId);
+        if (doc && !ignore) {
           setResume(doc);
           if (doc.parsedData) {
             setData(doc.parsedData);
-            if (doc.parsedData.meta?.template) setTemplate(doc.parsedData.meta.template);
-            if (doc.parsedData.language) setViewLanguage(doc.parsedData.language);
+            if (doc.parsedData.meta?.template) setTemplate(doc.parsedData.meta.template as TemplateType);
+            if (doc.parsedData.language) setViewLanguage(doc.parsedData.language as 'vi' | 'en');
           } else {
             setData({ basics: { name: '', email: '', summary: '' }, work: [], education: [], skills: [], projects: [] });
           }
-        } else {
+        } else if (!ignore) {
           navigate('/');
         }
       } catch (error) {
-        console.error('Failed to load resume', error);
+        if (!ignore) {
+          console.error('Failed to load resume', error);
+        }
       } finally {
-        setIsLoading(false);
+        if (!ignore) {
+          setIsLoading(false);
+        }
       }
     };
     loadResume();
+    return () => {
+      ignore = true;
+    };
   }, [id, navigate]);
+
+  // Auto-save debounced data
+  useEffect(() => {
+    const autoSave = async () => {
+      if (!debouncedData || !id) return;
+
+      const resumeId = parseInt(id);
+      if (isNaN(resumeId)) return;
+
+      try {
+        await db.resumes.update(resumeId, {
+          parsedData: debouncedData,
+          updatedAt: Date.now(),
+        });
+      } catch (error) {
+        console.error('Auto-save failed:', error);
+      }
+    };
+
+    autoSave();
+  }, [debouncedData, id]);
 
   const handleSmartFormat = useCallback(async () => {
     if (!resume?.rawText) return;
@@ -176,6 +203,16 @@ export const useResumeBuilder = () => {
     if (id) db.resumes.update(parseInt(id), { parsedData: newData });
   }, [id]);
 
+  useEffect(() => {
+    const hasSeenTour = localStorage.getItem('hasSeenResumeBuilderTour');
+    if (!hasSeenTour && !isLoading && data) setRunTour(true);
+  }, [isLoading, data]);
+
+  const handleTourFinish = useCallback(() => {
+    setRunTour(false);
+    localStorage.setItem('hasSeenResumeBuilderTour', 'true');
+  }, []);
+
   const handleViewMode = useCallback((mode: 'editor' | 'preview' | 'split') => {
     setShowPreview(mode === 'preview');
     setIsSplitView(mode === 'split');
@@ -189,7 +226,7 @@ export const useResumeBuilder = () => {
       resume, data, debouncedData, isLoading: isLoadingState, notFound: isNotFound,
       isProcessing, activeTab, showPreview, isSplitView, showReorderDialog,
       template, isTranslating, viewLanguage, runTour, showStyleEditor, id,
-      tourSteps,
+      tourSteps: TOUR_STEPS,
     },
     actions: {
       setActiveTab, setShowReorderDialog, setTemplate, setShowStyleEditor,

@@ -306,7 +306,12 @@ const InterviewRoom: React.FC = () => {
       }
 
       if (content) {
-        await sendMessage(content, imageBase64);
+        try {
+          await sendMessage(content, imageBase64);
+        } catch (error) {
+          console.error('Failed to submit tool result:', error);
+          toast.error('Failed to send response. Please try again.');
+        }
       }
     } finally {
       setIsSubmitting(false);
