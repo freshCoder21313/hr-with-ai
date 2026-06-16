@@ -1,24 +1,23 @@
 import { GoogleGenAI } from '@google/genai';
 import { AIProviderStrategy, ChatMessage, AIResponse, AIRequestOptions } from '@/types';
 
+type ContentPart = { text: string } | { inlineData: { mimeType: string; data: string } };
+
 export class GoogleGeminiStrategy implements AIProviderStrategy {
   private client: GoogleGenAI;
-  private defaultModel = 'gemini-3.1-pro-preview'; // Updated to 3.1-pro-preview as per recent defaults or user preference
+  private defaultModel = 'gemini-3.1-pro-preview';
   private apiKey: string;
   private baseUrl?: string;
 
   constructor(apiKey: string, baseUrl?: string) {
     this.apiKey = apiKey;
     this.baseUrl = baseUrl;
-    // The SDK might not support baseUrl in constructor types yet, so we only use it for the client if valid
-    // For now we initialize client anyway for standard calls, but we might bypass it.
     this.client = new GoogleGenAI({ apiKey });
   }
 
   private mapMessagesToContent(messages: ChatMessage[]) {
     return messages.map((msg) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const parts: any[] = [{ text: msg.content }];
+      const parts: ContentPart[] = [{ text: msg.content }];
 
       if (msg.image) {
         const cleanBase64 = msg.image.replace(/^data:image\/(png|jpeg|webp);base64,/, '');
@@ -41,8 +40,7 @@ export class GoogleGeminiStrategy implements AIProviderStrategy {
     const contents = this.mapMessagesToContent(messages);
     const modelId = options?.modelId || this.defaultModel;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const generationConfig: any = {};
+    const generationConfig: Record<string, unknown> = {};
     if (options?.temperature) generationConfig.temperature = options.temperature;
     if (options?.jsonMode || options?.schema) {
       generationConfig.responseMimeType = 'application/json';
@@ -54,11 +52,6 @@ export class GoogleGeminiStrategy implements AIProviderStrategy {
     // Custom Base URL Handling
     if (this.baseUrl) {
       try {
-        // Assume baseUrl is like "https://my-proxy.com"
-        // Target: {baseUrl}/v1beta/models/{modelId}:generateContent?key={apiKey}
-        // Adjustment: Check if baseUrl already contains /v1beta/models... usually it's the root.
-
-        // Remove trailing slash
         const cleanBaseUrl = this.baseUrl.replace(/\/$/, '');
         const url = `${cleanBaseUrl}/v1beta/models/${modelId}:generateContent?key=${this.apiKey}`;
 
@@ -99,8 +92,7 @@ export class GoogleGeminiStrategy implements AIProviderStrategy {
     }
 
     // Standard SDK Handling
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const config: any = {};
+    const config: Record<string, unknown> = {};
     if (options?.temperature) config.temperature = options.temperature;
     if (options?.jsonMode || options?.schema) {
       config.responseMimeType = 'application/json';
@@ -133,13 +125,8 @@ export class GoogleGeminiStrategy implements AIProviderStrategy {
     const contents = this.mapMessagesToContent(messages);
     const modelId = options?.modelId || this.defaultModel;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const generationConfig: any = {};
+    const generationConfig: Record<string, unknown> = {};
     if (options?.temperature) generationConfig.temperature = options.temperature;
-    if (options?.systemInstruction) {
-      // SDK put it in config, but REST API puts it in body root
-      // handled below
-    }
 
     if (this.baseUrl) {
       // Remove trailing slash
@@ -242,8 +229,7 @@ export class GoogleGeminiStrategy implements AIProviderStrategy {
     }
 
     // Standard SDK Handling
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const config: any = {};
+    const config: Record<string, unknown> = {};
     if (options?.temperature) config.temperature = options.temperature;
     if (options?.systemInstruction) {
       config.systemInstruction = options.systemInstruction;

@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
+import { toast } from 'sonner';
 import { Editor, TLShapeId } from 'tldraw';
 import { svgToPngBase64 } from '@/lib/svgUtils';
 import { Interview, JobRecommendation } from '@/types';
@@ -33,7 +34,7 @@ export const useToolHandlers = (
   const editorRef = useRef<Editor | null>(null);
 
   const handleRunCode = useCallback(() => {
-    alert('This feature is coming soon! (Backend integration in progress)');
+    toast.info('This feature is coming soon! (Backend integration in progress)');
   }, []);
 
   const handleToolSubmit = useCallback(

@@ -1,13 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-
-declare global {
-  interface Window {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    SpeechRecognition: any;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    webkitSpeechRecognition: any;
-  }
-}
+import { toast } from 'sonner';
 
 export const useSpeechToText = (
   language: string = 'vi-VN' // Default to Vietnamese based on user request, but could be dynamic
@@ -70,7 +62,7 @@ export const useSpeechToText = (
 
   const toggleListening = useCallback(() => {
     if (!recognitionRef.current) {
-      alert(
+      toast.error(
         error || 'Speech recognition is not supported in this browser. Please use Chrome or Edge.'
       );
       return;

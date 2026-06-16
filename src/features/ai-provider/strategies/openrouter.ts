@@ -1,4 +1,5 @@
 import { AIProviderStrategy, ChatMessage, AIResponse, AIRequestOptions } from '@/types';
+import { normalizeMessages } from '@/lib/aiResponseHelper';
 
 export class OpenRouterStrategy implements AIProviderStrategy {
   private apiKey: string;
@@ -9,13 +10,6 @@ export class OpenRouterStrategy implements AIProviderStrategy {
     private modelId = 'openai/gpt-4o'
   ) {
     this.apiKey = apiKey;
-  }
-
-  private mapMessages(messages: ChatMessage[]) {
-    return messages.map((msg) => ({
-      role: msg.role === 'model' ? 'assistant' : msg.role,
-      content: msg.content,
-    }));
   }
 
   async generateText(messages: ChatMessage[], options?: AIRequestOptions): Promise<AIResponse> {
@@ -32,7 +26,7 @@ export class OpenRouterStrategy implements AIProviderStrategy {
       },
       body: JSON.stringify({
         model,
-        messages: this.mapMessages(messages),
+        messages: normalizeMessages(messages),
         temperature: options?.temperature,
         ...(options?.systemInstruction && {
           response_format: { type: 'text' },
@@ -68,7 +62,7 @@ export class OpenRouterStrategy implements AIProviderStrategy {
       },
       body: JSON.stringify({
         model,
-        messages: this.mapMessages(messages),
+        messages: normalizeMessages(messages),
         temperature: options?.temperature,
         stream: true,
       }),

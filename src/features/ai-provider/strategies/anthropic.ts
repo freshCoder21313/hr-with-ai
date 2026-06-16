@@ -1,4 +1,5 @@
 import { AIProviderStrategy, ChatMessage, AIResponse, AIRequestOptions } from '@/types';
+import { normalizeMessages } from '@/lib/aiResponseHelper';
 
 export class AnthropicStrategy implements AIProviderStrategy {
   private apiKey: string;
@@ -8,13 +9,6 @@ export class AnthropicStrategy implements AIProviderStrategy {
   constructor(apiKey: string, baseUrl = 'https://api.anthropic.com') {
     this.apiKey = apiKey;
     this.baseUrl = baseUrl;
-  }
-
-  private mapMessages(messages: ChatMessage[]) {
-    return messages.map((msg) => ({
-      role: msg.role === 'model' ? 'assistant' : msg.role,
-      content: msg.content,
-    }));
   }
 
   async generateText(messages: ChatMessage[], options?: AIRequestOptions): Promise<AIResponse> {
@@ -30,7 +24,7 @@ export class AnthropicStrategy implements AIProviderStrategy {
       body: JSON.stringify({
         model: modelId,
         max_tokens: 4096,
-        messages: this.mapMessages(messages),
+        messages: normalizeMessages(messages),
         temperature: options?.temperature,
         ...(options?.systemInstruction && {
           system: options.systemInstruction,
@@ -68,7 +62,7 @@ export class AnthropicStrategy implements AIProviderStrategy {
       body: JSON.stringify({
         model: modelId,
         max_tokens: 4096,
-        messages: this.mapMessages(messages),
+        messages: normalizeMessages(messages),
         temperature: options?.temperature,
         stream: true,
         ...(options?.systemInstruction && {

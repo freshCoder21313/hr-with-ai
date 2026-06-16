@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { toast } from 'sonner';
 import { useParams } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { Editor, TLShapeId } from 'tldraw';
@@ -83,16 +84,14 @@ const InterviewRoom: React.FC = () => {
       if (lastMsg.role === 'model') {
         const text = lastMsg.content;
 
-        // 1. Explicit Tag Detection (Auto-Open)
+        // 1. Explicit Tag Detection (Suggestion Only, No Auto-Open)
         if (text.includes('<ACTION type="CODE"')) {
-          // setIsCodeOpen(true); // Disable auto-open
           setSuggestedAction('code');
           processedMessageIds.current.add(lastMsg.timestamp);
           return;
         }
 
         if (text.includes('<ACTION type="DRAW"')) {
-          // setIsWhiteboardOpen(true); // Disable auto-open
           setSuggestedAction('draw');
           processedMessageIds.current.add(lastMsg.timestamp);
           return;
@@ -197,12 +196,11 @@ const InterviewRoom: React.FC = () => {
     if (!currentInterview?.messages?.length) return;
     const lastQuestion = [...currentInterview.messages].reverse().find((m) => m.role === 'model');
     if (!lastQuestion) {
-      alert('Wait for the interviewer to ask a question first!');
+      toast.error('Wait for the interviewer to ask a question first!');
       return;
     }
     const config = getStoredAIConfig();
     if (!config.apiKey) {
-      // alert('Please check your API Key settings.');
       openApiKeyModal();
       return;
     }
@@ -214,7 +212,7 @@ const InterviewRoom: React.FC = () => {
       setHints(result);
     } catch (error) {
       console.error(error);
-      alert('Failed to get hints. Please try again.');
+      toast.error('Failed to get hints. Please try again.');
     } finally {
       setIsLoadingHints(false);
     }
@@ -265,7 +263,7 @@ const InterviewRoom: React.FC = () => {
   };
 
   const handleRunCode = async () => {
-    alert('This feature is coming soon! (Backend integration in progress)');
+    toast.info('This feature is coming soon! (Backend integration in progress)');
   };
 
   const handleToolSubmit = async (type: 'code' | 'whiteboard') => {
@@ -296,7 +294,6 @@ const InterviewRoom: React.FC = () => {
                   imageBase64 = pngData;
                 } else {
                   console.error('Failed to convert whiteboard SVG to PNG');
-                  // Optional: alert('Failed to generate image from whiteboard. Sending text only.');
                 }
               }
             }
@@ -423,7 +420,7 @@ const InterviewRoom: React.FC = () => {
         setIsWhiteboardOpen={setIsWhiteboardOpen}
         currentCode={currentInterview.code || ''}
         updateCode={updateCode}
-        whiteboardData={currentInterview.whiteboard}
+        whiteboardData={currentInterview.whiteboard || ''}
         onWhiteboardMount={(editor) => {
           editorRef.current = editor;
         }}

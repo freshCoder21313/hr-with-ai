@@ -196,9 +196,9 @@ export const syncService = {
 
       if (rawData && typeof rawData === 'object' && 'compressed' in rawData && rawData.compressed) {
         // Decompress - Try Base64 first (new format), then UTF16 (legacy/fallback)
-        let decompressed = LZString.decompressFromBase64(rawData.compressed);
+        let decompressed = LZString.decompressFromBase64(rawData.compressed as string);
         if (!decompressed) {
-          decompressed = LZString.decompressFromUTF16(rawData.compressed);
+          decompressed = LZString.decompressFromUTF16(rawData.compressed as string);
         }
 
         if (!decompressed) throw new Error('Failed to decompress data');

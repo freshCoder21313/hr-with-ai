@@ -6,7 +6,7 @@ import {
   getParseResumePrompt,
   getAnalyzeSectionPrompt,
   getTailoredResumePrompt,
-} from '@/features/interview/promptSystem';
+} from '@/services/interview/promptSystem';
 import { ResumeData } from '@/types/resume';
 import { getService, resolveConfig, AIConfigInput } from '@/services/ai/aiConfigService';
 import { cleanJsonString } from '@/services/ai/aiUtils';
@@ -105,8 +105,7 @@ export const parseResumeToJSON = async (
 
 export const analyzeResumeSection = async (
   sectionName: string,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  sectionData: any,
+  sectionData: unknown,
   configInput: AIConfigInput
 ): Promise<{ critique: string; suggestions: string[]; rewrittenExample: string }> => {
   const config = resolveConfig(configInput);

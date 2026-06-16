@@ -115,9 +115,7 @@ class HRDatabase extends Dexie {
         } else if (pd === null) {
           extraMods.compressedData = undefined;
         }
-        // Deletes parsedData from DB storage (using any since undefined deletes it in Dexie)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (extraMods as any).parsedData = undefined;
+        (extraMods as Record<string, unknown>).parsedData = undefined;
       }
       return extraMods;
     });

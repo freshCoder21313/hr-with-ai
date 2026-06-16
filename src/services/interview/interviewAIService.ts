@@ -5,7 +5,7 @@ import {
   getStartPrompt,
   getFeedbackPrompt,
   getHintPrompt,
-} from '@/features/interview/promptSystem';
+} from '@/services/interview/promptSystem';
 import { ChatMessage } from '@/types';
 import { getService, resolveConfig, AIConfigInput } from '@/services/ai/aiConfigService';
 import { cleanJsonString } from '@/services/ai/aiUtils';

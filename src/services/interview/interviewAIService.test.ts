@@ -2,8 +2,14 @@ import { describe, it, expect, vi, afterEach } from 'vitest';
 import { startInterviewSession, generateInterviewFeedback } from './interviewAIService';
 import { getService, resolveConfig } from '@/services/ai/aiConfigService';
 import { Interview, InterviewStatus } from '@/types';
+import { AIService } from '@/features/ai-provider/ai.service';
 
 vi.mock('@/services/ai/aiConfigService');
+
+type MockAIService = Pick<AIService, 'generateText'>;
+
+const mockAIService = (generateText: MockAIService['generateText']): AIService =>
+  ({ generateText }) as unknown as AIService;
 
 describe('interviewAIService', () => {
   afterEach(() => {
@@ -15,9 +21,7 @@ describe('interviewAIService', () => {
       const mockGenerateText = vi
         .fn()
         .mockResolvedValue({ text: 'Hello, this is a test greeting.' });
-      vi.mocked(getService).mockReturnValue({
-        generateText: mockGenerateText,
-      } as any);
+      vi.mocked(getService).mockResolvedValue(mockAIService(mockGenerateText));
 
       const interview: Interview = {
         id: 1,
@@ -41,9 +45,7 @@ describe('interviewAIService', () => {
 
     it('should return a default greeting on failure', async () => {
       const mockGenerateText = vi.fn().mockRejectedValue(new Error('AI Error'));
-      vi.mocked(getService).mockReturnValue({
-        generateText: mockGenerateText,
-      } as any);
+      vi.mocked(getService).mockResolvedValue(mockAIService(mockGenerateText));
 
       const interview: Interview = {
         id: 1,
@@ -69,9 +71,7 @@ describe('interviewAIService', () => {
       const mockGenerateText = vi
         .fn()
         .mockResolvedValue({ text: '{ "score": 8, "summary": "Good job" }' });
-      vi.mocked(getService).mockReturnValue({
-        generateText: mockGenerateText,
-      } as any);
+      vi.mocked(getService).mockResolvedValue(mockAIService(mockGenerateText));
       vi.mocked(resolveConfig).mockReturnValue({ apiKey: 'test-key', provider: 'google' });
 
       const interview: Interview = {

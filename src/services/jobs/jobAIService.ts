@@ -1,9 +1,10 @@
 import { Type } from '@google/genai';
-import { UserSettings } from '@/types';
+import { UserSettings, JobRecommendation } from '@/types';
 import { db } from '@/lib/db';
-import { getExtractJDInfoPrompt } from '@/features/interview/promptSystem';
+import { getExtractJDInfoPrompt } from '@/services/interview/promptSystem';
 import { generateJobRecommendationsPrompt, generateTailoredResumePrompt } from './jobPromptSystem';
 import { ResumeData } from '@/types/resume';
+import { DBJobRecommendation } from './jobRecommendationService';
 import {
   getService,
   resolveConfig,
@@ -46,8 +47,7 @@ export const generateJobRecommendations = async (
   language: string,
   _config: UserSettings,
   resumeId?: number
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-): Promise<any[]> => {
+  ): Promise<JobRecommendation[]> => {
   const aiConfig = getStoredAIConfig();
   const config = resolveConfig(aiConfig);
   const service = await getService(aiConfig);
@@ -59,8 +59,17 @@ export const generateJobRecommendations = async (
 
       if (cachedJobs && cachedJobs.length > 0) {
         return cachedJobs.map((job) => ({
-          ...job,
           id: `job-${job.createdAt}-${job.id}`,
+          title: job.title,
+          company: job.company,
+          industry: job.industry || '',
+          location: job.location || '',
+          salaryRange: job.salaryRange || '',
+          keyRequirements: JSON.parse(job.keyRequirements || '[]') as string[],
+          whyItFits: job.whyItFits || '',
+          matchScore: job.matchScore || 0,
+          jobDescription: job.jobDescription || '',
+          tailoredResumeId: job.tailoredResumeId,
         }));
       }
     } catch {
@@ -108,24 +117,34 @@ export const generateJobRecommendations = async (
 
     const recommendations = JSON.parse(cleanJsonString(jsonText));
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const mappedRecommendations = recommendations.map((job: any, index: number) => ({
-      ...job,
-      id: `job-${Date.now()}-${index}`,
-    }));
+    const mappedRecommendations: JobRecommendation[] = recommendations.map(
+      (job: JobRecommendation, index: number) => ({
+        ...job,
+        id: `job-${Date.now()}-${index}`,
+      })
+    );
 
     // Cache Results
     if (resumeId) {
       db.transaction('rw', db.job_recommendations, async () => {
         await db.job_recommendations.where('resumeId').equals(resumeId).delete();
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const dbJobs = mappedRecommendations.map((job: any) => ({
-          ...job,
-          resumeId,
-          createdAt: Date.now(),
-          // Remove the temporary string ID to let Dexie auto-increment ID
-          id: undefined,
-        }));
+        const dbJobs: Omit<DBJobRecommendation, 'id'>[] = mappedRecommendations.map(
+          (job: JobRecommendation) => ({
+            interviewId: 0,
+            resumeId,
+            title: job.title,
+            company: job.company,
+            industry: job.industry,
+            location: job.location,
+            salaryRange: job.salaryRange,
+            keyRequirements: JSON.stringify(job.keyRequirements || []),
+            whyItFits: job.whyItFits,
+            matchScore: job.matchScore,
+            jobDescription: job.jobDescription,
+            tailoredResumeId: job.tailoredResumeId,
+            createdAt: Date.now(),
+          })
+        );
         await db.job_recommendations.bulkAdd(dbJobs);
       }).catch(() => {
         // Cache write failed, non-critical

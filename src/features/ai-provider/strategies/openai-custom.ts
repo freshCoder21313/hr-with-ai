@@ -1,4 +1,5 @@
 import { AIProviderStrategy, ChatMessage, AIResponse, AIRequestOptions } from '@/types';
+import { normalizeMessages } from '@/lib/aiResponseHelper';
 
 interface OpenAIMessage {
   role: 'user' | 'assistant' | 'system';
@@ -68,11 +69,8 @@ export class OpenAICustomStrategy implements AIProviderStrategy {
   }
 
   async generateText(messages: ChatMessage[], options?: AIRequestOptions): Promise<AIResponse> {
-    // Map ChatMessage to OpenAI format
-    const openAIMessages = messages.map((m) => ({
-      role: m.role === 'model' ? 'assistant' : m.role, // Handle 'model' role if passed
-      content: m.content,
-    }));
+    // Map ChatMessage to OpenAI format using shared utility
+    const openAIMessages = normalizeMessages(messages);
 
     // Add system instruction if present
     if (options?.systemInstruction) {
@@ -97,10 +95,7 @@ export class OpenAICustomStrategy implements AIProviderStrategy {
   }
 
   async *streamText(messages: ChatMessage[], options?: AIRequestOptions): AsyncIterable<string> {
-    const openAIMessages = messages.map((m) => ({
-      role: m.role === 'model' ? 'assistant' : m.role,
-      content: m.content,
-    }));
+    const openAIMessages = normalizeMessages(messages);
 
     // Add system instruction if present
     if (options?.systemInstruction) {

@@ -192,15 +192,13 @@ export interface ChatMessage {
 export interface AIResponse {
   text: string;
   usage?: { promptTokens: number; completionTokens: number };
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  rawResponse?: any;
+  rawResponse?: unknown;
 }
 
 export interface AIRequestOptions {
   temperature?: number;
   jsonMode?: boolean;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  schema?: any; // For structured output
+  schema?: unknown; // For structured output
   systemInstruction?: string;
   modelId?: string; // Allow overriding model per request
 }

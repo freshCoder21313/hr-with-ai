@@ -80,8 +80,7 @@ export class AudioRecorderService {
     const currentDataArray = this.dataArray;
     if (!this.analyser || !currentDataArray) return;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    this.analyser.getByteFrequencyData(currentDataArray as any);
+    this.analyser.getByteFrequencyData(currentDataArray as unknown as Uint8Array<ArrayBuffer>);
 
     // Calculate average volume level (0-1)
     let sum = 0;

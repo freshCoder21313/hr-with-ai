@@ -14,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { loadUserSettings, saveUserSettings } from '@/services/core/settingsService';
 import { UserSettings } from '@/types';
 import { CollapsibleSection } from '@/components/ui/collapsible-section';
+import { toast } from 'sonner';
 import { Settings2, Sparkles, RotateCcw } from 'lucide-react';
 
 interface SettingsModalProps {
@@ -89,7 +90,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onOpenChange, onSet
       onOpenChange(false); // Close modal
     } catch (error) {
       console.error('Failed to save settings:', error);
-      alert('Failed to save settings. Please try again.');
+      toast.error('Failed to save settings. Please try again.');
     }
   };
 
