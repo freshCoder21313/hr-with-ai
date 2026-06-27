@@ -1,6 +1,6 @@
 import { Resume } from '@/types';
 import { Job } from '../stores/useJobStore';
-import { JobWithStatus } from '../hooks/useCVStudio';
+import { JobWithStatus } from '../hooks/useCVTailoring';
 import { CVJobCard } from './CVJobCard';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';

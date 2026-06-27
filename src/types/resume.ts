@@ -1,5 +1,7 @@
 // Based on JSON Resume Schema: https://jsonresume.org/schema/
 
+export type TemplateType = 'classic' | 'modern' | 'creative' | 'minimalist' | 'academic';
+
 export interface Profile {
   network: string;
   username: string;
@@ -111,7 +113,7 @@ export interface ResumeData {
 
   language?: 'vi' | 'en';
   meta?: {
-    template?: 'classic' | 'modern' | 'creative' | 'minimalist' | 'academic';
+    template?: TemplateType;
     theme?: 'blue' | 'green' | 'gray';
     themeColor?: string; // e.g. '#3b82f6'
     fontFamily?: 'sans' | 'serif' | 'mono';

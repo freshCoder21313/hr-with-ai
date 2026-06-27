@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, ChevronDown, ChevronUp, CheckCircle2, AlertCircle, Trash2 } from 'lucide-react';
 import { Job } from '../stores/useJobStore';
-import { JobWithStatus } from '../hooks/useCVStudio';
+import { JobWithStatus } from '../hooks/useCVTailoring';
 
 interface CVJobCardProps {
   job: Job;

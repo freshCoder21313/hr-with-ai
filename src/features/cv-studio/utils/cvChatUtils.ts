@@ -1,6 +1,7 @@
 import { ResumeData } from '@/types/resume';
 
 export interface ProposedChange {
+  id: string;
   section: keyof ResumeData;
   action: 'update' | 'add' | 'delete' | 'rewrite';
   newData: unknown;
@@ -16,7 +17,12 @@ export const extractProposedChanges = (text: string): ProposedChange[] | null =>
     try {
       const parsed = JSON.parse(match[1]);
       if (parsed.proposedChanges && Array.isArray(parsed.proposedChanges)) {
-        return parsed.proposedChanges;
+        return parsed.proposedChanges.map(
+          (change: Omit<ProposedChange, 'id'> & { id?: string }, index: number) => ({
+            ...change,
+            id: change.id ?? `change-${Date.now()}-${index}`,
+          })
+        );
       }
     } catch (e) {
       console.warn('Failed to parse JSON block from AI response', e);

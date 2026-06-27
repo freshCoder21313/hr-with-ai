@@ -1,6 +1,6 @@
 import { Resume } from '@/types';
 import { ResumeData } from '@/types/resume';
-import { TemplateType } from '../hooks/useCVStudio';
+import { TemplateType } from '@/types/resume';
 import ResumePreview from '@/features/resume-builder/ResumePreview';
 import BasicsForm from '@/features/resume-builder/SectionForms/BasicsForm';
 import WorkForm from '@/features/resume-builder/SectionForms/WorkForm';
