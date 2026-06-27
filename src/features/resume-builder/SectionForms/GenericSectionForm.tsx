@@ -6,6 +6,7 @@ import {
   EntryCardShell,
   EntryListHeader,
   EmptyState,
+  getEntryKey,
 } from './entry-list.shared';
 
 interface GenericSectionFormProps<T> {
@@ -45,11 +46,14 @@ export function GenericSectionForm<T>({
       />
 
       {data.map((entry, index) => (
-        <EntryCardShell key={index} title={getTitle(entry)}>
+        <EntryCardShell
+          key={getEntryKey(entry as { _entryId?: string }, index)}
+          title={getTitle(entry)}
+        >
           <EntryCardActions
             analyzingIndex={analyzingIndex}
             index={index}
-            onAnalyze={onAnalyze ? () => onAnalyze(index, entry, setAnalyzingIndex) : () => {}}
+            onAnalyze={onAnalyze ? () => onAnalyze(index, entry, setAnalyzingIndex) : undefined}
             onRemove={async (i) => {
               const confirmed = await notificationService.confirm({
                 title: 'Remove Entry',

@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { toast } from 'sonner';
 
-export const useSpeechToText = (
-  language: string = 'vi-VN' // Default to Vietnamese based on user request, but could be dynamic
+export const useBrowserSpeechToText = (
+  language: string = 'vi-VN'
 ) => {
   const [isListening, setIsListening] = useState(false);
   const [error, setError] = useState<string | null>(() => {
@@ -27,7 +27,7 @@ export const useSpeechToText = (
       recognition.onstart = () => {
         setIsListening(true);
         setError(null);
-        setTranscript(''); // Clear transcript when starting a new session
+        setTranscript('');
       };
 
       recognition.onresult = (event: SpeechRecognitionEvent) => {
@@ -82,7 +82,6 @@ export const useSpeechToText = (
   return { isListening, toggleListening, transcript, error };
 };
 
-// Types for Speech Recognition API
 interface SpeechRecognitionEvent extends Event {
   readonly resultIndex: number;
   readonly results: SpeechRecognitionResultList;

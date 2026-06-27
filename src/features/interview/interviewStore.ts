@@ -14,6 +14,8 @@ interface InterviewState {
   updateCode: (code: string) => void;
   updateWhiteboard: (data: string) => void;
   updateLastMessage: (content: string) => void;
+  updateMessageByTimestamp: (timestamp: number, content: string) => void;
+  markMessageAsError: (timestamp: number, error: string) => void;
   markLastMessageAsError: (error: string) => void;
   removeLastMessage: () => void;
   clearInterview: () => void;
@@ -47,6 +49,34 @@ export const useInterviewStore = create<InterviewState>()(
           const messages = [...state.currentInterview.messages];
           const lastMsg = messages[messages.length - 1];
           messages[messages.length - 1] = { ...lastMsg, content };
+          return {
+            currentInterview: {
+              ...state.currentInterview,
+              messages,
+            },
+          };
+        }),
+
+      updateMessageByTimestamp: (timestamp, content) =>
+        set((state) => {
+          if (!state.currentInterview) return state;
+          const messages = state.currentInterview.messages.map((msg) =>
+            msg.timestamp === timestamp ? { ...msg, content } : msg
+          );
+          return {
+            currentInterview: {
+              ...state.currentInterview,
+              messages,
+            },
+          };
+        }),
+
+      markMessageAsError: (timestamp, error) =>
+        set((state) => {
+          if (!state.currentInterview) return state;
+          const messages = state.currentInterview.messages.map((msg) =>
+            msg.timestamp === timestamp ? { ...msg, content: error, isError: true } : msg
+          );
           return {
             currentInterview: {
               ...state.currentInterview,

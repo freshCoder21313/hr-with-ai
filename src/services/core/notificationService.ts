@@ -10,10 +10,16 @@ export interface ConfirmationOptions {
   variant?: 'default' | 'destructive';
 }
 
+interface QueuedConfirm {
+  options: ConfirmationOptions;
+  resolve: (value: boolean) => void;
+}
+
 class NotificationService {
   private static instance: NotificationService;
   private confirmResolver: ((value: boolean) => void) | null = null;
   private confirmOptions: ConfirmationOptions | null = null;
+  private confirmQueue: QueuedConfirm[] = [];
   private onConfirmChange: ((options: ConfirmationOptions | null) => void) | null = null;
 
   private constructor() {}
@@ -46,26 +52,28 @@ class NotificationService {
     toast.warning(message);
   }
 
-  /**
-   * Triggers a confirmation modal.
-   * Returns a promise that resolves to true (confirmed) or false (cancelled).
-   */
   public confirm(options: ConfirmationOptions): Promise<boolean> {
     return new Promise((resolve) => {
-      this.confirmOptions = options;
-      this.confirmResolver = resolve;
-      if (this.onConfirmChange) {
-        this.onConfirmChange(options);
-      }
+      this.confirmQueue.push({ options, resolve });
+      this.processConfirmQueue();
     });
   }
 
-  // Internal: Hook for the provider to listen for confirmation requests
+  private processConfirmQueue() {
+    if (this.confirmResolver || this.confirmQueue.length === 0) return;
+
+    const next = this.confirmQueue.shift()!;
+    this.confirmOptions = next.options;
+    this.confirmResolver = next.resolve;
+    if (this.onConfirmChange) {
+      this.onConfirmChange(next.options);
+    }
+  }
+
   public _subscribeToConfirm(callback: (options: ConfirmationOptions | null) => void) {
     this.onConfirmChange = callback;
   }
 
-  // Internal: Called by the provider when user acts
   public _resolveConfirm(value: boolean) {
     if (this.confirmResolver) {
       this.confirmResolver(value);
@@ -74,6 +82,7 @@ class NotificationService {
       if (this.onConfirmChange) {
         this.onConfirmChange(null);
       }
+      this.processConfirmQueue();
     }
   }
 }

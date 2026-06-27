@@ -12,8 +12,8 @@ import { toast } from 'sonner';
 import { db } from '@/lib/db';
 import { Resume } from '@/types';
 import ResumeList from '@/features/dashboard/ResumeList';
-import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { LoadingButton } from '@/components/ui/loading-button';
+import { notificationService } from '@/services/core/notificationService';
 import {
   Select,
   SelectContent,
@@ -34,18 +34,6 @@ export const UploadStep: React.FC = () => {
 
   const [savedResumes, setSavedResumes] = useState<Resume[]>([]);
   const [selectedResumeId, setSelectedResumeId] = useState<number>();
-  const [confirmState, setConfirmState] = useState<{
-    isOpen: boolean;
-    title: string;
-    description: string;
-    onConfirm: () => void;
-  }>({
-    isOpen: false,
-    title: '',
-    description: '',
-    onConfirm: () => {},
-  });
-
   const loadData = async () => {
     try {
       const resumes = await db.resumes.toArray();
@@ -60,26 +48,23 @@ export const UploadStep: React.FC = () => {
   }, []);
 
   const handleDeleteResume = async (id: number) => {
-    setConfirmState({
-      isOpen: true,
+    const confirmed = await notificationService.confirm({
       title: 'Delete Resume',
-      description: 'Are you sure you want to delete this resume?',
-      onConfirm: async () => {
-        try {
-          await db.resumes.delete(id);
-          setSavedResumes((prev) => prev.filter((r) => r.id !== id));
-          if (selectedResumeId === id) {
-            setSelectedResumeId(undefined);
-          }
-          toast.success('Resume deleted successfully');
-        } catch (err) {
-          console.error('Failed to delete resume:', err);
-          toast.error('Failed to delete resume');
-        } finally {
-          setConfirmState((prev) => ({ ...prev, isOpen: false }));
-        }
-      },
+      message: 'Are you sure you want to delete this resume?',
+      variant: 'destructive',
     });
+    if (!confirmed) return;
+    try {
+      await db.resumes.delete(id);
+      setSavedResumes((prev) => prev.filter((r) => r.id !== id));
+      if (selectedResumeId === id) {
+        setSelectedResumeId(undefined);
+      }
+      toast.success('Resume deleted successfully');
+    } catch (err) {
+      console.error('Failed to delete resume:', err);
+      toast.error('Failed to delete resume');
+    }
   };
 
   const processResumeText = async (text: string) => {
@@ -426,14 +411,6 @@ export const UploadStep: React.FC = () => {
         </div>
       </div>
 
-      <ConfirmationDialog
-        isOpen={confirmState.isOpen}
-        title={confirmState.title}
-        description={confirmState.description}
-        onConfirm={confirmState.onConfirm}
-        onCancel={() => setConfirmState((prev) => ({ ...prev, isOpen: false }))}
-        isDestructive={true}
-      />
     </>
   );
 };

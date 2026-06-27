@@ -1,16 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { LoadingButton } from '@/components/ui/loading-button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Plus, Trash2, Wand2 } from 'lucide-react';
+import { createEntry, ensureEntryIds, getEntryKey, WithEntryId } from './entryIds';
 
 export function useEntryList<T>(data: T[], onChange: (data: T[]) => void) {
   const [analyzingIndex, setAnalyzingIndex] = useState<number | null>(null);
 
+  useEffect(() => {
+    const entries = data as (T & { _entryId?: string })[];
+    if (entries.some((entry) => !entry._entryId)) {
+      onChange(ensureEntryIds(entries) as T[]);
+    }
+  }, [data, onChange]);
+
   const handleAdd = (defaultEntry: T) => {
-    onChange([{ ...defaultEntry }, ...data]);
+    onChange([createEntry(defaultEntry) as T, ...data]);
   };
 
   const handleRemove = (index: number) => {
@@ -31,7 +39,7 @@ export function useEntryList<T>(data: T[], onChange: (data: T[]) => void) {
 interface EntryCardActionsProps {
   analyzingIndex: number | null;
   index: number;
-  onAnalyze: (index: number) => void;
+  onAnalyze?: (index: number) => void;
   onRemove: (index: number) => void;
   analyzeTooltip?: string;
 }
@@ -44,24 +52,26 @@ export const EntryCardActions: React.FC<EntryCardActionsProps> = ({
   analyzeTooltip = 'AI Roast & Fix',
 }) => (
   <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <LoadingButton
-          variant="outline"
-          size="sm"
-          onClick={() => onAnalyze(index)}
-          disabled={analyzingIndex === index}
-          isLoading={analyzingIndex === index}
-          loadingText=""
-          className="text-purple-600 border-purple-200 hover:bg-purple-50"
-        >
-          <Wand2 className="w-4 h-4" />
-        </LoadingButton>
-      </TooltipTrigger>
-      <TooltipContent>
-        <p>{analyzeTooltip}</p>
-      </TooltipContent>
-    </Tooltip>
+    {onAnalyze && (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <LoadingButton
+            variant="outline"
+            size="sm"
+            onClick={() => onAnalyze(index)}
+            disabled={analyzingIndex === index}
+            isLoading={analyzingIndex === index}
+            loadingText=""
+            className="text-purple-600 border-purple-200 hover:bg-purple-50"
+          >
+            <Wand2 className="w-4 h-4" />
+          </LoadingButton>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>{analyzeTooltip}</p>
+        </TooltipContent>
+      </Tooltip>
+    )}
     <Button variant="destructive" size="sm" onClick={() => onRemove(index)}>
       <Trash2 className="w-4 h-4" />
     </Button>
@@ -118,3 +128,6 @@ export const GridField: React.FC<GridFieldProps> = ({ label, children }) => (
     {children}
   </div>
 );
+
+export type { WithEntryId };
+export { getEntryKey };

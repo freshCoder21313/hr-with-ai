@@ -134,11 +134,16 @@ export function useGitHubImport({ isOpen, onClose, onImportComplete }: UseGitHub
               if (!settings?.apiKey) {
                 throw new Error('API Key is missing. Please add it in Settings.');
               }
-              return await convertRepoToProject(repo, readme, {
-                apiKey: settings.apiKey,
-                baseUrl: settings.baseUrl,
-                modelId: settings.defaultModel,
-              });
+              return await convertRepoToProject(
+                repo,
+                readme,
+                {
+                  apiKey: settings.apiKey,
+                  baseUrl: settings.baseUrl,
+                  modelId: settings.defaultModel,
+                },
+                token
+              );
             } catch (err) {
               console.error(`Failed to process ${repo.name}`, err);
               const errMsg = err instanceof Error ? err.message : '';

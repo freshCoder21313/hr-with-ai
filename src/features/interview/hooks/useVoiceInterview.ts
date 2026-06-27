@@ -59,14 +59,6 @@ export const useVoiceInterview = () => {
     setAudioLevel(recorder.audioLevel);
   }, [recorder.audioLevel, setAudioLevel]);
 
-  // Cleanup: Clear singleton callbacks on unmount to prevent memory leaks
-  useEffect(() => {
-    return () => {
-      voiceInterviewService.setOnSentenceCallback(null);
-      voiceInterviewService.reset();
-    };
-  }, []);
-
   // Queue Processing for TTS
   useEffect(() => {
     if (ttsQueue.length > 0 && !tts.isSpeaking && currentState === 'speaking_tts') {
@@ -110,12 +102,14 @@ export const useVoiceInterview = () => {
     });
   }, [stt, recorder, setCurrentState, clearTranscript]);
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       voiceInterviewService.setOnSentenceCallback(null);
+      voiceInterviewService.reset();
+      stt.stopListening();
+      recorder.cancelRecording();
     };
-  }, []);
+  }, [stt, recorder]);
 
   // Process AI Response
   const processAIResponse = useCallback(

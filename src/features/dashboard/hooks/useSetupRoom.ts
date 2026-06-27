@@ -11,6 +11,7 @@ import { useInterview } from '@/hooks/useInterview';
 import { db } from '@/lib/db';
 import { getErrorMessage } from '@/lib/utils';
 import { toast } from 'sonner';
+import { notificationService } from '@/services/core/notificationService';
 
 export const useSetupRoom = () => {
   const { startNewInterview, isLoading: isStarting } = useInterview();
@@ -30,10 +31,6 @@ export const useSetupRoom = () => {
   const [resumeToTailor, setResumeToTailor] = useState<Resume | null>(null);
 
   const [isJobModalOpen, setIsJobModalOpen] = useState(false);
-
-  const [confirmState, setConfirmState] = useState<{
-    isOpen: boolean; title: string; description: string; onConfirm: () => void;
-  }>({ isOpen: false, title: '', description: '', onConfirm: () => {} });
 
   const [showMainCVCloneDialog, setShowMainCVCloneDialog] = useState(false);
   const [pendingMainResume, setPendingMainResume] = useState<Resume | null>(null);
@@ -113,26 +110,24 @@ export const useSetupRoom = () => {
     }
   }, [formData, selectedJobId, loadData]);
 
-  const handleDeleteJob = useCallback((e: React.MouseEvent, id: number) => {
+  const handleDeleteJob = useCallback(async (e: React.MouseEvent, id: number) => {
     e.preventDefault();
     e.stopPropagation();
-    setConfirmState({
-      isOpen: true, title: 'Delete Job Template',
-      description: 'Are you sure you want to delete this saved job template?',
-      onConfirm: async () => {
-        try {
-          await db.jobs.delete(id);
-          if (selectedJobId === id.toString()) setSelectedJobId('new');
-          loadData();
-          toast.success('Job deleted successfully');
-        } catch (error) {
-          console.error('Failed to delete job:', error);
-          toast.error('Failed to delete job');
-        } finally {
-          setConfirmState((prev) => ({ ...prev, isOpen: false }));
-        }
-      },
+    const confirmed = await notificationService.confirm({
+      title: 'Delete Job Template',
+      message: 'Are you sure you want to delete this saved job template?',
+      variant: 'destructive',
     });
+    if (!confirmed) return;
+    try {
+      await db.jobs.delete(id);
+      if (selectedJobId === id.toString()) setSelectedJobId('new');
+      loadData();
+      toast.success('Job deleted successfully');
+    } catch (error) {
+      console.error('Failed to delete job:', error);
+      toast.error('Failed to delete job');
+    }
   }, [selectedJobId, loadData]);
 
   const handleSelectSavedJob = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -181,27 +176,25 @@ export const useSetupRoom = () => {
     setPendingMainResume(null);
   }, [pendingMainResume]);
 
-  const handleDeleteResume = useCallback((id: number) => {
-    setConfirmState({
-      isOpen: true, title: 'Delete Resume',
-      description: 'Are you sure you want to delete this resume?',
-      onConfirm: async () => {
-        try {
-          await db.resumes.delete(id);
-          setSavedResumes((prev) => prev.filter((r) => r.id !== id));
-          if (selectedResumeId === id) {
-            setSelectedResumeId(undefined);
-            setFormData((prev) => ({ ...prev, resumeText: '' }));
-          }
-          toast.success('Resume deleted successfully');
-        } catch (error) {
-          console.error('Failed to delete resume:', error);
-          toast.error('Failed to delete resume');
-        } finally {
-          setConfirmState((prev) => ({ ...prev, isOpen: false }));
-        }
-      },
+  const handleDeleteResume = useCallback(async (id: number) => {
+    const confirmed = await notificationService.confirm({
+      title: 'Delete Resume',
+      message: 'Are you sure you want to delete this resume?',
+      variant: 'destructive',
     });
+    if (!confirmed) return;
+    try {
+      await db.resumes.delete(id);
+      setSavedResumes((prev) => prev.filter((r) => r.id !== id));
+      if (selectedResumeId === id) {
+        setSelectedResumeId(undefined);
+        setFormData((prev) => ({ ...prev, resumeText: '' }));
+      }
+      toast.success('Resume deleted successfully');
+    } catch (error) {
+      console.error('Failed to delete resume:', error);
+      toast.error('Failed to delete resume');
+    }
   }, [selectedResumeId]);
 
   const handleToggleMain = useCallback(async (resume: Resume) => {
@@ -373,7 +366,7 @@ export const useSetupRoom = () => {
       savedJobs, selectedJobId, isJobModalOpen,
       isTailorModalOpen, resumeToTailor,
       showMainCVCloneDialog, pendingMainResume, isCloning,
-      formData, confirmState,
+      formData,
     },
     actions: {
       handleChange, handleSubmit, handleResumeSelect,
@@ -382,7 +375,7 @@ export const useSetupRoom = () => {
       handleGenerateTailoredResume, handleAutoFill, handleResearchCompany,
       handleFileUpload, handleAnalyzeResume, handleSelectJob,
       setShowMainCVCloneDialog, setIsTailorModalOpen, setIsJobModalOpen,
-      setConfirmState, loadData, handleTogglePanel,
+      loadData, handleTogglePanel,
     },
   };
 };

@@ -3,15 +3,14 @@ import { toast } from 'sonner';
 import { useParams, useNavigate } from 'react-router-dom';
 import { db } from '@/lib/db';
 import { Resume } from '@/types';
-import { ResumeData } from '@/types/resume';
+import { ResumeData, TemplateType } from '@/types/resume';
 import { Step } from 'react-joyride';
 import { getStoredAIConfig } from '@/services/ai/aiConfigService';
 import { parseResumeToJSON, translateResume } from '@/services/resume/resumeAIService';
 import { openApiKeyModal } from '@/events/apiKeyEvents';
 import { useDebounce } from '@/hooks/useDebounce';
 import { getErrorMessage } from '@/lib/utils';
-
-export type TemplateType = 'classic' | 'modern' | 'creative' | 'minimalist' | 'academic';
+import { sanitizeResumeDataForSave } from '../SectionForms/entryIds';
 
 const TOUR_STEPS: Step[] = [
   { target: 'body', content: "Welcome to the AI Resume Builder! Let's take a quick tour.", placement: 'center' },
@@ -93,7 +92,7 @@ export const useResumeBuilder = () => {
 
       try {
         await db.resumes.update(resumeId, {
-          parsedData: debouncedData,
+          parsedData: sanitizeResumeDataForSave(debouncedData),
           updatedAt: Date.now(),
         });
       } catch (error) {
@@ -129,7 +128,7 @@ export const useResumeBuilder = () => {
 
   const handleSave = useCallback(async () => {
     if (!id || !data) return;
-    const dataToSave = { ...data, meta: { ...data.meta, template } };
+    const dataToSave = sanitizeResumeDataForSave({ ...data, meta: { ...data.meta, template } });
     try {
       await db.resumes.update(parseInt(id), { parsedData: dataToSave });
       setData(dataToSave);
@@ -200,7 +199,7 @@ export const useResumeBuilder = () => {
 
   const handleDirectUpdate = useCallback((newData: ResumeData) => {
     setData(newData);
-    if (id) db.resumes.update(parseInt(id), { parsedData: newData });
+    if (id) db.resumes.update(parseInt(id), { parsedData: sanitizeResumeDataForSave(newData) });
   }, [id]);
 
   useEffect(() => {

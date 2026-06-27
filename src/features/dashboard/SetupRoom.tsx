@@ -8,7 +8,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { LoadingButton } from '@/components/ui/loading-button';
-import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import SEO from '@/components/shared/SEO';
 import ResumeList from './ResumeList';
@@ -19,7 +18,7 @@ import { useSetupRoom } from './hooks/useSetupRoom';
 
 const SetupRoom: React.FC = () => {
   const { state, actions } = useSetupRoom();
-  const { formData, confirmState } = state;
+  const { formData } = state;
 
   return (
     <div className="max-w-4xl mx-auto p-4 md:p-8">
@@ -258,9 +257,6 @@ const SetupRoom: React.FC = () => {
       <TailorResumeModal isOpen={state.isTailorModalOpen} onClose={() => actions.setIsTailorModalOpen(false)}
         sourceResume={state.resumeToTailor} onGenerate={actions.handleGenerateTailoredResume} />
 
-      <ConfirmationDialog isOpen={confirmState.isOpen} title={confirmState.title}
-        description={confirmState.description} onConfirm={confirmState.onConfirm}
-        onCancel={() => actions.setConfirmState({ ...confirmState, isOpen: false })} isDestructive={true} />
     </div>
   );
 };
