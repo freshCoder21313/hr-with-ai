@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import { AIProviderStrategy, AIConfig, ChatMessage, AIResponse, AIRequestOptions } from '@/types';
 import { GoogleGeminiStrategy } from './strategies/google-gemini';
 import { OpenAICustomStrategy } from './strategies/openai-custom';
@@ -48,6 +49,17 @@ export class AIService {
       return this.strategy.streamText(messages, options);
     }
     return this.strategy.streamText(messages, options);
+  }
+
+  async generateStructured<T>(
+    messages: ChatMessage[],
+    schema: z.ZodType<T>,
+    options?: AIRequestOptions
+  ): Promise<T> {
+    if (this.retryOptions && this.retryOptions.maxRetries && this.retryOptions.maxRetries > 0) {
+      return withRetry(() => this.strategy.generateStructured(messages, schema, options), this.retryOptions);
+    }
+    return this.strategy.generateStructured(messages, schema, options);
   }
 
   async ask(

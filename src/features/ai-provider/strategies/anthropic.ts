@@ -1,5 +1,7 @@
+import { z } from 'zod';
 import { AIProviderStrategy, ChatMessage, AIResponse, AIRequestOptions } from '@/types';
 import { normalizeMessages } from '@/lib/aiResponseHelper';
+import { jsonOnlyInstruction, parseStructuredResponse } from '@/lib/aiStructuredOutput';
 
 export class AnthropicStrategy implements AIProviderStrategy {
   private apiKey: string;
@@ -47,6 +49,23 @@ export class AnthropicStrategy implements AIProviderStrategy {
       },
       rawResponse: data,
     };
+  }
+
+  async generateStructured<T>(
+    messages: ChatMessage[],
+    schema: z.ZodType<T>,
+    options?: AIRequestOptions
+  ): Promise<T> {
+    const systemInstruction = options?.systemInstruction
+      ? `${options.systemInstruction}\n\n${jsonOnlyInstruction}`
+      : jsonOnlyInstruction;
+    const response = await this.generateText(messages, {
+      ...options,
+      jsonMode: true,
+      systemInstruction,
+    });
+
+    return parseStructuredResponse(response.text, schema);
   }
 
   async *streamText(messages: ChatMessage[], options?: AIRequestOptions): AsyncIterable<string> {

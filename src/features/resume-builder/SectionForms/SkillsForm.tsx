@@ -1,5 +1,6 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
+import { notificationService } from '@/services/core/notificationService';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -16,8 +17,13 @@ const SkillsForm: React.FC<SkillsFormProps> = ({ data, onChange }) => {
     onChange([...data, { name: 'New Skill Category', keywords: [] }]);
   };
 
-  const handleRemoveCategory = (index: number) => {
-    if (confirm('Remove this skill category?')) {
+  const handleRemoveCategory = async (index: number) => {
+    const confirmed = await notificationService.confirm({
+      title: 'Remove Category',
+      message: 'Remove this skill category?',
+      variant: 'destructive',
+    });
+    if (confirmed) {
       const newData = [...data];
       newData.splice(index, 1);
       onChange(newData);

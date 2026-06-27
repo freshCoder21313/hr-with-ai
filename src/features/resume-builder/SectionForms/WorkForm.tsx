@@ -5,14 +5,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Work } from '@/types/resume';
 import { analyzeResumeSection } from '@/services/resume/resumeAIService';
 import { getStoredAIConfig } from '@/services/ai/aiConfigService';
-import {
-  useEntryList,
-  EntryCardActions,
-  EntryCardShell,
-  EntryListHeader,
-  EmptyState,
-  GridField,
-} from './entry-list.shared';
+import { GridField } from './entry-list.shared';
+import { GenericSectionForm } from './GenericSectionForm';
 
 interface WorkFormProps {
   data: Work[];
@@ -22,11 +16,7 @@ interface WorkFormProps {
 const defaultEntry: Work = { name: '', position: '', summary: '' };
 
 const WorkForm: React.FC<WorkFormProps> = ({ data, onChange }) => {
-  const { analyzingIndex, setAnalyzingIndex, handleAdd, handleRemove, handleChange } =
-    useEntryList(data, onChange);
-
-  const handleAnalyze = async (index: number) => {
-    const entry = data[index];
+  const handleAnalyze = async (index: number, entry: Work, setAnalyzingIndex: (i: number | null) => void) => {
     if (!entry.summary && (!entry.highlights || entry.highlights.length === 0)) {
       toast.error('Please add some content (Summary or Highlights) to analyze.');
       return;
@@ -50,47 +40,41 @@ const WorkForm: React.FC<WorkFormProps> = ({ data, onChange }) => {
   };
 
   return (
-    <div className="space-y-6">
-      <EntryListHeader
-        title="Work Experience"
-        addLabel="Add Job"
-        onAdd={() => handleAdd(defaultEntry)}
-      />
-
-      {data.map((entry, index) => (
-        <EntryCardShell key={index} title={entry.name || '(New Position)'}>
-          <EntryCardActions
-            analyzingIndex={analyzingIndex}
-            index={index}
-            onAnalyze={handleAnalyze}
-            onRemove={(i) => confirm('Remove this work entry?') && handleRemove(i)}
-          />
+    <GenericSectionForm<Work>
+      data={data}
+      onChange={onChange}
+      title="Work Experience"
+      addLabel="Add Job"
+      emptyMessage="No work experience added yet. Click &quot;Add Job&quot; to start."
+      defaultEntry={defaultEntry}
+      getTitle={(entry) => entry.name || '(New Position)'}
+      onAnalyze={handleAnalyze}
+      renderFields={(entry, handleChange) => (
+        <>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <GridField label="Company Name">
-              <Input value={entry.name || ''} onChange={(e) => handleChange(index, 'name', e.target.value)} />
+              <Input value={entry.name || ''} onChange={(e) => handleChange('name', e.target.value)} />
             </GridField>
             <GridField label="Position / Title">
-              <Input value={entry.position || ''} onChange={(e) => handleChange(index, 'position', e.target.value)} />
+              <Input value={entry.position || ''} onChange={(e) => handleChange('position', e.target.value)} />
             </GridField>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <GridField label="Start Date">
-              <Input value={entry.startDate || ''} onChange={(e) => handleChange(index, 'startDate', e.target.value)} placeholder="YYYY-MM" />
+              <Input value={entry.startDate || ''} onChange={(e) => handleChange('startDate', e.target.value)} placeholder="YYYY-MM" />
             </GridField>
             <GridField label="End Date">
-              <Input value={entry.endDate || ''} onChange={(e) => handleChange(index, 'endDate', e.target.value)} placeholder="YYYY-MM or Present" />
+              <Input value={entry.endDate || ''} onChange={(e) => handleChange('endDate', e.target.value)} placeholder="YYYY-MM or Present" />
             </GridField>
           </div>
 
           <GridField label="Summary / Description">
-            <Textarea value={entry.summary || ''} onChange={(e) => handleChange(index, 'summary', e.target.value)} rows={3} />
+            <Textarea value={entry.summary || ''} onChange={(e) => handleChange('summary', e.target.value)} rows={3} />
           </GridField>
-        </EntryCardShell>
-      ))}
-
-      {data.length === 0 && <EmptyState message="No work experience added yet. Click &quot;Add Job&quot; to start." />}
-    </div>
+        </>
+      )}
+    />
   );
 };
 

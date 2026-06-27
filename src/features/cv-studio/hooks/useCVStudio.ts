@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
+import { notificationService } from '@/services/core/notificationService';
 import { db } from '@/lib/db';
 import { Resume, Message } from '@/types';
 import { ResumeData } from '@/types/resume';
@@ -356,7 +357,12 @@ export const useCVStudio = () => {
 
   const handleDeleteCurrentCV = useCallback(async () => {
     if (!chatResumeId) return;
-    if (!confirm('Are you sure you want to delete this CV?')) return;
+    const confirmed = await notificationService.confirm({
+      title: 'Delete CV',
+      message: 'Are you sure you want to delete this CV?',
+      variant: 'destructive',
+    });
+    if (!confirmed) return;
     await db.resumes.delete(chatResumeId);
     const updated = resumes.filter((r) => r.id !== chatResumeId);
     setResumes(updated);

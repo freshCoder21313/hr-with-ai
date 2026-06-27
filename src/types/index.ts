@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import { ResumeData } from './resume';
 
 export type { ResumeData };
@@ -206,6 +207,11 @@ export interface AIRequestOptions {
 export interface AIProviderStrategy {
   generateText(messages: ChatMessage[], options?: AIRequestOptions): Promise<AIResponse>;
   streamText(messages: ChatMessage[], options?: AIRequestOptions): AsyncIterable<string>;
+  generateStructured<T>(
+    messages: ChatMessage[],
+    schema: z.ZodType<T>,
+    options?: AIRequestOptions
+  ): Promise<T>;
 }
 
 // --- Voice Interview Types ---

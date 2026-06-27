@@ -1,5 +1,7 @@
+import { z } from 'zod';
 import { GoogleGenAI } from '@google/genai';
 import { AIProviderStrategy, ChatMessage, AIResponse, AIRequestOptions } from '@/types';
+import { jsonOnlyInstruction, parseStructuredResponse } from '@/lib/aiStructuredOutput';
 
 type ContentPart = { text: string } | { inlineData: { mimeType: string; data: string } };
 
@@ -119,6 +121,23 @@ export class GoogleGeminiStrategy implements AIProviderStrategy {
       console.error('Gemini Generate Text Error:', error);
       throw error;
     }
+  }
+
+  async generateStructured<T>(
+    messages: ChatMessage[],
+    schema: z.ZodType<T>,
+    options?: AIRequestOptions
+  ): Promise<T> {
+    const systemInstruction = options?.systemInstruction
+      ? `${options.systemInstruction}\n\n${jsonOnlyInstruction}`
+      : jsonOnlyInstruction;
+    const response = await this.generateText(messages, {
+      ...options,
+      jsonMode: true,
+      systemInstruction,
+    });
+
+    return parseStructuredResponse(response.text, schema);
   }
 
   async *streamText(messages: ChatMessage[], options?: AIRequestOptions): AsyncIterable<string> {

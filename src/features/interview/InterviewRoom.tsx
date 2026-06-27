@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { notificationService } from '@/services/core/notificationService';
 import { toast } from 'sonner';
 import { useParams } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
@@ -247,16 +248,16 @@ const InterviewRoom: React.FC = () => {
   };
 
   const handleEndInterview = async () => {
-    if (
-      window.confirm(
-        'Are you sure you want to end this interview? AI will generate feedback for you.'
-      )
-    ) {
+    const confirmed = await notificationService.confirm({
+      title: 'End Interview',
+      message: 'Are you sure you want to end this interview? AI will generate feedback for you.',
+    });
+    if (confirmed) {
       setIsEndingSession(true);
       try {
         await endSession();
       } catch (error) {
-        console.error('Failed to end session:', error);
+        notificationService.error('Failed to end session', error);
         setIsEndingSession(false);
       }
     }

@@ -4,14 +4,8 @@ import { Input } from '@/components/ui/input';
 import { Education } from '@/types/resume';
 import { analyzeResumeSection } from '@/services/resume/resumeAIService';
 import { getStoredAIConfig } from '@/services/ai/aiConfigService';
-import {
-  useEntryList,
-  EntryCardActions,
-  EntryCardShell,
-  EntryListHeader,
-  EmptyState,
-  GridField,
-} from './entry-list.shared';
+import { GridField } from './entry-list.shared';
+import { GenericSectionForm } from './GenericSectionForm';
 
 interface EducationFormProps {
   data: Education[];
@@ -23,11 +17,7 @@ const defaultEntry: Education = {
 };
 
 const EducationForm: React.FC<EducationFormProps> = ({ data, onChange }) => {
-  const { analyzingIndex, setAnalyzingIndex, handleAdd, handleRemove, handleChange } =
-    useEntryList(data, onChange);
-
-  const handleAnalyze = async (index: number) => {
-    const entry = data[index];
+  const handleAnalyze = async (index: number, entry: Education, setAnalyzingIndex: (i: number | null) => void) => {
     const config = getStoredAIConfig();
     if (!config.apiKey) {
       toast.error('Please set API Key in settings.');
@@ -47,53 +37,47 @@ const EducationForm: React.FC<EducationFormProps> = ({ data, onChange }) => {
   };
 
   return (
-    <div className="space-y-6">
-      <EntryListHeader
-        title="Education"
-        addLabel="Add Education"
-        onAdd={() => handleAdd(defaultEntry)}
-      />
-
-      {data.map((entry, index) => (
-        <EntryCardShell key={index} title={entry.institution || '(New School)'}>
-          <EntryCardActions
-            analyzingIndex={analyzingIndex}
-            index={index}
-            onAnalyze={handleAnalyze}
-            onRemove={(i) => confirm('Remove this education entry?') && handleRemove(i)}
-            analyzeTooltip="AI Check"
-          />
+    <GenericSectionForm<Education>
+      data={data}
+      onChange={onChange}
+      title="Education"
+      addLabel="Add Education"
+      emptyMessage="No education history added yet."
+      defaultEntry={defaultEntry}
+      getTitle={(entry) => entry.institution || '(New School)'}
+      onAnalyze={handleAnalyze}
+      analyzeTooltip="AI Check"
+      renderFields={(entry, handleChange) => (
+        <>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <GridField label="Institution / School">
-              <Input value={entry.institution || ''} onChange={(e) => handleChange(index, 'institution', e.target.value)} />
+              <Input value={entry.institution || ''} onChange={(e) => handleChange('institution', e.target.value)} />
             </GridField>
             <GridField label="Degree / Study Type">
-              <Input value={entry.studyType || ''} onChange={(e) => handleChange(index, 'studyType', e.target.value)} placeholder="e.g. Bachelor of Science" />
+              <Input value={entry.studyType || ''} onChange={(e) => handleChange('studyType', e.target.value)} placeholder="e.g. Bachelor of Science" />
             </GridField>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <GridField label="Area / Major">
-              <Input value={entry.area || ''} onChange={(e) => handleChange(index, 'area', e.target.value)} placeholder="e.g. Computer Science" />
+              <Input value={entry.area || ''} onChange={(e) => handleChange('area', e.target.value)} placeholder="e.g. Computer Science" />
             </GridField>
             <GridField label="GPA / Score (Optional)">
-              <Input value={entry.score || ''} onChange={(e) => handleChange(index, 'score', e.target.value)} />
+              <Input value={entry.score || ''} onChange={(e) => handleChange('score', e.target.value)} />
             </GridField>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <GridField label="Start Date">
-              <Input value={entry.startDate || ''} onChange={(e) => handleChange(index, 'startDate', e.target.value)} placeholder="YYYY-MM" />
+              <Input value={entry.startDate || ''} onChange={(e) => handleChange('startDate', e.target.value)} placeholder="YYYY-MM" />
             </GridField>
             <GridField label="End Date">
-              <Input value={entry.endDate || ''} onChange={(e) => handleChange(index, 'endDate', e.target.value)} placeholder="YYYY-MM or Present" />
+              <Input value={entry.endDate || ''} onChange={(e) => handleChange('endDate', e.target.value)} placeholder="YYYY-MM or Present" />
             </GridField>
           </div>
-        </EntryCardShell>
-      ))}
-
-      {data.length === 0 && <EmptyState message="No education history added yet." />}
-    </div>
+        </>
+      )}
+    />
   );
 };
 

@@ -8,7 +8,15 @@
 
 ## 1. Debt Inventory
 
-### 1.1 Code Debt
+### 1.1 Remediation Log (2026-06-16)
+
+- **[FIXED] syncService Security & Data Integrity**: Added stripping of sensitive keys (githubToken, githubUsername, googleCloudApiKey, elevenLabsApiKey, deepgramApiKey) on export. Added preservation of local keys on import. Added localStorage synchronization.
+- **[FIXED] useResumeBuilder Stability**: Fixed race condition in resume loading using `ignore` flag. Added auto-save functionality.
+- **[FIXED] useInterview Race Condition**: Fixed race condition where AI responses could overwrite user code/whiteboard changes by fetching latest state from store before saving.
+- **[FIXED] Voice Interview Memory Leaks**: Added cleanups for audio media streams and speech-to-text callbacks.
+- **[IMPROVED] Error Handling**: Replaced many `console.error` and `alert()` calls with user-facing toast notifications in `InterviewRoom` and voice hooks.
+
+### 1.2 Code Debt
 
 #### Duplicated Code
 

@@ -1,5 +1,7 @@
+import { z } from 'zod';
 import { AIProviderStrategy, ChatMessage, AIResponse, AIRequestOptions } from '@/types';
 import { normalizeMessages } from '@/lib/aiResponseHelper';
+import { jsonOnlyInstruction, parseStructuredResponse } from '@/lib/aiStructuredOutput';
 
 export class OpenRouterStrategy implements AIProviderStrategy {
   private apiKey: string;
@@ -28,8 +30,8 @@ export class OpenRouterStrategy implements AIProviderStrategy {
         model,
         messages: normalizeMessages(messages),
         temperature: options?.temperature,
-        ...(options?.systemInstruction && {
-          response_format: { type: 'text' },
+        ...(options?.jsonMode && {
+          response_format: { type: 'json_object' },
         }),
       }),
     });
@@ -46,6 +48,23 @@ export class OpenRouterStrategy implements AIProviderStrategy {
       usage: data.usage,
       rawResponse: data,
     };
+  }
+
+  async generateStructured<T>(
+    messages: ChatMessage[],
+    schema: z.ZodType<T>,
+    options?: AIRequestOptions
+  ): Promise<T> {
+    const systemInstruction = options?.systemInstruction
+      ? `${options.systemInstruction}\n\n${jsonOnlyInstruction}`
+      : jsonOnlyInstruction;
+    const response = await this.generateText(messages, {
+      ...options,
+      jsonMode: true,
+      systemInstruction,
+    });
+
+    return parseStructuredResponse(response.text, schema);
   }
 
   async *streamText(messages: ChatMessage[], options?: AIRequestOptions): AsyncIterable<string> {
