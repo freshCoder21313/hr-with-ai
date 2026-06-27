@@ -11,6 +11,7 @@ import { useInterviewStore } from '@/features/interview/interviewStore';
 import { ChatArea } from './ChatArea';
 import { Input } from '@/components/ui/input';
 import MarkdownRenderer from '@/components/shared/MarkdownRenderer';
+import { isNonEmptyString } from '@/lib/validation';
 
 interface VoiceInterviewRoomProps {
   onSwitchToText?: () => void;
@@ -46,7 +47,7 @@ export const VoiceInterviewRoom: React.FC<VoiceInterviewRoomProps> = ({ onSwitch
 
   const handleSendText = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!textInput.trim()) return;
+    if (!isNonEmptyString(textInput)) return;
     sendTextMessage(textInput);
     setTextInput('');
   };
@@ -203,7 +204,7 @@ export const VoiceInterviewRoom: React.FC<VoiceInterviewRoomProps> = ({ onSwitch
               placeholder="Type a message..."
               className="flex-1 bg-background text-foreground"
             />
-            <Button type="submit" size="icon" disabled={!textInput.trim()}>
+            <Button type="submit" size="icon" disabled={!isNonEmptyString(textInput)}>
               <Send className="w-4 h-4" />
             </Button>
           </form>

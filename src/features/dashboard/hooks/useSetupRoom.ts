@@ -12,6 +12,7 @@ import { db } from '@/lib/db';
 import { getErrorMessage } from '@/lib/utils';
 import { toast } from 'sonner';
 import { notificationService } from '@/services/core/notificationService';
+import { isNonEmptyString, validateInterviewSetup } from '@/lib/validation';
 
 export const useSetupRoom = () => {
   const { startNewInterview, isLoading: isStarting } = useInterview();
@@ -80,7 +81,7 @@ export const useSetupRoom = () => {
   }, [selectedResumeId]);
 
   const handleSaveJob = useCallback(async () => {
-    if (!formData.jobTitle || !formData.company) {
+    if (!isNonEmptyString(formData.jobTitle) || !isNonEmptyString(formData.company)) {
       toast.error('Please enter at least a Job Title and Company.');
       return;
     }
@@ -210,6 +211,11 @@ export const useSetupRoom = () => {
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
+    const validation = validateInterviewSetup(formData);
+    if (!validation.isValid) {
+      toast.error(validation.errors[0]);
+      return;
+    }
     await startNewInterview(formData);
   }, [formData, startNewInterview]);
 
@@ -248,7 +254,7 @@ export const useSetupRoom = () => {
   }, [resumeToTailor, navigate]);
 
   const handleAutoFill = useCallback(async () => {
-    if (!formData.jobDescription.trim()) {
+    if (!isNonEmptyString(formData.jobDescription)) {
       toast.error('Please enter a Job Description first.');
       return;
     }
@@ -276,7 +282,7 @@ export const useSetupRoom = () => {
   }, []);
 
   const handleResearchCompany = useCallback(async () => {
-    if (!formData.company.trim()) {
+    if (!isNonEmptyString(formData.company)) {
       toast.error('Please enter a Company name first.');
       return;
     }

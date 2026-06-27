@@ -14,6 +14,7 @@ import ResumeList from './ResumeList';
 import ResumeAnalysisView from '@/features/resume-analysis/ResumeAnalysisView';
 import JobRecommendationModal from '@/features/interview/JobRecommendationModal';
 import { TailorResumeModal } from './TailorResumeModal';
+import { isNonEmptyString } from '@/lib/validation';
 import { useSetupRoom } from './hooks/useSetupRoom';
 
 const SetupRoom: React.FC = () => {
@@ -68,7 +69,7 @@ const SetupRoom: React.FC = () => {
                   placeholder="e.g. Google, Shopee, Startup..." className="h-11" />
                 <div className="mt-2">
                   <LoadingButton type="button" variant="ghost" size="sm" onClick={actions.handleResearchCompany}
-                    disabled={state.isResearching || !formData.company.trim()} isLoading={state.isResearching}
+                    disabled={state.isResearching || !isNonEmptyString(formData.company)} isLoading={state.isResearching}
                     loadingText="Researching..." className="text-xs text-blue-600 hover:text-blue-700 p-0 h-auto"
                     leftIcon={<Search className="w-3 h-3" />}>
                     Auto-Research Company
@@ -168,7 +169,7 @@ const SetupRoom: React.FC = () => {
               <div className="flex justify-between items-center">
                 <Label htmlFor="jobDescription">Job Description</Label>
                 <LoadingButton type="button" variant="outline" size="sm" onClick={actions.handleAutoFill}
-                  disabled={state.isExtracting || !formData.jobDescription.trim()} isLoading={state.isExtracting}
+                  disabled={state.isExtracting || !isNonEmptyString(formData.jobDescription)} isLoading={state.isExtracting}
                   loadingText="Auto-fill from JD"
                   className="text-primary border-primary/20 hover:bg-primary/10 dark:text-primary dark:border-primary/30 dark:hover:bg-primary/10"
                   leftIcon={<Sparkles className="w-4 h-4" />}>

@@ -5,6 +5,7 @@ import {
   generateQuiz,
 } from '@/features/skill-assessment/services/skillAssessmentAiService';
 import { getStoredAIConfig } from '@/services/ai/aiConfigService';
+import { isNonEmptyString } from '@/lib/validation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -101,7 +102,7 @@ export const SelectSkillStep: React.FC = () => {
   const handleAddManualSkill = () => {
     const newSkill = manualSkill.trim();
 
-    if (!newSkill) {
+    if (!isNonEmptyString(newSkill)) {
       return;
     }
 
@@ -192,7 +193,7 @@ export const SelectSkillStep: React.FC = () => {
                   <Button
                     variant="secondary"
                     onClick={handleAddManualSkill}
-                    disabled={!manualSkill.trim() || isLoading}
+                    disabled={!isNonEmptyString(manualSkill) || isLoading}
                   >
                     <Plus className="w-4 h-4 mr-1" /> Add
                   </Button>

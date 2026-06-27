@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { isNonEmptyString } from '@/lib/validation';
 import { ProposedChange } from '@/features/cv-studio/utils/cvChatUtils';
 import {
   Check,
@@ -149,7 +150,7 @@ export const ChangeReviewCard: React.FC<ChangeReviewCardProps> = ({
     if (typeof newData === 'object' && newData !== null) {
       const filteredEntries = Object.entries(newData).filter(([_, value]) => {
         if (value === null || value === undefined) return false;
-        if (typeof value === 'string' && value.trim() === '') return false;
+        if (typeof value === 'string' && !isNonEmptyString(value)) return false;
         if (Array.isArray(value) && value.length === 0) return false;
         if (typeof value === 'object' && Object.keys(value).length === 0) return false;
         return true;

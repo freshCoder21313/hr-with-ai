@@ -20,7 +20,7 @@ export interface Basics {
   name: string;
   label?: string; // Job Title
   image?: string;
-  email: string;
+  email?: string;
   phone?: string;
   url?: string;
   summary?: string;

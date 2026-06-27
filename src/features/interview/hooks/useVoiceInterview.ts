@@ -10,6 +10,7 @@ import { getStoredAIConfig } from '@/services/ai/aiConfigService';
 import { voiceInterviewService } from '@/services/voice/voiceInterviewService';
 import { Message } from '@/types';
 import { getErrorMessage } from '@/lib/utils';
+import { isNonEmptyString } from '@/lib/validation';
 
 export const useVoiceInterview = () => {
   // Local state & Context
@@ -174,7 +175,7 @@ export const useVoiceInterview = () => {
   // Action: Send Text Message (Hybrid Mode)
   const sendTextMessage = useCallback(
     async (text: string) => {
-      if (!text.trim()) return;
+      if (!isNonEmptyString(text)) return;
 
       // Add User Message
       const userMsg: Message = {
@@ -203,7 +204,7 @@ export const useVoiceInterview = () => {
 
     const textToSend = stt.transcript.trim() || stt.interimTranscript.trim(); // Fallback
 
-    if (!textToSend) {
+    if (!isNonEmptyString(textToSend)) {
       setCurrentState('idle'); // No input
       return;
     }

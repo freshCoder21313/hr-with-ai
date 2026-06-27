@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { toast } from 'sonner';
 import { ShieldCheck, X, RefreshCw } from 'lucide-react';
+import { isNonEmptyString } from '@/lib/validation';
 
 type GeminiModel = {
   name: string;
@@ -75,7 +76,7 @@ const ApiKeyModal: React.FC = () => {
   };
 
   const handleSave = async () => {
-    if (apiKey.trim()) {
+    if (isNonEmptyString(apiKey)) {
       try {
         const currentSettings = await loadUserSettings();
         await saveUserSettings({
@@ -281,7 +282,10 @@ const ApiKeyModal: React.FC = () => {
             )}
             <Button
               onClick={handleSave}
-              disabled={!apiKey.trim() || (provider === 'openrouter' && !modelId.trim())}
+              disabled={
+                !isNonEmptyString(apiKey) ||
+                (provider === 'openrouter' && !isNonEmptyString(modelId))
+              }
               className="w-full"
             >
               Save Configuration

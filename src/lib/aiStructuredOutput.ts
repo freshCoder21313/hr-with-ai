@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { isNonEmptyString } from '@/lib/validation';
 
 const codeBlockPattern = /^```(?:json)?\s*([\s\S]*?)\s*```$/i;
 
@@ -34,7 +35,7 @@ const extractJsonPayload = (text: string): string => {
 };
 
 export const parseStructuredResponse = <T>(text: string, schema: z.ZodType<T>): T => {
-  if (!text.trim()) {
+  if (!isNonEmptyString(text)) {
     throw new Error('Structured AI response was empty');
   }
 

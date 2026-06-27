@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { RESUME_BASICS_ERRORS, validateResumeBasics } from '@/lib/validation';
 import { Basics } from '@/types/resume';
 
 interface BasicsFormProps {
@@ -19,6 +20,11 @@ const BasicsForm: React.FC<BasicsFormProps> = ({ data, onChange }) => {
     const newLocation = { ...(data.location || {}), [field]: value };
     onChange({ ...data, location: newLocation });
   };
+
+  const basicsValidation = validateResumeBasics(data);
+  const emailError = basicsValidation.errors.includes(RESUME_BASICS_ERRORS.invalidEmail)
+    ? RESUME_BASICS_ERRORS.invalidEmail
+    : undefined;
 
   return (
     <Card>
@@ -50,9 +56,15 @@ const BasicsForm: React.FC<BasicsFormProps> = ({ data, onChange }) => {
             <Label htmlFor="email">Email</Label>
             <Input
               id="email"
+              type="email"
               value={data.email || ''}
               onChange={(e) => handleChange('email', e.target.value)}
+              aria-invalid={emailError ? true : undefined}
+              className={emailError ? 'border-destructive focus-visible:ring-destructive' : undefined}
             />
+            {emailError && (
+              <p className="text-sm text-destructive">{emailError}</p>
+            )}
           </div>
           <div className="space-y-2">
             <Label htmlFor="phone">Phone</Label>

@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Skill } from '@/types/resume';
 import { Plus, Trash2, X } from 'lucide-react';
+import { isNonEmptyString } from '@/lib/validation';
 
 interface SkillsFormProps {
   data: Skill[];
@@ -37,7 +38,7 @@ const SkillsForm: React.FC<SkillsFormProps> = ({ data, onChange }) => {
   };
 
   const handleAddKeyword = (index: number, keyword: string) => {
-    if (!keyword.trim()) return;
+    if (!isNonEmptyString(keyword)) return;
     const newData = [...data];
     const currentKeywords = newData[index].keywords || [];
     newData[index] = { ...newData[index], keywords: [...currentKeywords, keyword] };

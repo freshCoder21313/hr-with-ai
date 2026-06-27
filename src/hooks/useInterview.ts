@@ -11,6 +11,7 @@ import { db } from '@/lib/db';
 import { InterviewStatus, SetupFormData, Interview, Message } from '@/types';
 import { getActiveScenario } from '@/features/interview/scenarios';
 import { openApiKeyModal } from '@/events/apiKeyEvents';
+import { isNonEmptyString, validateInterviewSetup } from '@/lib/validation';
 
 export const useInterview = () => {
   const navigate = useNavigate();
@@ -33,6 +34,11 @@ export const useInterview = () => {
       try {
         setLoading(true);
         setError(null);
+
+        const validation = validateInterviewSetup(data);
+        if (!validation.isValid) {
+          throw new Error(validation.errors.join(' '));
+        }
 
         const config = getStoredAIConfig();
         if (!config.apiKey) {
@@ -238,7 +244,7 @@ export const useInterview = () => {
         }
 
         // Check if response was empty (silent failure)
-        if (!fullResponse.trim()) {
+        if (!isNonEmptyString(fullResponse)) {
           throw new Error('Received empty response from AI provider.');
         }
 
@@ -298,7 +304,8 @@ export const useInterview = () => {
     const messages = latestInterview.messages;
     const lastMsg = messages[messages.length - 1];
 
-    const isErrorOrEmpty = lastMsg.role === 'model' && (lastMsg.isError || !lastMsg.content.trim());
+    const isErrorOrEmpty =
+      lastMsg.role === 'model' && (lastMsg.isError || !isNonEmptyString(lastMsg.content));
 
     if (isErrorOrEmpty) {
       removeLastMessage();

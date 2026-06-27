@@ -18,6 +18,7 @@ import SettingsModal from '@/components/shared/SettingsModal';
 import JobRecommendationModal from './JobRecommendationModal';
 import { openApiKeyModal } from '@/events/apiKeyEvents';
 import SEO from '@/components/shared/SEO';
+import { isNonEmptyString } from '@/lib/validation';
 
 // Components
 import { InterviewHeader } from './components/InterviewHeader';
@@ -220,7 +221,7 @@ const InterviewRoom: React.FC = () => {
   };
 
   const handleSendMessage = async () => {
-    if (!inputValue.trim() || !currentInterview) return;
+    if (!isNonEmptyString(inputValue) || !currentInterview) return;
 
     setHints(null);
     setSuggestedAction(null);
