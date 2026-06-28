@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { startInterviewSession, generateInterviewFeedback } from './interviewAIService';
-import { getService, resolveConfig } from '@/services/ai/aiConfigService';
+import { getService } from '@/services/ai/aiConfigService';
 import { Interview, InterviewStatus } from '@/types';
 import { AIService } from '@/features/ai-provider/ai.service';
 

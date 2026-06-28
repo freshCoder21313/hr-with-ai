@@ -19,7 +19,6 @@ export const useInterview = () => {
     currentInterview,
     setInterview,
     addMessage,
-    updateLastMessage,
     updateMessageByTimestamp,
     markMessageAsError,
     markLastMessageAsError,

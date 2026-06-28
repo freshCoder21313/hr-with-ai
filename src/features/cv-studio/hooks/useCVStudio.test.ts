@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook, act } from '@testing-library/react';
+import { renderHook, act, waitFor } from '@testing-library/react';
 import { useCVStudio } from './useCVStudio';
 import { useJobStore } from '../stores/useJobStore';
 
@@ -37,19 +37,26 @@ vi.mock('@/events/apiKeyEvents', () => ({
   openApiKeyModal: vi.fn(),
 }));
 
+async function renderReadyCVStudio() {
+  const view = renderHook(() => useCVStudio());
+  await waitFor(() => expect(view.result.current.state.isLoading).toBe(false));
+  return view;
+}
+
 describe('useCVStudio', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     useJobStore.setState({ jobs: [], globalPrompt: 'default' });
   });
 
-  it('should initialize with loading state', () => {
+  it('should initialize with loading state', async () => {
     const { result } = renderHook(() => useCVStudio());
     expect(result.current.state.isLoading).toBe(true);
+    await waitFor(() => expect(result.current.state.isLoading).toBe(false));
   });
 
-  it('should provide UI state setters', () => {
-    const { result } = renderHook(() => useCVStudio());
+  it('should provide UI state setters', async () => {
+    const { result } = await renderReadyCVStudio();
 
     act(() => {
       result.current.ui.setIsJobPanelOpen(false);
@@ -58,8 +65,8 @@ describe('useCVStudio', () => {
     expect(result.current.ui.isJobPanelOpen).toBe(false);
   });
 
-  it('should add a job via handleAddJob', () => {
-    const { result } = renderHook(() => useCVStudio());
+  it('should add a job via handleAddJob', async () => {
+    const { result } = await renderReadyCVStudio();
 
     act(() => {
       result.current.actions.handleAddJob();
@@ -68,8 +75,8 @@ describe('useCVStudio', () => {
     expect(result.current.state.jobs).toHaveLength(1);
   });
 
-  it('should remove a job via handleRemoveJob', () => {
-    const { result } = renderHook(() => useCVStudio());
+  it('should remove a job via handleRemoveJob', async () => {
+    const { result } = await renderReadyCVStudio();
 
     act(() => {
       result.current.actions.handleAddJob();
@@ -84,8 +91,8 @@ describe('useCVStudio', () => {
     expect(result.current.state.jobs).toHaveLength(0);
   });
 
-  it('should toggle job selection', () => {
-    const { result } = renderHook(() => useCVStudio());
+  it('should toggle job selection', async () => {
+    const { result } = await renderReadyCVStudio();
 
     act(() => {
       result.current.actions.handleAddJob();
@@ -106,8 +113,8 @@ describe('useCVStudio', () => {
     expect(result.current.state.selectedJobs.has(jobId)).toBe(false);
   });
 
-  it('should update template via UI actions', () => {
-    const { result } = renderHook(() => useCVStudio());
+  it('should update template via UI actions', async () => {
+    const { result } = await renderReadyCVStudio();
 
     act(() => {
       result.current.ui.setTemplate('classic');

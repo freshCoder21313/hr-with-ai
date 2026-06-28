@@ -21,7 +21,8 @@ export function ensureEntryIds<T>(data: (T & { _entryId?: string })[]): WithEntr
 }
 
 export function stripEntryId<T extends { _entryId?: string }>(entry: T): Omit<T, '_entryId'> {
-  const { _entryId: _removed, ...rest } = entry;
+  const rest = { ...entry };
+  delete rest._entryId;
   return rest;
 }
 

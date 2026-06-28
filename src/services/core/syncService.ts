@@ -42,7 +42,7 @@ export const syncService = {
       if (options.includeSensitive) {
         return s;
       }
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      /* eslint-disable @typescript-eslint/no-unused-vars */
       const {
         id,
         apiKey,
@@ -53,6 +53,7 @@ export const syncService = {
         deepgramApiKey,
         ...safe
       } = s;
+      /* eslint-enable @typescript-eslint/no-unused-vars */
       return safe;
     });
 

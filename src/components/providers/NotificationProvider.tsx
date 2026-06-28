@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { notificationService, ConfirmationOptions } from '@/services/core/notificationService';
