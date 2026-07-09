@@ -1,5 +1,9 @@
 # Technical Debt Analysis Report — hr-with-ai
 
+> **Superseded for planning (2026-07-09):** Use the living plan  
+> [`docs/IMPROVEMENT_ROADMAP.md`](./docs/IMPROVEMENT_ROADMAP.md) on branch `plan/repo-improvement-roadmap-2026-07`.  
+> This file remains as a historical snapshot (2026-06-08).
+
 **Date:** 2026-06-08  
 **Repository:** hr-with-ai (React 18 + TypeScript + Vite + Tailwind v4)  
 **Analysis Scope:** All `src/` — 179 source files, ~23,796 LOC TypeScript/TSX, 14 test files
