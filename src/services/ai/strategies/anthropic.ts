@@ -1,4 +1,7 @@
+import { z } from 'zod';
 import { AIProviderStrategy, ChatMessage, AIResponse, AIRequestOptions } from '@/types';
+import { normalizeMessages } from '@/lib/aiResponseHelper';
+import { jsonOnlyInstruction, parseStructuredResponse } from '@/lib/aiStructuredOutput';
 
 export class AnthropicStrategy implements AIProviderStrategy {
   private apiKey: string;
@@ -8,13 +11,6 @@ export class AnthropicStrategy implements AIProviderStrategy {
   constructor(apiKey: string, baseUrl = 'https://api.anthropic.com') {
     this.apiKey = apiKey;
     this.baseUrl = baseUrl;
-  }
-
-  private mapMessages(messages: ChatMessage[]) {
-    return messages.map((msg) => ({
-      role: msg.role === 'model' ? 'assistant' : msg.role,
-      content: msg.content,
-    }));
   }
 
   async generateText(messages: ChatMessage[], options?: AIRequestOptions): Promise<AIResponse> {
@@ -30,7 +26,7 @@ export class AnthropicStrategy implements AIProviderStrategy {
       body: JSON.stringify({
         model: modelId,
         max_tokens: 4096,
-        messages: this.mapMessages(messages),
+        messages: normalizeMessages(messages),
         temperature: options?.temperature,
         ...(options?.systemInstruction && {
           system: options.systemInstruction,
@@ -55,6 +51,23 @@ export class AnthropicStrategy implements AIProviderStrategy {
     };
   }
 
+  async generateStructured<T>(
+    messages: ChatMessage[],
+    schema: z.ZodType<T>,
+    options?: AIRequestOptions
+  ): Promise<T> {
+    const systemInstruction = options?.systemInstruction
+      ? `${options.systemInstruction}\n\n${jsonOnlyInstruction}`
+      : jsonOnlyInstruction;
+    const response = await this.generateText(messages, {
+      ...options,
+      jsonMode: true,
+      systemInstruction,
+    });
+
+    return parseStructuredResponse(response.text, schema);
+  }
+
   async *streamText(messages: ChatMessage[], options?: AIRequestOptions): AsyncIterable<string> {
     const modelId = options?.modelId || this.defaultModel;
 
@@ -68,7 +81,7 @@ export class AnthropicStrategy implements AIProviderStrategy {
       body: JSON.stringify({
         model: modelId,
         max_tokens: 4096,
-        messages: this.mapMessages(messages),
+        messages: normalizeMessages(messages),
         temperature: options?.temperature,
         stream: true,
         ...(options?.systemInstruction && {

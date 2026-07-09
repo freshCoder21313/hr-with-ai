@@ -3,6 +3,7 @@ import { Interview, UserSettings, Resume } from '@/types';
 import LZString from 'lz-string';
 import axios from 'axios';
 import { apiClient } from '@/lib/api-client';
+import { logger } from '@/lib/logger';
 
 interface SyncData {
   interviews: Interview[];
@@ -18,11 +19,9 @@ export const syncService = {
   // Generate a random 16-char alphanumeric ID
   generateId: (): string => {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let result = '';
-    for (let i = 0; i < 16; i++) {
-      result += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return result;
+    const bytes = new Uint8Array(16);
+    crypto.getRandomValues(bytes);
+    return Array.from(bytes, (byte) => chars[byte % chars.length]).join('');
   },
 
   // Validate ID format (16 alphanumeric chars)
@@ -44,8 +43,18 @@ export const syncService = {
       if (options.includeSensitive) {
         return s;
       }
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { id, apiKey, githubToken, ...safe } = s;
+      /* eslint-disable @typescript-eslint/no-unused-vars */
+      const {
+        id,
+        apiKey,
+        githubToken,
+        githubUsername,
+        googleCloudApiKey,
+        elevenLabsApiKey,
+        deepgramApiKey,
+        ...safe
+      } = s;
+      /* eslint-enable @typescript-eslint/no-unused-vars */
       return safe;
     });
 
@@ -72,9 +81,30 @@ export const syncService = {
             const cloudTime = cloudSetting.updatedAt || 0;
             const localTime = localMatch.updatedAt || 0;
             if (cloudTime > localTime) {
-              await db.userSettings.put(cloudSetting); // Overwrite with newer cloud version
+              // Overwrite with newer cloud version, but PRESERVE local keys
+              // if cloud version is from a 'safe' export (stripped keys)
+              await db.userSettings.put({
+                ...cloudSetting,
+                apiKey: cloudSetting.apiKey || localMatch.apiKey,
+                githubToken: cloudSetting.githubToken || localMatch.githubToken,
+                githubUsername: cloudSetting.githubUsername || localMatch.githubUsername,
+                googleCloudApiKey: cloudSetting.googleCloudApiKey || localMatch.googleCloudApiKey,
+                elevenLabsApiKey: cloudSetting.elevenLabsApiKey || localMatch.elevenLabsApiKey,
+                deepgramApiKey: cloudSetting.deepgramApiKey || localMatch.deepgramApiKey,
+              });
             }
           }
+        }
+
+        // Sync to localStorage after import to prevent 'split brain' with AI services
+        const latestSettings = await db.userSettings.orderBy('id').first();
+        if (latestSettings) {
+          if (latestSettings.apiKey) localStorage.setItem('gemini_api_key', latestSettings.apiKey);
+          if (latestSettings.baseUrl)
+            localStorage.setItem('custom_base_url', latestSettings.baseUrl);
+          if (latestSettings.modelId)
+            localStorage.setItem('custom_model_id', latestSettings.modelId);
+          if (latestSettings.provider) localStorage.setItem('ai_provider', latestSettings.provider);
         }
       }
 
@@ -153,7 +183,7 @@ export const syncService = {
 
       return { success: true };
     } catch (error: unknown) {
-      console.error('Upload error:', error);
+      logger.error('Upload error:', error);
       let message = 'Unknown error';
 
       if (axios.isAxiosError(error)) {
@@ -178,8 +208,8 @@ export const syncService = {
         params: { id, t: Date.now() }, // Thêm timestamp để bypass browser cache
         headers: {
           'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache',
-          'Expires': '0',
+          Pragma: 'no-cache',
+          Expires: '0',
         },
       });
 
@@ -196,9 +226,9 @@ export const syncService = {
 
       if (rawData && typeof rawData === 'object' && 'compressed' in rawData && rawData.compressed) {
         // Decompress - Try Base64 first (new format), then UTF16 (legacy/fallback)
-        let decompressed = LZString.decompressFromBase64(rawData.compressed);
+        let decompressed = LZString.decompressFromBase64(rawData.compressed as string);
         if (!decompressed) {
-          decompressed = LZString.decompressFromUTF16(rawData.compressed);
+          decompressed = LZString.decompressFromUTF16(rawData.compressed as string);
         }
 
         if (!decompressed) throw new Error('Failed to decompress data');
@@ -210,7 +240,7 @@ export const syncService = {
 
       return { success: true, data: finalData };
     } catch (error: unknown) {
-      console.error('Download error:', error);
+      logger.error('Download error:', error);
       let message = 'Unknown error';
 
       if (axios.isAxiosError(error)) {

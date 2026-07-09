@@ -1,169 +1,116 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import React from 'react';
+import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
 import { Education } from '@/types/resume';
-import { Plus, Trash2, Wand2 } from 'lucide-react';
 import { analyzeResumeSection } from '@/services/resume/resumeAIService';
 import { getStoredAIConfig } from '@/services/ai/aiConfigService';
-import { LoadingButton } from '@/components/ui/loading-button';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { GridField } from './entry-list.shared';
+import { GenericSectionForm } from './GenericSectionForm';
 
 interface EducationFormProps {
   data: Education[];
   onChange: (data: Education[]) => void;
 }
 
+const defaultEntry: Education = {
+  institution: '',
+  area: '',
+  studyType: '',
+  startDate: '',
+  endDate: '',
+};
+
 const EducationForm: React.FC<EducationFormProps> = ({ data, onChange }) => {
-  const [analyzingIndex, setAnalyzingIndex] = useState<number | null>(null);
-
-  const handleAdd = () => {
-    onChange([{ institution: '', area: '', studyType: '', startDate: '', endDate: '' }, ...data]);
-  };
-
-  const handleRemove = (index: number) => {
-    if (confirm('Remove this education entry?')) {
-      const newData = [...data];
-      newData.splice(index, 1);
-      onChange(newData);
-    }
-  };
-
-  const handleChange = <K extends keyof Education>(
+  const handleAnalyze = async (
     index: number,
-    field: K,
-    value: Education[K]
+    entry: Education,
+    setAnalyzingIndex: (i: number | null) => void
   ) => {
-    const newData = [...data];
-    newData[index] = { ...newData[index], [field]: value };
-    onChange(newData);
-  };
-
-  // Although analysis might be less common for education, it can help check for formatting
-  const handleAnalyze = async (index: number) => {
-    const entry = data[index];
     const config = getStoredAIConfig();
     if (!config.apiKey) {
-      alert('Please set API Key in settings.');
+      toast.error('Please set API Key in settings.');
       return;
     }
 
     setAnalyzingIndex(index);
     try {
       const result = await analyzeResumeSection('Education Entry', entry, config);
-      alert(`AI Critique:\n${result.critique}\n\nSuggestion:\n${result.suggestions.join('\n- ')}`);
+      toast.info(
+        `AI Critique:\n${result.critique}\n\nSuggestion:\n${result.suggestions.join('\n- ')}`,
+        { duration: 8000 }
+      );
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : 'Analysis failed';
-      alert('Analysis failed: ' + msg);
+      toast.error('Analysis failed: ' + msg);
     } finally {
       setAnalyzingIndex(null);
     }
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-bold text-foreground">Education</h2>
-        <Button onClick={handleAdd} size="sm" className="gap-2">
-          <Plus className="w-4 h-4" /> Add Education
-        </Button>
-      </div>
-
-      {data.map((entry, index) => (
-        <Card key={index} className="relative group">
-          <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <LoadingButton
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleAnalyze(index)}
-                  disabled={analyzingIndex === index}
-                  isLoading={analyzingIndex === index}
-                  loadingText=""
-                  className="text-purple-600 border-purple-200 hover:bg-purple-50"
-                >
-                  <Wand2 className="w-4 h-4" />
-                </LoadingButton>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>AI Check</p>
-              </TooltipContent>
-            </Tooltip>
-            <Button variant="destructive" size="sm" onClick={() => handleRemove(index)}>
-              <Trash2 className="w-4 h-4" />
-            </Button>
+    <GenericSectionForm<Education>
+      data={data}
+      onChange={onChange}
+      title="Education"
+      addLabel="Add Education"
+      emptyMessage="No education history added yet."
+      defaultEntry={defaultEntry}
+      getTitle={(entry) => entry.institution || '(New School)'}
+      onAnalyze={handleAnalyze}
+      analyzeTooltip="AI Check"
+      renderFields={(entry, handleChange) => (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <GridField label="Institution / School">
+              <Input
+                value={entry.institution || ''}
+                onChange={(e) => handleChange('institution', e.target.value)}
+              />
+            </GridField>
+            <GridField label="Degree / Study Type">
+              <Input
+                value={entry.studyType || ''}
+                onChange={(e) => handleChange('studyType', e.target.value)}
+                placeholder="e.g. Bachelor of Science"
+              />
+            </GridField>
           </div>
 
-          <CardHeader>
-            <CardTitle className="text-base">{entry.institution || '(New School)'}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Institution / School</Label>
-                <Input
-                  value={entry.institution || ''}
-                  onChange={(e) => handleChange(index, 'institution', e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Degree / Study Type</Label>
-                <Input
-                  value={entry.studyType || ''}
-                  onChange={(e) => handleChange(index, 'studyType', e.target.value)}
-                  placeholder="e.g. Bachelor of Science"
-                />
-              </div>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <GridField label="Area / Major">
+              <Input
+                value={entry.area || ''}
+                onChange={(e) => handleChange('area', e.target.value)}
+                placeholder="e.g. Computer Science"
+              />
+            </GridField>
+            <GridField label="GPA / Score (Optional)">
+              <Input
+                value={entry.score || ''}
+                onChange={(e) => handleChange('score', e.target.value)}
+              />
+            </GridField>
+          </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Area / Major</Label>
-                <Input
-                  value={entry.area || ''}
-                  onChange={(e) => handleChange(index, 'area', e.target.value)}
-                  placeholder="e.g. Computer Science"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>GPA / Score (Optional)</Label>
-                <Input
-                  value={entry.score || ''}
-                  onChange={(e) => handleChange(index, 'score', e.target.value)}
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Start Date</Label>
-                <Input
-                  value={entry.startDate || ''}
-                  onChange={(e) => handleChange(index, 'startDate', e.target.value)}
-                  placeholder="YYYY-MM"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>End Date</Label>
-                <Input
-                  value={entry.endDate || ''}
-                  onChange={(e) => handleChange(index, 'endDate', e.target.value)}
-                  placeholder="YYYY-MM or Present"
-                />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
-
-      {data.length === 0 && (
-        <div className="text-center py-12 border-2 border-dashed border-border rounded-lg text-muted-foreground">
-          No education history added yet.
-        </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <GridField label="Start Date">
+              <Input
+                value={entry.startDate || ''}
+                onChange={(e) => handleChange('startDate', e.target.value)}
+                placeholder="YYYY-MM"
+              />
+            </GridField>
+            <GridField label="End Date">
+              <Input
+                value={entry.endDate || ''}
+                onChange={(e) => handleChange('endDate', e.target.value)}
+                placeholder="YYYY-MM or Present"
+              />
+            </GridField>
+          </div>
+        </>
       )}
-    </div>
+    />
   );
 };
 

@@ -1,4 +1,7 @@
+import { z } from 'zod';
 import { AIProviderStrategy, ChatMessage, AIResponse, AIRequestOptions } from '@/types';
+import { normalizeMessages } from '@/lib/aiResponseHelper';
+import { jsonOnlyInstruction, parseStructuredResponse } from '@/lib/aiStructuredOutput';
 
 export class OpenRouterStrategy implements AIProviderStrategy {
   private apiKey: string;
@@ -9,13 +12,6 @@ export class OpenRouterStrategy implements AIProviderStrategy {
     private modelId = 'openai/gpt-4o'
   ) {
     this.apiKey = apiKey;
-  }
-
-  private mapMessages(messages: ChatMessage[]) {
-    return messages.map((msg) => ({
-      role: msg.role === 'model' ? 'assistant' : msg.role,
-      content: msg.content,
-    }));
   }
 
   async generateText(messages: ChatMessage[], options?: AIRequestOptions): Promise<AIResponse> {
@@ -32,10 +28,10 @@ export class OpenRouterStrategy implements AIProviderStrategy {
       },
       body: JSON.stringify({
         model,
-        messages: this.mapMessages(messages),
+        messages: normalizeMessages(messages),
         temperature: options?.temperature,
-        ...(options?.systemInstruction && {
-          response_format: { type: 'text' },
+        ...(options?.jsonMode && {
+          response_format: { type: 'json_object' },
         }),
       }),
     });
@@ -54,6 +50,23 @@ export class OpenRouterStrategy implements AIProviderStrategy {
     };
   }
 
+  async generateStructured<T>(
+    messages: ChatMessage[],
+    schema: z.ZodType<T>,
+    options?: AIRequestOptions
+  ): Promise<T> {
+    const systemInstruction = options?.systemInstruction
+      ? `${options.systemInstruction}\n\n${jsonOnlyInstruction}`
+      : jsonOnlyInstruction;
+    const response = await this.generateText(messages, {
+      ...options,
+      jsonMode: true,
+      systemInstruction,
+    });
+
+    return parseStructuredResponse(response.text, schema);
+  }
+
   async *streamText(messages: ChatMessage[], options?: AIRequestOptions): AsyncIterable<string> {
     const model = options?.modelId || this.defaultModel;
 
@@ -68,7 +81,7 @@ export class OpenRouterStrategy implements AIProviderStrategy {
       },
       body: JSON.stringify({
         model,
-        messages: this.mapMessages(messages),
+        messages: normalizeMessages(messages),
         temperature: options?.temperature,
         stream: true,
       }),

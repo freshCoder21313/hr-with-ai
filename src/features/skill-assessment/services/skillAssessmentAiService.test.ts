@@ -10,25 +10,25 @@ describe('skillAssessmentAiService', () => {
   const mockConfig = { apiKey: 'test' };
 
   it('should extract skills', async () => {
-    const mockGenerateText = vi.fn().mockResolvedValue({ text: '["React", "TypeScript"]' });
-    vi.mocked(aiConfigService.getService).mockReturnValue({
-      generateText: mockGenerateText,
-    } as unknown as ReturnType<typeof aiConfigService.getService>);
+    const mockGenerateStructured = vi.fn().mockResolvedValue(['React', 'TypeScript']);
+    vi.mocked(aiConfigService.getService).mockResolvedValue({
+      generateStructured: mockGenerateStructured,
+    } as never);
 
     const skills = await extractSkills('I know React and TypeScript', mockConfig);
     expect(skills).toEqual(['React', 'TypeScript']);
-    expect(mockGenerateText).toHaveBeenCalled();
+    expect(mockGenerateStructured).toHaveBeenCalled();
   });
 
   it('should generate sub-skills', async () => {
-    const mockGenerateText = vi.fn().mockResolvedValue({ text: '["Hooks", "State"]' });
-    vi.mocked(aiConfigService.getService).mockReturnValue({
-      generateText: mockGenerateText,
-    } as unknown as ReturnType<typeof aiConfigService.getService>);
+    const mockGenerateStructured = vi.fn().mockResolvedValue(['Hooks', 'State']);
+    vi.mocked(aiConfigService.getService).mockResolvedValue({
+      generateStructured: mockGenerateStructured,
+    } as never);
 
     const subSkills = await generateSubSkills('React', mockConfig);
     expect(subSkills).toEqual(['Hooks', 'State']);
-    expect(mockGenerateText).toHaveBeenCalled();
+    expect(mockGenerateStructured).toHaveBeenCalled();
   });
 
   it('should generate quiz', async () => {
@@ -42,13 +42,13 @@ describe('skillAssessmentAiService', () => {
         sub_skill: 'Hooks',
       },
     ];
-    const mockGenerateText = vi.fn().mockResolvedValue({ text: JSON.stringify(mockQuiz) });
-    vi.mocked(aiConfigService.getService).mockReturnValue({
-      generateText: mockGenerateText,
-    } as unknown as ReturnType<typeof aiConfigService.getService>);
+    const mockGenerateStructured = vi.fn().mockResolvedValue(mockQuiz);
+    vi.mocked(aiConfigService.getService).mockResolvedValue({
+      generateStructured: mockGenerateStructured,
+    } as never);
 
     const quiz = await generateQuiz('React', ['Hooks'], 1, mockConfig);
     expect(quiz).toEqual(mockQuiz);
-    expect(mockGenerateText).toHaveBeenCalled();
+    expect(mockGenerateStructured).toHaveBeenCalled();
   });
 });

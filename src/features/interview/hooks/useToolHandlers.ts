@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
+import { toast } from 'sonner';
 import { Editor, TLShapeId } from 'tldraw';
 import { svgToPngBase64 } from '@/lib/svgUtils';
 import { Interview, JobRecommendation } from '@/types';
@@ -21,6 +22,7 @@ interface UseToolHandlersReturn {
     setInterview: (i: Interview | null) => void
   ) => Promise<void>;
   editorRef: React.MutableRefObject<Editor | null>;
+  setEditor: (editor: Editor | null) => void;
 }
 
 export const useToolHandlers = (
@@ -33,7 +35,7 @@ export const useToolHandlers = (
   const editorRef = useRef<Editor | null>(null);
 
   const handleRunCode = useCallback(() => {
-    alert('This feature is coming soon! (Backend integration in progress)');
+    toast.info('This feature is coming soon! (Backend integration in progress)');
   }, []);
 
   const handleToolSubmit = useCallback(
@@ -112,6 +114,10 @@ export const useToolHandlers = (
     [currentInterview]
   );
 
+  const setEditor = useCallback((editor: Editor | null) => {
+    editorRef.current = editor;
+  }, []);
+
   return {
     isCodeOpen,
     setIsCodeOpen,
@@ -121,5 +127,6 @@ export const useToolHandlers = (
     handleToolSubmit,
     handleSelectJob,
     editorRef,
+    setEditor,
   };
 };

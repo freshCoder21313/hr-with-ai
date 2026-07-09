@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { syncService } from '@/services/core/syncService';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Dialog,
@@ -29,6 +28,7 @@ import {
   Laptop,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useCloudSync } from './useCloudSync';
 
 interface CloudSyncModalProps {
   isOpen: boolean;
@@ -36,151 +36,37 @@ interface CloudSyncModalProps {
 }
 
 export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({ isOpen, onClose }) => {
-  const [activeTab, setActiveTab] = useState<'upload' | 'download' | 'offline'>('upload');
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
-
-  // Upload State
-  const [uploadId, setUploadId] = useState('');
-  const [uploadPassword, setUploadPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [includeApiKey, setIncludeApiKey] = useState(false);
-
-  // Download State
-  const [downloadId, setDownloadId] = useState('');
-
-  // Offline State
-  const [offlineIncludeApiKey, setOfflineIncludeApiKey] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // Generate ID on mount (or just when needed)
-  useEffect(() => {
-    if (isOpen && activeTab === 'upload' && !uploadId) {
-      generateNewId();
-    }
-  }, [isOpen, activeTab, uploadId]);
-
-  const generateNewId = () => {
-    const newId = syncService.generateId();
-    setUploadId(newId);
-  };
-
-  const resetStatus = () => {
-    setError(null);
-    setSuccess(null);
-  };
-
-  const handleCopyId = () => {
-    navigator.clipboard.writeText(uploadId);
-    setSuccess('ID copied to clipboard');
-    setTimeout(() => setSuccess(null), 2000);
-  };
-
-  const handleUpload = async () => {
-    resetStatus();
-    if (!uploadId || !syncService.validateId(uploadId)) {
-      setError('Invalid ID format. Must be 16 alphanumeric characters.');
-      return;
-    }
-    if (!uploadPassword) {
-      setError('Password is required for secure upload.');
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      const data = await syncService.exportData({ includeSensitive: includeApiKey });
-      const result = await syncService.uploadToCloud(uploadId, uploadPassword, data);
-
-      if (result.success) {
-        setSuccess('Data synced to cloud successfully!');
-      } else {
-        setError(result.message || 'Upload failed');
-      }
-    } catch {
-      setError('An unexpected error occurred.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleDownload = async () => {
-    resetStatus();
-    if (!downloadId || !syncService.validateId(downloadId)) {
-      setError('Invalid ID format. Must be 16 alphanumeric characters.');
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      const result = await syncService.downloadFromCloud(downloadId);
-
-      if (result.success && result.data) {
-        await syncService.importData(result.data);
-        setSuccess('Data restored from cloud successfully! The page will reload momentarily.');
-        setTimeout(() => window.location.reload(), 2000);
-      } else {
-        setError(result.message || 'Download failed');
-      }
-    } catch {
-      setError('An unexpected error occurred.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleOfflineExport = async () => {
-    resetStatus();
-    setIsLoading(true);
-    try {
-      const data = await syncService.exportData({ includeSensitive: offlineIncludeApiKey });
-      const jsonString = JSON.stringify(data, null, 2);
-      const blob = new Blob([jsonString], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-
-      const a = document.createElement('a');
-      a.href = url;
-      const date = new Date().toISOString().split('T')[0];
-      a.download = `hr-inv-backup-${date}.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-
-      setSuccess('Backup file downloaded successfully!');
-    } catch (err) {
-      console.error(err);
-      setError('Failed to export data.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleOfflineImportClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    resetStatus();
-    setIsLoading(true);
-    try {
-      const text = await file.text();
-      const data = JSON.parse(text);
-      await syncService.importData(data);
-      setSuccess('Data imported successfully! The page will reload momentarily.');
-      setTimeout(() => window.location.reload(), 2000);
-    } catch (err: unknown) {
-      console.error(err);
-      setError('Failed to process file. Make sure it is a valid backup JSON.');
-    } finally {
-      setIsLoading(false);
-      if (fileInputRef.current) fileInputRef.current.value = '';
-    }
-  };
+  const { state, actions } = useCloudSync();
+  const {
+    activeTab,
+    isLoading,
+    error,
+    success,
+    uploadId,
+    uploadPassword,
+    showPassword,
+    includeApiKey,
+    downloadId,
+    offlineIncludeApiKey,
+    fileInputRef,
+  } = state;
+  const {
+    setActiveTab,
+    setUploadId,
+    setUploadPassword,
+    setShowPassword,
+    setIncludeApiKey,
+    setDownloadId,
+    setOfflineIncludeApiKey,
+    generateNewId,
+    resetStatus,
+    handleCopyId,
+    handleUpload,
+    handleDownload,
+    handleOfflineExport,
+    handleOfflineImportClick,
+    handleFileChange,
+  } = actions;
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -346,18 +232,42 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({ isOpen, onClose 
                 Ensures only you can overwrite your cloud-stored data.
               </p>
 
-              <div className="flex items-center space-x-2 pt-2 px-1">
-                <Checkbox
-                  id="include-api-key"
-                  checked={includeApiKey}
-                  onCheckedChange={(checked) => setIncludeApiKey(checked === true)}
-                />
-                <label
-                  htmlFor="include-api-key"
-                  className="text-xs font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-muted-foreground"
+              <div className="space-y-2 pt-2 px-1">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="include-api-key"
+                    checked={includeApiKey}
+                    onCheckedChange={(checked) => setIncludeApiKey(checked === true)}
+                  />
+                  <label
+                    htmlFor="include-api-key"
+                    className="text-xs font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-muted-foreground"
+                  >
+                    Include API keys & tokens (not recommended)
+                  </label>
+                </div>
+                <p
+                  className={cn(
+                    'text-[11px] leading-relaxed rounded-xl p-3 border',
+                    includeApiKey
+                      ? 'bg-amber-500/10 border-amber-500/30 text-amber-900 dark:text-amber-100'
+                      : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-900 dark:text-emerald-100'
+                  )}
                 >
-                  Include API Key & Sensitive Data (Not Recommended)
-                </label>
+                  {includeApiKey ? (
+                    <>
+                      <span className="font-bold">Warning:</span> Cloud backup will include API
+                      keys, GitHub tokens, and voice-provider secrets. Only use a trusted Sync ID
+                      and strong password.
+                    </>
+                  ) : (
+                    <>
+                      <span className="font-bold">Privacy default:</span> API keys, GitHub tokens,
+                      and voice secrets are <span className="font-semibold">excluded</span> from
+                      this backup. Interviews and resumes still sync.
+                    </>
+                  )}
+                </p>
               </div>
             </div>
 
@@ -446,9 +356,14 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({ isOpen, onClose 
                       htmlFor="offline-include-api-key"
                       className="text-xs font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-muted-foreground"
                     >
-                      Include API Key
+                      Include API keys & tokens
                     </label>
                   </div>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    {offlineIncludeApiKey
+                      ? 'File will contain secrets — store offline backups securely.'
+                      : 'Default: keys excluded. Interviews & resumes still export.'}
+                  </p>
 
                   <LoadingButton
                     onClick={handleOfflineExport}

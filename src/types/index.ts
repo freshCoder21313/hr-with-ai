@@ -1,8 +1,51 @@
+import { z } from 'zod';
 import { ResumeData } from './resume';
 
 export type { ResumeData };
 
-export type InterviewMode = 'standard' | 'coding' | 'system_design' | 'behavioral';
+/** Content format of the interview (what is being assessed). */
+export type InterviewContentType = 'standard' | 'coding' | 'system_design' | 'behavioral';
+
+/** How the candidate interacts (channel). */
+export type InterviewInteractionMode = 'text' | 'voice' | 'hybrid';
+
+/**
+ * @deprecated Prefer `InterviewContentType`. Kept as an alias for existing imports.
+ */
+export type InterviewMode = InterviewContentType;
+
+/** Content types that may have been stored historically in `mode`. */
+const CONTENT_TYPES: ReadonlySet<string> = new Set([
+  'standard',
+  'coding',
+  'system_design',
+  'behavioral',
+]);
+
+const INTERACTION_MODES: ReadonlySet<string> = new Set(['text', 'voice', 'hybrid']);
+
+/** Resolve content type, including legacy records that put content type in `mode`. */
+export function resolveInterviewContentType(
+  interview: Pick<Interview, 'type' | 'mode'>
+): InterviewContentType {
+  if (interview.type && CONTENT_TYPES.has(interview.type)) {
+    return interview.type;
+  }
+  if (typeof interview.mode === 'string' && CONTENT_TYPES.has(interview.mode)) {
+    return interview.mode as InterviewContentType;
+  }
+  return 'standard';
+}
+
+/** Resolve interaction mode; defaults to text. */
+export function resolveInterviewInteractionMode(
+  interview: Pick<Interview, 'mode'>
+): InterviewInteractionMode {
+  if (typeof interview.mode === 'string' && INTERACTION_MODES.has(interview.mode)) {
+    return interview.mode as InterviewInteractionMode;
+  }
+  return 'text';
+}
 
 export interface Message {
   role: 'user' | 'model';
@@ -38,8 +81,10 @@ export interface Interview {
   resumeText: string;
   language: 'vi-VN' | 'en-US';
   difficulty?: 'easy' | 'medium' | 'hard' | 'hardcore';
-  mode?: InterviewMode | 'text' | 'voice' | 'hybrid'; // Interaction Mode
-  type?: InterviewMode; // Content Type (Standard, Coding, etc.)
+  /** Interaction channel: text | voice | hybrid (legacy rows may store content type here). */
+  mode?: InterviewInteractionMode | InterviewContentType;
+  /** Content format: standard | coding | system_design | behavioral */
+  type?: InterviewContentType;
   voiceSettings?: VoiceSettings;
   companyStatus?: string;
   interviewContext?: string;
@@ -83,8 +128,10 @@ export interface SetupFormData {
   resumeText: string;
   language: 'vi-VN' | 'en-US';
   difficulty: 'easy' | 'medium' | 'hard' | 'hardcore';
-  type: InterviewMode; // Content Type (Standard, Coding, etc.)
-  mode?: 'text' | 'voice' | 'hybrid'; // Interaction Mode
+  /** Content format: standard | coding | system_design | behavioral */
+  type: InterviewContentType;
+  /** Interaction channel: text | voice | hybrid */
+  mode?: InterviewInteractionMode;
   companyStatus: string;
   interviewContext: string;
   isPanel?: boolean; // Panel Interview Mode
@@ -192,15 +239,13 @@ export interface ChatMessage {
 export interface AIResponse {
   text: string;
   usage?: { promptTokens: number; completionTokens: number };
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  rawResponse?: any;
+  rawResponse?: unknown;
 }
 
 export interface AIRequestOptions {
   temperature?: number;
   jsonMode?: boolean;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  schema?: any; // For structured output
+  schema?: unknown; // For structured output
   systemInstruction?: string;
   modelId?: string; // Allow overriding model per request
 }
@@ -208,6 +253,11 @@ export interface AIRequestOptions {
 export interface AIProviderStrategy {
   generateText(messages: ChatMessage[], options?: AIRequestOptions): Promise<AIResponse>;
   streamText(messages: ChatMessage[], options?: AIRequestOptions): AsyncIterable<string>;
+  generateStructured<T>(
+    messages: ChatMessage[],
+    schema: z.ZodType<T>,
+    options?: AIRequestOptions
+  ): Promise<T>;
 }
 
 // --- Voice Interview Types ---

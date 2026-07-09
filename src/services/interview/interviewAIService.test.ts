@@ -1,9 +1,17 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { startInterviewSession, generateInterviewFeedback } from './interviewAIService';
-import { getService, resolveConfig } from '@/services/ai/aiConfigService';
+import { getService } from '@/services/ai/aiConfigService';
 import { Interview, InterviewStatus } from '@/types';
+import { AIService } from '@/services/ai/ai.service';
 
 vi.mock('@/services/ai/aiConfigService');
+
+type MockAIService = Pick<AIService, 'generateText' | 'generateStructured'>;
+
+const mockAIService = (
+  generateText: MockAIService['generateText'],
+  generateStructured?: MockAIService['generateStructured']
+): AIService => ({ generateText, generateStructured }) as unknown as AIService;
 
 describe('interviewAIService', () => {
   afterEach(() => {
@@ -15,9 +23,7 @@ describe('interviewAIService', () => {
       const mockGenerateText = vi
         .fn()
         .mockResolvedValue({ text: 'Hello, this is a test greeting.' });
-      vi.mocked(getService).mockReturnValue({
-        generateText: mockGenerateText,
-      } as any);
+      vi.mocked(getService).mockResolvedValue(mockAIService(mockGenerateText));
 
       const interview: Interview = {
         id: 1,
@@ -41,9 +47,7 @@ describe('interviewAIService', () => {
 
     it('should return a default greeting on failure', async () => {
       const mockGenerateText = vi.fn().mockRejectedValue(new Error('AI Error'));
-      vi.mocked(getService).mockReturnValue({
-        generateText: mockGenerateText,
-      } as any);
+      vi.mocked(getService).mockResolvedValue(mockAIService(mockGenerateText));
 
       const interview: Interview = {
         id: 1,
@@ -66,13 +70,17 @@ describe('interviewAIService', () => {
 
   describe('generateInterviewFeedback', () => {
     it('should generate feedback for an interview', async () => {
-      const mockGenerateText = vi
-        .fn()
-        .mockResolvedValue({ text: '{ "score": 8, "summary": "Good job" }' });
-      vi.mocked(getService).mockReturnValue({
-        generateText: mockGenerateText,
-      } as any);
-      vi.mocked(resolveConfig).mockReturnValue({ apiKey: 'test-key', provider: 'google' });
+      const mockGenerateStructured = vi.fn().mockResolvedValue({
+        score: 8,
+        summary: 'Good job',
+        strengths: [],
+        weaknesses: [],
+        keyQuestionAnalysis: [],
+        mermaidGraphCurrent: 'graph TD',
+        mermaidGraphPotential: 'graph TD',
+        recommendedResources: [],
+      });
+      vi.mocked(getService).mockResolvedValue(mockAIService(vi.fn(), mockGenerateStructured));
 
       const interview: Interview = {
         id: 1,

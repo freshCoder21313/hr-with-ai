@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Wand2 } from 'lucide-react';
+import { isNonEmptyString } from '@/lib/validation';
 import { Resume } from '@/types';
 import { LoadingButton } from '@/components/ui/loading-button';
 
@@ -33,7 +34,7 @@ export const TailorResumeModal: React.FC<TailorResumeModalProps> = ({
   if (!sourceResume) return null;
 
   const handleGenerate = async () => {
-    if (!jobDescription.trim()) return;
+    if (!isNonEmptyString(jobDescription)) return;
 
     setIsProcessing(true);
     try {
@@ -80,7 +81,7 @@ export const TailorResumeModal: React.FC<TailorResumeModalProps> = ({
           </Button>
           <LoadingButton
             onClick={handleGenerate}
-            disabled={!jobDescription.trim()}
+            disabled={!isNonEmptyString(jobDescription)}
             isLoading={isProcessing}
             loadingText="Tailoring..."
             className="bg-purple-600 hover:bg-purple-700"

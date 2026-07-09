@@ -1,4 +1,3 @@
-import { Type } from '@google/genai';
 import { ResumeAnalysis } from '@/types';
 import { db } from '@/lib/db';
 import {
@@ -6,11 +5,14 @@ import {
   getParseResumePrompt,
   getAnalyzeSectionPrompt,
   getTailoredResumePrompt,
-} from '@/features/interview/promptSystem';
+} from '@/services/interview/promptSystem';
 import { ResumeData } from '@/types/resume';
-import { getService, resolveConfig, AIConfigInput } from '@/services/ai/aiConfigService';
-import { cleanJsonString } from '@/services/ai/aiUtils';
-import { getAIResponseOptions } from '@/lib/aiResponseHelper';
+import { getService, AIConfigInput } from '@/services/ai/aiConfigService';
+import {
+  resumeAnalysisSchema,
+  resumeDataSchema,
+  resumeSectionAnalysisSchema,
+} from '@/services/ai/schemas';
 
 export const analyzeResume = async (
   resumeText: string,
@@ -18,10 +20,6 @@ export const analyzeResume = async (
   configInput: AIConfigInput,
   resumeId?: number
 ): Promise<ResumeAnalysis> => {
-  const config = resolveConfig(configInput);
-  const service = await getService(configInput);
-
-  // Check Cache
   if (resumeId) {
     try {
       const cachedResume = await db.resumes.get(resumeId);
@@ -37,32 +35,15 @@ export const analyzeResume = async (
     }
   }
 
+  const service = await getService(configInput);
   const prompt = getResumeAnalysisPrompt(resumeText, jobDescription);
 
   try {
-    const responseOptions = getAIResponseOptions(
-      config,
-      {
-        matchScore: { type: Type.NUMBER },
-        summary: { type: Type.STRING },
-        missingKeywords: { type: Type.ARRAY, items: { type: Type.STRING } },
-        improvements: { type: Type.ARRAY, items: { type: Type.STRING } },
-      },
-      ['matchScore', 'summary', 'missingKeywords', 'improvements']
-    );
-
-    let jsonText = '';
-    const response = await service.generateText(
+    const result = await service.generateStructured(
       [{ role: 'user', content: prompt }],
-      responseOptions
+      resumeAnalysisSchema
     );
-    jsonText = response.text;
 
-    if (!jsonText) throw new Error('No analysis generated');
-
-    const result = JSON.parse(cleanJsonString(jsonText)) as ResumeAnalysis;
-
-    // Save to Cache
     if (resumeId) {
       db.resumes
         .update(resumeId, {
@@ -89,14 +70,10 @@ export const parseResumeToJSON = async (
   const prompt = getParseResumePrompt(rawText);
 
   try {
-    const response = await service.generateText([{ role: 'user', content: prompt }], {
-      jsonMode: true,
-    });
-    const jsonText = response.text || '';
-
-    if (!jsonText) throw new Error('No parsed data generated');
-
-    return JSON.parse(cleanJsonString(jsonText)) as ResumeData;
+    return (await service.generateStructured(
+      [{ role: 'user', content: prompt }],
+      resumeDataSchema
+    )) as unknown as ResumeData;
   } catch (error) {
     console.error('Error parsing resume:', error);
     throw error;
@@ -105,35 +82,17 @@ export const parseResumeToJSON = async (
 
 export const analyzeResumeSection = async (
   sectionName: string,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  sectionData: any,
+  sectionData: unknown,
   configInput: AIConfigInput
 ): Promise<{ critique: string; suggestions: string[]; rewrittenExample: string }> => {
-  const config = resolveConfig(configInput);
   const service = await getService(configInput);
   const prompt = getAnalyzeSectionPrompt(sectionName, sectionData);
 
   try {
-    const responseOptions = getAIResponseOptions(
-      config,
-      {
-        critique: { type: Type.STRING },
-        suggestions: { type: Type.ARRAY, items: { type: Type.STRING } },
-        rewrittenExample: { type: Type.STRING },
-      },
-      ['critique', 'suggestions', 'rewrittenExample']
-    );
-
-    let jsonText = '';
-    const response = await service.generateText(
+    return await service.generateStructured(
       [{ role: 'user', content: prompt }],
-      responseOptions
+      resumeSectionAnalysisSchema
     );
-    jsonText = response.text;
-
-    if (!jsonText) throw new Error('No analysis generated');
-
-    return JSON.parse(cleanJsonString(jsonText));
   } catch (error) {
     console.error('Error analyzing section:', error);
     throw error;
@@ -150,21 +109,16 @@ export const tailorResumeToJob = async (
   const prompt = finalPrompt || getTailoredResumePrompt(sourceResume, jobDescription);
 
   try {
-    const response = await service.generateText([{ role: 'user', content: prompt }], {
-      jsonMode: true,
-    });
-    const jsonText = response.text || '';
-
-    if (!jsonText) throw new Error('No tailored resume generated');
-
-    return JSON.parse(cleanJsonString(jsonText)) as ResumeData;
+    return (await service.generateStructured(
+      [{ role: 'user', content: prompt }],
+      resumeDataSchema
+    )) as unknown as ResumeData;
   } catch (error) {
     console.error('Error tailoring resume:', error);
     throw error;
   }
 };
 
-// New function for Smart Tailor page to avoid breaking existing calls
 export const tailorResumeV2 = async (
   configInput: AIConfigInput,
   prompt: string
@@ -172,14 +126,10 @@ export const tailorResumeV2 = async (
   const service = await getService(configInput);
 
   try {
-    const response = await service.generateText([{ role: 'user', content: prompt }], {
-      jsonMode: true,
-    });
-    const jsonText = response.text || '';
-
-    if (!jsonText) throw new Error('No tailored resume generated');
-
-    return JSON.parse(cleanJsonString(jsonText)) as ResumeData;
+    return (await service.generateStructured(
+      [{ role: 'user', content: prompt }],
+      resumeDataSchema
+    )) as unknown as ResumeData;
   } catch (error) {
     console.error('Error tailoring resume (V2):', error);
     throw error;
@@ -200,14 +150,10 @@ Resume JSON:
 ${JSON.stringify(resumeData)}`;
 
   try {
-    const response = await service.generateText([{ role: 'user', content: prompt }], {
-      jsonMode: true,
-    });
-    const jsonText = response.text || '';
-
-    if (!jsonText) throw new Error('No translated data generated');
-
-    const translated = JSON.parse(cleanJsonString(jsonText)) as ResumeData;
+    const translated = (await service.generateStructured(
+      [{ role: 'user', content: prompt }],
+      resumeDataSchema
+    )) as unknown as ResumeData;
     translated.language = targetLanguage;
     return translated;
   } catch (error) {

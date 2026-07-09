@@ -10,13 +10,11 @@ interface WhiteboardProps {
 }
 
 // Debounce helper
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const useDebouncedCallback = (callback: (...args: any[]) => void, delay: number) => {
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+function useDebouncedCallback<T extends (...args: never[]) => void>(callback: T, delay: number) {
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   return useCallback(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (...args: any[]) => {
+    (...args: Parameters<T>) => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
@@ -26,7 +24,7 @@ const useDebouncedCallback = (callback: (...args: any[]) => void, delay: number)
     },
     [callback, delay]
   );
-};
+}
 
 const Whiteboard: React.FC<WhiteboardProps> = ({
   initialData,
@@ -37,8 +35,7 @@ const Whiteboard: React.FC<WhiteboardProps> = ({
   const isInitialLoad = useRef(true);
 
   // Debounce the save to DB to avoid performance hits
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const debouncedOnChange = useDebouncedCallback((snapshot: any) => {
+  const debouncedOnChange = useDebouncedCallback((snapshot: unknown) => {
     onChange(JSON.stringify(snapshot));
   }, 1000);
 

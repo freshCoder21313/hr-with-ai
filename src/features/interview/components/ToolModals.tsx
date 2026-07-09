@@ -2,7 +2,7 @@ import React, { Suspense } from 'react';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Code2, PenTool, X } from 'lucide-react';
-// import { Editor } from 'tldraw'; // Removed direct import to avoid typing issues if not needed here
+import { Editor } from 'tldraw';
 
 // Lazy load components
 const CodeEditor = React.lazy(() => import('@/features/interview/CodeEditor'));
@@ -15,12 +15,9 @@ interface ToolModalsProps {
   setIsWhiteboardOpen: (open: boolean) => void;
   currentCode: string;
   updateCode: (val: string) => void;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  whiteboardData: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  onWhiteboardMount: (editor: any) => void;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  updateWhiteboard: (data: any) => void;
+  whiteboardData: string;
+  onWhiteboardMount: (editor: Editor) => void;
+  updateWhiteboard: (data: string) => void;
   handleRunCode: () => void;
   onSubmit: (type: 'code' | 'whiteboard') => void;
   isHardcore: boolean;

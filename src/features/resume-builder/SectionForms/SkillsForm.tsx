@@ -1,10 +1,12 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
+import { notificationService } from '@/services/core/notificationService';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Skill } from '@/types/resume';
 import { Plus, Trash2, X } from 'lucide-react';
+import { isNonEmptyString } from '@/lib/validation';
 
 interface SkillsFormProps {
   data: Skill[];
@@ -16,8 +18,13 @@ const SkillsForm: React.FC<SkillsFormProps> = ({ data, onChange }) => {
     onChange([...data, { name: 'New Skill Category', keywords: [] }]);
   };
 
-  const handleRemoveCategory = (index: number) => {
-    if (confirm('Remove this skill category?')) {
+  const handleRemoveCategory = async (index: number) => {
+    const confirmed = await notificationService.confirm({
+      title: 'Remove Category',
+      message: 'Remove this skill category?',
+      variant: 'destructive',
+    });
+    if (confirmed) {
       const newData = [...data];
       newData.splice(index, 1);
       onChange(newData);
@@ -31,7 +38,7 @@ const SkillsForm: React.FC<SkillsFormProps> = ({ data, onChange }) => {
   };
 
   const handleAddKeyword = (index: number, keyword: string) => {
-    if (!keyword.trim()) return;
+    if (!isNonEmptyString(keyword)) return;
     const newData = [...data];
     const currentKeywords = newData[index].keywords || [];
     newData[index] = { ...newData[index], keywords: [...currentKeywords, keyword] };

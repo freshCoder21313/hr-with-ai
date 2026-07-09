@@ -11,6 +11,7 @@ import { db } from '@/lib/db';
 import { InterviewStatus, SetupFormData, Interview, Message } from '@/types';
 import { getActiveScenario } from '@/features/interview/scenarios';
 import { openApiKeyModal } from '@/events/apiKeyEvents';
+import { isNonEmptyString, validateInterviewSetup } from '@/lib/validation';
 
 export const useInterview = () => {
   const navigate = useNavigate();
@@ -18,7 +19,8 @@ export const useInterview = () => {
     currentInterview,
     setInterview,
     addMessage,
-    updateLastMessage,
+    updateMessageByTimestamp,
+    markMessageAsError,
     markLastMessageAsError,
     removeLastMessage,
     updateStatus,
@@ -31,6 +33,11 @@ export const useInterview = () => {
       try {
         setLoading(true);
         setError(null);
+
+        const validation = validateInterviewSetup(data);
+        if (!validation.isValid) {
+          throw new Error(validation.errors.join(' '));
+        }
 
         const config = getStoredAIConfig();
         if (!config.apiKey) {
@@ -144,6 +151,8 @@ export const useInterview = () => {
       const latestInterview = useInterviewStore.getState().currentInterview;
       if (!latestInterview) return;
 
+      let streamId = 0;
+
       try {
         setLoading(true); // Start loading
         const config = getStoredAIConfig();
@@ -164,10 +173,11 @@ export const useInterview = () => {
         addMessage(userMsg);
 
         // 2. Prepare Placeholder for AI Message
+        streamId = Date.now() + 1;
         const aiMsgPlaceholder: Message = {
           role: 'model',
-          content: '', // Start empty for streaming
-          timestamp: Date.now() + 1,
+          content: '',
+          timestamp: streamId,
         };
         addMessage(aiMsgPlaceholder);
 
@@ -229,20 +239,20 @@ export const useInterview = () => {
             }
           }
 
-          updateLastMessage(fullResponse);
+          updateMessageByTimestamp(streamId, fullResponse);
         }
 
         // Check if response was empty (silent failure)
-        if (!fullResponse.trim()) {
+        if (!isNonEmptyString(fullResponse)) {
           throw new Error('Received empty response from AI provider.');
         }
 
         // 4. Update DB (Background)
         if (latestInterview.id) {
-          // Create a fresh copy of messages to save
-          // Note: we need the absolute latest messages including the ones we just added to store
-          // But addMessage is async/state update.
-          // Actually, we can just construct it here based on logic:
+          // IMPORTANT: Fetch the absolute latest state from the store again
+          // to include any code/whiteboard changes that happened DURING streaming.
+          const currentStoreState = useInterviewStore.getState().currentInterview;
+
           const updatedMessages = [
             ...latestInterview.messages,
             userMsg,
@@ -251,8 +261,8 @@ export const useInterview = () => {
 
           await db.interviews.update(latestInterview.id, {
             messages: updatedMessages,
-            code: latestInterview.code, // Save latest code too
-            whiteboard: latestInterview.whiteboard, // Save latest whiteboard
+            code: currentStoreState?.code || latestInterview.code,
+            whiteboard: currentStoreState?.whiteboard || latestInterview.whiteboard,
           });
         }
 
@@ -267,15 +277,19 @@ export const useInterview = () => {
         const msg = err instanceof Error ? err.message : 'An unexpected error occurred.';
         console.error('Error sending message:', err);
         // Mark the last message (the placeholder) as error
-        markLastMessageAsError(msg);
+        if (streamId) {
+          markMessageAsError(streamId, msg);
+        } else {
+          markLastMessageAsError(msg);
+        }
       } finally {
         setLoading(false); // Stop loading
       }
     },
     [
-      // Removed currentInterview dependency to avoid stale closure re-creation
       addMessage,
-      updateLastMessage,
+      updateMessageByTimestamp,
+      markMessageAsError,
       markLastMessageAsError,
       setLoading,
       endSession,
@@ -289,7 +303,8 @@ export const useInterview = () => {
     const messages = latestInterview.messages;
     const lastMsg = messages[messages.length - 1];
 
-    const isErrorOrEmpty = lastMsg.role === 'model' && (lastMsg.isError || !lastMsg.content.trim());
+    const isErrorOrEmpty =
+      lastMsg.role === 'model' && (lastMsg.isError || !isNonEmptyString(lastMsg.content));
 
     if (isErrorOrEmpty) {
       removeLastMessage();

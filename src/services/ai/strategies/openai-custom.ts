@@ -1,4 +1,7 @@
+import { z } from 'zod';
 import { AIProviderStrategy, ChatMessage, AIResponse, AIRequestOptions } from '@/types';
+import { normalizeMessages } from '@/lib/aiResponseHelper';
+import { jsonOnlyInstruction, parseStructuredResponse } from '@/lib/aiStructuredOutput';
 
 interface OpenAIMessage {
   role: 'user' | 'assistant' | 'system';
@@ -68,11 +71,8 @@ export class OpenAICustomStrategy implements AIProviderStrategy {
   }
 
   async generateText(messages: ChatMessage[], options?: AIRequestOptions): Promise<AIResponse> {
-    // Map ChatMessage to OpenAI format
-    const openAIMessages = messages.map((m) => ({
-      role: m.role === 'model' ? 'assistant' : m.role, // Handle 'model' role if passed
-      content: m.content,
-    }));
+    // Map ChatMessage to OpenAI format using shared utility
+    const openAIMessages = normalizeMessages(messages);
 
     // Add system instruction if present
     if (options?.systemInstruction) {
@@ -96,11 +96,25 @@ export class OpenAICustomStrategy implements AIProviderStrategy {
     };
   }
 
+  async generateStructured<T>(
+    messages: ChatMessage[],
+    schema: z.ZodType<T>,
+    options?: AIRequestOptions
+  ): Promise<T> {
+    const systemInstruction = options?.systemInstruction
+      ? `${options.systemInstruction}\n\n${jsonOnlyInstruction}`
+      : jsonOnlyInstruction;
+    const response = await this.generateText(messages, {
+      ...options,
+      jsonMode: true,
+      systemInstruction,
+    });
+
+    return parseStructuredResponse(response.text, schema);
+  }
+
   async *streamText(messages: ChatMessage[], options?: AIRequestOptions): AsyncIterable<string> {
-    const openAIMessages = messages.map((m) => ({
-      role: m.role === 'model' ? 'assistant' : m.role,
-      content: m.content,
-    }));
+    const openAIMessages = normalizeMessages(messages);
 
     // Add system instruction if present
     if (options?.systemInstruction) {

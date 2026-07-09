@@ -105,8 +105,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = memo(({ content }) => 
         return url;
       }}
       components={{
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        code(props: any) {
+        code(props: { inline?: boolean; className?: string; children?: React.ReactNode }) {
           const { inline, className, children } = props;
           const match = /language-(\w+)/.exec(className || '');
           const lang = match ? match[1] : '';
@@ -124,8 +123,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = memo(({ content }) => 
                 {lang}
               </div>
               <SyntaxHighlighter
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                style={vscDarkPlus as any}
+                style={vscDarkPlus}
                 language={match[1]}
                 PreTag="div"
                 className="rounded-lg !my-0 !bg-[#1e1e1e] border border-slate-700 shadow-sm pt-8"

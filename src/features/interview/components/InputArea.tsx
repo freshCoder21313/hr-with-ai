@@ -7,7 +7,8 @@ import InterviewHintView from '@/features/interview/InterviewHintView';
 import { InterviewHints } from '@/services/interview/interviewAIService';
 import { LoadingButton } from '@/components/ui/loading-button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { useSpeechToText } from '@/hooks/useSpeechToText';
+import { useBrowserSpeechToText } from '@/hooks/useBrowserSpeechToText';
+import { isNonEmptyString } from '@/lib/validation';
 
 interface InputAreaProps {
   inputValue: string;
@@ -51,7 +52,7 @@ export const InputArea: React.FC<InputAreaProps> = ({
   hintsEnabled,
   language,
 }) => {
-  const { isListening, toggleListening, transcript } = useSpeechToText(language || 'vi-VN');
+  const { isListening, toggleListening, transcript } = useBrowserSpeechToText(language || 'vi-VN');
   const [baseText, setBaseText] = useState('');
 
   const handleToggleListening = React.useCallback(() => {
@@ -215,7 +216,7 @@ export const InputArea: React.FC<InputAreaProps> = ({
           <TooltipTrigger asChild>
             <Button
               onClick={onSendMessage}
-              disabled={!inputValue.trim() || isProcessing}
+              disabled={!isNonEmptyString(inputValue) || isProcessing}
               className="h-[44px] w-[44px] md:h-[50px] md:w-[50px] rounded-xl shrink-0"
               size="icon"
               data-testid="send-button"

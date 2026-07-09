@@ -1,17 +1,11 @@
-import { Type } from '@google/genai';
-import { UserSettings } from '@/types';
+import { UserSettings, JobRecommendation } from '@/types';
 import { db } from '@/lib/db';
-import { getExtractJDInfoPrompt } from '@/features/interview/promptSystem';
+import { getExtractJDInfoPrompt } from '@/services/interview/promptSystem';
 import { generateJobRecommendationsPrompt, generateTailoredResumePrompt } from './jobPromptSystem';
 import { ResumeData } from '@/types/resume';
-import {
-  getService,
-  resolveConfig,
-  AIConfigInput,
-  getStoredAIConfig,
-} from '@/services/ai/aiConfigService';
-import { cleanJsonString } from '@/services/ai/aiUtils';
-import { getArrayAIResponseOptions } from '@/lib/aiResponseHelper';
+import { DBJobRecommendation } from './jobRecommendationService';
+import { getService, AIConfigInput, getStoredAIConfig } from '@/services/ai/aiConfigService';
+import { jdExtractSchema, jobRecommendationsSchema, resumeDataSchema } from '@/services/ai/schemas';
 
 export const extractInfoFromJD = async (
   jobDescription: string,
@@ -28,39 +22,39 @@ export const extractInfoFromJD = async (
   const prompt = getExtractJDInfoPrompt(jobDescription);
 
   try {
-    const response = await service.generateText([{ role: 'user', content: prompt }]);
-    const jsonText = response.text || '';
-
-    if (!jsonText) throw new Error('No information extracted');
-
-    return JSON.parse(cleanJsonString(jsonText));
+    return await service.generateStructured([{ role: 'user', content: prompt }], jdExtractSchema);
   } catch (error) {
     console.error('Error extracting info from JD:', error);
     throw error;
   }
 };
 
-// Generate job recommendations from resume data
 export const generateJobRecommendations = async (
   resumeData: ResumeData,
   language: string,
   _config: UserSettings,
   resumeId?: number
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-): Promise<any[]> => {
+): Promise<JobRecommendation[]> => {
   const aiConfig = getStoredAIConfig();
-  const config = resolveConfig(aiConfig);
   const service = await getService(aiConfig);
 
-  // Check Cache
   if (resumeId) {
     try {
       const cachedJobs = await db.job_recommendations.where('resumeId').equals(resumeId).toArray();
 
       if (cachedJobs && cachedJobs.length > 0) {
         return cachedJobs.map((job) => ({
-          ...job,
           id: `job-${job.createdAt}-${job.id}`,
+          title: job.title,
+          company: job.company,
+          industry: job.industry || '',
+          location: job.location || '',
+          salaryRange: job.salaryRange || '',
+          keyRequirements: JSON.parse(job.keyRequirements || '[]') as string[],
+          whyItFits: job.whyItFits || '',
+          matchScore: job.matchScore || 0,
+          jobDescription: job.jobDescription || '',
+          tailoredResumeId: job.tailoredResumeId,
         }));
       }
     } catch {
@@ -71,60 +65,41 @@ export const generateJobRecommendations = async (
   const prompt = generateJobRecommendationsPrompt(resumeData, language);
 
   try {
-    const responseOptions = getArrayAIResponseOptions(
-      config,
-      {
-        title: { type: Type.STRING },
-        company: { type: Type.STRING },
-        industry: { type: Type.STRING },
-        location: { type: Type.STRING },
-        salaryRange: { type: Type.STRING },
-        keyRequirements: { type: Type.ARRAY, items: { type: Type.STRING } },
-        whyItFits: { type: Type.STRING },
-        matchScore: { type: Type.NUMBER },
-        jobDescription: { type: Type.STRING },
-      },
-      [
-        'title',
-        'company',
-        'industry',
-        'location',
-        'salaryRange',
-        'keyRequirements',
-        'whyItFits',
-        'matchScore',
-        'jobDescription',
-      ]
-    );
-
-    let jsonText = '';
-    const response = await service.generateText(
+    const recommendations = await service.generateStructured(
       [{ role: 'user', content: prompt }],
-      responseOptions
+      jobRecommendationsSchema
     );
-    jsonText = response.text;
 
-    if (!jsonText) throw new Error('No job recommendations generated');
-
-    const recommendations = JSON.parse(cleanJsonString(jsonText));
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const mappedRecommendations = recommendations.map((job: any, index: number) => ({
-      ...job,
+    const mappedRecommendations: JobRecommendation[] = recommendations.map((job, index) => ({
       id: `job-${Date.now()}-${index}`,
+      title: job.title,
+      company: job.company,
+      industry: job.industry || '',
+      location: job.location || '',
+      salaryRange: job.salaryRange || '',
+      keyRequirements: job.keyRequirements || [],
+      whyItFits: job.whyItFits || '',
+      matchScore: job.matchScore || 0,
+      jobDescription: job.jobDescription || '',
     }));
 
-    // Cache Results
     if (resumeId) {
       db.transaction('rw', db.job_recommendations, async () => {
         await db.job_recommendations.where('resumeId').equals(resumeId).delete();
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const dbJobs = mappedRecommendations.map((job: any) => ({
-          ...job,
+        const dbJobs: Omit<DBJobRecommendation, 'id'>[] = mappedRecommendations.map((job) => ({
+          interviewId: 0,
           resumeId,
+          title: job.title,
+          company: job.company,
+          industry: job.industry,
+          location: job.location,
+          salaryRange: job.salaryRange,
+          keyRequirements: JSON.stringify(job.keyRequirements || []),
+          whyItFits: job.whyItFits,
+          matchScore: job.matchScore,
+          jobDescription: job.jobDescription,
+          tailoredResumeId: job.tailoredResumeId,
           createdAt: Date.now(),
-          // Remove the temporary string ID to let Dexie auto-increment ID
-          id: undefined,
         }));
         await db.job_recommendations.bulkAdd(dbJobs);
       }).catch(() => {
@@ -139,7 +114,6 @@ export const generateJobRecommendations = async (
   }
 };
 
-// Generate tailored resume for specific job
 export const generateTailoredResumeForJob = async (
   originalResumeData: ResumeData,
   jobDescription: string,
@@ -150,14 +124,10 @@ export const generateTailoredResumeForJob = async (
   const prompt = generateTailoredResumePrompt(originalResumeData, jobDescription);
 
   try {
-    const response = await service.generateText([{ role: 'user', content: prompt }], {
-      jsonMode: true,
-    });
-    const jsonText = response.text || '';
-
-    if (!jsonText) throw new Error('No tailored resume generated');
-
-    return JSON.parse(cleanJsonString(jsonText)) as ResumeData;
+    return (await service.generateStructured(
+      [{ role: 'user', content: prompt }],
+      resumeDataSchema
+    )) as unknown as ResumeData;
   } catch (error) {
     console.error('Error generating tailored resume:', error);
     throw error;

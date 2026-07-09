@@ -3,6 +3,7 @@ import { Send } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { LoadingButton } from '@/components/ui/loading-button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { isNonEmptyString } from '@/lib/validation';
 
 interface SimpleInputAreaProps {
   onSendMessage: (text: string) => void;
@@ -18,7 +19,7 @@ export const SimpleInputArea: React.FC<SimpleInputAreaProps> = ({
   const [inputValue, setInputValue] = React.useState('');
 
   const handleSend = () => {
-    if (!inputValue.trim()) return;
+    if (!isNonEmptyString(inputValue)) return;
     onSendMessage(inputValue);
     setInputValue('');
   };
@@ -46,7 +47,7 @@ export const SimpleInputArea: React.FC<SimpleInputAreaProps> = ({
           <TooltipTrigger asChild>
             <LoadingButton
               onClick={handleSend}
-              disabled={!inputValue.trim() || disabled}
+              disabled={!isNonEmptyString(inputValue) || disabled}
               className="h-[44px] w-[44px] rounded-xl shrink-0"
               size="icon"
               isLoading={disabled}

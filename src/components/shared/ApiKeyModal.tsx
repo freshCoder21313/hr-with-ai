@@ -6,7 +6,9 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { toast } from 'sonner';
 import { ShieldCheck, X, RefreshCw } from 'lucide-react';
+import { isNonEmptyString } from '@/lib/validation';
 
 type GeminiModel = {
   name: string;
@@ -43,7 +45,7 @@ const ApiKeyModal: React.FC = () => {
 
   const handleFetchModels = async () => {
     if (!apiKey) {
-      alert('Please enter your API Key first.');
+      toast.error('Please enter your API Key first.');
       return;
     }
     setIsFetchingModels(true);
@@ -67,14 +69,16 @@ const ApiKeyModal: React.FC = () => {
     } catch (error) {
       console.error('Failed to fetch Gemini models:', error);
       const errorMessage = error instanceof Error ? error.message : String(error);
-      alert(`Failed to fetch models. Check your API Key and Base URL. Error: ${errorMessage}`);
+      toast.error(
+        `Failed to fetch models. Check your API Key and Base URL. Error: ${errorMessage}`
+      );
     } finally {
       setIsFetchingModels(false);
     }
   };
 
   const handleSave = async () => {
-    if (apiKey.trim()) {
+    if (isNonEmptyString(apiKey)) {
       try {
         const currentSettings = await loadUserSettings();
         await saveUserSettings({
@@ -89,7 +93,7 @@ const ApiKeyModal: React.FC = () => {
         window.location.reload();
       } catch (error) {
         console.error('Failed to save API key:', error);
-        alert('Failed to save settings. Please try again.');
+        toast.error('Failed to save settings. Please try again.');
       }
     }
   };
@@ -280,7 +284,10 @@ const ApiKeyModal: React.FC = () => {
             )}
             <Button
               onClick={handleSave}
-              disabled={!apiKey.trim() || (provider === 'openrouter' && !modelId.trim())}
+              disabled={
+                !isNonEmptyString(apiKey) ||
+                (provider === 'openrouter' && !isNonEmptyString(modelId))
+              }
               className="w-full"
             >
               Save Configuration

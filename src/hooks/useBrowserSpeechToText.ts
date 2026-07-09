@@ -1,17 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { toast } from 'sonner';
 
-declare global {
-  interface Window {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    SpeechRecognition: any;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    webkitSpeechRecognition: any;
-  }
-}
-
-export const useSpeechToText = (
-  language: string = 'vi-VN' // Default to Vietnamese based on user request, but could be dynamic
-) => {
+export const useBrowserSpeechToText = (language: string = 'vi-VN') => {
   const [isListening, setIsListening] = useState(false);
   const [error, setError] = useState<string | null>(() => {
     if (typeof window !== 'undefined') {
@@ -35,7 +25,7 @@ export const useSpeechToText = (
       recognition.onstart = () => {
         setIsListening(true);
         setError(null);
-        setTranscript(''); // Clear transcript when starting a new session
+        setTranscript('');
       };
 
       recognition.onresult = (event: SpeechRecognitionEvent) => {
@@ -70,7 +60,7 @@ export const useSpeechToText = (
 
   const toggleListening = useCallback(() => {
     if (!recognitionRef.current) {
-      alert(
+      toast.error(
         error || 'Speech recognition is not supported in this browser. Please use Chrome or Edge.'
       );
       return;
@@ -90,7 +80,6 @@ export const useSpeechToText = (
   return { isListening, toggleListening, transcript, error };
 };
 
-// Types for Speech Recognition API
 interface SpeechRecognitionEvent extends Event {
   readonly resultIndex: number;
   readonly results: SpeechRecognitionResultList;

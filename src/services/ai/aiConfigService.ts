@@ -1,4 +1,4 @@
-import { AIService, AIServiceOptions } from '@/features/ai-provider/ai.service';
+import { AIService, AIServiceOptions } from '@/services/ai/ai.service';
 import { AIConfig as ProviderConfig } from '@/types';
 import { AIModelProvider } from '@/types';
 import { loadUserSettings } from '@/services/core/settingsService';

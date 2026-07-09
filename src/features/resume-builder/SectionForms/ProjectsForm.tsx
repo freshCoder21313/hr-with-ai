@@ -1,161 +1,107 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import React from 'react';
+import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
 import { Project } from '@/types/resume';
-import { Plus, Trash2, Wand2 } from 'lucide-react';
 import { analyzeResumeSection } from '@/services/resume/resumeAIService';
 import { getStoredAIConfig } from '@/services/ai/aiConfigService';
-import { LoadingButton } from '@/components/ui/loading-button';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { GridField } from './entry-list.shared';
+import { GenericSectionForm } from './GenericSectionForm';
 
 interface ProjectsFormProps {
   data: Project[];
   onChange: (data: Project[]) => void;
 }
 
+const defaultEntry: Project = { name: '', description: '' };
+
 const ProjectsForm: React.FC<ProjectsFormProps> = ({ data, onChange }) => {
-  const [analyzingIndex, setAnalyzingIndex] = useState<number | null>(null);
-
-  const handleAdd = () => {
-    onChange([{ name: '', description: '' }, ...data]);
-  };
-
-  const handleRemove = (index: number) => {
-    if (confirm('Remove this project?')) {
-      const newData = [...data];
-      newData.splice(index, 1);
-      onChange(newData);
-    }
-  };
-
-  const handleChange = <K extends keyof Project>(index: number, field: K, value: Project[K]) => {
-    const newData = [...data];
-    newData[index] = { ...newData[index], [field]: value };
-    onChange(newData);
-  };
-
-  const handleAnalyze = async (index: number) => {
-    const entry = data[index];
+  const handleAnalyze = async (
+    index: number,
+    entry: Project,
+    setAnalyzingIndex: (i: number | null) => void
+  ) => {
     if (!entry.description) {
-      alert('Please add a description to analyze.');
+      toast.error('Please add a description to analyze.');
       return;
     }
-
     const config = getStoredAIConfig();
     if (!config.apiKey) {
-      alert('Please set API Key in settings.');
+      toast.error('Please set API Key in settings.');
       return;
     }
 
     setAnalyzingIndex(index);
     try {
       const result = await analyzeResumeSection('Project Entry', entry, config);
-      alert(`AI Critique:\n${result.critique}\n\nRewritten Example:\n${result.rewrittenExample}`);
+      toast.info(
+        `AI Critique:\n${result.critique}\n\nRewritten Example:\n${result.rewrittenExample}`,
+        { duration: 8000 }
+      );
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : 'Analysis failed';
-      alert('Analysis failed: ' + msg);
+      toast.error('Analysis failed: ' + msg);
     } finally {
       setAnalyzingIndex(null);
     }
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-bold text-foreground">Projects</h2>
-        <Button onClick={handleAdd} size="sm" className="gap-2">
-          <Plus className="w-4 h-4" /> Add Project
-        </Button>
-      </div>
-
-      {data.map((entry, index) => (
-        <Card key={index} className="relative group">
-          <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <LoadingButton
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleAnalyze(index)}
-                  disabled={analyzingIndex === index}
-                  isLoading={analyzingIndex === index}
-                  loadingText=""
-                  className="text-purple-600 border-purple-200 hover:bg-purple-50"
-                >
-                  <Wand2 className="w-4 h-4" />
-                </LoadingButton>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>AI Roast & Fix</p>
-              </TooltipContent>
-            </Tooltip>
-            <Button variant="destructive" size="sm" onClick={() => handleRemove(index)}>
-              <Trash2 className="w-4 h-4" />
-            </Button>
+    <GenericSectionForm<Project>
+      data={data}
+      onChange={onChange}
+      title="Projects"
+      addLabel="Add Project"
+      emptyMessage="No projects added yet."
+      defaultEntry={defaultEntry}
+      getTitle={(entry) => entry.name || '(New Project)'}
+      onAnalyze={handleAnalyze}
+      analyzeTooltip="AI Check"
+      renderFields={(entry, handleChange) => (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <GridField label="Project Name">
+              <Input
+                value={entry.name || ''}
+                onChange={(e) => handleChange('name', e.target.value)}
+              />
+            </GridField>
+            <GridField label="URL / Link">
+              <Input
+                value={entry.url || ''}
+                onChange={(e) => handleChange('url', e.target.value)}
+                placeholder="https://..."
+              />
+            </GridField>
           </div>
 
-          <CardHeader>
-            <CardTitle className="text-base">{entry.name || '(New Project)'}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Project Name</Label>
-                <Input
-                  value={entry.name || ''}
-                  onChange={(e) => handleChange(index, 'name', e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>URL / Link</Label>
-                <Input
-                  value={entry.url || ''}
-                  onChange={(e) => handleChange(index, 'url', e.target.value)}
-                  placeholder="https://..."
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Start Date</Label>
-                <Input
-                  value={entry.startDate || ''}
-                  onChange={(e) => handleChange(index, 'startDate', e.target.value)}
-                  placeholder="YYYY-MM"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>End Date</Label>
-                <Input
-                  value={entry.endDate || ''}
-                  onChange={(e) => handleChange(index, 'endDate', e.target.value)}
-                  placeholder="YYYY-MM or Present"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Description</Label>
-              <Textarea
-                value={entry.description || ''}
-                onChange={(e) => handleChange(index, 'description', e.target.value)}
-                rows={3}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <GridField label="Start Date">
+              <Input
+                value={entry.startDate || ''}
+                onChange={(e) => handleChange('startDate', e.target.value)}
+                placeholder="YYYY-MM"
               />
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+            </GridField>
+            <GridField label="End Date">
+              <Input
+                value={entry.endDate || ''}
+                onChange={(e) => handleChange('endDate', e.target.value)}
+                placeholder="YYYY-MM or Present"
+              />
+            </GridField>
+          </div>
 
-      {data.length === 0 && (
-        <div className="text-center py-12 border-2 border-dashed border-border rounded-lg text-muted-foreground">
-          No projects added yet.
-        </div>
+          <GridField label="Description">
+            <Textarea
+              value={entry.description || ''}
+              onChange={(e) => handleChange('description', e.target.value)}
+              rows={3}
+            />
+          </GridField>
+        </>
       )}
-    </div>
+    />
   );
 };
 

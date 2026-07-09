@@ -4,7 +4,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { db } from '@/lib/db';
 import * as interviewAIService from '@/services/interview/interviewAIService';
 import InterviewRoom from './InterviewRoom';
-import { Interview, InterviewStatus, Message } from '@/types';
+import { Interview, InterviewStatus } from '@/types';
 import { useInterviewStore } from './interviewStore';
 import { TooltipProvider } from '@/components/ui/tooltip';
 
@@ -45,20 +45,16 @@ describe('InterviewRoom Integration Test', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(db.interviews.get).mockResolvedValue(mockInterview);
+    vi.mocked(db.resumes.toArray).mockResolvedValue([]);
     vi.mocked(db.userSettings.orderBy).mockReturnValue({
       first: vi.fn().mockResolvedValue({ hintsEnabled: true }),
-    } as any);
+    } as unknown as ReturnType<typeof db.userSettings.orderBy>);
     useInterviewStore.setState({
       currentInterview: mockInterview,
-      setInterview: (interview: Interview | null) =>
+      setInterview: (interview: Interview) =>
         useInterviewStore.setState({ currentInterview: interview }),
-      addMessage: (message: Message) =>
-        useInterviewStore.setState((state) => ({
-          currentInterview: state.currentInterview
-            ? { ...state.currentInterview, messages: [...state.currentInterview.messages, message] }
-            : null,
-        })),
-    } as any);
+      addMessage: (message) => useInterviewStore.getState().addMessage(message),
+    });
   });
 
   it('should load an interview and allow sending a message', async () => {

@@ -1,8 +1,16 @@
 import { Type } from '@google/genai';
+import { ChatMessage } from '@/types';
 
 export interface AIResponseConfig {
   baseUrl?: string;
 }
+
+export const normalizeMessages = (messages: ChatMessage[]) => {
+  return messages.map((msg) => ({
+    role: msg.role === 'model' ? 'assistant' : msg.role,
+    content: msg.content,
+  }));
+};
 
 export const getAIResponseOptions = (
   config: AIResponseConfig,

@@ -1,4 +1,5 @@
 import { useEffect, useCallback } from 'react';
+import { toast } from 'sonner';
 import { useVoiceInterviewStore } from '@/features/interview/stores/voiceInterviewStore';
 import { useSpeechToText } from './useSpeechToText';
 import { useTextToSpeech } from './useTextToSpeech';
@@ -9,6 +10,7 @@ import { getStoredAIConfig } from '@/services/ai/aiConfigService';
 import { voiceInterviewService } from '@/services/voice/voiceInterviewService';
 import { Message } from '@/types';
 import { getErrorMessage } from '@/lib/utils';
+import { isNonEmptyString } from '@/lib/validation';
 
 export const useVoiceInterview = () => {
   // Local state & Context
@@ -93,8 +95,22 @@ export const useVoiceInterview = () => {
     stt.startListening();
 
     // Optional: Start visualizer
-    recorder.startRecording().catch(console.error);
+    recorder.startRecording().catch((err) => {
+      console.error('Failed to start recording', err);
+      toast.error('Could not access microphone. Please check permissions.');
+      setCurrentState('idle');
+      stt.stopListening();
+    });
   }, [stt, recorder, setCurrentState, clearTranscript]);
+
+  useEffect(() => {
+    return () => {
+      voiceInterviewService.setOnSentenceCallback(null);
+      voiceInterviewService.reset();
+      stt.stopListening();
+      recorder.cancelRecording();
+    };
+  }, [stt, recorder]);
 
   // Process AI Response
   const processAIResponse = useCallback(
@@ -159,7 +175,7 @@ export const useVoiceInterview = () => {
   // Action: Send Text Message (Hybrid Mode)
   const sendTextMessage = useCallback(
     async (text: string) => {
-      if (!text.trim()) return;
+      if (!isNonEmptyString(text)) return;
 
       // Add User Message
       const userMsg: Message = {
@@ -188,7 +204,7 @@ export const useVoiceInterview = () => {
 
     const textToSend = stt.transcript.trim() || stt.interimTranscript.trim(); // Fallback
 
-    if (!textToSend) {
+    if (!isNonEmptyString(textToSend)) {
       setCurrentState('idle'); // No input
       return;
     }

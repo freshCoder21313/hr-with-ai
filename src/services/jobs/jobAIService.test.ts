@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { extractInfoFromJD } from './jobAIService';
-import { getService, resolveConfig } from '@/services/ai/aiConfigService';
+import { getService } from '@/services/ai/aiConfigService';
 
 vi.mock('@/services/ai/aiConfigService');
 
@@ -11,18 +11,19 @@ describe('jobAIService', () => {
 
   describe('extractInfoFromJD', () => {
     it('should extract job info from a job description', async () => {
-      const mockGenerateText = vi.fn().mockResolvedValue({
-        text: '{ "company": "TestCo", "jobTitle": "Tester" }',
+      const mockGenerateStructured = vi.fn().mockResolvedValue({
+        company: 'TestCo',
+        jobTitle: 'Tester',
+        interviewerPersona: 'Hiring Manager',
       });
-      vi.mocked(getService).mockReturnValue({
-        generateText: mockGenerateText,
-      } as any);
-      vi.mocked(resolveConfig).mockReturnValue({ apiKey: 'test-key', provider: 'google' });
+      vi.mocked(getService).mockResolvedValue({
+        generateStructured: mockGenerateStructured,
+      } as never);
 
       const jobInfo = await extractInfoFromJD('job description', 'test-api-key');
 
       expect(getService).toHaveBeenCalled();
-      expect(mockGenerateText).toHaveBeenCalled();
+      expect(mockGenerateStructured).toHaveBeenCalled();
       expect(jobInfo.company).toBe('TestCo');
       expect(jobInfo.jobTitle).toBe('Tester');
     });

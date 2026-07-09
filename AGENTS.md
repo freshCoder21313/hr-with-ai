@@ -39,17 +39,23 @@ Setup file: `src/setupTests.ts`.
   ```
 - **Run a Single Test File:**
   ```bash
-  npx vitest run src/features/auth/Login.test.tsx
+  npx vitest run src/services/core/syncService.test.ts
   ```
 - **Run Tests Matching a Name/Pattern:**
   ```bash
-  npx vitest -t "Login Component"
+  npx vitest -t "syncService"
   ```
 - **Run with Coverage:**
   ```bash
-  npx vitest run --coverage
+  npm run test:coverage
+  ```
+- **E2E Smoke (Playwright):**
+  ```bash
+  npm run test:e2e:install   # once
+  npm run test:e2e
   ```
 - **Watch Mode:** `npm run test` runs in watch mode by default. Use `run` argument for single pass.
+- **Logging:** use `logger` from `@/lib/logger` instead of `console.log` (ESLint forbids `console.log`).
 
 ## 3. Code Style & Guidelines
 
@@ -74,7 +80,7 @@ Setup file: `src/setupTests.ts`.
 - **Functional Components:**
   - Use `React.FC<Props>` or directly type the props object: `export const MyComponent = ({ prop }: Props) => { ... }`.
 - **Nullability:** Handle `null` and `undefined` explicitly. Optional chaining (`?.`) is encouraged.
-- **Central Types:** check `src/types.ts` for core domain entities (Interview, Resume, UserSettings).
+- **Central Types:** check `src/types/index.ts` and `src/types/resume.ts` for core domain entities (Interview, Resume, UserSettings).
 
 ### Naming Conventions
 - **Files/Directories:**
@@ -95,9 +101,10 @@ Setup file: `src/setupTests.ts`.
 - Avoid inline `style={{ ... }}` unless dynamic values (coordinates, user colors) require it.
 
 ### State Management
-- **Local UI State:** `useState` for component-specific state.
-- **Global App State:** `zustand` stores (located in `src/lib` or `src/features/*/stores`).
-- **Data Persistence:** `dexie` for storing large datasets/offline data in IndexedDB.
+- **Local UI State:** `useState` for component-specific state (modals, tabs, ephemeral form UI).
+- **Global App State:** `zustand` stores colocated with features (`src/features/*/stores` or `*Store.ts`) for cross-route domain state.
+- **Data Persistence:** `dexie` for storing large datasets/offline data in IndexedDB (source of truth for interviews/resumes/settings).
+- **Policy:** see `docs/adr/001-state-management.md`.
 
 ### Error Handling
 - **Async Operations:** Wrap `await` calls in `try/catch`.
@@ -106,12 +113,22 @@ Setup file: `src/setupTests.ts`.
 
 ## 4. Project Structure
 
-- **`src/api/`**: Serverless functions / Backend logic.
+- **`src/api/`**: Serverless functions / Backend logic (also `api/` at repo root for Vercel).
 - **`src/components/ui/`**: Reusable "shadcn-like" base components (Buttons, Inputs, Dialogs).
-- **`src/features/`**: Feature-based modules. Each feature folder should ideally contain its own components, hooks, and types if they are isolated.
-- **`src/lib/`**: Shared utilities, database configuration, store definitions.
-- **`src/services/`**: Service layer for external API interactions (e.g., AI providers).
-- **`src/types/`**: Global type definitions (also check `src/types.ts`).
+- **`src/features/`**: Feature-based UI modules (pages, hooks, stores). **Must not be imported by `services/`.**
+- **`src/lib/`**: Shared utilities, database configuration.
+- **`src/services/`**: Domain & infrastructure services (AI, sync, interview, resume, jobs, voice, prompts).
+  - **`src/services/ai/`**: `AIService`, provider strategies, schemas, config helpers.
+  - **`src/services/prompts/`**: Domain-split prompt templates (interview, resume, jobs, …).
+- **`src/types/`**: Global type definitions (`src/types/index.ts`, `src/types/resume.ts`).
+
+### Dependency direction (strict)
+
+```
+features (UI) → services → lib / types
+```
+
+See `docs/adr/000-dependency-direction.md`.
 
 ## 5. Agent Operational Guidelines
 
@@ -119,7 +136,7 @@ When operating in this codebase, adhere to the following workflow:
 
 1.  **Explore Phase:**
     - Read `AGENTS.md` (this file).
-    - Read `src/types.ts` to understand domain models.
+    - Read `src/types/index.ts` to understand domain models.
     - Read `src/lib/db.ts` to understand data persistence.
     - Search for existing components before creating new ones.
 
@@ -140,8 +157,10 @@ When operating in this codebase, adhere to the following workflow:
 ## 6. Specific Patterns
 
 ### API & Data Fetching
-- Access environment variables via `import.meta.env` (e.g., `import.meta.env.VITE_API_URL`).
-- Secure API keys: Never hardcode keys. Use prompts or env vars (see `ApiKeyModal`).
+- **Client env:** only `VITE_*` (e.g. `import.meta.env.VITE_API_URL`). See `.env.example`.
+- **Server env:** `DATABASE_URL`, `ALLOWED_ORIGIN`, `RATE_LIMIT` for `api/sync.ts` — never expose with `VITE_`.
+- **AI API keys:** never hardcode. Prefer in-app Settings / `ApiKeyModal` (local storage), not client env.
+- **Security:** see `docs/SECURITY.md` (sync threat model, vuln exceptions, secrets policy).
 
 ### Routing
 - **Library:** `react-router-dom` v7.
@@ -149,8 +168,9 @@ When operating in this codebase, adhere to the following workflow:
 - **Links:** Use `<Link>` or `useNavigate`. Do not use `<a>` tags for internal navigation.
 
 ### AI Integration
-- This app uses multiple AI providers (Gemini, OpenAI, Anthropic).
-- Check `src/services/ai/` (or similar) for integration logic.
-- Respect `src/types.ts` regarding `AIProviderStrategy`.
+- This app uses multiple AI providers (Gemini, OpenAI, Anthropic, OpenRouter).
+- Import from `src/services/ai/` (`AIService`, strategies, schemas). Prefer `@/services/ai` over deprecated `features/ai-provider` shims.
+- Prompts: `@/services/prompts` (or legacy re-export `@/services/interview/promptSystem`).
+- Respect `src/types/index.ts` regarding `AIProviderStrategy`, `InterviewContentType`, and `InterviewInteractionMode`.
 
 (End of Guide)

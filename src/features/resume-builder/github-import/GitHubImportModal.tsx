@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import {
   Dialog,
   DialogContent,
@@ -25,262 +25,25 @@ import {
   User,
   Zap,
 } from 'lucide-react';
-import { fetchGitHubRepos, fetchReadme, GitHubRepo } from '@/lib/github';
-import { loadUserSettings, saveUserSettings } from '@/services/core/settingsService';
-import { convertRepoToProject } from './githubAIService';
-import { Project } from '@/types/resume';
-import { db } from '@/lib/db';
-import { UserSettings } from '@/types';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { cn } from '@/lib/utils';
+import { useGitHubImport } from './useGitHubImport';
 
 interface GitHubImportModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onImportComplete?: () => void; // Callback to refresh UI
+  onImportComplete?: () => void;
 }
-
-type Step = 'credentials' | 'selection' | 'processing' | 'review';
 
 export const GitHubImportModal: React.FC<GitHubImportModalProps> = ({
   isOpen,
   onClose,
   onImportComplete,
 }) => {
-  const [step, setStep] = useState<Step>('credentials');
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  // Credentials State
-  const [username, setUsername] = useState('');
-  const [token, setToken] = useState('');
-  const [settings, setSettings] = useState<UserSettings | null>(null);
-
-  // Selection State
-  const [repos, setRepos] = useState<GitHubRepo[]>([]);
-  const [filteredRepos, setFilteredRepos] = useState<GitHubRepo[]>([]);
-  const [selectedRepoIds, setSelectedRepoIds] = useState<number[]>([]);
-  const [filterText, setFilterText] = useState('');
-  const [hideForks, setHideForks] = useState(true);
-
-  // Processing State
-  const [processedCount, setProcessedCount] = useState(0);
-
-  // Review State
-  const [generatedProjects, setGeneratedProjects] = useState<Project[]>([]);
-  const [projectsToImport, setProjectsToImport] = useState<Set<number>>(new Set()); // Index in generatedProjects array
-
-  // Load Settings on Open
-  useEffect(() => {
-    if (isOpen) {
-      loadUserSettings().then((s) => {
-        setSettings(s);
-        if (s.githubUsername) setUsername(s.githubUsername);
-        if (s.githubToken) setToken(s.githubToken);
-        // If credentials exist, maybe skip to selection?
-        // Let's force user to confirm credentials for now
-      });
-      // Reset state
-      setStep('credentials');
-      setRepos([]);
-      setSelectedRepoIds([]);
-      setGeneratedProjects([]);
-      setProjectsToImport(new Set());
-      setError(null);
-    }
-  }, [isOpen]);
-
-  // Filter Repos Effect
-  useEffect(() => {
-    let result = repos;
-    if (hideForks) {
-      result = result.filter((r) => !r.fork);
-    }
-    if (filterText) {
-      const lower = filterText.toLowerCase();
-      result = result.filter(
-        (r) => r.name.toLowerCase().includes(lower) || r.language?.toLowerCase().includes(lower)
-      );
-    }
-    setFilteredRepos(result);
-  }, [repos, filterText, hideForks]);
-
-  const handleConnect = async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const fetchedRepos = await fetchGitHubRepos(username, token);
-      setRepos(fetchedRepos);
-
-      // Save credentials
-      if (settings) {
-        await saveUserSettings({
-          ...settings,
-          githubUsername: username,
-          githubToken: token,
-        });
-      }
-
-      setStep('selection');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to connect to GitHub');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleToggleRepo = (repoId: number) => {
-    setSelectedRepoIds((prev) =>
-      prev.includes(repoId) ? prev.filter((id) => id !== repoId) : [...prev, repoId]
-    );
-  };
-
-  const handleProcess = async () => {
-    setStep('processing');
-    setIsLoading(true);
-    setProcessedCount(0);
-    setError(null);
-
-    const selectedRepos = repos.filter((r) => selectedRepoIds.includes(r.id));
-    const results: Project[] = [];
-
-    // Process in batches of 3 to improve speed while respecting rate limits
-    const BATCH_SIZE = 3;
-    try {
-      for (let i = 0; i < selectedRepos.length; i += BATCH_SIZE) {
-        const batch = selectedRepos.slice(i, i + BATCH_SIZE);
-
-        const batchResults = await Promise.all(
-          batch.map(async (repo) => {
-            try {
-              const readme = await fetchReadme(repo.owner.login, repo.name, token);
-              // Ensure API key is present
-              if (!settings?.apiKey) {
-                throw new Error('API Key is missing. Please add it in Settings.');
-              }
-              // Pass the FULL settings object as config so it can use custom baseURL/model if set
-              // This fixes the issue where custom APIs were being ignored and defaulting to Google's endpoint
-              return await convertRepoToProject(repo, readme, {
-                apiKey: settings.apiKey,
-                baseUrl: settings.baseUrl,
-                modelId: settings.defaultModel,
-              });
-            } catch (err) {
-              console.error(`Failed to process ${repo.name}`, err);
-              // If it's an API key error, we should probably stop the whole process and alert user
-              const errMsg = err instanceof Error ? err.message : '';
-              if (errMsg.includes('API Key') || errMsg.includes('API_KEY_INVALID')) {
-                throw err;
-              }
-              return null;
-            }
-          })
-        );
-
-        // Filter out nulls (failed items)
-        results.push(...(batchResults.filter((p) => p !== null) as Project[]));
-        setProcessedCount(Math.min(i + BATCH_SIZE, selectedRepos.length));
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred during processing.');
-      setIsLoading(false);
-      return;
-    }
-
-    setGeneratedProjects(results);
-    // Default all to be imported
-    setProjectsToImport(new Set(results.map((_, idx) => idx)));
-
-    setStep('review');
-    setIsLoading(false);
-  };
-
-  const handleImport = async () => {
-    setIsLoading(true);
-    try {
-      const projectsToAdd = generatedProjects.filter((_, idx) => projectsToImport.has(idx));
-
-      if (projectsToAdd.length === 0) {
-        onClose();
-        return;
-      }
-
-      // Add to Main CV
-      const mainCV = await db.getMainCV();
-      if (!mainCV) {
-        setError('No Main CV found. Please create one first.');
-        setIsLoading(false);
-        return;
-      }
-
-      const parsedData = mainCV.parsedData || {
-        basics: { name: '', email: '' },
-        work: [],
-        education: [],
-        skills: [],
-        projects: [],
-      };
-
-      if (!parsedData.projects) parsedData.projects = [];
-
-      // Check for duplicates before adding
-      const newProjects = projectsToAdd.filter((newP) => {
-        // Check if a project with the same name or URL already exists
-        const isDuplicate = parsedData.projects.some(
-          (existingP: Project) =>
-            existingP.name.toLowerCase() === newP.name.toLowerCase() ||
-            (existingP.url && newP.url && existingP.url === newP.url)
-        );
-        return !isDuplicate;
-      });
-
-      if (newProjects.length === 0) {
-        setError('All selected projects already exist in your CV.');
-        setIsLoading(false);
-        return;
-      }
-
-      parsedData.projects = [...parsedData.projects, ...newProjects];
-
-      await db.resumes.update(mainCV.id!, {
-        parsedData,
-        updatedAt: Date.now(),
-      });
-
-      if (newProjects.length === 0) {
-        // All were duplicates
-        setError('All selected projects already exist in your CV.');
-        setIsLoading(false);
-        return;
-      }
-
-      parsedData.projects = [...parsedData.projects, ...newProjects];
-
-      await db.resumes.update(mainCV.id!, {
-        parsedData,
-        updatedAt: Date.now(),
-      });
-
-      if (onImportComplete) onImportComplete();
-      onClose();
-    } catch (err) {
-      setError(
-        'Failed to save projects to CV: ' + (err instanceof Error ? err.message : String(err))
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const toggleImportProject = (index: number) => {
-    const newSet = new Set(projectsToImport);
-    if (newSet.has(index)) newSet.delete(index);
-    else newSet.add(index);
-    setProjectsToImport(newSet);
-  };
+  const { state, actions } = useGitHubImport({ isOpen, onClose, onImportComplete });
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !isLoading && !open && onClose()}>
+    <Dialog open={isOpen} onOpenChange={(open) => !state.isLoading && !open && onClose()}>
       <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-0 gap-0 overflow-hidden">
         <DialogHeader className="p-6 pb-2">
           <DialogTitle className="flex items-center gap-2">
@@ -288,37 +51,41 @@ export const GitHubImportModal: React.FC<GitHubImportModalProps> = ({
             Import Projects from GitHub
           </DialogTitle>
           <DialogDescription>
-            {step === 'credentials' && 'Connect your GitHub account to access repositories.'}
-            {step === 'selection' && 'Select repositories to transform into portfolio projects.'}
-            {step === 'processing' &&
+            {state.step === 'credentials' && 'Connect your GitHub account to access repositories.'}
+            {state.step === 'selection' &&
+              'Select repositories to transform into portfolio projects.'}
+            {state.step === 'processing' &&
               'AI is analyzing your code and writing project descriptions...'}
-            {step === 'review' && 'Review and edit the AI-generated project entries.'}
+            {state.step === 'review' && 'Review and edit the AI-generated project entries.'}
           </DialogDescription>
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto p-6 pt-2 min-h-0">
-          {error && (
+          {state.error && (
             <Alert variant="destructive" className="mb-4">
               <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{error}</AlertDescription>
+              <AlertDescription>{state.error}</AlertDescription>
             </Alert>
           )}
 
-          {step === 'credentials' && (
+          {state.step === 'credentials' && (
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label>GitHub Username</Label>
+                <Label>GitHub Usernames</Label>
                 <Input
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="e.g. octocat"
+                  value={state.usernamesText}
+                  onChange={(e) => actions.setUsernamesText(e.target.value)}
+                  placeholder="e.g. octocat, facebook, microsoft"
                 />
+                <p className="text-xs text-muted-foreground">
+                  Separate multiple usernames or organizations with commas.
+                </p>
               </div>
               <div className="space-y-2">
                 <Label>Personal Access Token (Optional)</Label>
                 <Input
-                  value={token}
-                  onChange={(e) => setToken(e.target.value)}
+                  value={state.token}
+                  onChange={(e) => actions.setToken(e.target.value)}
                   type="password"
                   placeholder="ghp_..."
                 />
@@ -329,7 +96,7 @@ export const GitHubImportModal: React.FC<GitHubImportModalProps> = ({
             </div>
           )}
 
-          {step === 'selection' && (
+          {state.step === 'selection' && (
             <div className="space-y-4">
               <div className="flex gap-4 items-center">
                 <div className="relative flex-1">
@@ -337,8 +104,8 @@ export const GitHubImportModal: React.FC<GitHubImportModalProps> = ({
                   <Input
                     placeholder="Search repositories..."
                     className="pl-8"
-                    value={filterText}
-                    onChange={(e) => setFilterText(e.target.value)}
+                    value={state.filterText}
+                    onChange={(e) => actions.setFilterText(e.target.value)}
                   />
                 </div>
                 <div className="flex items-center gap-2">
@@ -346,8 +113,8 @@ export const GitHubImportModal: React.FC<GitHubImportModalProps> = ({
                     type="checkbox"
                     id="hideForks"
                     className="h-4 w-4 rounded border-gray-300"
-                    checked={hideForks}
-                    onChange={(e) => setHideForks(e.target.checked)}
+                    checked={state.hideForks}
+                    onChange={(e) => actions.setHideForks(e.target.checked)}
                   />
                   <Label htmlFor="hideForks" className="cursor-pointer">
                     Hide Forks
@@ -355,22 +122,22 @@ export const GitHubImportModal: React.FC<GitHubImportModalProps> = ({
                 </div>
               </div>
 
-              {filteredRepos.length < repos.length && (
+              {state.filteredRepos.length < state.repos.length && (
                 <div className="text-xs text-muted-foreground flex items-center gap-2 px-1">
                   <AlertCircle className="w-3 h-3" />
-                  Showing {filteredRepos.length} of {repos.length} repositories (
-                  {repos.length - filteredRepos.length} hidden by filters)
+                  Showing {state.filteredRepos.length} of {state.repos.length} repositories (
+                  {state.repos.length - state.filteredRepos.length} hidden by filters)
                 </div>
               )}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {filteredRepos.map((repo) => (
+                {state.filteredRepos.map((repo) => (
                   <div
                     key={repo.id}
-                    onClick={() => handleToggleRepo(repo.id)}
+                    onClick={() => actions.handleToggleRepo(repo.id)}
                     className={cn(
                       'cursor-pointer border rounded-lg p-4 transition-all hover:bg-accent/50',
-                      selectedRepoIds.includes(repo.id)
+                      state.selectedRepoIds.includes(repo.id)
                         ? 'border-primary bg-primary/5 ring-1 ring-primary'
                         : 'border-border'
                     )}
@@ -379,7 +146,7 @@ export const GitHubImportModal: React.FC<GitHubImportModalProps> = ({
                       <h4 className="font-semibold truncate pr-2" title={repo.name}>
                         {repo.name}
                       </h4>
-                      {selectedRepoIds.includes(repo.id) && (
+                      {state.selectedRepoIds.includes(repo.id) && (
                         <Check className="h-4 w-4 text-primary shrink-0" />
                       )}
                     </div>
@@ -404,7 +171,7 @@ export const GitHubImportModal: React.FC<GitHubImportModalProps> = ({
                     </div>
                   </div>
                 ))}
-                {filteredRepos.length === 0 && (
+                {state.filteredRepos.length === 0 && (
                   <div className="col-span-full text-center py-8 text-muted-foreground">
                     No repositories found matching your filter.
                   </div>
@@ -413,26 +180,26 @@ export const GitHubImportModal: React.FC<GitHubImportModalProps> = ({
             </div>
           )}
 
-          {step === 'processing' && (
+          {state.step === 'processing' && (
             <div className="flex flex-col items-center justify-center py-12 space-y-4">
               <Loader2 className="h-12 w-12 animate-spin text-primary" />
               <div className="text-center space-y-1">
                 <h3 className="font-medium">Analyzing Repositories...</h3>
                 <p className="text-muted-foreground text-sm">
-                  Processed {processedCount} of {selectedRepoIds.length}
+                  Processed {state.processedCount} of {state.selectedRepoIds.length}
                 </p>
               </div>
             </div>
           )}
 
-          {step === 'review' && (
+          {state.step === 'review' && (
             <div className="space-y-4">
-              {generatedProjects.map((project, idx) => (
+              {state.generatedProjects.map((project, idx) => (
                 <Card
                   key={idx}
                   className={cn(
                     'transition-opacity',
-                    !projectsToImport.has(idx) && 'opacity-50 grayscale'
+                    !state.projectsToImport.has(idx) && 'opacity-50 grayscale'
                   )}
                 >
                   <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
@@ -459,11 +226,11 @@ export const GitHubImportModal: React.FC<GitHubImportModalProps> = ({
                       </div>
                     </div>
                     <Button
-                      variant={projectsToImport.has(idx) ? 'default' : 'outline'}
+                      variant={state.projectsToImport.has(idx) ? 'default' : 'outline'}
                       size="sm"
-                      onClick={() => toggleImportProject(idx)}
+                      onClick={() => actions.toggleImportProject(idx)}
                     >
-                      {projectsToImport.has(idx) ? 'Keep' : 'Skip'}
+                      {state.projectsToImport.has(idx) ? 'Keep' : 'Skip'}
                     </Button>
                   </CardHeader>
                   <CardContent>
@@ -524,40 +291,49 @@ export const GitHubImportModal: React.FC<GitHubImportModalProps> = ({
         </div>
 
         <DialogFooter className="p-6 border-t bg-muted/20">
-          {step === 'credentials' && (
-            <Button onClick={handleConnect} disabled={isLoading || !username}>
-              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          {state.step === 'credentials' && (
+            <Button
+              onClick={actions.handleConnect}
+              disabled={state.isLoading || !state.usernamesText}
+            >
+              {state.isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Connect to GitHub
             </Button>
           )}
 
-          {step === 'selection' && (
+          {state.step === 'selection' && (
             <div className="flex justify-between w-full">
               <span className="text-sm text-muted-foreground flex items-center">
-                {selectedRepoIds.length} selected
+                {state.selectedRepoIds.length} selected
               </span>
               <div className="flex gap-2">
-                <Button variant="outline" onClick={() => setStep('credentials')}>
+                <Button variant="outline" onClick={() => actions.setStep('credentials')}>
                   Back
                 </Button>
-                <Button onClick={handleProcess} disabled={selectedRepoIds.length === 0}>
+                <Button
+                  onClick={actions.handleProcess}
+                  disabled={state.selectedRepoIds.length === 0}
+                >
                   Analyze with AI
                 </Button>
               </div>
             </div>
           )}
 
-          {step === 'review' && (
+          {state.step === 'review' && (
             <div className="flex justify-between w-full">
               <span className="text-sm text-muted-foreground flex items-center">
-                Importing {Array.from(projectsToImport).length} projects
+                Importing {state.projectsToImport.size} projects
               </span>
               <div className="flex gap-2">
-                <Button variant="ghost" onClick={onClose} disabled={isLoading}>
+                <Button variant="ghost" onClick={onClose} disabled={state.isLoading}>
                   Cancel
                 </Button>
-                <Button onClick={handleImport} disabled={isLoading || projectsToImport.size === 0}>
-                  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                <Button
+                  onClick={actions.handleImport}
+                  disabled={state.isLoading || state.projectsToImport.size === 0}
+                >
+                  {state.isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Confirm Import
                 </Button>
               </div>

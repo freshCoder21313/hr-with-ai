@@ -103,14 +103,21 @@
    npm install
    ```
 
-3. **Set up environment variables:**
-   Create a `.env.local` file in the root directory:
+3. **Set up environment variables (optional):**
+   Copy the example file and fill in values as needed:
 
-   ```env
-   VITE_GEMINI_API_KEY=your_gemini_api_key_here
+   ```bash
+   cp .env.example .env.local
    ```
 
-   _(Alternatively, you can set the API key directly within the app's settings.)_
+   | Variable | Where | Purpose |
+   |----------|--------|---------|
+   | `VITE_API_URL` | Client | Optional API base (default `/api`) |
+   | `DATABASE_URL` | Server | Neon DB for cloud sync |
+   | `ALLOWED_ORIGIN` | Server | CORS for sync API |
+   | `RATE_LIMIT` | Server | Sync requests per minute (default 20) |
+
+   **AI API keys** are set in the app (**Settings / API Key modal**) and stored locally — do not put provider secrets in `VITE_*` vars.
 
 4. **Run the development server:**
 
@@ -119,7 +126,7 @@
    ```
 
 5. **Open your browser:**
-   Navigate to `http://localhost:5173`
+   Navigate to `http://localhost:3000`
 
 ---
 

@@ -1,7 +1,13 @@
 import Dexie, { Table } from 'dexie';
 import { Interview, UserSettings, Resume, SavedJob } from '@/types';
 import { DBJobRecommendation } from '@/services/jobs/jobRecommendationService';
-import LZString from 'lz-string';
+import { compressResumeData, decompressResumeData } from '@/lib/resumeCompression';
+import { logger } from '@/lib/logger';
+
+/**
+ * IndexedDB via Dexie.
+ * Schema versions 2→13 are cumulative — see docs/adr/002-dexie-migrations.md
+ */
 
 class HRDatabase extends Dexie {
   interviews!: Table<Interview, number>;
@@ -76,13 +82,11 @@ class HRDatabase extends Dexie {
 
     this.resumes.hook('reading', (obj) => {
       if (obj && obj.compressedData && !obj.parsedData) {
-        try {
-          const decompressed = LZString.decompressFromUTF16(obj.compressedData);
-          if (decompressed) {
-            obj.parsedData = JSON.parse(decompressed);
-          }
-        } catch (e) {
-          console.error('Failed to decompress parsedData for resume:', obj.id, e);
+        const decompressed = decompressResumeData(obj.compressedData);
+        if (decompressed) {
+          obj.parsedData = decompressed;
+        } else {
+          logger.error('Failed to decompress parsedData for resume:', obj.id);
         }
       }
       return obj;
@@ -93,11 +97,12 @@ class HRDatabase extends Dexie {
       if (!obj.createdAt) obj.createdAt = Date.now();
 
       if (obj.parsedData) {
-        try {
-          obj.compressedData = LZString.compressToUTF16(JSON.stringify(obj.parsedData));
+        const compressed = compressResumeData(obj.parsedData);
+        if (compressed) {
+          obj.compressedData = compressed;
           delete obj.parsedData;
-        } catch (e) {
-          console.error('Failed to compress parsedData on create:', e);
+        } else {
+          logger.error('Failed to compress parsedData on create');
         }
       }
     });
@@ -107,17 +112,16 @@ class HRDatabase extends Dexie {
       if ('parsedData' in mods) {
         const pd = mods.parsedData;
         if (pd) {
-          try {
-            extraMods.compressedData = LZString.compressToUTF16(JSON.stringify(pd));
-          } catch (e) {
-            console.error('Failed to compress parsedData on update:', e);
+          const compressed = compressResumeData(pd);
+          if (compressed) {
+            extraMods.compressedData = compressed;
+          } else {
+            logger.error('Failed to compress parsedData on update');
           }
         } else if (pd === null) {
           extraMods.compressedData = undefined;
         }
-        // Deletes parsedData from DB storage (using any since undefined deletes it in Dexie)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (extraMods as any).parsedData = undefined;
+        (extraMods as Record<string, unknown>).parsedData = undefined;
       }
       return extraMods;
     });
@@ -182,7 +186,7 @@ class HRDatabase extends Dexie {
         await this.resumes.bulkDelete(ids);
       }
     } catch (e) {
-      console.error('Failed to clean old resumes:', e);
+      logger.error('Failed to clean old resumes:', e);
     }
   }
 }
