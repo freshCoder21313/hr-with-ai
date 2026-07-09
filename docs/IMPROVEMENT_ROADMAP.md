@@ -258,12 +258,12 @@ Each PR should: typecheck + lint + format + unit tests green; prefer **atomic co
 
 ### Phase 0 checklist
 
-- [ ] P0-1 CI branch alignment  
-- [ ] P0-2 Track package-lock  
-- [ ] P0-3 Prettier clean  
-- [ ] P0-4 Audit remediation  
-- [ ] P0-5 Env docs unified  
-- [ ] P0-6 Coverage report (optional)
+- [x] P0-1 CI branch alignment (`master` + `main`)  
+- [x] P0-2 Track package-lock (removed from `.gitignore`)  
+- [x] P0-3 Prettier clean  
+- [x] P0-4 Audit remediation — **0 high/critical** (was 19 high + 1 critical); 15 low/moderate remain (tldraw/nanoid, smol-toml)  
+- [x] P0-5 Env docs unified (`.env.example`, README, AGENTS.md)  
+- [x] P0-6 Coverage report in CI (`npm run test:coverage` + artifact)
 
 ---
 

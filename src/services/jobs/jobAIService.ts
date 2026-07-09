@@ -4,11 +4,7 @@ import { getExtractJDInfoPrompt } from '@/services/interview/promptSystem';
 import { generateJobRecommendationsPrompt, generateTailoredResumePrompt } from './jobPromptSystem';
 import { ResumeData } from '@/types/resume';
 import { DBJobRecommendation } from './jobRecommendationService';
-import {
-  getService,
-  AIConfigInput,
-  getStoredAIConfig,
-} from '@/services/ai/aiConfigService';
+import { getService, AIConfigInput, getStoredAIConfig } from '@/services/ai/aiConfigService';
 import {
   jdExtractSchema,
   jobRecommendationsSchema,
@@ -30,10 +26,7 @@ export const extractInfoFromJD = async (
   const prompt = getExtractJDInfoPrompt(jobDescription);
 
   try {
-    return await service.generateStructured(
-      [{ role: 'user', content: prompt }],
-      jdExtractSchema
-    );
+    return await service.generateStructured([{ role: 'user', content: prompt }], jdExtractSchema);
   } catch (error) {
     console.error('Error extracting info from JD:', error);
     throw error;

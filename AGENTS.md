@@ -39,15 +39,15 @@ Setup file: `src/setupTests.ts`.
   ```
 - **Run a Single Test File:**
   ```bash
-  npx vitest run src/features/auth/Login.test.tsx
+  npx vitest run src/services/core/syncService.test.ts
   ```
 - **Run Tests Matching a Name/Pattern:**
   ```bash
-  npx vitest -t "Login Component"
+  npx vitest -t "syncService"
   ```
 - **Run with Coverage:**
   ```bash
-  npx vitest run --coverage
+  npm run test:coverage
   ```
 - **Watch Mode:** `npm run test` runs in watch mode by default. Use `run` argument for single pass.
 
@@ -74,7 +74,7 @@ Setup file: `src/setupTests.ts`.
 - **Functional Components:**
   - Use `React.FC<Props>` or directly type the props object: `export const MyComponent = ({ prop }: Props) => { ... }`.
 - **Nullability:** Handle `null` and `undefined` explicitly. Optional chaining (`?.`) is encouraged.
-- **Central Types:** check `src/types.ts` for core domain entities (Interview, Resume, UserSettings).
+- **Central Types:** check `src/types/index.ts` and `src/types/resume.ts` for core domain entities (Interview, Resume, UserSettings).
 
 ### Naming Conventions
 - **Files/Directories:**
@@ -140,8 +140,9 @@ When operating in this codebase, adhere to the following workflow:
 ## 6. Specific Patterns
 
 ### API & Data Fetching
-- Access environment variables via `import.meta.env` (e.g., `import.meta.env.VITE_API_URL`).
-- Secure API keys: Never hardcode keys. Use prompts or env vars (see `ApiKeyModal`).
+- **Client env:** only `VITE_*` (e.g. `import.meta.env.VITE_API_URL`). See `.env.example`.
+- **Server env:** `DATABASE_URL`, `ALLOWED_ORIGIN`, `RATE_LIMIT` for `api/sync.ts` — never expose with `VITE_`.
+- **AI API keys:** never hardcode. Prefer in-app Settings / `ApiKeyModal` (local storage), not client env.
 
 ### Routing
 - **Library:** `react-router-dom` v7.
@@ -151,6 +152,6 @@ When operating in this codebase, adhere to the following workflow:
 ### AI Integration
 - This app uses multiple AI providers (Gemini, OpenAI, Anthropic).
 - Check `src/services/ai/` (or similar) for integration logic.
-- Respect `src/types.ts` regarding `AIProviderStrategy`.
+- Respect `src/types/index.ts` regarding `AIProviderStrategy`.
 
 (End of Guide)

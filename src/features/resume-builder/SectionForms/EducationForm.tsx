@@ -13,11 +13,19 @@ interface EducationFormProps {
 }
 
 const defaultEntry: Education = {
-  institution: '', area: '', studyType: '', startDate: '', endDate: '',
+  institution: '',
+  area: '',
+  studyType: '',
+  startDate: '',
+  endDate: '',
 };
 
 const EducationForm: React.FC<EducationFormProps> = ({ data, onChange }) => {
-  const handleAnalyze = async (index: number, entry: Education, setAnalyzingIndex: (i: number | null) => void) => {
+  const handleAnalyze = async (
+    index: number,
+    entry: Education,
+    setAnalyzingIndex: (i: number | null) => void
+  ) => {
     const config = getStoredAIConfig();
     if (!config.apiKey) {
       toast.error('Please set API Key in settings.');
@@ -27,7 +35,10 @@ const EducationForm: React.FC<EducationFormProps> = ({ data, onChange }) => {
     setAnalyzingIndex(index);
     try {
       const result = await analyzeResumeSection('Education Entry', entry, config);
-      toast.info(`AI Critique:\n${result.critique}\n\nSuggestion:\n${result.suggestions.join('\n- ')}`, { duration: 8000 });
+      toast.info(
+        `AI Critique:\n${result.critique}\n\nSuggestion:\n${result.suggestions.join('\n- ')}`,
+        { duration: 8000 }
+      );
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : 'Analysis failed';
       toast.error('Analysis failed: ' + msg);
@@ -51,28 +62,50 @@ const EducationForm: React.FC<EducationFormProps> = ({ data, onChange }) => {
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <GridField label="Institution / School">
-              <Input value={entry.institution || ''} onChange={(e) => handleChange('institution', e.target.value)} />
+              <Input
+                value={entry.institution || ''}
+                onChange={(e) => handleChange('institution', e.target.value)}
+              />
             </GridField>
             <GridField label="Degree / Study Type">
-              <Input value={entry.studyType || ''} onChange={(e) => handleChange('studyType', e.target.value)} placeholder="e.g. Bachelor of Science" />
+              <Input
+                value={entry.studyType || ''}
+                onChange={(e) => handleChange('studyType', e.target.value)}
+                placeholder="e.g. Bachelor of Science"
+              />
             </GridField>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <GridField label="Area / Major">
-              <Input value={entry.area || ''} onChange={(e) => handleChange('area', e.target.value)} placeholder="e.g. Computer Science" />
+              <Input
+                value={entry.area || ''}
+                onChange={(e) => handleChange('area', e.target.value)}
+                placeholder="e.g. Computer Science"
+              />
             </GridField>
             <GridField label="GPA / Score (Optional)">
-              <Input value={entry.score || ''} onChange={(e) => handleChange('score', e.target.value)} />
+              <Input
+                value={entry.score || ''}
+                onChange={(e) => handleChange('score', e.target.value)}
+              />
             </GridField>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <GridField label="Start Date">
-              <Input value={entry.startDate || ''} onChange={(e) => handleChange('startDate', e.target.value)} placeholder="YYYY-MM" />
+              <Input
+                value={entry.startDate || ''}
+                onChange={(e) => handleChange('startDate', e.target.value)}
+                placeholder="YYYY-MM"
+              />
             </GridField>
             <GridField label="End Date">
-              <Input value={entry.endDate || ''} onChange={(e) => handleChange('endDate', e.target.value)} placeholder="YYYY-MM or Present" />
+              <Input
+                value={entry.endDate || ''}
+                onChange={(e) => handleChange('endDate', e.target.value)}
+                placeholder="YYYY-MM or Present"
+              />
             </GridField>
           </div>
         </>

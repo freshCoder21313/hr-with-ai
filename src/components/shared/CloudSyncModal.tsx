@@ -38,14 +38,34 @@ interface CloudSyncModalProps {
 export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({ isOpen, onClose }) => {
   const { state, actions } = useCloudSync();
   const {
-    activeTab, isLoading, error, success, uploadId, uploadPassword,
-    showPassword, includeApiKey, downloadId, offlineIncludeApiKey, fileInputRef,
+    activeTab,
+    isLoading,
+    error,
+    success,
+    uploadId,
+    uploadPassword,
+    showPassword,
+    includeApiKey,
+    downloadId,
+    offlineIncludeApiKey,
+    fileInputRef,
   } = state;
   const {
-    setActiveTab, setUploadId, setUploadPassword, setShowPassword,
-    setIncludeApiKey, setDownloadId, setOfflineIncludeApiKey,
-    generateNewId, resetStatus, handleCopyId, handleUpload,
-    handleDownload, handleOfflineExport, handleOfflineImportClick, handleFileChange,
+    setActiveTab,
+    setUploadId,
+    setUploadPassword,
+    setShowPassword,
+    setIncludeApiKey,
+    setDownloadId,
+    setOfflineIncludeApiKey,
+    generateNewId,
+    resetStatus,
+    handleCopyId,
+    handleUpload,
+    handleDownload,
+    handleOfflineExport,
+    handleOfflineImportClick,
+    handleFileChange,
   } = actions;
 
   return (

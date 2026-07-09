@@ -45,10 +45,13 @@ export const useCVStudio = () => {
     didInitChat.current = true;
   }, [resumeState.isLoading, resumeState.mainCV, resumeState.resumes, chatState, tailoring]);
 
-  const handleChatCVChange = useCallback((id: number) => {
-    const cv = resumeState.handleChatCVChange(id);
-    if (cv) chatState.resetChatForCV(cv);
-  }, [resumeState, chatState]);
+  const handleChatCVChange = useCallback(
+    (id: number) => {
+      const cv = resumeState.handleChatCVChange(id);
+      if (cv) chatState.resetChatForCV(cv);
+    },
+    [resumeState, chatState]
+  );
 
   const handleGitHubImportComplete = useCallback(async () => {
     const cv = await resumeState.handleGitHubImportComplete();
@@ -61,17 +64,25 @@ export const useCVStudio = () => {
     jobActions.addJob({ company: '', title: '', description: '', customPrompt: '' });
   }, [jobActions]);
 
-  const handleRemoveJob = useCallback((id: string) => {
-    jobActions.deleteJob(id);
-  }, [jobActions]);
+  const handleRemoveJob = useCallback(
+    (id: string) => {
+      jobActions.deleteJob(id);
+    },
+    [jobActions]
+  );
 
-  const updateJob = useCallback((id: string, field: keyof Job, value: string) => {
-    const job = jobs.find((j) => j.id === id);
-    if (job) jobActions.updateJob({ ...job, [field]: value });
-  }, [jobs, jobActions]);
+  const updateJob = useCallback(
+    (id: string, field: keyof Job, value: string) => {
+      const job = jobs.find((j) => j.id === id);
+      if (job) jobActions.updateJob({ ...job, [field]: value });
+    },
+    [jobs, jobActions]
+  );
 
   const handleExportJobs = useCallback(() => {
-    const blob = new Blob([JSON.stringify({ jobs, globalPrompt }, null, 2)], { type: 'application/json' });
+    const blob = new Blob([JSON.stringify({ jobs, globalPrompt }, null, 2)], {
+      type: 'application/json',
+    });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -93,7 +104,10 @@ export const useCVStudio = () => {
           const { jobs: importedJobs, globalPrompt: gp } = JSON.parse(ev.target?.result as string);
           jobActions.importJobs(
             importedJobs.map((j: Partial<Job>) => ({
-              company: j.company || '', title: j.title || '', description: j.description || '', customPrompt: j.customPrompt || '',
+              company: j.company || '',
+              title: j.title || '',
+              description: j.description || '',
+              customPrompt: j.customPrompt || '',
             }))
           );
           jobActions.setGlobalPrompt(gp);
@@ -109,7 +123,9 @@ export const useCVStudio = () => {
   const previewData =
     resumeState.mainCV?.parsedData ??
     resumeState.resumes.find((r) => r.id === tailoring.selectedResumeId)?.parsedData;
-  const selectedResumeName = resumeState.resumes.find((r) => r.id === tailoring.selectedResumeId)?.fileName;
+  const selectedResumeName = resumeState.resumes.find(
+    (r) => r.id === tailoring.selectedResumeId
+  )?.fileName;
 
   return {
     state: {

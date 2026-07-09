@@ -10,10 +10,7 @@ interface WhiteboardProps {
 }
 
 // Debounce helper
-function useDebouncedCallback<T extends (...args: never[]) => void>(
-  callback: T,
-  delay: number
-) {
+function useDebouncedCallback<T extends (...args: never[]) => void>(callback: T, delay: number) {
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   return useCallback(

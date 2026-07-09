@@ -57,7 +57,10 @@ export class AIService {
     options?: AIRequestOptions
   ): Promise<T> {
     if (this.retryOptions && this.retryOptions.maxRetries && this.retryOptions.maxRetries > 0) {
-      return withRetry(() => this.strategy.generateStructured(messages, schema, options), this.retryOptions);
+      return withRetry(
+        () => this.strategy.generateStructured(messages, schema, options),
+        this.retryOptions
+      );
     }
     return this.strategy.generateStructured(messages, schema, options);
   }

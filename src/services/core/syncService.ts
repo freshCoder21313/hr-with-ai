@@ -87,12 +87,9 @@ export const syncService = {
                 apiKey: cloudSetting.apiKey || localMatch.apiKey,
                 githubToken: cloudSetting.githubToken || localMatch.githubToken,
                 githubUsername: cloudSetting.githubUsername || localMatch.githubUsername,
-                googleCloudApiKey:
-                  cloudSetting.googleCloudApiKey || localMatch.googleCloudApiKey,
-                elevenLabsApiKey:
-                  cloudSetting.elevenLabsApiKey || localMatch.elevenLabsApiKey,
-                deepgramApiKey:
-                  cloudSetting.deepgramApiKey || localMatch.deepgramApiKey,
+                googleCloudApiKey: cloudSetting.googleCloudApiKey || localMatch.googleCloudApiKey,
+                elevenLabsApiKey: cloudSetting.elevenLabsApiKey || localMatch.elevenLabsApiKey,
+                deepgramApiKey: cloudSetting.deepgramApiKey || localMatch.deepgramApiKey,
               });
             }
           }
@@ -101,14 +98,12 @@ export const syncService = {
         // Sync to localStorage after import to prevent 'split brain' with AI services
         const latestSettings = await db.userSettings.orderBy('id').first();
         if (latestSettings) {
-          if (latestSettings.apiKey)
-            localStorage.setItem('gemini_api_key', latestSettings.apiKey);
+          if (latestSettings.apiKey) localStorage.setItem('gemini_api_key', latestSettings.apiKey);
           if (latestSettings.baseUrl)
             localStorage.setItem('custom_base_url', latestSettings.baseUrl);
           if (latestSettings.modelId)
             localStorage.setItem('custom_model_id', latestSettings.modelId);
-          if (latestSettings.provider)
-            localStorage.setItem('ai_provider', latestSettings.provider);
+          if (latestSettings.provider) localStorage.setItem('ai_provider', latestSettings.provider);
         }
       }
 
@@ -212,8 +207,8 @@ export const syncService = {
         params: { id, t: Date.now() }, // Thêm timestamp để bypass browser cache
         headers: {
           'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache',
-          'Expires': '0',
+          Pragma: 'no-cache',
+          Expires: '0',
         },
       });
 

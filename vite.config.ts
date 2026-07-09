@@ -21,6 +21,19 @@ export default defineConfig(({ mode }) => {
       environment: 'jsdom',
       setupFiles: './src/setupTests.ts',
       css: true,
+      coverage: {
+        provider: 'v8',
+        reporter: ['text', 'html', 'clover', 'json'],
+        reportsDirectory: './coverage',
+        // Report only in Phase 0 — thresholds land in Phase 3
+        include: ['src/**/*.{ts,tsx}'],
+        exclude: [
+          'src/**/*.test.{ts,tsx}',
+          'src/**/*.integration.test.{ts,tsx}',
+          'src/setupTests.ts',
+          'src/types/**',
+        ],
+      },
     },
     css: {
       postcss: './postcss.config.js',

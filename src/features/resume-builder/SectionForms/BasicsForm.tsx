@@ -60,11 +60,11 @@ const BasicsForm: React.FC<BasicsFormProps> = ({ data, onChange }) => {
               value={data.email || ''}
               onChange={(e) => handleChange('email', e.target.value)}
               aria-invalid={emailError ? true : undefined}
-              className={emailError ? 'border-destructive focus-visible:ring-destructive' : undefined}
+              className={
+                emailError ? 'border-destructive focus-visible:ring-destructive' : undefined
+              }
             />
-            {emailError && (
-              <p className="text-sm text-destructive">{emailError}</p>
-            )}
+            {emailError && <p className="text-sm text-destructive">{emailError}</p>}
           </div>
           <div className="space-y-2">
             <Label htmlFor="phone">Phone</Label>

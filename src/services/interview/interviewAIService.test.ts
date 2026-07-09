@@ -11,8 +11,7 @@ type MockAIService = Pick<AIService, 'generateText' | 'generateStructured'>;
 const mockAIService = (
   generateText: MockAIService['generateText'],
   generateStructured?: MockAIService['generateStructured']
-): AIService =>
-  ({ generateText, generateStructured }) as unknown as AIService;
+): AIService => ({ generateText, generateStructured }) as unknown as AIService;
 
 describe('interviewAIService', () => {
   afterEach(() => {
@@ -81,9 +80,7 @@ describe('interviewAIService', () => {
         mermaidGraphPotential: 'graph TD',
         recommendedResources: [],
       });
-      vi.mocked(getService).mockResolvedValue(
-        mockAIService(vi.fn(), mockGenerateStructured)
-      );
+      vi.mocked(getService).mockResolvedValue(mockAIService(vi.fn(), mockGenerateStructured));
 
       const interview: Interview = {
         id: 1,

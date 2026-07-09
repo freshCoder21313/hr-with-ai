@@ -16,7 +16,11 @@ interface ProjectsFormProps {
 const defaultEntry: Project = { name: '', description: '' };
 
 const ProjectsForm: React.FC<ProjectsFormProps> = ({ data, onChange }) => {
-  const handleAnalyze = async (index: number, entry: Project, setAnalyzingIndex: (i: number | null) => void) => {
+  const handleAnalyze = async (
+    index: number,
+    entry: Project,
+    setAnalyzingIndex: (i: number | null) => void
+  ) => {
     if (!entry.description) {
       toast.error('Please add a description to analyze.');
       return;
@@ -30,7 +34,10 @@ const ProjectsForm: React.FC<ProjectsFormProps> = ({ data, onChange }) => {
     setAnalyzingIndex(index);
     try {
       const result = await analyzeResumeSection('Project Entry', entry, config);
-      toast.info(`AI Critique:\n${result.critique}\n\nRewritten Example:\n${result.rewrittenExample}`, { duration: 8000 });
+      toast.info(
+        `AI Critique:\n${result.critique}\n\nRewritten Example:\n${result.rewrittenExample}`,
+        { duration: 8000 }
+      );
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : 'Analysis failed';
       toast.error('Analysis failed: ' + msg);
@@ -54,24 +61,43 @@ const ProjectsForm: React.FC<ProjectsFormProps> = ({ data, onChange }) => {
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <GridField label="Project Name">
-              <Input value={entry.name || ''} onChange={(e) => handleChange('name', e.target.value)} />
+              <Input
+                value={entry.name || ''}
+                onChange={(e) => handleChange('name', e.target.value)}
+              />
             </GridField>
             <GridField label="URL / Link">
-              <Input value={entry.url || ''} onChange={(e) => handleChange('url', e.target.value)} placeholder="https://..." />
+              <Input
+                value={entry.url || ''}
+                onChange={(e) => handleChange('url', e.target.value)}
+                placeholder="https://..."
+              />
             </GridField>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <GridField label="Start Date">
-              <Input value={entry.startDate || ''} onChange={(e) => handleChange('startDate', e.target.value)} placeholder="YYYY-MM" />
+              <Input
+                value={entry.startDate || ''}
+                onChange={(e) => handleChange('startDate', e.target.value)}
+                placeholder="YYYY-MM"
+              />
             </GridField>
             <GridField label="End Date">
-              <Input value={entry.endDate || ''} onChange={(e) => handleChange('endDate', e.target.value)} placeholder="YYYY-MM or Present" />
+              <Input
+                value={entry.endDate || ''}
+                onChange={(e) => handleChange('endDate', e.target.value)}
+                placeholder="YYYY-MM or Present"
+              />
             </GridField>
           </div>
 
           <GridField label="Description">
-            <Textarea value={entry.description || ''} onChange={(e) => handleChange('description', e.target.value)} rows={3} />
+            <Textarea
+              value={entry.description || ''}
+              onChange={(e) => handleChange('description', e.target.value)}
+              rows={3}
+            />
           </GridField>
         </>
       )}

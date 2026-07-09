@@ -40,19 +40,25 @@ export const useCVResumes = () => {
     return sorted;
   }, []);
 
-  const handleManualUpdate = useCallback(async (newData: ResumeData) => {
-    if (!mainCV?.id) return;
-    setMainCV((prev) => (prev ? { ...prev, parsedData: newData } : null));
-    await db.resumes.update(mainCV.id, { parsedData: newData });
-  }, [mainCV]);
+  const handleManualUpdate = useCallback(
+    async (newData: ResumeData) => {
+      if (!mainCV?.id) return;
+      setMainCV((prev) => (prev ? { ...prev, parsedData: newData } : null));
+      await db.resumes.update(mainCV.id, { parsedData: newData });
+    },
+    [mainCV]
+  );
 
-  const handleChatCVChange = useCallback((id: number) => {
-    const cv = resumes.find((r) => r.id === id);
-    if (!cv) return null;
-    setChatResumeId(id);
-    setMainCV(cv);
-    return cv;
-  }, [resumes]);
+  const handleChatCVChange = useCallback(
+    (id: number) => {
+      const cv = resumes.find((r) => r.id === id);
+      if (!cv) return null;
+      setChatResumeId(id);
+      setMainCV(cv);
+      return cv;
+    },
+    [resumes]
+  );
 
   const handleGitHubImportComplete = useCallback(async () => {
     const cv = await db.getMainCV();

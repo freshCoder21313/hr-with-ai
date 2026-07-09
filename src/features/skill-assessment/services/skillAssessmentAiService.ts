@@ -1,9 +1,6 @@
 import { getService, AIConfigInput } from '@/services/ai/aiConfigService';
 import { QuizQuestion } from '@/features/skill-assessment/types';
-import {
-  stringArraySchema,
-  quizQuestionsSchema,
-} from '@/features/ai-provider/schemas';
+import { stringArraySchema, quizQuestionsSchema } from '@/features/ai-provider/schemas';
 import {
   SKILL_EXTRACTOR_PROMPT,
   SUB_SKILL_GENERATOR_PROMPT,
@@ -17,10 +14,7 @@ export const extractSkills = async (
   const service = await getService(configInput);
   const prompt = `${SKILL_EXTRACTOR_PROMPT}\n\nText:\n${text}`;
 
-  return service.generateStructured(
-    [{ role: 'user', content: prompt }],
-    stringArraySchema
-  );
+  return service.generateStructured([{ role: 'user', content: prompt }], stringArraySchema);
 };
 
 export const generateSubSkills = async (
@@ -30,10 +24,7 @@ export const generateSubSkills = async (
   const service = await getService(configInput);
   const prompt = SUB_SKILL_GENERATOR_PROMPT.replace('{skill}', skill);
 
-  return service.generateStructured(
-    [{ role: 'user', content: prompt }],
-    stringArraySchema
-  );
+  return service.generateStructured([{ role: 'user', content: prompt }], stringArraySchema);
 };
 
 export const generateQuiz = async (
@@ -52,8 +43,5 @@ export const generateQuiz = async (
     .replace('{subSkills}', JSON.stringify(subSkills))
     .replace('{countInstruction}', countInstruction);
 
-  return service.generateStructured(
-    [{ role: 'user', content: prompt }],
-    quizQuestionsSchema
-  );
+  return service.generateStructured([{ role: 'user', content: prompt }], quizQuestionsSchema);
 };

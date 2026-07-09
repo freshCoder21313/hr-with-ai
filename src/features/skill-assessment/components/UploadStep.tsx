@@ -410,7 +410,6 @@ export const UploadStep: React.FC = () => {
           </div>
         </div>
       </div>
-
     </>
   );
 };

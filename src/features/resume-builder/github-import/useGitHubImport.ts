@@ -84,7 +84,7 @@ export function useGitHubImport({ isOpen, onClose, onImportComplete }: UseGitHub
       }
 
       const uniqueReposMap = new Map<string, GitHubRepo>();
-      allRepos.forEach(repo => {
+      allRepos.forEach((repo) => {
         uniqueReposMap.set(repo.full_name, repo);
       });
       const uniqueRepos = Array.from(uniqueReposMap.values());

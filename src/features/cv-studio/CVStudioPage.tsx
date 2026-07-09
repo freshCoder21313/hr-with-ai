@@ -15,9 +15,12 @@ const CVStudioPage: React.FC = () => {
   const navigate = useNavigate();
   const { state, ui, actions } = useCVStudio();
 
-  const handleViewResult = useCallback((id: number) => {
-    navigate(`/resumes/${id}/edit`);
-  }, [navigate]);
+  const handleViewResult = useCallback(
+    (id: number) => {
+      navigate(`/resumes/${id}/edit`);
+    },
+    [navigate]
+  );
 
   if (state.isLoading) {
     return (
@@ -31,12 +34,19 @@ const CVStudioPage: React.FC = () => {
     <>
       <div className="hidden print:block" style={{ width: '210mm', margin: '0', padding: '0' }}>
         {state.previewData && (
-          <ResumePreview data={state.previewData} template={ui.template} onUpdate={actions.handleManualUpdate} />
+          <ResumePreview
+            data={state.previewData}
+            template={ui.template}
+            onUpdate={actions.handleManualUpdate}
+          />
         )}
       </div>
 
       <div className="flex h-[calc(100vh-64px)] overflow-hidden bg-background print:hidden">
-        <SEO title="CV Studio \u2014 HR With AI" description="Unified CV editing, tailoring, and AI chat." />
+        <SEO
+          title="CV Studio \u2014 HR With AI"
+          description="Unified CV editing, tailoring, and AI chat."
+        />
 
         <CVJobPanel
           jobs={state.jobs}
@@ -101,13 +111,23 @@ const CVStudioPage: React.FC = () => {
           data={
             state.previewData
               ? { ...state.previewData, meta: { ...state.previewData.meta, template: ui.template } }
-              : { basics: { name: '', email: '', summary: '' }, work: [], education: [], skills: [], projects: [] }
+              : {
+                  basics: { name: '', email: '', summary: '' },
+                  work: [],
+                  education: [],
+                  skills: [],
+                  projects: [],
+                }
           }
           onSave={(newOrder) => {
             if (!state.mainCV?.parsedData || !state.mainCV.id) return;
             actions.handleManualUpdate({
               ...state.mainCV.parsedData,
-              meta: { ...state.mainCV.parsedData.meta, sectionOrder: newOrder, template: ui.template },
+              meta: {
+                ...state.mainCV.parsedData.meta,
+                sectionOrder: newOrder,
+                template: ui.template,
+              },
             });
           }}
         />

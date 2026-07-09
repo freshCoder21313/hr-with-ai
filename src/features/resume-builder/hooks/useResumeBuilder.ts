@@ -13,12 +13,32 @@ import { getErrorMessage } from '@/lib/utils';
 import { sanitizeResumeDataForSave } from '../SectionForms/entryIds';
 
 const TOUR_STEPS: Step[] = [
-  { target: 'body', content: "Welcome to the AI Resume Builder! Let's take a quick tour.", placement: 'center' },
-  { target: '.tour-magic-format', content: 'Uploaded a raw text resume? Click here to let AI automatically format it for you!' },
-  { target: '.tour-layout-switch', content: 'Switch between Modern, Classic, Creative, Minimalist, or Academic templates instantly.' },
-  { target: '.tour-translate', content: 'Translate your entire resume between English and Vietnamese with one click.' },
-  { target: '.tour-preview-toggle', content: 'Toggle between Editor, Full Preview, or Split View side-by-side.' },
-  { target: '.tour-fab', content: 'Use this button to quickly add new Work Experience, Education, or Skills.' },
+  {
+    target: 'body',
+    content: "Welcome to the AI Resume Builder! Let's take a quick tour.",
+    placement: 'center',
+  },
+  {
+    target: '.tour-magic-format',
+    content: 'Uploaded a raw text resume? Click here to let AI automatically format it for you!',
+  },
+  {
+    target: '.tour-layout-switch',
+    content:
+      'Switch between Modern, Classic, Creative, Minimalist, or Academic templates instantly.',
+  },
+  {
+    target: '.tour-translate',
+    content: 'Translate your entire resume between English and Vietnamese with one click.',
+  },
+  {
+    target: '.tour-preview-toggle',
+    content: 'Toggle between Editor, Full Preview, or Split View side-by-side.',
+  },
+  {
+    target: '.tour-fab',
+    content: 'Use this button to quickly add new Work Experience, Education, or Skills.',
+  },
 ];
 
 export const useResumeBuilder = () => {
@@ -58,10 +78,17 @@ export const useResumeBuilder = () => {
           setResume(doc);
           if (doc.parsedData) {
             setData(doc.parsedData);
-            if (doc.parsedData.meta?.template) setTemplate(doc.parsedData.meta.template as TemplateType);
+            if (doc.parsedData.meta?.template)
+              setTemplate(doc.parsedData.meta.template as TemplateType);
             if (doc.parsedData.language) setViewLanguage(doc.parsedData.language as 'vi' | 'en');
           } else {
-            setData({ basics: { name: '', email: '', summary: '' }, work: [], education: [], skills: [], projects: [] });
+            setData({
+              basics: { name: '', email: '', summary: '' },
+              work: [],
+              education: [],
+              skills: [],
+              projects: [],
+            });
           }
         } else if (!ignore) {
           navigate('/');
@@ -110,7 +137,10 @@ export const useResumeBuilder = () => {
       return;
     }
     const config = getStoredAIConfig();
-    if (!config.apiKey) { openApiKeyModal(); return; }
+    if (!config.apiKey) {
+      openApiKeyModal();
+      return;
+    }
     setIsProcessing(true);
     try {
       const parsed = await parseResumeToJSON(resume.rawText, config);
@@ -139,23 +169,31 @@ export const useResumeBuilder = () => {
     }
   }, [id, data, template]);
 
-  const handleOrderSave = useCallback((newOrder: { main: string[]; sidebar?: string[] }) => {
-    if (!data) return;
-    setData({ ...data, meta: { ...data.meta, sectionOrder: newOrder, template } });
-  }, [data, template]);
+  const handleOrderSave = useCallback(
+    (newOrder: { main: string[]; sidebar?: string[] }) => {
+      if (!data) return;
+      setData({ ...data, meta: { ...data.meta, sectionOrder: newOrder, template } });
+    },
+    [data, template]
+  );
 
   const handleTranslate = useCallback(async () => {
     if (!data) return;
     const targetLang = viewLanguage === 'en' ? 'vi' : 'en';
     const config = getStoredAIConfig();
-    if (!config.apiKey) { openApiKeyModal(); return; }
+    if (!config.apiKey) {
+      openApiKeyModal();
+      return;
+    }
     setIsTranslating(true);
     try {
       const translatedData = await translateResume(data, targetLang, config);
       setData(translatedData);
       setViewLanguage(targetLang);
       await db.resumes.update(parseInt(id!), { parsedData: translatedData });
-      toast.success(`Translated to ${targetLang === 'vi' ? 'Vietnamese' : 'English'} successfully!`);
+      toast.success(
+        `Translated to ${targetLang === 'vi' ? 'Vietnamese' : 'English'} successfully!`
+      );
     } catch (error) {
       console.error(error);
       toast.error('Translation failed.');
@@ -164,43 +202,66 @@ export const useResumeBuilder = () => {
     }
   }, [data, viewLanguage, id]);
 
-  const handleThemeColorChange = useCallback((color: string) => {
-    if (!data || !id) return;
-    const newData = { ...data, meta: { ...data.meta, themeColor: color } };
-    setData(newData);
-    db.resumes.update(parseInt(id), { parsedData: newData });
-  }, [data, id]);
+  const handleThemeColorChange = useCallback(
+    (color: string) => {
+      if (!data || !id) return;
+      const newData = { ...data, meta: { ...data.meta, themeColor: color } };
+      setData(newData);
+      db.resumes.update(parseInt(id), { parsedData: newData });
+    },
+    [data, id]
+  );
 
-  const handleFontChange = useCallback((fontFamily: 'sans' | 'serif' | 'mono') => {
-    if (!data || !id) return;
-    const newData = { ...data, meta: { ...data.meta, fontFamily } };
-    setData(newData);
-    db.resumes.update(parseInt(id), { parsedData: newData });
-  }, [data, id]);
+  const handleFontChange = useCallback(
+    (fontFamily: 'sans' | 'serif' | 'mono') => {
+      if (!data || !id) return;
+      const newData = { ...data, meta: { ...data.meta, fontFamily } };
+      setData(newData);
+      db.resumes.update(parseInt(id), { parsedData: newData });
+    },
+    [data, id]
+  );
 
-  const handlePrint = useCallback(() => { window.print(); }, []);
-
-  const updateSection = useCallback(<K extends keyof ResumeData>(section: K, value: ResumeData[K]) => {
-    setData((prev) => (prev ? { ...prev, [section]: value } : null));
+  const handlePrint = useCallback(() => {
+    window.print();
   }, []);
 
-  const handleAddSection = useCallback((section: 'work' | 'education' | 'skills' | 'projects') => {
-    setActiveTab(section);
-    if (!data) return;
-    const newItems = {
-      work: { name: 'New Company', position: 'Role', startDate: '', endDate: '', summary: '' },
-      education: { institution: 'New School', area: 'Major', studyType: 'Degree', startDate: '', endDate: '' },
-      skills: { name: 'New Skill Category', keywords: [] },
-      projects: { name: 'New Project', description: '' },
-    } as const;
-    const currentList = (data[section] as unknown[]) || [];
-    updateSection(section, [...currentList!, newItems[section]] as typeof data[typeof section]);
-  }, [data, updateSection]);
+  const updateSection = useCallback(
+    <K extends keyof ResumeData>(section: K, value: ResumeData[K]) => {
+      setData((prev) => (prev ? { ...prev, [section]: value } : null));
+    },
+    []
+  );
 
-  const handleDirectUpdate = useCallback((newData: ResumeData) => {
-    setData(newData);
-    if (id) db.resumes.update(parseInt(id), { parsedData: sanitizeResumeDataForSave(newData) });
-  }, [id]);
+  const handleAddSection = useCallback(
+    (section: 'work' | 'education' | 'skills' | 'projects') => {
+      setActiveTab(section);
+      if (!data) return;
+      const newItems = {
+        work: { name: 'New Company', position: 'Role', startDate: '', endDate: '', summary: '' },
+        education: {
+          institution: 'New School',
+          area: 'Major',
+          studyType: 'Degree',
+          startDate: '',
+          endDate: '',
+        },
+        skills: { name: 'New Skill Category', keywords: [] },
+        projects: { name: 'New Project', description: '' },
+      } as const;
+      const currentList = (data[section] as unknown[]) || [];
+      updateSection(section, [...currentList!, newItems[section]] as (typeof data)[typeof section]);
+    },
+    [data, updateSection]
+  );
+
+  const handleDirectUpdate = useCallback(
+    (newData: ResumeData) => {
+      setData(newData);
+      if (id) db.resumes.update(parseInt(id), { parsedData: sanitizeResumeDataForSave(newData) });
+    },
+    [id]
+  );
 
   useEffect(() => {
     const hasSeenTour = localStorage.getItem('hasSeenResumeBuilderTour');
@@ -222,18 +283,45 @@ export const useResumeBuilder = () => {
 
   return {
     state: {
-      resume, data, debouncedData, isLoading: isLoadingState, notFound: isNotFound,
-      isProcessing, activeTab, showPreview, isSplitView, showReorderDialog,
-      template, isTranslating, viewLanguage, runTour, showStyleEditor, id,
+      resume,
+      data,
+      debouncedData,
+      isLoading: isLoadingState,
+      notFound: isNotFound,
+      isProcessing,
+      activeTab,
+      showPreview,
+      isSplitView,
+      showReorderDialog,
+      template,
+      isTranslating,
+      viewLanguage,
+      runTour,
+      showStyleEditor,
+      id,
       tourSteps: TOUR_STEPS,
     },
     actions: {
-      setActiveTab, setShowReorderDialog, setTemplate, setShowStyleEditor,
-      setShowPreview, setIsSplitView, setRunTour,
-      handleSmartFormat, handleSave, handleOrderSave, handleTranslate,
-      handleThemeColorChange, handleFontChange, handlePrint,
-      handleAddSection, handleDirectUpdate, handleViewMode,
-      handleTourFinish, navigate, updateSection,
+      setActiveTab,
+      setShowReorderDialog,
+      setTemplate,
+      setShowStyleEditor,
+      setShowPreview,
+      setIsSplitView,
+      setRunTour,
+      handleSmartFormat,
+      handleSave,
+      handleOrderSave,
+      handleTranslate,
+      handleThemeColorChange,
+      handleFontChange,
+      handlePrint,
+      handleAddSection,
+      handleDirectUpdate,
+      handleViewMode,
+      handleTourFinish,
+      navigate,
+      updateSection,
     },
   };
 };

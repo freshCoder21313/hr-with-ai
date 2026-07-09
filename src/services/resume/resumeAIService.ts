@@ -70,10 +70,10 @@ export const parseResumeToJSON = async (
   const prompt = getParseResumePrompt(rawText);
 
   try {
-    return await service.generateStructured(
+    return (await service.generateStructured(
       [{ role: 'user', content: prompt }],
       resumeDataSchema
-    ) as unknown as ResumeData;
+    )) as unknown as ResumeData;
   } catch (error) {
     console.error('Error parsing resume:', error);
     throw error;

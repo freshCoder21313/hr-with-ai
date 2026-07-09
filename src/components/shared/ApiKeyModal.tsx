@@ -69,7 +69,9 @@ const ApiKeyModal: React.FC = () => {
     } catch (error) {
       console.error('Failed to fetch Gemini models:', error);
       const errorMessage = error instanceof Error ? error.message : String(error);
-      toast.error(`Failed to fetch models. Check your API Key and Base URL. Error: ${errorMessage}`);
+      toast.error(
+        `Failed to fetch models. Check your API Key and Base URL. Error: ${errorMessage}`
+      );
     } finally {
       setIsFetchingModels(false);
     }

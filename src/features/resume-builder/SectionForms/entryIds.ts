@@ -26,7 +26,9 @@ export function stripEntryId<T extends { _entryId?: string }>(entry: T): Omit<T,
   return rest;
 }
 
-export function stripEntryIds<T extends { _entryId?: string }>(entries?: T[]): Omit<T, '_entryId'>[] | undefined {
+export function stripEntryIds<T extends { _entryId?: string }>(
+  entries?: T[]
+): Omit<T, '_entryId'>[] | undefined {
   return entries?.map(stripEntryId);
 }
 
@@ -34,8 +36,12 @@ export function sanitizeResumeDataForSave(data: ResumeData): ResumeData {
   return {
     ...data,
     work: stripEntryIds(data.work as Array<{ _entryId?: string }>) as ResumeData['work'],
-    education: stripEntryIds(data.education as Array<{ _entryId?: string }>) as ResumeData['education'],
+    education: stripEntryIds(
+      data.education as Array<{ _entryId?: string }>
+    ) as ResumeData['education'],
     skills: stripEntryIds(data.skills as Array<{ _entryId?: string }>) as ResumeData['skills'],
-    projects: stripEntryIds(data.projects as Array<{ _entryId?: string }>) as ResumeData['projects'],
+    projects: stripEntryIds(
+      data.projects as Array<{ _entryId?: string }>
+    ) as ResumeData['projects'],
   };
 }

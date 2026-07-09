@@ -1,9 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { toast } from 'sonner';
 
-export const useBrowserSpeechToText = (
-  language: string = 'vi-VN'
-) => {
+export const useBrowserSpeechToText = (language: string = 'vi-VN') => {
   const [isListening, setIsListening] = useState(false);
   const [error, setError] = useState<string | null>(() => {
     if (typeof window !== 'undefined') {

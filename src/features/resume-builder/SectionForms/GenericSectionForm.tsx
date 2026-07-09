@@ -17,9 +17,16 @@ interface GenericSectionFormProps<T> {
   emptyMessage: string;
   defaultEntry: T;
   getTitle: (entry: T) => string;
-  onAnalyze?: (index: number, entry: T, setAnalyzingIndex: (i: number | null) => void) => Promise<void>;
+  onAnalyze?: (
+    index: number,
+    entry: T,
+    setAnalyzingIndex: (i: number | null) => void
+  ) => Promise<void>;
   analyzeTooltip?: string;
-  renderFields: (entry: T, handleChange: <K extends keyof T>(field: K, value: T[K]) => void) => React.ReactNode;
+  renderFields: (
+    entry: T,
+    handleChange: <K extends keyof T>(field: K, value: T[K]) => void
+  ) => React.ReactNode;
 }
 
 export function GenericSectionForm<T>({
@@ -34,16 +41,14 @@ export function GenericSectionForm<T>({
   analyzeTooltip,
   renderFields,
 }: GenericSectionFormProps<T>) {
-  const { analyzingIndex, setAnalyzingIndex, handleAdd, handleRemove, handleChange } =
-    useEntryList(data, onChange);
+  const { analyzingIndex, setAnalyzingIndex, handleAdd, handleRemove, handleChange } = useEntryList(
+    data,
+    onChange
+  );
 
   return (
     <div className="space-y-6">
-      <EntryListHeader
-        title={title}
-        addLabel={addLabel}
-        onAdd={() => handleAdd(defaultEntry)}
-      />
+      <EntryListHeader title={title} addLabel={addLabel} onAdd={() => handleAdd(defaultEntry)} />
 
       {data.map((entry, index) => (
         <EntryCardShell

@@ -52,7 +52,8 @@ export const GitHubImportModal: React.FC<GitHubImportModalProps> = ({
           </DialogTitle>
           <DialogDescription>
             {state.step === 'credentials' && 'Connect your GitHub account to access repositories.'}
-            {state.step === 'selection' && 'Select repositories to transform into portfolio projects.'}
+            {state.step === 'selection' &&
+              'Select repositories to transform into portfolio projects.'}
             {state.step === 'processing' &&
               'AI is analyzing your code and writing project descriptions...'}
             {state.step === 'review' && 'Review and edit the AI-generated project entries.'}
@@ -291,7 +292,10 @@ export const GitHubImportModal: React.FC<GitHubImportModalProps> = ({
 
         <DialogFooter className="p-6 border-t bg-muted/20">
           {state.step === 'credentials' && (
-            <Button onClick={actions.handleConnect} disabled={state.isLoading || !state.usernamesText}>
+            <Button
+              onClick={actions.handleConnect}
+              disabled={state.isLoading || !state.usernamesText}
+            >
               {state.isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Connect to GitHub
             </Button>
@@ -306,7 +310,10 @@ export const GitHubImportModal: React.FC<GitHubImportModalProps> = ({
                 <Button variant="outline" onClick={() => actions.setStep('credentials')}>
                   Back
                 </Button>
-                <Button onClick={actions.handleProcess} disabled={state.selectedRepoIds.length === 0}>
+                <Button
+                  onClick={actions.handleProcess}
+                  disabled={state.selectedRepoIds.length === 0}
+                >
                   Analyze with AI
                 </Button>
               </div>
@@ -322,7 +329,10 @@ export const GitHubImportModal: React.FC<GitHubImportModalProps> = ({
                 <Button variant="ghost" onClick={onClose} disabled={state.isLoading}>
                   Cancel
                 </Button>
-                <Button onClick={actions.handleImport} disabled={state.isLoading || state.projectsToImport.size === 0}>
+                <Button
+                  onClick={actions.handleImport}
+                  disabled={state.isLoading || state.projectsToImport.size === 0}
+                >
                   {state.isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Confirm Import
                 </Button>

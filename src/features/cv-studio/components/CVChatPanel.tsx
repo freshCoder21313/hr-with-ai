@@ -6,7 +6,17 @@ import { SimpleInputArea } from '@/components/shared/SimpleInputArea';
 import { ChangeReviewCard } from './ChangeReviewCard';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { MessageSquare, Plus, Trash2, Github, FileEdit, FileSearch, Target, ChevronDown, AlertCircle } from 'lucide-react';
+import {
+  MessageSquare,
+  Plus,
+  Trash2,
+  Github,
+  FileEdit,
+  FileSearch,
+  Target,
+  ChevronDown,
+  AlertCircle,
+} from 'lucide-react';
 
 interface CVChatPanelProps {
   messages: Message[];
@@ -30,13 +40,30 @@ interface CVChatPanelProps {
 }
 
 export const CVChatPanel: React.FC<CVChatPanelProps> = ({
-  messages, isTyping, mainCV, chatResumeId, pendingChanges, resumes,
-  contextResumeId, contextJobId, jobs, onSendMessage, onAcceptChange,
-  onRejectChange, onChatCVChange, onDeleteCV, onCreateNewCV,
-  onSetContextResumeId, onSetContextJobId, onGitHubImportOpen,
+  messages,
+  isTyping,
+  mainCV,
+  chatResumeId,
+  pendingChanges,
+  resumes,
+  contextResumeId,
+  contextJobId,
+  jobs,
+  onSendMessage,
+  onAcceptChange,
+  onRejectChange,
+  onChatCVChange,
+  onDeleteCV,
+  onCreateNewCV,
+  onSetContextResumeId,
+  onSetContextJobId,
+  onGitHubImportOpen,
 }) => {
   return (
-    <div className="flex flex-col border-r border-border bg-background overflow-hidden" style={{ width: '38%', minWidth: '280px' }}>
+    <div
+      className="flex flex-col border-r border-border bg-background overflow-hidden"
+      style={{ width: '38%', minWidth: '280px' }}
+    >
       <div className="h-12 px-4 border-b border-border flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2">
           <MessageSquare className="w-4 h-4 text-primary" />
@@ -50,7 +77,12 @@ export const CVChatPanel: React.FC<CVChatPanelProps> = ({
           )}
           <Tooltip delayDuration={0}>
             <TooltipTrigger asChild>
-              <Button variant="outline" size="sm" className="h-7 text-xs gap-1" onClick={onCreateNewCV}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 text-xs gap-1"
+                onClick={onCreateNewCV}
+              >
                 <Plus size={12} /> New CV
               </Button>
             </TooltipTrigger>
@@ -58,8 +90,13 @@ export const CVChatPanel: React.FC<CVChatPanelProps> = ({
           </Tooltip>
           <Tooltip delayDuration={0}>
             <TooltipTrigger asChild>
-              <Button variant="outline" size="sm" className="h-7 text-xs gap-1 text-destructive hover:bg-destructive/10 hover:text-destructive border-destructive/20"
-                onClick={onDeleteCV} disabled={!chatResumeId}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 text-xs gap-1 text-destructive hover:bg-destructive/10 hover:text-destructive border-destructive/20"
+                onClick={onDeleteCV}
+                disabled={!chatResumeId}
+              >
                 <Trash2 size={12} />
               </Button>
             </TooltipTrigger>
@@ -67,7 +104,12 @@ export const CVChatPanel: React.FC<CVChatPanelProps> = ({
           </Tooltip>
           <Tooltip delayDuration={0}>
             <TooltipTrigger asChild>
-              <Button variant="outline" size="sm" className="h-7 text-xs gap-1" onClick={onGitHubImportOpen}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 text-xs gap-1"
+                onClick={onGitHubImportOpen}
+              >
                 <Github size={12} /> Import
               </Button>
             </TooltipTrigger>
@@ -88,10 +130,16 @@ export const CVChatPanel: React.FC<CVChatPanelProps> = ({
             title="Select CV to Edit"
           >
             {resumes.map((r) => (
-              <option key={r.id} value={r.id}>{r.isMain ? '\u2605 ' : ''}{r.fileName}</option>
+              <option key={r.id} value={r.id}>
+                {r.isMain ? '\u2605 ' : ''}
+                {r.fileName}
+              </option>
             ))}
           </select>
-          <ChevronDown size={10} className="absolute right-2.5 text-muted-foreground pointer-events-none opacity-50" />
+          <ChevronDown
+            size={10}
+            className="absolute right-2.5 text-muted-foreground pointer-events-none opacity-50"
+          />
         </div>
 
         <div className="grid grid-cols-2 gap-2">
@@ -102,15 +150,24 @@ export const CVChatPanel: React.FC<CVChatPanelProps> = ({
             <select
               className="w-full pl-6 pr-6 py-1 text-[10px] border border-border/60 bg-background/50 rounded-md focus:outline-none focus:ring-1 focus:ring-amber-400 appearance-none cursor-pointer transition-all hover:bg-background"
               value={contextResumeId ?? ''}
-              onChange={(e) => onSetContextResumeId(e.target.value ? Number(e.target.value) : undefined)}
+              onChange={(e) =>
+                onSetContextResumeId(e.target.value ? Number(e.target.value) : undefined)
+              }
               title="Reference CV Context"
             >
               <option value="">Auto Context (Main)</option>
-              {resumes.filter((r) => r.id !== chatResumeId).map((r) => (
-                <option key={r.id} value={r.id}>Ref: {r.fileName}</option>
-              ))}
+              {resumes
+                .filter((r) => r.id !== chatResumeId)
+                .map((r) => (
+                  <option key={r.id} value={r.id}>
+                    Ref: {r.fileName}
+                  </option>
+                ))}
             </select>
-            <ChevronDown size={9} className="absolute right-2 text-muted-foreground pointer-events-none opacity-40" />
+            <ChevronDown
+              size={9}
+              className="absolute right-2 text-muted-foreground pointer-events-none opacity-40"
+            />
           </div>
 
           <div className="relative flex items-center group">
@@ -125,10 +182,15 @@ export const CVChatPanel: React.FC<CVChatPanelProps> = ({
             >
               <option value="">No Target Job</option>
               {jobs.map((j) => (
-                <option key={j.id} value={j.id}>{j.title || j.company || 'Job'}</option>
+                <option key={j.id} value={j.id}>
+                  {j.title || j.company || 'Job'}
+                </option>
               ))}
             </select>
-            <ChevronDown size={9} className="absolute right-2 text-muted-foreground pointer-events-none opacity-40" />
+            <ChevronDown
+              size={9}
+              className="absolute right-2 text-muted-foreground pointer-events-none opacity-40"
+            />
           </div>
         </div>
       </div>
@@ -155,7 +217,11 @@ export const CVChatPanel: React.FC<CVChatPanelProps> = ({
       <SimpleInputArea
         onSendMessage={onSendMessage}
         disabled={isTyping || !mainCV}
-        placeholder={mainCV ? "Ask AI to update your CV... (e.g. 'Add TypeScript to skills')" : 'No CV selected'}
+        placeholder={
+          mainCV
+            ? "Ask AI to update your CV... (e.g. 'Add TypeScript to skills')"
+            : 'No CV selected'
+        }
       />
     </div>
   );

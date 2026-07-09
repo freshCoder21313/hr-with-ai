@@ -24,7 +24,9 @@ describe('aiStructuredOutput', () => {
   });
 
   it('extracts embedded JSON from surrounding text', () => {
-    expect(parseStructuredResponse('Here is the JSON: {"name":"Ada","score":100}.', schema)).toEqual({
+    expect(
+      parseStructuredResponse('Here is the JSON: {"name":"Ada","score":100}.', schema)
+    ).toEqual({
       name: 'Ada',
       score: 100,
     });
