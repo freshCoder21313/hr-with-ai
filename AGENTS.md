@@ -95,9 +95,10 @@ Setup file: `src/setupTests.ts`.
 - Avoid inline `style={{ ... }}` unless dynamic values (coordinates, user colors) require it.
 
 ### State Management
-- **Local UI State:** `useState` for component-specific state.
-- **Global App State:** `zustand` stores (located in `src/lib` or `src/features/*/stores`).
-- **Data Persistence:** `dexie` for storing large datasets/offline data in IndexedDB.
+- **Local UI State:** `useState` for component-specific state (modals, tabs, ephemeral form UI).
+- **Global App State:** `zustand` stores colocated with features (`src/features/*/stores` or `*Store.ts`) for cross-route domain state.
+- **Data Persistence:** `dexie` for storing large datasets/offline data in IndexedDB (source of truth for interviews/resumes/settings).
+- **Policy:** see `docs/adr/001-state-management.md`.
 
 ### Error Handling
 - **Async Operations:** Wrap `await` calls in `try/catch`.
@@ -106,12 +107,22 @@ Setup file: `src/setupTests.ts`.
 
 ## 4. Project Structure
 
-- **`src/api/`**: Serverless functions / Backend logic.
+- **`src/api/`**: Serverless functions / Backend logic (also `api/` at repo root for Vercel).
 - **`src/components/ui/`**: Reusable "shadcn-like" base components (Buttons, Inputs, Dialogs).
-- **`src/features/`**: Feature-based modules. Each feature folder should ideally contain its own components, hooks, and types if they are isolated.
-- **`src/lib/`**: Shared utilities, database configuration, store definitions.
-- **`src/services/`**: Service layer for external API interactions (e.g., AI providers).
-- **`src/types/`**: Global type definitions (also check `src/types.ts`).
+- **`src/features/`**: Feature-based UI modules (pages, hooks, stores). **Must not be imported by `services/`.**
+- **`src/lib/`**: Shared utilities, database configuration.
+- **`src/services/`**: Domain & infrastructure services (AI, sync, interview, resume, jobs, voice, prompts).
+  - **`src/services/ai/`**: `AIService`, provider strategies, schemas, config helpers.
+  - **`src/services/prompts/`**: Domain-split prompt templates (interview, resume, jobs, …).
+- **`src/types/`**: Global type definitions (`src/types/index.ts`, `src/types/resume.ts`).
+
+### Dependency direction (strict)
+
+```
+features (UI) → services → lib / types
+```
+
+See `docs/adr/000-dependency-direction.md`.
 
 ## 5. Agent Operational Guidelines
 
@@ -119,7 +130,7 @@ When operating in this codebase, adhere to the following workflow:
 
 1.  **Explore Phase:**
     - Read `AGENTS.md` (this file).
-    - Read `src/types.ts` to understand domain models.
+    - Read `src/types/index.ts` to understand domain models.
     - Read `src/lib/db.ts` to understand data persistence.
     - Search for existing components before creating new ones.
 
@@ -150,8 +161,9 @@ When operating in this codebase, adhere to the following workflow:
 - **Links:** Use `<Link>` or `useNavigate`. Do not use `<a>` tags for internal navigation.
 
 ### AI Integration
-- This app uses multiple AI providers (Gemini, OpenAI, Anthropic).
-- Check `src/services/ai/` (or similar) for integration logic.
-- Respect `src/types/index.ts` regarding `AIProviderStrategy`.
+- This app uses multiple AI providers (Gemini, OpenAI, Anthropic, OpenRouter).
+- Import from `src/services/ai/` (`AIService`, strategies, schemas). Prefer `@/services/ai` over deprecated `features/ai-provider` shims.
+- Prompts: `@/services/prompts` (or legacy re-export `@/services/interview/promptSystem`).
+- Respect `src/types/index.ts` regarding `AIProviderStrategy`, `InterviewContentType`, and `InterviewInteractionMode`.
 
 (End of Guide)

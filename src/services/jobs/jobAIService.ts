@@ -5,11 +5,7 @@ import { generateJobRecommendationsPrompt, generateTailoredResumePrompt } from '
 import { ResumeData } from '@/types/resume';
 import { DBJobRecommendation } from './jobRecommendationService';
 import { getService, AIConfigInput, getStoredAIConfig } from '@/services/ai/aiConfigService';
-import {
-  jdExtractSchema,
-  jobRecommendationsSchema,
-  resumeDataSchema,
-} from '@/features/ai-provider/schemas';
+import { jdExtractSchema, jobRecommendationsSchema, resumeDataSchema } from '@/services/ai/schemas';
 
 export const extractInfoFromJD = async (
   jobDescription: string,

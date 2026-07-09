@@ -7,10 +7,7 @@ import {
 } from '@/services/interview/promptSystem';
 import { ChatMessage } from '@/types';
 import { getService, resolveConfig, AIConfigInput } from '@/services/ai/aiConfigService';
-import {
-  interviewFeedbackSchemaExtended,
-  interviewHintsSchema,
-} from '@/features/ai-provider/schemas';
+import { interviewFeedbackSchemaExtended, interviewHintsSchema } from '@/services/ai/schemas';
 
 export const startInterviewSession = async (
   interview: Interview,

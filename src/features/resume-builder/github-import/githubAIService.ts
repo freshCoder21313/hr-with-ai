@@ -4,10 +4,7 @@ import { AIConfigInput } from '@/services/ai/aiConfigService';
 import { getRepoToProjectPrompt, getGitHubInterviewPrompt } from './githubPrompt';
 import { fetchFileTree } from '@/lib/github';
 import { getService } from '@/services/ai/aiConfigService';
-import {
-  githubInterviewQuestionsSchema,
-  githubProjectSchema,
-} from '@/features/ai-provider/schemas';
+import { githubInterviewQuestionsSchema, githubProjectSchema } from '@/services/ai/schemas';
 
 export const convertRepoToProject = async (
   repo: GitHubRepo,

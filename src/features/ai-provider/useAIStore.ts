@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { AIService } from './ai.service';
+import { AIService } from '@/services/ai/ai.service';
 import { AIConfig, AIModelProvider } from '@/types';
 import { loadUserSettings } from '@/services/core/settingsService';
 

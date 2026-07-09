@@ -12,7 +12,7 @@ import {
   resumeAnalysisSchema,
   resumeDataSchema,
   resumeSectionAnalysisSchema,
-} from '@/features/ai-provider/schemas';
+} from '@/services/ai/schemas';
 
 export const analyzeResume = async (
   resumeText: string,

@@ -13,7 +13,13 @@ import { generateInterviewHints, InterviewHints } from '@/services/interview/int
 import { getStoredAIConfig } from '@/services/ai/aiConfigService';
 import { loadUserSettings } from '@/services/core/settingsService';
 import { useInterviewStore } from './interviewStore';
-import { UserSettings, Resume, JobRecommendation } from '@/types';
+import {
+  UserSettings,
+  Resume,
+  JobRecommendation,
+  resolveInterviewContentType,
+  resolveInterviewInteractionMode,
+} from '@/types';
 import SettingsModal from '@/components/shared/SettingsModal';
 import JobRecommendationModal from './JobRecommendationModal';
 import { openApiKeyModal } from '@/events/apiKeyEvents';
@@ -123,28 +129,32 @@ const InterviewRoom: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentInterview?.messages?.length]);
 
-  // Auto-open tools based on Mode
+  // Auto-open tools based on content type (coding / system design)
   useEffect(() => {
-    const interviewType = currentInterview?.type || currentInterview?.mode;
+    if (!currentInterview) return;
+    const contentType = resolveInterviewContentType(currentInterview);
 
-    if (interviewType === 'coding') {
+    if (contentType === 'coding') {
       setIsCodeOpen(true);
-    } else if (interviewType === 'system_design') {
+    } else if (contentType === 'system_design') {
       setIsWhiteboardOpen(true);
     }
-  }, [currentInterview?.type, currentInterview?.mode]);
+  }, [currentInterview?.type, currentInterview?.mode, currentInterview]);
 
   // View Mode (Text vs Voice)
   const [viewMode, setViewMode] = useState<'text' | 'voice'>('text');
 
-  // Initialize view mode based on interview settings
+  // Initialize view mode based on interaction channel
   useEffect(() => {
-    if (currentInterview?.mode === 'voice') {
+    if (!currentInterview) return;
+    const interaction = resolveInterviewInteractionMode(currentInterview);
+    if (interaction === 'voice') {
       setViewMode('voice');
-    } else if (currentInterview?.mode === 'text') {
+    } else if (interaction === 'text') {
       setViewMode('text');
     }
-  }, [currentInterview?.mode]);
+    // hybrid keeps user-selected viewMode
+  }, [currentInterview?.mode, currentInterview]);
 
   // Load Interview Data
   const { isLoading: isInterviewLoading } = useInterviewLoader();

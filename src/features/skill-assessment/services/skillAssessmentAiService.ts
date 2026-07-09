@@ -1,6 +1,6 @@
 import { getService, AIConfigInput } from '@/services/ai/aiConfigService';
 import { QuizQuestion } from '@/features/skill-assessment/types';
-import { stringArraySchema, quizQuestionsSchema } from '@/features/ai-provider/schemas';
+import { stringArraySchema, quizQuestionsSchema } from '@/services/ai/schemas';
 import {
   SKILL_EXTRACTOR_PROMPT,
   SUB_SKILL_GENERATOR_PROMPT,

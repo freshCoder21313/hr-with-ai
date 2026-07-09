@@ -1,5 +1,5 @@
 import { getCompanyIntelPrompt } from '@/services/interview/promptSystem';
-import { AIService } from '@/features/ai-provider/ai.service';
+import { AIService } from '@/services/ai/ai.service';
 import { getStoredAIConfig } from './aiConfigService';
 import { loadUserSettings } from '@/services/core/settingsService';
 

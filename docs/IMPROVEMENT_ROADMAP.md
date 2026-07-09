@@ -144,6 +144,14 @@ Within **~8–12 weeks** of focused work:
 
 **Exit criteria:** `rg "from '@/features" src/services` returns empty; architecture note in AGENTS.md updated.
 
+### Phase 1 checklist
+
+- [x] P1-1 Move AI core under `services/ai` (+ thin feature re-exports)
+- [x] P1-2 Split `promptSystem` → `services/prompts/*`
+- [x] P1-3 Normalize Interview content vs interaction types + resolvers
+- [x] P1-4 Remove empty feature shells (`company-intel`, `interview-room`)
+- [x] P1-5 ADRs + AGENTS dependency/state policy
+
 ---
 
 ### Phase 2 — Decompose hotspots (2–3 weeks)
