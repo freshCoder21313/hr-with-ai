@@ -169,6 +169,14 @@ Within **~8–12 weeks** of focused work:
 
 **Exit criteria:** No production TSX/TS file >350 LOC without explicit `// @god-file-approved` + reason; each split covered by at least one focused test.
 
+### Phase 2 checklist
+
+- [x] P2-1 Split `InterviewRoom` → hooks (`useSuggestedAction`, `useInterviewHints`, `useInterviewRoomBootstrap`) + wire `useToolHandlers` (~239 LOC shell)
+- [x] P2-2 Split `FeedbackView` → `useFeedbackData` + feedback components (~100 LOC shell)
+- [x] P2-3 Split `JobRecommendationModal` → `useJobRecommendationFlow` + step components (~81 LOC shell)
+- [x] P2-4 Split `useSetupRoom` → `useSetupJobs` / `useSetupResumes` / `useSetupAIActions` (~134 LOC composer)
+- [x] P2-5 `CloudSyncModal` already UI-thin via `useCloudSync` (no further split needed this phase)
+
 ---
 
 ### Phase 3 — Test & quality gates (2–3 weeks, parallel with Phase 2)

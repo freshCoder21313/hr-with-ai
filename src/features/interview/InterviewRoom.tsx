@@ -1,45 +1,32 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { notificationService } from '@/services/core/notificationService';
-import { toast } from 'sonner';
 import { useParams } from 'react-router-dom';
-import { Loader2 } from 'lucide-react';
 import { Editor, TLShapeId } from 'tldraw';
-import { db } from '@/lib/db';
 import { useInterview } from '@/hooks/useInterview';
 import { useInterviewLoader } from '@/hooks/useInterviewLoader';
 import { svgToPngBase64 } from '@/lib/svgUtils';
-
-import { generateInterviewHints, InterviewHints } from '@/services/interview/interviewAIService';
-import { getStoredAIConfig } from '@/services/ai/aiConfigService';
-import { loadUserSettings } from '@/services/core/settingsService';
 import { useInterviewStore } from './interviewStore';
-import {
-  UserSettings,
-  Resume,
-  JobRecommendation,
-  resolveInterviewContentType,
-  resolveInterviewInteractionMode,
-} from '@/types';
+import { JobRecommendation, resolveInterviewInteractionMode } from '@/types';
 import SettingsModal from '@/components/shared/SettingsModal';
 import JobRecommendationModal from './JobRecommendationModal';
-import { openApiKeyModal } from '@/events/apiKeyEvents';
 import SEO from '@/components/shared/SEO';
 import { isNonEmptyString } from '@/lib/validation';
 
-// Components
 import { InterviewHeader } from './components/InterviewHeader';
 import { ChatArea } from './components/ChatArea';
 import { InputArea } from './components/InputArea';
 import { ToolModals } from './components/ToolModals';
 import { VoiceInterviewRoom } from './components/VoiceInterviewRoom';
+import { EndingSessionOverlay } from './components/EndingSessionOverlay';
 
-// Hooks
 import { useInterviewTimer } from './hooks/useInterviewTimer';
+import { useToolHandlers } from './hooks/useToolHandlers';
+import { useSuggestedAction } from './hooks/useSuggestedAction';
+import { useInterviewHints } from './hooks/useInterviewHints';
+import { useInterviewRoomBootstrap } from './hooks/useInterviewRoomBootstrap';
 
 const InterviewRoom: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-
-  // Custom Hooks
   const {
     currentInterview,
     sendMessage,
@@ -49,199 +36,50 @@ const InterviewRoom: React.FC = () => {
     isLoading: isProcessing,
   } = useInterview();
   const { setInterview, updateCode, updateWhiteboard } = useInterviewStore();
-
-  // Local State
-  const [inputValue, setInputValue] = useState('');
-
-  const [isCodeOpen, setIsCodeOpen] = useState(false);
-  const [isWhiteboardOpen, setIsWhiteboardOpen] = useState(false);
-  const [isEndingSession, setIsEndingSession] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
-  const [userSettings, setUserSettings] = useState<UserSettings>({
-    hintsEnabled: false,
-  });
-  const [isSettingsLoaded, setIsSettingsLoaded] = useState(false);
-  const [hints, setHints] = useState<InterviewHints | null>(null);
-  const [isLoadingHints, setIsLoadingHints] = useState(false);
-  const [showJobRecommendationModal, setShowJobRecommendationModal] = useState(false);
-  const [availableResumes, setAvailableResumes] = useState<Resume[]>([]);
-  const [suggestedAction, setSuggestedAction] = useState<'code' | 'draw' | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const processedMessageIds = useRef<Set<number>>(new Set());
-
-  // Refs
-  const editorRef = useRef<Editor | null>(null);
-
-  // Timer Hook
-  const { timer } = useInterviewTimer(isProcessing, currentInterview?.difficulty, () =>
-    handleSendMessage()
-  );
-
-  // --- Effects ---
-
-  // Smart Action Detection & Auto-Open
-  useEffect(() => {
-    if (currentInterview?.messages?.length) {
-      const lastMsg = currentInterview.messages[currentInterview.messages.length - 1];
-
-      // Skip if we've already processed this message for auto-opening
-      if (processedMessageIds.current.has(lastMsg.timestamp)) {
-        return;
-      }
-
-      if (lastMsg.role === 'model') {
-        const text = lastMsg.content;
-
-        // 1. Explicit Tag Detection (Suggestion Only, No Auto-Open)
-        if (text.includes('<ACTION type="CODE"')) {
-          setSuggestedAction('code');
-          processedMessageIds.current.add(lastMsg.timestamp);
-          return;
-        }
-
-        if (text.includes('<ACTION type="DRAW"')) {
-          setSuggestedAction('draw');
-          processedMessageIds.current.add(lastMsg.timestamp);
-          return;
-        }
-
-        // 2. Fallback Heuristic (Suggestion Only, No Auto-Open)
-        const lower = text.toLowerCase();
-        if (
-          lower.includes('code') ||
-          lower.includes('programming') ||
-          lower.includes('function') ||
-          lower.includes('implement')
-        ) {
-          setSuggestedAction('code');
-        } else if (
-          lower.includes('draw') ||
-          lower.includes('diagram') ||
-          lower.includes('whiteboard') ||
-          lower.includes('visualize')
-        ) {
-          setSuggestedAction('draw');
-        } else {
-          setSuggestedAction(null);
-        }
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentInterview?.messages?.length]);
-
-  // Auto-open tools based on content type (coding / system design)
-  useEffect(() => {
-    if (!currentInterview) return;
-    const contentType = resolveInterviewContentType(currentInterview);
-
-    if (contentType === 'coding') {
-      setIsCodeOpen(true);
-    } else if (contentType === 'system_design') {
-      setIsWhiteboardOpen(true);
-    }
-  }, [currentInterview?.type, currentInterview?.mode, currentInterview]);
-
-  // View Mode (Text vs Voice)
-  const [viewMode, setViewMode] = useState<'text' | 'voice'>('text');
-
-  // Initialize view mode based on interaction channel
-  useEffect(() => {
-    if (!currentInterview) return;
-    const interaction = resolveInterviewInteractionMode(currentInterview);
-    if (interaction === 'voice') {
-      setViewMode('voice');
-    } else if (interaction === 'text') {
-      setViewMode('text');
-    }
-    // hybrid keeps user-selected viewMode
-  }, [currentInterview?.mode, currentInterview]);
-
-  // Load Interview Data
   const { isLoading: isInterviewLoading } = useInterviewLoader();
 
-  // Load settings on mount and restore TTS preference
-  useEffect(() => {
-    const loadSettings = async () => {
-      try {
-        const stored = await loadUserSettings();
-        setUserSettings(stored);
+  const [inputValue, setInputValue] = useState('');
+  const [isEndingSession, setIsEndingSession] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [showJobRecommendationModal, setShowJobRecommendationModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-        setIsSettingsLoaded(true);
-      } catch (error) {
-        console.error('Failed to load settings:', error);
-        setIsSettingsLoaded(true);
-      }
-    };
-    loadSettings();
-  }, []);
+  const {
+    userSettings,
+    setUserSettings,
+    availableResumes,
+    viewMode,
+    setViewMode,
+    autoOpenCode,
+    autoOpenWhiteboard,
+  } = useInterviewRoomBootstrap(currentInterview, showSettings);
 
-  // Reload settings when modal closes
-  useEffect(() => {
-    if (!showSettings && isSettingsLoaded) {
-      const reloadSettings = async () => {
-        try {
-          const stored = await loadUserSettings();
-          setUserSettings(stored);
-        } catch (error) {
-          console.error('Failed to reload settings:', error);
-        }
-      };
-      reloadSettings();
-    }
-  }, [showSettings, isSettingsLoaded]);
+  const tools = useToolHandlers(currentInterview, isSubmitting, setIsSubmitting);
+  const { suggestedAction, setSuggestedAction } = useSuggestedAction(currentInterview?.messages);
+  const { hints, setHints, isLoadingHints, handleGetHints } = useInterviewHints(currentInterview);
 
   useEffect(() => {
-    const loadResumes = async () => {
-      try {
-        const resumes = await db.resumes.toArray();
-        setAvailableResumes(resumes);
-      } catch (error) {
-        console.error('Failed to load resumes:', error);
-      }
-    };
-    loadResumes();
-  }, []);
+    if (autoOpenCode) tools.setIsCodeOpen(true);
+  }, [autoOpenCode]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // --- Handlers ---
+  useEffect(() => {
+    if (autoOpenWhiteboard) tools.setIsWhiteboardOpen(true);
+  }, [autoOpenWhiteboard]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleGetHints = async () => {
-    if (!currentInterview?.messages?.length) return;
-    const lastQuestion = [...currentInterview.messages].reverse().find((m) => m.role === 'model');
-    if (!lastQuestion) {
-      toast.error('Wait for the interviewer to ask a question first!');
-      return;
-    }
-    const config = getStoredAIConfig();
-    if (!config.apiKey) {
-      openApiKeyModal();
-      return;
-    }
-    setIsLoadingHints(true);
-    setHints(null);
-    try {
-      const context = `Role: ${currentInterview.jobTitle} at ${currentInterview.company}. Persona: ${currentInterview.interviewerPersona}. Language: ${currentInterview.language}`;
-      const result = await generateInterviewHints(lastQuestion.content, context, config);
-      setHints(result);
-    } catch (error) {
-      console.error(error);
-      toast.error('Failed to get hints. Please try again.');
-    } finally {
-      setIsLoadingHints(false);
-    }
-  };
-
-  const handleSendMessage = async () => {
+  const handleSendMessage = useCallback(async () => {
     if (!isNonEmptyString(inputValue) || !currentInterview) return;
 
     setHints(null);
     setSuggestedAction(null);
 
-    let imageBase64: string | undefined = undefined;
-    if (isWhiteboardOpen && editorRef.current) {
+    let imageBase64: string | undefined;
+    if (tools.isWhiteboardOpen && tools.editorRef.current) {
       try {
-        const shapeIds = Array.from(editorRef.current.getCurrentPageShapeIds()) as TLShapeId[];
+        const shapeIds = Array.from(
+          tools.editorRef.current.getCurrentPageShapeIds()
+        ) as TLShapeId[];
         if (shapeIds.length > 0) {
-          const svg = await editorRef.current.getSvg(shapeIds, { background: true });
+          const svg = await tools.editorRef.current.getSvg(shapeIds, { background: true });
           if (svg) {
             const pngData = await svgToPngBase64(svg);
             if (pngData) imageBase64 = pngData;
@@ -254,115 +92,61 @@ const InterviewRoom: React.FC = () => {
 
     const contentToSend = inputValue;
     setInputValue('');
-    // Timer is stopped by hook effect when processing starts
     await sendMessage(contentToSend, imageBase64);
-  };
+  }, [
+    inputValue,
+    currentInterview,
+    tools.isWhiteboardOpen,
+    tools.editorRef,
+    sendMessage,
+    setHints,
+    setSuggestedAction,
+  ]);
 
-  const handleEndInterview = async () => {
+  const { timer } = useInterviewTimer(isProcessing, currentInterview?.difficulty, () =>
+    handleSendMessage()
+  );
+
+  const handleEndInterview = useCallback(async () => {
     const confirmed = await notificationService.confirm({
       title: 'End Interview',
       message: 'Are you sure you want to end this interview? AI will generate feedback for you.',
     });
-    if (confirmed) {
-      setIsEndingSession(true);
-      try {
-        await endSession();
-      } catch (error) {
-        notificationService.error('Failed to end session', error);
-        setIsEndingSession(false);
-      }
-    }
-  };
-
-  const handleRunCode = async () => {
-    toast.info('This feature is coming soon! (Backend integration in progress)');
-  };
-
-  const handleToolSubmit = async (type: 'code' | 'whiteboard') => {
-    if (isSubmitting) return;
-    setIsSubmitting(true);
-
+    if (!confirmed) return;
+    setIsEndingSession(true);
     try {
-      let content = '';
-      let imageBase64: string | undefined = undefined;
-
-      if (type === 'code') {
-        const code = currentInterview?.code || '';
-        // TODO: Detect language dynamically if possible
-        content = `Here is my solution:\n\n\`\`\`javascript\n${code}\n\`\`\``;
-        setIsCodeOpen(false);
-      } else if (type === 'whiteboard') {
-        if (editorRef.current) {
-          try {
-            const shapeIds = Array.from(editorRef.current.getCurrentPageShapeIds()) as TLShapeId[];
-            if (shapeIds.length > 0) {
-              const svg = await editorRef.current.getSvg(shapeIds, {
-                background: true,
-                scale: 1, // Ensure good resolution
-              });
-              if (svg) {
-                const pngData = await svgToPngBase64(svg);
-                if (pngData) {
-                  imageBase64 = pngData;
-                } else {
-                  console.error('Failed to convert whiteboard SVG to PNG');
-                }
-              }
-            }
-          } catch (e) {
-            console.error('Failed to capture whiteboard', e);
-          }
-        }
-        content = 'I have sketched the system design. Please review the attached diagram.';
-        setIsWhiteboardOpen(false);
-      }
-
-      if (content) {
-        try {
-          await sendMessage(content, imageBase64);
-        } catch (error) {
-          console.error('Failed to submit tool result:', error);
-          toast.error('Failed to send response. Please try again.');
-        }
-      }
-    } finally {
-      setIsSubmitting(false);
+      await endSession();
+    } catch (error) {
+      notificationService.error('Failed to end session', error);
+      setIsEndingSession(false);
     }
-  };
+  }, [endSession]);
 
-  const handleSelectJob = async (job: JobRecommendation, tailoredResumeText: string) => {
-    if (!currentInterview || !id) return;
-    const updatedInterview = {
-      ...currentInterview,
-      jobTitle: job.title,
-      company: job.company,
-      jobDescription: job.jobDescription,
-      tailoredResume: tailoredResumeText,
-    };
-    await db.interviews.put(updatedInterview, parseInt(id));
-    setInterview(updatedInterview);
-    setShowJobRecommendationModal(false);
-  };
+  const handleSelectJob = useCallback(
+    async (job: JobRecommendation, tailoredResumeText: string) => {
+      if (!currentInterview || !id) return;
+      await tools.handleSelectJob(job, tailoredResumeText, parseInt(id, 10), (i) => {
+        if (i) setInterview(i);
+      });
+      setShowJobRecommendationModal(false);
+    },
+    [currentInterview, id, tools, setInterview]
+  );
 
-  if (!currentInterview)
+  if (!currentInterview || isInterviewLoading) {
     return (
       <div className="h-screen flex items-center justify-center text-slate-500">
         Loading room...
       </div>
     );
+  }
 
-  if (isInterviewLoading)
-    return (
-      <div className="h-screen flex items-center justify-center text-slate-500">
-        Loading room...
-      </div>
-    );
+  const interaction = resolveInterviewInteractionMode(currentInterview);
 
-  // Conditional Render for Voice Room
   if (viewMode === 'voice') {
     return (
       <VoiceInterviewRoom
-        onSwitchToText={currentInterview.mode === 'hybrid' ? () => setViewMode('text') : undefined}
+        onSwitchToText={interaction === 'hybrid' ? () => setViewMode('text') : undefined}
       />
     );
   }
@@ -373,18 +157,8 @@ const InterviewRoom: React.FC = () => {
         title="Interview Room - HR With AI"
         description="Live AI mock interview regarding your target role. Receive real-time hints and feedback."
       />
-      {/* Loading Overlay */}
-      {isEndingSession && (
-        <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm transition-all animate-in fade-in duration-300">
-          <div className="bg-card p-6 md:p-8 rounded-2xl shadow-2xl border border-border flex flex-col items-center max-w-md text-center mx-4">
-            <Loader2 className="w-12 h-12 text-primary animate-spin mb-4" />
-            <h3 className="text-xl font-bold text-foreground mb-2">Analyzing Interview</h3>
-            <p className="text-muted-foreground">Generating detailed feedback...</p>
-          </div>
-        </div>
-      )}
+      {isEndingSession && <EndingSessionOverlay />}
 
-      {/* Header */}
       <InterviewHeader
         interview={currentInterview}
         timer={timer}
@@ -392,33 +166,31 @@ const InterviewRoom: React.FC = () => {
         onEndSession={handleEndInterview}
         viewMode={viewMode}
         onSwitchViewMode={
-          currentInterview.mode === 'hybrid' || currentInterview.mode === 'text'
+          interaction === 'hybrid' || interaction === 'text'
             ? () => setViewMode((prev) => (prev === 'voice' ? 'text' : 'voice'))
             : undefined
         }
       />
 
-      {/* Main Chat Area */}
       <ChatArea
         messages={currentInterview.messages}
         onRetry={retryLastMessage}
         onRegenerate={regenerateLastResponse}
         isProcessing={isProcessing}
         onOpenTool={(tool) => {
-          if (tool === 'code') setIsCodeOpen(true);
-          if (tool === 'whiteboard') setIsWhiteboardOpen(true);
+          if (tool === 'code') tools.setIsCodeOpen(true);
+          if (tool === 'whiteboard') tools.setIsWhiteboardOpen(true);
         }}
       />
 
-      {/* Input Area */}
       <InputArea
         inputValue={inputValue}
         setInputValue={setInputValue}
         onSendMessage={handleSendMessage}
-        isCodeOpen={isCodeOpen}
-        setIsCodeOpen={setIsCodeOpen}
-        isWhiteboardOpen={isWhiteboardOpen}
-        setIsWhiteboardOpen={setIsWhiteboardOpen}
+        isCodeOpen={tools.isCodeOpen}
+        setIsCodeOpen={tools.setIsCodeOpen}
+        isWhiteboardOpen={tools.isWhiteboardOpen}
+        setIsWhiteboardOpen={tools.setIsWhiteboardOpen}
         suggestedAction={suggestedAction}
         isProcessing={isProcessing}
         hints={hints}
@@ -429,21 +201,20 @@ const InterviewRoom: React.FC = () => {
         language={currentInterview.language}
       />
 
-      {/* Tool Modals */}
       <ToolModals
-        isCodeOpen={isCodeOpen}
-        setIsCodeOpen={setIsCodeOpen}
-        isWhiteboardOpen={isWhiteboardOpen}
-        setIsWhiteboardOpen={setIsWhiteboardOpen}
+        isCodeOpen={tools.isCodeOpen}
+        setIsCodeOpen={tools.setIsCodeOpen}
+        isWhiteboardOpen={tools.isWhiteboardOpen}
+        setIsWhiteboardOpen={tools.setIsWhiteboardOpen}
         currentCode={currentInterview.code || ''}
         updateCode={updateCode}
         whiteboardData={currentInterview.whiteboard || ''}
-        onWhiteboardMount={(editor) => {
-          editorRef.current = editor;
+        onWhiteboardMount={(editor: Editor) => {
+          tools.setEditor(editor);
         }}
         updateWhiteboard={updateWhiteboard}
-        handleRunCode={handleRunCode}
-        onSubmit={handleToolSubmit}
+        handleRunCode={tools.handleRunCode}
+        onSubmit={(type) => tools.handleToolSubmit(type, sendMessage)}
         isHardcore={currentInterview.difficulty === 'hardcore'}
         isSubmitting={isSubmitting}
       />

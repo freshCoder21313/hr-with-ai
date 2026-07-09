@@ -45,6 +45,7 @@ describe('InterviewRoom Integration Test', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(db.interviews.get).mockResolvedValue(mockInterview);
+    vi.mocked(db.resumes.toArray).mockResolvedValue([]);
     vi.mocked(db.userSettings.orderBy).mockReturnValue({
       first: vi.fn().mockResolvedValue({ hintsEnabled: true }),
     } as unknown as ReturnType<typeof db.userSettings.orderBy>);

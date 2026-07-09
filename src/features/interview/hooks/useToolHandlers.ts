@@ -22,6 +22,7 @@ interface UseToolHandlersReturn {
     setInterview: (i: Interview | null) => void
   ) => Promise<void>;
   editorRef: React.MutableRefObject<Editor | null>;
+  setEditor: (editor: Editor | null) => void;
 }
 
 export const useToolHandlers = (
@@ -113,6 +114,10 @@ export const useToolHandlers = (
     [currentInterview]
   );
 
+  const setEditor = useCallback((editor: Editor | null) => {
+    editorRef.current = editor;
+  }, []);
+
   return {
     isCodeOpen,
     setIsCodeOpen,
@@ -122,5 +127,6 @@ export const useToolHandlers = (
     handleToolSubmit,
     handleSelectJob,
     editorRef,
+    setEditor,
   };
 };
