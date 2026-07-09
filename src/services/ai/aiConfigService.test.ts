@@ -1,5 +1,9 @@
-import { describe, it, expect, beforeEach, afterEach, vi, type Mock } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { resolveConfig, getService, getStoredAIConfig, AIConfig } from './aiConfigService';
+
+vi.mock('@/services/core/settingsService', () => ({
+  loadUserSettings: vi.fn().mockResolvedValue({}),
+}));
 
 describe('aiConfigService', () => {
   const originalLocalStorage = window.localStorage;
@@ -57,13 +61,15 @@ describe('aiConfigService', () => {
 
   describe('getStoredAIConfig', () => {
     it('should retrieve config from localStorage', () => {
-      (window.localStorage.getItem as Mock).mockImplementation((key: string) => {
-        if (key === 'gemini_api_key') return 'stored-api-key';
-        if (key === 'custom_base_url') return 'https://my-custom-url.com/v1';
-        if (key === 'custom_model_id') return 'my-model';
-        if (key === 'ai_provider') return 'openai';
-        return null;
-      });
+      (window.localStorage.getItem as ReturnType<typeof vi.fn>).mockImplementation(
+        (key: string) => {
+          if (key === 'gemini_api_key') return 'stored-api-key';
+          if (key === 'custom_base_url') return 'https://my-custom-url.com/v1';
+          if (key === 'custom_model_id') return 'my-model';
+          if (key === 'ai_provider') return 'openai';
+          return null;
+        }
+      );
 
       const config = getStoredAIConfig();
       expect(config).toEqual({
@@ -75,7 +81,7 @@ describe('aiConfigService', () => {
     });
 
     it('should return default values if localStorage is empty', () => {
-      (window.localStorage.getItem as Mock).mockReturnValue(null);
+      (window.localStorage.getItem as ReturnType<typeof vi.fn>).mockReturnValue(null);
       const config = getStoredAIConfig();
       expect(config).toEqual({
         apiKey: '',

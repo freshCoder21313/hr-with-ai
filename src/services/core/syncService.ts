@@ -3,6 +3,7 @@ import { Interview, UserSettings, Resume } from '@/types';
 import LZString from 'lz-string';
 import axios from 'axios';
 import { apiClient } from '@/lib/api-client';
+import { logger } from '@/lib/logger';
 
 interface SyncData {
   interviews: Interview[];
@@ -182,7 +183,7 @@ export const syncService = {
 
       return { success: true };
     } catch (error: unknown) {
-      console.error('Upload error:', error);
+      logger.error('Upload error:', error);
       let message = 'Unknown error';
 
       if (axios.isAxiosError(error)) {
@@ -239,7 +240,7 @@ export const syncService = {
 
       return { success: true, data: finalData };
     } catch (error: unknown) {
-      console.error('Download error:', error);
+      logger.error('Download error:', error);
       let message = 'Unknown error';
 
       if (axios.isAxiosError(error)) {

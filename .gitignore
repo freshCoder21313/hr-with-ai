@@ -29,3 +29,8 @@ coverage/
 .env
 aidlc-docs/
 .serena/
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/

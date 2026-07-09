@@ -49,7 +49,13 @@ Setup file: `src/setupTests.ts`.
   ```bash
   npm run test:coverage
   ```
+- **E2E Smoke (Playwright):**
+  ```bash
+  npm run test:e2e:install   # once
+  npm run test:e2e
+  ```
 - **Watch Mode:** `npm run test` runs in watch mode by default. Use `run` argument for single pass.
+- **Logging:** use `logger` from `@/lib/logger` instead of `console.log` (ESLint forbids `console.log`).
 
 ## 3. Code Style & Guidelines
 

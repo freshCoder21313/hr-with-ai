@@ -8,6 +8,7 @@ import {
 import { ChatMessage } from '@/types';
 import { getService, resolveConfig, AIConfigInput } from '@/services/ai/aiConfigService';
 import { interviewFeedbackSchemaExtended, interviewHintsSchema } from '@/services/ai/schemas';
+import { logger } from '@/lib/logger';
 
 export const startInterviewSession = async (
   interview: Interview,
@@ -21,7 +22,7 @@ export const startInterviewSession = async (
     const response = await service.generateText([{ role: 'user', content: prompt }]);
     return response.text || "Hello, let's start the interview. Can you introduce yourself?";
   } catch (error) {
-    console.error('Error starting interview:', error);
+    logger.error('Error starting interview:', error);
     return 'System error: Unable to start AI session. Please check your connection or API key.';
   }
 };
@@ -115,7 +116,7 @@ export async function* streamInterviewMessage(
       }
     }
   } catch (error) {
-    console.error('Error sending message:', error);
+    logger.error('Error sending message:', error);
     throw error;
   }
 }
@@ -146,7 +147,7 @@ export const generateInterviewFeedback = async (
       interviewFeedbackSchemaExtended
     );
   } catch (error) {
-    console.error('Error generating feedback:', error);
+    logger.error('Error generating feedback:', error);
     throw error;
   }
 };
@@ -171,7 +172,7 @@ export const generateInterviewHints = async (
       interviewHintsSchema
     );
   } catch (error) {
-    console.error('Error generating hints:', error);
+    logger.error('Error generating hints:', error);
     throw error;
   }
 };

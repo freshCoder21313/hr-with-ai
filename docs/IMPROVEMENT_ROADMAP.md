@@ -194,6 +194,14 @@ Within **~8–12 weeks** of focused work:
 
 **Exit criteria:** Coverage report in CI; 3 E2E smokes green; `any` cannot enter new code.
 
+### Phase 3 checklist
+
+- [x] P3-1 `logger` + ESLint (`no-explicit-any` error, ban `console.log`)
+- [x] P3-2 Quiet tests (logger silent in test; mock Dexie/settings in AI config tests)
+- [x] P3-3 Raise critical coverage — syncService ~72% lines; expanded unit tests
+- [x] P3-4 Coverage thresholds in vitest (20% lines/statements floor) + CI
+- [x] P3-5 Playwright smoke skeleton (`e2e/smoke.spec.ts`, CI `e2e` job)
+
 ---
 
 ### Phase 4 — Security & data (1–2 weeks)
