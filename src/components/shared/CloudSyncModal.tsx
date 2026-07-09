@@ -232,18 +232,42 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({ isOpen, onClose 
                 Ensures only you can overwrite your cloud-stored data.
               </p>
 
-              <div className="flex items-center space-x-2 pt-2 px-1">
-                <Checkbox
-                  id="include-api-key"
-                  checked={includeApiKey}
-                  onCheckedChange={(checked) => setIncludeApiKey(checked === true)}
-                />
-                <label
-                  htmlFor="include-api-key"
-                  className="text-xs font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-muted-foreground"
+              <div className="space-y-2 pt-2 px-1">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="include-api-key"
+                    checked={includeApiKey}
+                    onCheckedChange={(checked) => setIncludeApiKey(checked === true)}
+                  />
+                  <label
+                    htmlFor="include-api-key"
+                    className="text-xs font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-muted-foreground"
+                  >
+                    Include API keys & tokens (not recommended)
+                  </label>
+                </div>
+                <p
+                  className={cn(
+                    'text-[11px] leading-relaxed rounded-xl p-3 border',
+                    includeApiKey
+                      ? 'bg-amber-500/10 border-amber-500/30 text-amber-900 dark:text-amber-100'
+                      : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-900 dark:text-emerald-100'
+                  )}
                 >
-                  Include API Key & Sensitive Data (Not Recommended)
-                </label>
+                  {includeApiKey ? (
+                    <>
+                      <span className="font-bold">Warning:</span> Cloud backup will include API
+                      keys, GitHub tokens, and voice-provider secrets. Only use a trusted Sync ID
+                      and strong password.
+                    </>
+                  ) : (
+                    <>
+                      <span className="font-bold">Privacy default:</span> API keys, GitHub tokens,
+                      and voice secrets are <span className="font-semibold">excluded</span> from
+                      this backup. Interviews and resumes still sync.
+                    </>
+                  )}
+                </p>
               </div>
             </div>
 
@@ -332,9 +356,14 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({ isOpen, onClose 
                       htmlFor="offline-include-api-key"
                       className="text-xs font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-muted-foreground"
                     >
-                      Include API Key
+                      Include API keys & tokens
                     </label>
                   </div>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    {offlineIncludeApiKey
+                      ? 'File will contain secrets — store offline backups securely.'
+                      : 'Default: keys excluded. Interviews & resumes still export.'}
+                  </p>
 
                   <LoadingButton
                     onClick={handleOfflineExport}

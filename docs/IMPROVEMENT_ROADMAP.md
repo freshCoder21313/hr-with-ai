@@ -214,6 +214,14 @@ Within **~8–12 weeks** of focused work:
 | 4.4 | Dexie migration policy | Document “new install starts at vN” story; add tests for compress/decompress resume path |
 | 4.5 | Privacy | Export UX: clear “sensitive data excluded” messaging (partially implemented) |
 
+### Phase 4 checklist
+
+- [x] P4-1 `docs/SECURITY.md` — 0 high/critical; moderate tldraw/smol-toml deferred
+- [x] P4-2 Harden `api/sync.ts` (payload size, password min, shape validation, safe logs)
+- [x] P4-3 Secrets policy documented; client only uses non-secret `VITE_API_URL`
+- [x] P4-4 ADR 002 Dexie migrations + `resumeCompression` unit tests
+- [x] P4-5 Cloud sync UX privacy banner + success copy for excluded secrets
+
 ---
 
 ### Phase 5 — Performance & mobile (ongoing / 2 weeks focused)

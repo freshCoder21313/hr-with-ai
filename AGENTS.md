@@ -160,6 +160,7 @@ When operating in this codebase, adhere to the following workflow:
 - **Client env:** only `VITE_*` (e.g. `import.meta.env.VITE_API_URL`). See `.env.example`.
 - **Server env:** `DATABASE_URL`, `ALLOWED_ORIGIN`, `RATE_LIMIT` for `api/sync.ts` — never expose with `VITE_`.
 - **AI API keys:** never hardcode. Prefer in-app Settings / `ApiKeyModal` (local storage), not client env.
+- **Security:** see `docs/SECURITY.md` (sync threat model, vuln exceptions, secrets policy).
 
 ### Routing
 - **Library:** `react-router-dom` v7.

@@ -52,6 +52,10 @@ export function useCloudSync() {
       setError('Password is required for secure upload.');
       return;
     }
+    if (uploadPassword.length < 8) {
+      setError('Password must be at least 8 characters.');
+      return;
+    }
 
     setIsLoading(true);
     try {
@@ -59,7 +63,11 @@ export function useCloudSync() {
       const result = await syncService.uploadToCloud(uploadId, uploadPassword, data);
 
       if (result.success) {
-        setSuccess('Data synced to cloud successfully!');
+        setSuccess(
+          includeApiKey
+            ? 'Synced to cloud (including API keys). Keep your ID & password private.'
+            : 'Synced to cloud. API keys and tokens were excluded from this backup.'
+        );
       } else {
         setError(result.message || 'Upload failed');
       }
@@ -113,9 +121,12 @@ export function useCloudSync() {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      setSuccess('Backup file downloaded successfully!');
-    } catch (err) {
-      console.error(err);
+      setSuccess(
+        offlineIncludeApiKey
+          ? 'Backup file downloaded (includes API keys). Store it securely.'
+          : 'Backup file downloaded. API keys and tokens were excluded.'
+      );
+    } catch {
       setError('Failed to export data.');
     } finally {
       setIsLoading(false);
