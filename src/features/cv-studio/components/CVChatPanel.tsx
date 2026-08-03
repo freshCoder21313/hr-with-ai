@@ -12,6 +12,7 @@ import {
   Trash2,
   Github,
   FileEdit,
+  Pencil,
   FileSearch,
   Target,
   ChevronDown,
@@ -32,6 +33,7 @@ interface CVChatPanelProps {
   onAcceptChange: (change: ProposedChange) => Promise<void>;
   onRejectChange: (change: ProposedChange) => void;
   onChatCVChange: (id: number) => void;
+  onRenameCV: (id: number, newName: string) => void;
   onDeleteCV: () => void;
   onCreateNewCV: () => void;
   onSetContextResumeId: (id: number | undefined) => void;
@@ -53,6 +55,7 @@ export const CVChatPanel: React.FC<CVChatPanelProps> = ({
   onAcceptChange,
   onRejectChange,
   onChatCVChange,
+  onRenameCV,
   onDeleteCV,
   onCreateNewCV,
   onSetContextResumeId,
@@ -119,27 +122,50 @@ export const CVChatPanel: React.FC<CVChatPanelProps> = ({
       </div>
 
       <div className="border-b border-border bg-muted/10 p-2 space-y-2 shrink-0">
-        <div className="relative flex items-center group">
-          <div className="absolute left-2.5 text-primary opacity-60 group-focus-within:opacity-100 transition-opacity">
-            <FileEdit size={12} />
+        <div className="relative flex items-center group gap-2">
+          <div className="relative flex-1">
+            <div className="absolute left-2.5 top-1/2 -translate-y-1/2 text-primary opacity-60 group-focus-within:opacity-100 transition-opacity pointer-events-none">
+              <FileEdit size={12} />
+            </div>
+            <select
+              className="w-full pl-7 pr-8 py-1 text-[11px] font-medium border border-border bg-background rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-primary appearance-none cursor-pointer transition-all hover:border-primary/30"
+              value={chatResumeId ?? ''}
+              onChange={(e) => onChatCVChange(Number(e.target.value))}
+              title="Select CV to Edit"
+            >
+              {resumes.map((r) => (
+                <option key={r.id} value={r.id}>
+                  {r.isMain ? '\u2605 ' : ''}
+                  {r.fileName}
+                </option>
+              ))}
+            </select>
+            <ChevronDown
+              size={10}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none opacity-50"
+            />
           </div>
-          <select
-            className="w-full pl-7 pr-8 py-1 text-[11px] font-medium border border-border bg-background rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-primary appearance-none cursor-pointer transition-all hover:border-primary/30"
-            value={chatResumeId ?? ''}
-            onChange={(e) => onChatCVChange(Number(e.target.value))}
-            title="Select CV to Edit"
-          >
-            {resumes.map((r) => (
-              <option key={r.id} value={r.id}>
-                {r.isMain ? '\u2605 ' : ''}
-                {r.fileName}
-              </option>
-            ))}
-          </select>
-          <ChevronDown
-            size={10}
-            className="absolute right-2.5 text-muted-foreground pointer-events-none opacity-50"
-          />
+          <Tooltip delayDuration={0}>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 shrink-0 opacity-60 hover:opacity-100 hover:bg-primary/10"
+                onClick={() => {
+                  if (!chatResumeId) return;
+                  const currentName = resumes.find((r) => r.id === chatResumeId)?.fileName || '';
+                  const newName = window.prompt('Enter new CV name:', currentName);
+                  if (newName && newName !== currentName && newName.trim()) {
+                    onRenameCV(chatResumeId, newName.trim());
+                  }
+                }}
+                disabled={!chatResumeId}
+              >
+                <Pencil size={12} className="text-primary" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Rename CV</TooltipContent>
+          </Tooltip>
         </div>
 
         <div className="grid grid-cols-2 gap-2">

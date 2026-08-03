@@ -316,7 +316,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onOpenChange, onSet
                               modelId: e.target.value,
                             }))
                           }
-                          placeholder="google/gemini-3.0-flash-preview"
+                          placeholder="google/gemini-1.5-pro"
                           className="h-8 text-xs bg-background"
                         />
                       </div>

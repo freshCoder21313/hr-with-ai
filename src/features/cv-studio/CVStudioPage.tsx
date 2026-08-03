@@ -64,6 +64,7 @@ const CVStudioPage: React.FC = () => {
           onImportJobs={actions.handleImportJobs}
           onStartTailoring={actions.handleStartTailoring}
           onSelectResume={actions.setSelectedResumeId}
+          onRenameResume={actions.handleRenameCV}
           onToggleJobSelection={actions.handleToggleJobSelection}
           onTogglePanel={() => ui.setIsJobPanelOpen(!ui.isJobPanelOpen)}
           onOpenPromptModal={() => ui.setIsPromptModalOpen(true)}
@@ -84,6 +85,7 @@ const CVStudioPage: React.FC = () => {
           onAcceptChange={actions.handleAcceptChange}
           onRejectChange={actions.handleRejectChange}
           onChatCVChange={actions.handleChatCVChange}
+          onRenameCV={actions.handleRenameCV}
           onDeleteCV={actions.handleDeleteCurrentCV}
           onCreateNewCV={actions.handleCreateNewCV}
           onSetContextResumeId={actions.setContextResumeId}

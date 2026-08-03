@@ -172,6 +172,7 @@ export const useCVStudio = () => {
       handleAcceptChange: chatState.handleAcceptChange,
       handleRejectChange: chatState.handleRejectChange,
       handleManualUpdate: resumeState.handleManualUpdate,
+      handleRenameCV: resumeState.handleRenameCV,
       handleChatCVChange,
       handleGitHubImportComplete,
       handleAddJob,

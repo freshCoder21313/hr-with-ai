@@ -18,6 +18,7 @@ import {
   Loader2,
   PanelLeftClose,
   PanelLeftOpen,
+  Pencil,
 } from 'lucide-react';
 
 interface CVJobPanelProps {
@@ -36,6 +37,7 @@ interface CVJobPanelProps {
   onImportJobs: () => void;
   onStartTailoring: () => void;
   onSelectResume: (id: number) => void;
+  onRenameResume: (id: number, newName: string) => void;
   onToggleJobSelection: (id: string) => void;
   onTogglePanel: () => void;
   onOpenPromptModal: () => void;
@@ -58,6 +60,7 @@ export const CVJobPanel: React.FC<CVJobPanelProps> = ({
   onImportJobs,
   onStartTailoring,
   onSelectResume,
+  onRenameResume,
   onToggleJobSelection,
   onTogglePanel,
   onOpenPromptModal,
@@ -110,18 +113,42 @@ export const CVJobPanel: React.FC<CVJobPanelProps> = ({
             <Label className="text-[10px] text-muted-foreground uppercase tracking-wider">
               Source CV
             </Label>
-            <select
-              className="w-full p-1.5 text-xs border rounded-md bg-background"
-              value={selectedResumeId}
-              onChange={(e) => onSelectResume(Number(e.target.value))}
-            >
-              {resumes.map((r) => (
-                <option key={r.id} value={r.id}>
-                  {r.isMain ? '\u2605 ' : ''}
-                  {r.fileName}
-                </option>
-              ))}
-            </select>
+            <div className="flex gap-1.5 items-center">
+              <select
+                className="flex-1 p-1.5 text-xs border rounded-md bg-background min-w-0"
+                value={selectedResumeId ?? ''}
+                onChange={(e) => onSelectResume(Number(e.target.value))}
+              >
+                {resumes.map((r) => (
+                  <option key={r.id} value={r.id}>
+                    {r.isMain ? '\u2605 ' : ''}
+                    {r.fileName}
+                  </option>
+                ))}
+              </select>
+              <Tooltip delayDuration={0}>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-7 w-7 shrink-0 hover:bg-primary/10 hover:text-primary hover:border-primary/30"
+                    onClick={() => {
+                      if (!selectedResumeId) return;
+                      const currentName =
+                        resumes.find((r) => r.id === selectedResumeId)?.fileName || '';
+                      const newName = window.prompt('Enter new CV name:', currentName);
+                      if (newName && newName !== currentName && newName.trim()) {
+                        onRenameResume(selectedResumeId, newName.trim());
+                      }
+                    }}
+                    disabled={!selectedResumeId}
+                  >
+                    <Pencil className="w-3 h-3 text-primary" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Rename CV</TooltipContent>
+              </Tooltip>
+            </div>
             {selectedResumeName && (
               <p className="text-[10px] text-muted-foreground truncate">
                 {resumes.find((r) => r.id === selectedResumeId)?.parsedData

@@ -7,7 +7,7 @@ type ContentPart = { text: string } | { inlineData: { mimeType: string; data: st
 
 export class GoogleGeminiStrategy implements AIProviderStrategy {
   private client: GoogleGenAI;
-  private defaultModel = 'gemini-3.1-pro-preview';
+  private defaultModel = 'gemini-1.5-pro';
   private apiKey: string;
   private baseUrl?: string;
 

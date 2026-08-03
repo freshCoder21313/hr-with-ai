@@ -49,6 +49,18 @@ export const useCVResumes = () => {
     [mainCV]
   );
 
+  const handleRenameCV = useCallback(
+    async (id: number, newName: string) => {
+      if (!newName.trim()) return;
+      await db.resumes.update(id, { fileName: newName });
+      setResumes((prev) => prev.map((r) => (r.id === id ? { ...r, fileName: newName } : r)));
+      if (mainCV?.id === id) {
+        setMainCV((prev) => (prev ? { ...prev, fileName: newName } : null));
+      }
+    },
+    [mainCV?.id]
+  );
+
   const handleChatCVChange = useCallback(
     (id: number) => {
       const cv = resumes.find((r) => r.id === id);
@@ -123,6 +135,7 @@ export const useCVResumes = () => {
     chatResumeId,
     refreshResumes,
     handleManualUpdate,
+    handleRenameCV,
     handleChatCVChange,
     handleGitHubImportComplete,
     handleCreateNewCV,
