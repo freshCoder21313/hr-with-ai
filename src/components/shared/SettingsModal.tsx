@@ -17,6 +17,8 @@ import { CollapsibleSection } from '@/components/ui/collapsible-section';
 import { toast } from 'sonner';
 import { Settings2, Sparkles, RotateCcw } from 'lucide-react';
 
+import { openApiKeyModal } from '@/events/apiKeyEvents';
+
 interface SettingsModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -64,17 +66,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onOpenChange, onSet
   const handleSave = async () => {
     try {
       const settingsToSave: UserSettings = {
-        id: settings.id,
-        hintsEnabled: settings.hintsEnabled ?? false,
-        autoFinishEnabled: settings.autoFinishEnabled ?? false,
-        forceToolsEnabled: settings.forceToolsEnabled ?? false,
-        apiKey: settings.apiKey || '',
-        baseUrl: settings.baseUrl || '',
-        defaultModel: settings.modelId || '',
-        maxRetries: settings.maxRetries,
-        retryDelay: settings.retryDelay,
-        retryOnTimeout: settings.retryOnTimeout,
-        retryOnRateLimit: settings.retryOnRateLimit,
+        ...settings,
+        defaultModel: settings.modelId || settings.defaultModel || '',
       };
 
       // Save using centralized service
@@ -92,6 +85,14 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onOpenChange, onSet
       console.error('Failed to save settings:', error);
       toast.error('Failed to save settings. Please try again.');
     }
+  };
+
+  const handleManageProfiles = () => {
+    onOpenChange(false);
+    // Use a small delay to ensure the current dialog is closed before opening the next one
+    setTimeout(() => {
+      openApiKeyModal();
+    }, 100);
   };
 
   return (
@@ -247,81 +248,26 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onOpenChange, onSet
                   </CollapsibleSection>
                 </div>
 
-                {/* API Configuration */}
+                {/* API Configuration Button */}
                 <div className="space-y-4">
-                  <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-primary" /> AI Provider
-                  </h3>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="apiKey" className="text-xs">
-                      API Key <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
-                      id="apiKey"
-                      type="password"
-                      value={settings.apiKey || ''}
-                      onChange={(e) => setSettings((s) => ({ ...s, apiKey: e.target.value }))}
-                      placeholder="AIzaSy... or sk-..."
-                      className="h-9"
-                    />
-                    <p className="text-[10px] text-muted-foreground">
-                      Required. Get key from{' '}
-                      <a
-                        href="https://aistudio.google.com/app/apikey"
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-primary hover:underline"
-                      >
-                        Google AI Studio
-                      </a>
-                    </p>
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-primary" /> AI Provider Profiles
+                    </h3>
                   </div>
 
-                  <CollapsibleSection
-                    title={
-                      <span className="text-xs text-muted-foreground">
-                        Advanced (Custom Model / URL)
-                      </span>
-                    }
-                    defaultOpen={false}
-                    className="border-border"
-                    headerClassName="py-2 bg-transparent border-none hover:bg-muted/50"
-                    contentClassName="pt-0"
-                  >
-                    <div className="space-y-3 bg-muted/30 p-3 rounded-lg border border-border">
-                      <div className="space-y-1">
-                        <Label htmlFor="baseUrl" className="text-xs">
-                          Base URL (Optional)
-                        </Label>
-                        <Input
-                          id="baseUrl"
-                          value={settings.baseUrl || ''}
-                          onChange={(e) => setSettings((s) => ({ ...s, baseUrl: e.target.value }))}
-                          placeholder="https://openrouter.ai/api/v1"
-                          className="h-8 text-xs bg-background"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <Label htmlFor="modelId" className="text-xs">
-                          Model ID (Optional)
-                        </Label>
-                        <Input
-                          id="modelId"
-                          value={settings.defaultModel || ''}
-                          onChange={(e) =>
-                            setSettings((s) => ({
-                              ...s,
-                              defaultModel: e.target.value,
-                              modelId: e.target.value,
-                            }))
-                          }
-                          placeholder="google/gemini-1.5-pro"
-                          className="h-8 text-xs bg-background"
-                        />
-                      </div>
-                    </div>
-                  </CollapsibleSection>
+                  <div className="bg-muted/30 p-4 rounded-lg border border-border space-y-3">
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      Configure multiple AI providers, API keys, and model fallback sequences.
+                    </p>
+                    <Button 
+                      onClick={handleManageProfiles} 
+                      variant="outline" 
+                      className="w-full h-9 text-xs"
+                    >
+                      Manage AI Profiles
+                    </Button>
+                  </div>
                 </div>
               </TabsContent>
             </div>

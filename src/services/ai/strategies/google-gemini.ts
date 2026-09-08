@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { GoogleGenAI } from '@google/genai';
 import { AIProviderStrategy, ChatMessage, AIResponse, AIRequestOptions } from '@/types';
 import { jsonOnlyInstruction, parseStructuredResponse } from '@/lib/aiStructuredOutput';
+import { classifyProviderError, AIStructuredOutputError } from '../aiErrors';
 
 type ContentPart = { text: string } | { inlineData: { mimeType: string; data: string } };
 
@@ -11,10 +12,13 @@ export class GoogleGeminiStrategy implements AIProviderStrategy {
   private apiKey: string;
   private baseUrl?: string;
 
-  constructor(apiKey: string, baseUrl?: string) {
+  constructor(apiKey: string, baseUrl?: string, defaultModel?: string) {
     this.apiKey = apiKey;
     this.baseUrl = baseUrl;
     this.client = new GoogleGenAI({ apiKey });
+    if (defaultModel) {
+      this.defaultModel = defaultModel;
+    }
   }
 
   private mapMessagesToContent(messages: ChatMessage[]) {
@@ -74,7 +78,7 @@ export class GoogleGeminiStrategy implements AIProviderStrategy {
         });
 
         if (!response.ok) {
-          throw new Error(`Custom Gemini API Error: ${response.status} ${response.statusText}`);
+          throw classifyProviderError(new Error(response.statusText), 'google', response.status);
         }
 
         const data = await response.json();
@@ -88,8 +92,7 @@ export class GoogleGeminiStrategy implements AIProviderStrategy {
           rawResponse: data,
         };
       } catch (error) {
-        console.error('Custom Gemini Request Failed:', error);
-        throw error;
+        throw classifyProviderError(error, 'google');
       }
     }
 
@@ -117,9 +120,11 @@ export class GoogleGeminiStrategy implements AIProviderStrategy {
         text: response.text || '',
         rawResponse: response,
       };
-    } catch (error) {
-      console.error('Gemini Generate Text Error:', error);
-      throw error;
+    } catch (error: unknown) {
+      // SDK errors often have status or statusCode or code
+      const err = error as Record<string, unknown>;
+      const status = err.status || err.statusCode || err.code;
+      throw classifyProviderError(error, 'google', typeof status === 'number' ? status : undefined);
     }
   }
 
@@ -137,7 +142,14 @@ export class GoogleGeminiStrategy implements AIProviderStrategy {
       systemInstruction,
     });
 
-    return parseStructuredResponse(response.text, schema);
+    try {
+      return parseStructuredResponse(response.text, schema);
+    } catch (error) {
+      throw new AIStructuredOutputError(
+        error instanceof Error ? error.message : 'Failed to parse structured response',
+        error
+      );
+    }
   }
 
   async *streamText(messages: ChatMessage[], options?: AIRequestOptions): AsyncIterable<string> {
@@ -163,8 +175,9 @@ export class GoogleGeminiStrategy implements AIProviderStrategy {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
 
+      let response: Response;
       try {
-        const response = await fetch(url, {
+        response = await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
@@ -173,14 +186,21 @@ export class GoogleGeminiStrategy implements AIProviderStrategy {
 
         clearTimeout(timeoutId);
 
-        if (!response.ok || !response.body) {
-          throw new Error(`Custom Gemini Stream Error: ${response.statusText}`);
+        if (!response.ok) {
+          throw classifyProviderError(new Error(response.statusText), 'google', response.status);
         }
+      } catch (error) {
+        clearTimeout(timeoutId);
+        throw classifyProviderError(error, 'google');
+      }
 
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let buffer = '';
+      if (!response.body) throw classifyProviderError(new Error('No response body'), 'google');
 
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      try {
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
@@ -236,13 +256,8 @@ export class GoogleGeminiStrategy implements AIProviderStrategy {
             buffer = buffer.substring(processedIndex);
           }
         }
-      } catch (error: unknown) {
-        clearTimeout(timeoutId);
-        if (error instanceof Error && error.name === 'AbortError') {
-          throw new Error('Request timed out');
-        }
-        console.error('Custom Gemini Stream Error:', error);
-        throw error;
+      } catch (error) {
+        throw classifyProviderError(error, 'google');
       }
       return;
     }
@@ -266,9 +281,10 @@ export class GoogleGeminiStrategy implements AIProviderStrategy {
           yield chunk.text;
         }
       }
-    } catch (error) {
-      console.error('Gemini Stream Text Error:', error);
-      throw error;
+    } catch (error: unknown) {
+      const err = error as Record<string, unknown>;
+      const status = err.status || err.statusCode || err.code;
+      throw classifyProviderError(error, 'google', typeof status === 'number' ? status : undefined);
     }
   }
 }

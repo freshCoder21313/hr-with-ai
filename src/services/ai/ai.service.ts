@@ -17,7 +17,7 @@ export class AIService {
   constructor(config: AIConfig, options?: AIServiceOptions) {
     switch (config.provider) {
       case 'google':
-        this.strategy = new GoogleGeminiStrategy(config.apiKey, config.baseUrl);
+        this.strategy = new GoogleGeminiStrategy(config.apiKey, config.baseUrl, config.modelId);
         break;
       case 'openai':
         if (!config.baseUrl) {
@@ -26,7 +26,7 @@ export class AIService {
         this.strategy = new OpenAICustomStrategy(config.apiKey, config.baseUrl, config.modelId);
         break;
       case 'anthropic':
-        this.strategy = new AnthropicStrategy(config.apiKey, config.baseUrl);
+        this.strategy = new AnthropicStrategy(config.apiKey, config.baseUrl, config.modelId);
         break;
       case 'openrouter':
         this.strategy = new OpenRouterStrategy(config.apiKey, config.modelId);

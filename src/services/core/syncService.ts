@@ -4,6 +4,12 @@ import LZString from 'lz-string';
 import axios from 'axios';
 import { apiClient } from '@/lib/api-client';
 import { logger } from '@/lib/logger';
+import {
+  toSafeSyncProfiles,
+  mergeImportedProfiles,
+  normalizeUserSettings,
+  mirrorActiveProfileToLocalStorage,
+} from '@/services/ai/aiProfileService';
 
 interface SyncData {
   interviews: Interview[];
@@ -52,10 +58,15 @@ export const syncService = {
         googleCloudApiKey,
         elevenLabsApiKey,
         deepgramApiKey,
+        aiProfiles,
         ...safe
       } = s;
       /* eslint-enable @typescript-eslint/no-unused-vars */
-      return safe;
+
+      return {
+        ...safe,
+        aiProfiles: aiProfiles ? toSafeSyncProfiles(aiProfiles) : undefined,
+      } as UserSettings;
     });
 
     return {
@@ -91,22 +102,17 @@ export const syncService = {
                 googleCloudApiKey: cloudSetting.googleCloudApiKey || localMatch.googleCloudApiKey,
                 elevenLabsApiKey: cloudSetting.elevenLabsApiKey || localMatch.elevenLabsApiKey,
                 deepgramApiKey: cloudSetting.deepgramApiKey || localMatch.deepgramApiKey,
+                // Merge AI profiles safely
+                aiProfiles: mergeImportedProfiles(
+                  localMatch.aiProfiles || [],
+                  cloudSetting.aiProfiles || []
+                ),
               });
             }
           }
         }
-
-        // Sync to localStorage after import to prevent 'split brain' with AI services
-        const latestSettings = await db.userSettings.orderBy('id').first();
-        if (latestSettings) {
-          if (latestSettings.apiKey) localStorage.setItem('gemini_api_key', latestSettings.apiKey);
-          if (latestSettings.baseUrl)
-            localStorage.setItem('custom_base_url', latestSettings.baseUrl);
-          if (latestSettings.modelId)
-            localStorage.setItem('custom_model_id', latestSettings.modelId);
-          if (latestSettings.provider) localStorage.setItem('ai_provider', latestSettings.provider);
-        }
       }
+
 
       // 2. Merge Interviews (Match by createdAt as proxy for unique ID)
       if (cloudData.interviews?.length) {
@@ -151,6 +157,13 @@ export const syncService = {
         }
       }
     });
+
+    // Post-import synchronization: ensure profiles and mirror keys are consistent
+    const latestSettings = await db.userSettings.orderBy('id').first();
+    if (latestSettings) {
+      const normalized = normalizeUserSettings(latestSettings);
+      mirrorActiveProfileToLocalStorage(normalized);
+    }
   },
 
   // Upload to Cloud (Compressed)

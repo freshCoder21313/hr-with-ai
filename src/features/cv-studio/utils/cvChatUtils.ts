@@ -1,4 +1,5 @@
 import { ResumeData } from '@/types/resume';
+import { proposedChangeSchema, ProposedChangeAIResponse } from '@/services/ai/schemas';
 
 export interface ProposedChange {
   id: string;
@@ -8,41 +9,28 @@ export interface ProposedChange {
   explanation: string;
 }
 
-export const extractProposedChanges = (text: string): ProposedChange[] | null => {
-  // Regex to match JSON blocks, including unclosed ones at the end of text
+export interface ValidatedExtraction {
+  changes: ProposedChange[];
+  invalidCount: number;
+}
+
+export const extractValidatedProposedChanges = (text: string): ValidatedExtraction => {
   const jsonBlockRegex = /```(?:json)?\s*([\s\S]*?)(?:```|$)/gi;
   let match;
+  const allChanges: ProposedChange[] = [];
+  let invalidCount = 0;
 
   while ((match = jsonBlockRegex.exec(text)) !== null) {
-    let content = match[1].trim();
+    const content = match[1].trim();
     if (!content) continue;
 
-    // If it looks like it might be truncated JSON, try to fix it
-    if (!content.endsWith('}') && !content.endsWith(']')) {
-      // Very basic attempt to close JSON if it looks like it's in a proposedChanges structure
-      if (content.includes('"proposedChanges"')) {
-        // We could try more complex recovery, but for now let's see if we can at least parse partials
-        // or just accept it as is and hope JSON.parse handles some trailing issues (it won't)
-      }
-    }
-
+    let parsed: unknown = null;
     try {
-      const parsed = JSON.parse(content);
-      if (parsed.proposedChanges && Array.isArray(parsed.proposedChanges)) {
-        return parsed.proposedChanges.map(
-          (change: Omit<ProposedChange, 'id'> & { id?: string }, index: number) => ({
-            ...change,
-            id: change.id ?? `change-${Date.now()}-${index}`,
-          })
-        );
-      }
-    } catch (e) {
-      // If parsing failed, maybe try to strip trailing comma and add closing braces
+      parsed = JSON.parse(content);
+    } catch {
+      // If parsing failed, try existing repair logic
       try {
-        let fixedContent = content;
-        // Strip trailing comma if exists
-        fixedContent = fixedContent.replace(/,\s*$/, '');
-        // Try adding braces
+        let fixedContent = content.replace(/,\s*$/, '');
         const openBraces = (fixedContent.match(/{/g) || []).length;
         const closeBraces = (fixedContent.match(/}/g) || []).length;
         const openBrackets = (fixedContent.match(/\[/g) || []).length;
@@ -51,19 +39,39 @@ export const extractProposedChanges = (text: string): ProposedChange[] | null =>
         fixedContent += ']'.repeat(Math.max(0, openBrackets - closeBrackets));
         fixedContent += '}'.repeat(Math.max(0, openBraces - closeBraces));
 
-        const parsed = JSON.parse(fixedContent);
-        if (parsed.proposedChanges && Array.isArray(parsed.proposedChanges)) {
-          return parsed.proposedChanges.map(
-            (change: Omit<ProposedChange, 'id'> & { id?: string }, index: number) => ({
-              ...change,
-              id: change.id ?? `change-${Date.now()}-${index}`,
-            })
-          );
-        }
+        parsed = JSON.parse(fixedContent);
       } catch {
-        // Still failed, continue to next block
+        continue;
+      }
+    }
+
+    if (parsed && typeof parsed === 'object' && 'proposedChanges' in parsed) {
+      const envelope = parsed as { proposedChanges: unknown[] };
+      if (Array.isArray(envelope.proposedChanges)) {
+        envelope.proposedChanges.forEach((change: unknown) => {
+          const result = proposedChangeSchema.safeParse(change);
+          if (result.success) {
+            // Assign stable IDs only after validation passes
+            const validated = result.data as ProposedChangeAIResponse;
+            allChanges.push({
+              id: validated.id ?? `change-${Date.now()}-${allChanges.length}`,
+              section: validated.section as keyof ResumeData,
+              action: validated.action as 'update' | 'add' | 'delete' | 'rewrite',
+              newData: validated.newData,
+              explanation: validated.explanation,
+            });
+          } else {
+            invalidCount++;
+          }
+        });
       }
     }
   }
-  return null;
+
+  return { changes: allChanges, invalidCount };
+};
+
+export const extractProposedChanges = (text: string): ProposedChange[] | null => {
+  const { changes } = extractValidatedProposedChanges(text);
+  return changes.length > 0 ? changes : null;
 };

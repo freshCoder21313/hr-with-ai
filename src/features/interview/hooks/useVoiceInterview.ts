@@ -126,7 +126,7 @@ export const useVoiceInterview = () => {
       addMessage({
         role: 'model',
         content: '', // Streaming fills this
-        timestamp: Date.now(),
+        timestamp: Date.now() + 1,
       });
 
       // Setup TTS Buffering

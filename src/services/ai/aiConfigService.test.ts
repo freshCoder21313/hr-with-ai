@@ -1,9 +1,27 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { resolveConfig, getService, getStoredAIConfig, AIConfig } from './aiConfigService';
+import { 
+  resolveConfig, 
+  getService, 
+  getStoredAIConfig, 
+  AIConfig,
+  testAIConnection
+} from './aiConfigService';
+import { AIProviderError } from './aiErrors';
 
 vi.mock('@/services/core/settingsService', () => ({
   loadUserSettings: vi.fn().mockResolvedValue({}),
 }));
+
+vi.mock('@/services/ai/ai.service', () => {
+  return {
+    AIService: vi.fn().mockImplementation(function(this: any) {
+      this.generateText = vi.fn().mockResolvedValue({ text: 'Connection Successful' });
+      this.generateStructured = vi.fn();
+      this.streamText = vi.fn();
+      this.ask = vi.fn();
+    }),
+  };
+});
 
 describe('aiConfigService', () => {
   const originalLocalStorage = window.localStorage;
@@ -77,6 +95,8 @@ describe('aiConfigService', () => {
         baseUrl: 'https://my-custom-url.com/v1',
         modelId: 'my-model',
         provider: 'openai',
+        profileId: undefined,
+        source: 'explicit',
       });
     });
 
@@ -88,7 +108,34 @@ describe('aiConfigService', () => {
         baseUrl: undefined,
         modelId: undefined,
         provider: 'google',
+        profileId: undefined,
+        source: 'explicit',
       });
+    });
+  });
+
+  describe('testAIConnection', () => {
+    it('should return true when connection is successful', async () => {
+      const { AIService } = await import('@/services/ai/ai.service');
+      (AIService as any).mockImplementationOnce(function(this: any) {
+        this.generateText = vi.fn().mockResolvedValue({ text: 'Connection Successful' });
+        return this;
+      });
+      
+      const config: AIConfig = { apiKey: 'valid-key', provider: 'google' };
+      const result = await testAIConnection(config);
+      expect(result).toBe(true);
+    });
+
+    it('should throw sanitized error when authentication fails', async () => {
+      const { AIService } = await import('@/services/ai/ai.service');
+      (AIService as any).mockImplementationOnce(function(this: any) {
+        this.generateText = vi.fn().mockRejectedValue(new AIProviderError('401 Unauthorized', 'auth', 'google', 401));
+        return this;
+      });
+
+      const config: AIConfig = { apiKey: 'invalid-key', provider: 'google' };
+      await expect(testAIConnection(config)).rejects.toThrow('Authentication failed. Check your API Key.');
     });
   });
 });

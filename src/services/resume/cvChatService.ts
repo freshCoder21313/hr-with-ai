@@ -1,10 +1,8 @@
 import { Message } from '@/types';
 import { ResumeData } from '@/types/resume';
 import { getCVChatSystemPrompt } from '@/services/resume/cvPrompt';
-import { resolveConfig, AIConfigInput } from '@/services/ai/aiConfigService';
-import { AIService } from '@/services/ai/ai.service';
-import { AIConfig, ChatMessage } from '@/types';
-import { loadUserSettings } from '@/services/core/settingsService';
+import { getService, AIConfigInput } from '@/services/ai/aiConfigService';
+import { ChatMessage } from '@/types';
 
 export async function* streamCVChatMessage(
   history: Message[],
@@ -13,29 +11,7 @@ export async function* streamCVChatMessage(
   configInput: AIConfigInput,
   additionalContext?: string
 ) {
-  const config = resolveConfig(configInput);
-
-  const providerConfig: AIConfig = {
-    apiKey: config.apiKey,
-    baseUrl: config.baseUrl,
-    modelId: config.modelId,
-    provider: config.baseUrl ? 'openai' : 'google',
-  };
-
-  const settings = await loadUserSettings();
-  const retryOptions =
-    settings.maxRetries && settings.maxRetries > 0
-      ? {
-          retry: {
-            maxRetries: settings.maxRetries,
-            delay: settings.retryDelay,
-            retryOnTimeout: settings.retryOnTimeout,
-            retryOnRateLimit: settings.retryOnRateLimit,
-          },
-        }
-      : undefined;
-
-  const service = new AIService(providerConfig, retryOptions);
+  const service = await getService(configInput);
   const systemPrompt = getCVChatSystemPrompt(currentResume, additionalContext);
 
   try {

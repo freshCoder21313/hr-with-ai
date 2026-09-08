@@ -151,6 +151,11 @@ export interface UserSettings {
   modelId?: string;
   provider?: AIModelProvider;
 
+  // Multi-provider Profiles
+  aiProfiles?: AIProviderProfile[];
+  activeAIProfileId?: string;
+  aiFallbackProfileIds?: string[];
+
   // Retry Settings
   maxRetries?: number;
   retryDelay?: number; // ms
@@ -162,6 +167,16 @@ export interface UserSettings {
   googleCloudApiKey?: string;
   elevenLabsApiKey?: string;
   deepgramApiKey?: string;
+}
+
+export interface AIProviderProfile {
+  id: string;
+  name: string;
+  provider: AIModelProvider;
+  apiKey: string;
+  baseUrl?: string;
+  modelIds: string[];
+  enabled: boolean;
 }
 
 export interface Resume {
@@ -228,6 +243,8 @@ export interface AIConfig {
   baseUrl?: string;
   modelId?: string;
   provider: AIModelProvider;
+  profileId?: string;
+  source?: 'active-profile' | 'explicit';
 }
 
 export interface ChatMessage {

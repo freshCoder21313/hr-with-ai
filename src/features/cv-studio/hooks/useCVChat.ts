@@ -2,12 +2,12 @@ import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import { db } from '@/lib/db';
 import { Resume, Message } from '@/types';
-import { ResumeData } from '@/types/resume';
 import { streamCVChatMessage } from '@/services/resume/cvChatService';
-import { extractProposedChanges, ProposedChange } from '../utils/cvChatUtils';
+import { extractValidatedProposedChanges, ProposedChange } from '../utils/cvChatUtils';
 import { Job } from '../stores/useJobStore';
 import { getStoredAIConfig } from '@/services/ai/aiConfigService';
 import { openApiKeyModal } from '@/events/apiKeyEvents';
+import { validateProposedChange } from '@/services/ai/schemas';
 
 const ALLOWED_SECTIONS = [
   'basics',
@@ -86,7 +86,7 @@ export const useCVChat = ({ mainCV, setMainCV, resumes, jobs, chatResumeId }: Us
       const userMsg: Message = { role: 'user', content: text, timestamp: Date.now(), image };
       setMessages((prev) => [...prev, userMsg]);
       setIsTyping(true);
-      const aiMsgId = Date.now();
+      const aiMsgId = Date.now() + 1;
       setMessages((prev) => [...prev, { role: 'model', content: '', timestamp: aiMsgId }]);
 
       try {
@@ -133,7 +133,7 @@ export const useCVChat = ({ mainCV, setMainCV, resumes, jobs, chatResumeId }: Us
           );
         }
 
-        const changes = extractProposedChanges(fullResponse);
+        const { changes, invalidCount } = extractValidatedProposedChanges(fullResponse);
         let cleaned = fullResponse.replace(/```[\s\S]*?```/g, '').trim();
 
         if (!cleaned || cleaned.length < 5) {
@@ -148,6 +148,10 @@ export const useCVChat = ({ mainCV, setMainCV, resumes, jobs, chatResumeId }: Us
 
         if (changes?.length) {
           setPendingChanges((prev) => [...(prev || []), ...changes]);
+        }
+
+        if (invalidCount > 0) {
+          toast.warning('Some proposed changes were invalid and were skipped.');
         }
       } catch (error) {
         console.error('Chat error:', error);
@@ -172,21 +176,26 @@ export const useCVChat = ({ mainCV, setMainCV, resumes, jobs, chatResumeId }: Us
   const handleAcceptChange = useCallback(
     async (change: ProposedChange) => {
       if (!mainCV?.parsedData) return;
-      const current = mainCV.parsedData[change.section];
-      const isArrExp = Array.isArray(current);
-      const isArrRec = Array.isArray(change.newData);
-      if (current !== undefined && isArrExp !== isArrRec) {
-        toast.error(`Type mismatch for ${change.section}`);
-        return;
+
+      try {
+        validateProposedChange(change);
+
+        if (!ALLOWED_SECTIONS.includes(change.section)) {
+          throw new Error(`Section ${change.section} not allowed for chat updates`);
+        }
+
+        const updated = {
+          ...mainCV.parsedData,
+          [change.section]: change.newData,
+        };
+
+        await db.resumes.update(mainCV.id!, { parsedData: updated });
+        setMainCV({ ...mainCV, parsedData: updated });
+        removePendingChange(change);
+      } catch (error) {
+        console.error('Failed to accept change:', error);
+        toast.error('Failed to apply change. Please try again.');
       }
-      if (current === undefined && !ALLOWED_SECTIONS.includes(change.section)) {
-        toast.error(`Invalid section: ${change.section}`);
-        return;
-      }
-      const updated = { ...mainCV.parsedData, [change.section]: change.newData } as ResumeData;
-      await db.resumes.update(mainCV.id!, { parsedData: updated });
-      setMainCV({ ...mainCV, parsedData: updated });
-      removePendingChange(change);
     },
     [mainCV, setMainCV, removePendingChange]
   );

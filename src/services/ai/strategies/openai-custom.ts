@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { AIProviderStrategy, ChatMessage, AIResponse, AIRequestOptions } from '@/types';
 import { normalizeMessages } from '@/lib/aiResponseHelper';
 import { jsonOnlyInstruction, parseStructuredResponse } from '@/lib/aiStructuredOutput';
+import { classifyProviderError, AIStructuredOutputError } from '../aiErrors';
 
 interface OpenAIMessage {
   role: 'user' | 'assistant' | 'system';
@@ -53,7 +54,7 @@ export class OpenAICustomStrategy implements AIProviderStrategy {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${this.apiKey}`,
-          'HTTP-Referer': window.location.origin,
+          'HTTP-Referer': typeof window !== 'undefined' ? window.location.origin : 'https://hr-with-ai',
           'X-Title': 'HR-With-AI',
         },
         body: JSON.stringify(body),
@@ -63,9 +64,6 @@ export class OpenAICustomStrategy implements AIProviderStrategy {
       return response;
     } catch (error: unknown) {
       clearTimeout(timeoutId);
-      if (error instanceof Error && error.name === 'AbortError') {
-        throw new Error('Request timed out');
-      }
       throw error;
     }
   }
@@ -79,21 +77,26 @@ export class OpenAICustomStrategy implements AIProviderStrategy {
       openAIMessages.unshift({ role: 'system', content: options.systemInstruction });
     }
 
-    const response = await this.callOpenAI(openAIMessages, this.defaultModel, false, options);
+    try {
+      const response = await this.callOpenAI(openAIMessages, this.defaultModel, false, options);
 
-    if (!response.ok) {
-      throw new Error(`OpenAI API Error: ${response.statusText}`);
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw classifyProviderError(new Error(errorText), 'openai', response.status);
+      }
+
+      const data = await response.json();
+      return {
+        text: data.choices?.[0]?.message?.content || '',
+        rawResponse: data,
+        usage: {
+          promptTokens: data.usage?.prompt_tokens,
+          completionTokens: data.usage?.completion_tokens,
+        },
+      };
+    } catch (error) {
+      throw classifyProviderError(error, 'openai');
     }
-
-    const data = await response.json();
-    return {
-      text: data.choices?.[0]?.message?.content || '',
-      rawResponse: data,
-      usage: {
-        promptTokens: data.usage?.prompt_tokens,
-        completionTokens: data.usage?.completion_tokens,
-      },
-    };
   }
 
   async generateStructured<T>(
@@ -110,7 +113,14 @@ export class OpenAICustomStrategy implements AIProviderStrategy {
       systemInstruction,
     });
 
-    return parseStructuredResponse(response.text, schema);
+    try {
+      return parseStructuredResponse(response.text, schema);
+    } catch (error) {
+      throw new AIStructuredOutputError(
+        error instanceof Error ? error.message : 'Failed to parse structured response',
+        error
+      );
+    }
   }
 
   async *streamText(messages: ChatMessage[], options?: AIRequestOptions): AsyncIterable<string> {
@@ -121,35 +131,49 @@ export class OpenAICustomStrategy implements AIProviderStrategy {
       openAIMessages.unshift({ role: 'system', content: options.systemInstruction });
     }
 
-    const response = await this.callOpenAI(openAIMessages, this.defaultModel, true, options);
+    let response: Response;
+    try {
+      response = await this.callOpenAI(openAIMessages, this.defaultModel, true, options);
 
-    if (!response.body) throw new Error('No response body');
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw classifyProviderError(new Error(errorText), 'openai', response.status);
+      }
+    } catch (error) {
+      throw classifyProviderError(error, 'openai');
+    }
+
+    if (!response.body) throw classifyProviderError(new Error('No response body'), 'openai');
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
     let buffer = '';
 
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
 
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split('\n');
-      buffer = lines.pop() || '';
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
 
-      for (const line of lines) {
-        if (line.trim() === '') continue;
-        if (line.includes('[DONE]')) continue;
+        for (const line of lines) {
+          if (line.trim() === '') continue;
+          if (line.includes('[DONE]')) continue;
 
-        if (line.startsWith('data: ')) {
-          try {
-            const data = JSON.parse(line.slice(6));
-            const content = data.choices?.[0]?.delta?.content;
-            if (content) yield content;
-          } catch (e) {
-            console.error('Error parsing stream:', e);
+          if (line.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(line.slice(6));
+              const content = data.choices?.[0]?.delta?.content;
+              if (content) yield content;
+            } catch {
+              // Ignore non-JSON lines
+            }
           }
         }
       }
+    } catch (error) {
+      throw classifyProviderError(error, 'openai');
     }
   }
 }
