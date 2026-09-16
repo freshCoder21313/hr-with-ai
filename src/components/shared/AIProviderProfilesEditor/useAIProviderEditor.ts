@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
-import { AIProviderProfile, UserSettings, AIModelProvider } from '@/types';
+import { AIProviderProfile, UserSettings } from '@/types';
 import { loadUserSettings, saveUserSettings } from '@/services/core/settingsService';
 import { normalizeUserSettings } from '@/services/ai/aiProfileService';
 import { testAIConnection, fetchProviderModels } from '@/services/ai/aiConfigService';

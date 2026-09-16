@@ -3,24 +3,13 @@ import { useSkillAssessmentStore } from '@/features/skill-assessment/stores/useS
 import { parseResume } from '@/services/resume/resumeParser';
 import { getStoredAIConfig } from '@/services/ai/aiConfigService';
 import { extractSkills } from '@/features/skill-assessment/services/skillAssessmentAiService';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Loader2, UploadCloud, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { db } from '@/lib/db';
 import { Resume } from '@/types';
-import ResumeList from '@/features/dashboard/ResumeList';
-import { LoadingButton } from '@/components/ui/loading-button';
 import { notificationService } from '@/services/core/notificationService';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { ExtractionModeToggle } from './upload-step/ExtractionModeToggle';
+import { FileUploadZone } from './upload-step/FileUploadZone';
+import { SavedResumeSelector } from './upload-step/SavedResumeSelector';
 
 type ExtractionMode = 'auto' | 'ai' | 'regex';
 
@@ -34,6 +23,7 @@ export const UploadStep: React.FC = () => {
 
   const [savedResumes, setSavedResumes] = useState<Resume[]>([]);
   const [selectedResumeId, setSelectedResumeId] = useState<number>();
+
   const loadData = async () => {
     try {
       const resumes = await db.resumes.toArray();
@@ -75,25 +65,17 @@ export const UploadStep: React.FC = () => {
       let skills: string[] = [];
 
       const fallbackExtractSkillsFromText = (rawText: string): string[] => {
-        // Try to locate a "Skills" section
-        let textToParse = rawText;
         const skillsSectionMatch = rawText.match(
           /(?:skills|technologies|tools|expertise)(?:[\s\S]*?)(?=\n[A-Z][a-z]+:|\n\n[A-Z]|$)/i
         );
 
-        // If we strictly want to avoid parsing the whole document when not found
-        // we should just return empty array so it falls back to manual entry.
-        if (!skillsSectionMatch) {
-          return [];
-        }
+        if (!skillsSectionMatch) return [];
 
-        textToParse = skillsSectionMatch[0];
-
-        const rawTokens = textToParse
-          .split(/[\n,•|;]/) // split on newlines, commas, bullets, pipes, semicolons
+        const rawTokens = skillsSectionMatch[0]
+          .split(/[\n,•|;]/)
           .map((token) => token.trim())
-          .filter((token) => token.length > 1 && token.length <= 40) // filter out empty, 1-char noise, and long phrases
-          .filter((token) => /^[a-zA-Z0-9\s.+#-]{2,40}$/.test(token)); // pattern validation to avoid arbitrary sentences
+          .filter((token) => token.length > 1 && token.length <= 40)
+          .filter((token) => /^[a-zA-Z0-9\s.+#-]{2,40}$/.test(token));
 
         const unique: string[] = [];
         const seen = new Set<string>();
@@ -121,7 +103,6 @@ export const UploadStep: React.FC = () => {
         }
         skills = await extractSkills(text, skillExtractionConfig);
       } else {
-        // auto mode
         if (skillExtractionConfig?.apiKey) {
           try {
             skills = await extractSkills(text, skillExtractionConfig);
@@ -172,7 +153,6 @@ export const UploadStep: React.FC = () => {
       setIsLoading(true);
       const text = await parseResume(file);
 
-      // Save to DB
       const newResume: Resume = {
         createdAt: Date.now(),
         fileName: file.name,
@@ -203,17 +183,13 @@ export const UploadStep: React.FC = () => {
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      await processFile(file);
-    }
+    if (file) await processFile(file);
   };
 
   const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     const file = e.dataTransfer.files?.[0];
-    if (file) {
-      await processFile(file);
-    }
+    if (file) await processFile(file);
   };
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
@@ -233,7 +209,6 @@ export const UploadStep: React.FC = () => {
       .map((s) => s.trim())
       .filter(Boolean);
 
-    // remove duplicates
     const uniqueSkills = [...new Set(skillsList)];
 
     if (uniqueSkills.length > 0) {
@@ -256,160 +231,49 @@ export const UploadStep: React.FC = () => {
   };
 
   return (
-    <>
-      <div className="max-w-5xl mx-auto mt-4 md:mt-10">
-        <div className="mb-8 text-center sm:text-left px-2">
-          <h2 className="text-3xl font-bold tracking-tight">Upload Resume</h2>
-          <p className="text-muted-foreground mt-2 mb-4">
-            Upload a new CV or select a previously saved one to extract skills and start the
-            assessment.
-          </p>
+    <div className="max-w-5xl mx-auto mt-4 md:mt-10">
+      <div className="mb-8 text-center sm:text-left px-2">
+        <h2 className="text-3xl font-bold tracking-tight">Upload Resume</h2>
+        <p className="text-muted-foreground mt-2 mb-4">
+          Upload a new CV or select a previously saved one to extract skills and start the
+          assessment.
+        </p>
 
-          <div className="flex flex-col sm:flex-row items-center gap-3 bg-muted/30 p-3 rounded-lg inline-flex w-full sm:w-auto">
-            <Label htmlFor="extraction-mode" className="whitespace-nowrap font-medium text-sm">
-              Extraction Method:
-            </Label>
-            <div className="w-full sm:w-48">
-              <Select
-                value={extractionMode}
-                onValueChange={(val: ExtractionMode) => setExtractionMode(val)}
-              >
-                <SelectTrigger id="extraction-mode" className="bg-background">
-                  <SelectValue placeholder="Select mode" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="auto">Auto (AI + Regex)</SelectItem>
-                  <SelectItem value="ai">AI Only</SelectItem>
-                  <SelectItem value="regex">Regex Only</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </div>
+        <ExtractionModeToggle
+          value={extractionMode}
+          onValueChange={setExtractionMode}
+        />
+      </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 px-2">
-          {/* Column 1: Upload */}
-          <Card className="h-fit">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <UploadCloud className="w-5 h-5 text-primary" />
-                New Upload
-              </CardTitle>
-              <CardDescription>Upload a PDF, TXT, or DOCX file (Max 5MB)</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div
-                className={`border-2 border-dashed border-muted-foreground/25 rounded-xl p-12 flex flex-col items-center justify-center cursor-pointer transition-all ${isLoading ? 'opacity-50 pointer-events-none' : 'hover:bg-muted/50 hover:border-primary/50'}`}
-                onClick={() => !isLoading && fileInputRef.current?.click()}
-                onDragOver={handleDragOver}
-                onDrop={handleDrop}
-              >
-                <div className="p-4 bg-primary/10 rounded-full mb-4">
-                  <UploadCloud className="w-8 h-8 text-primary" />
-                </div>
-                <p className="text-base font-medium text-foreground mb-1 text-center">
-                  Click or drag file to this area
-                </p>
-                <p className="text-sm text-muted-foreground text-center">
-                  We&apos;ll use AI to extract your skills automatically
-                </p>
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  className="hidden"
-                  accept=".pdf,.txt,.docx"
-                  onChange={handleFileUpload}
-                  disabled={isLoading}
-                />
-              </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 px-2">
+        <FileUploadZone
+          isLoading={isLoading}
+          selectedResumeId={selectedResumeId}
+          error={error}
+          showManual={showManual}
+          manualSkills={manualSkills}
+          fileInputRef={fileInputRef}
+          onUploadClick={() => !isLoading && fileInputRef.current?.click()}
+          onDragOver={handleDragOver}
+          onDrop={handleDrop}
+          onFileUpload={handleFileUpload}
+          onManualSkillsChange={setManualSkills}
+          onManualSubmit={handleManualSubmit}
+        />
 
-              {isLoading && !selectedResumeId && (
-                <div className="flex flex-col items-center justify-center p-4 bg-muted/30 rounded-lg">
-                  <Loader2 className="w-6 h-6 animate-spin text-primary mb-2" />
-                  <p className="text-sm font-medium">Extracting skills...</p>
-                  <p className="text-xs text-muted-foreground">This may take a few seconds</p>
-                </div>
-              )}
-
-              {error && (
-                <div className="p-4 bg-destructive/10 text-destructive rounded-lg text-sm text-center">
-                  {error}
-                </div>
-              )}
-
-              {showManual && (
-                <div className="space-y-4 pt-4 border-t">
-                  <Label className="text-sm font-medium">
-                    Extraction failed. Please enter your skills manually (comma separated):
-                  </Label>
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    <Input
-                      value={manualSkills}
-                      onChange={(e) => setManualSkills(e.target.value)}
-                      placeholder="e.g. React, TypeScript, Node.js"
-                      onKeyDown={(e) => e.key === 'Enter' && handleManualSubmit()}
-                      className="flex-1"
-                    />
-                    <Button onClick={handleManualSubmit} className="w-full sm:w-auto">
-                      Continue
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Column 2: Saved Resumes */}
-          <div className="space-y-6">
-            <Card className="h-full flex flex-col">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Sparkles className="w-5 h-5 text-primary" />
-                  Saved Resumes
-                </CardTitle>
-                <CardDescription>Select an existing resume to reuse</CardDescription>
-              </CardHeader>
-              <CardContent className="flex-1 flex flex-col">
-                {savedResumes.length > 0 ? (
-                  <div className="space-y-4 flex-1 flex flex-col">
-                    <ResumeList
-                      resumes={savedResumes}
-                      selectedResumeId={selectedResumeId}
-                      onSelect={(r) =>
-                        setSelectedResumeId(r.id === selectedResumeId ? undefined : r.id)
-                      }
-                      onDelete={handleDeleteResume}
-                      onToggleMain={handleToggleMain}
-                      onRefresh={loadData}
-                    />
-
-                    {selectedResumeId && (
-                      <div className="pt-6 mt-auto border-t">
-                        <LoadingButton
-                          type="button"
-                          onClick={handleAnalyzeSelected}
-                          disabled={isLoading}
-                          isLoading={isLoading}
-                          loadingText="Extracting Skills..."
-                          className="w-full"
-                          leftIcon={<Sparkles className="w-4 h-4 text-primary-foreground" />}
-                        >
-                          Extract Skills from Selected CV
-                        </LoadingButton>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center justify-center h-48 text-center text-muted-foreground bg-muted/20 rounded-lg border border-dashed">
-                    <p className="text-sm">No saved resumes found.</p>
-                    <p className="text-xs mt-1">Upload a new one on the left to get started.</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
+        <div className="space-y-6">
+          <SavedResumeSelector
+            savedResumes={savedResumes}
+            selectedResumeId={selectedResumeId}
+            isLoading={isLoading}
+            onSelect={setSelectedResumeId}
+            onDelete={handleDeleteResume}
+            onToggleMain={handleToggleMain}
+            onRefresh={loadData}
+            onAnalyzeSelected={handleAnalyzeSelected}
+          />
         </div>
       </div>
-    </>
+    </div>
   );
 };
