@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { AIProviderProfilesEditor } from './AIProviderProfilesEditor';
+import { AIProviderProfilesEditor } from './index';
 import * as settingsService from '@/services/core/settingsService';
 import * as aiConfigService from '@/services/ai/aiConfigService';
 import { UserSettings } from '@/types';
