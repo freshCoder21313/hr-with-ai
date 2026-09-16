@@ -24,11 +24,19 @@ dist-ssr
 *.sln
 *.sw?
 .opencode/
+.codegraph/
+.openclaude/
+.serena/
 plans/
 coverage/
 .env
+.env.*
+!.env.example
 aidlc-docs/
-.serena/
+# GSD transient artifacts
+.planning/ingest/
+.planning/graphs/
+
 # Playwright
 /test-results/
 /playwright-report/
