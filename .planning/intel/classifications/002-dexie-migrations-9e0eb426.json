@@ -1,0 +1,12 @@
+{
+  "source_path": "docs/adr/002-dexie-migrations.md",
+  "type": "ADR",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "ADR 002: Dexie migration policy",
+  "summary": "Mandates additive Dexie versioning without removing history and defines resume compression strategy.",
+  "scope": ["Dexie", "IndexedDB", "migrations", "resume compression", "LZString", "src/lib/db.ts"],
+  "cross_refs": ["src/lib/db.ts", "src/lib/resumeCompression.ts"],
+  "locked": true,
+  "precedence": null
+}

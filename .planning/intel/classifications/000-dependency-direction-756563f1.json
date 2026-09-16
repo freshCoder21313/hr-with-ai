@@ -1,0 +1,12 @@
+{
+  "source_path": "docs/adr/000-dependency-direction.md",
+  "type": "ADR",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "ADR 000: Dependency direction",
+  "summary": "Defines allowed import direction features → services → lib/types and forbids services importing features.",
+  "scope": ["dependency direction", "services", "features", "lib", "types", "AIService", "prompt templates"],
+  "cross_refs": [],
+  "locked": true,
+  "precedence": null
+}

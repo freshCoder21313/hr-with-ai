@@ -1,0 +1,12 @@
+{
+  "source_path": "docs/adr/001-state-management.md",
+  "type": "ADR",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "ADR 001: State management policy",
+  "summary": "Establishes state placement rules: Zustand for cross-route domain, useState for ephemeral UI, Dexie for persistence.",
+  "scope": ["state management", "Zustand", "Dexie", "React Context", "IndexedDB", "interview session", "AI service"],
+  "cross_refs": ["docs/IMPROVEMENT_ROADMAP.md", "src/lib/db.ts", "src/services/core/*", "src/features/interview/stores", "src/services/ai/"],
+  "locked": true,
+  "precedence": null
+}

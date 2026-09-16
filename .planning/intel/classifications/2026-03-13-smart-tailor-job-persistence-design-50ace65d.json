@@ -1,0 +1,12 @@
+{
+  "source_path": "docs/superpowers/specs/2026-03-13-smart-tailor-job-persistence-design.md",
+  "type": "SPEC",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "Design Doc: Smart Tailor Job Persistence & Customization",
+  "summary": "Designs Smart Tailor Job Targets persistence via Zustand localStorage with global and per-job prompts and import/export.",
+  "scope": ["Smart Tailor", "Job persistence", "Zustand", "localStorage", "JobStore", "customPrompt", "globalPrompt", "import/export"],
+  "cross_refs": ["src/features/smart-tailor/stores/useJobStore.ts", "SmartTailorPage.tsx"],
+  "locked": false,
+  "precedence": null
+}
