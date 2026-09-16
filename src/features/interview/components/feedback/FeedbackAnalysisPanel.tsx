@@ -1,9 +1,10 @@
-import React, { RefObject } from 'react';
-import { AlertCircle, BarChart2, BookOpen, CheckCircle2, ExternalLink } from 'lucide-react';
+import React, { RefObject, Suspense, lazy } from 'react';
+import { AlertCircle, BarChart2, BookOpen, CheckCircle2, ExternalLink, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { InterviewFeedback } from '@/types';
-import { FeedbackScoreHeader } from './FeedbackScoreHeader';
 import { Interview } from '@/types';
+
+const FeedbackScoreHeader = lazy(() => import('./FeedbackScoreHeader').then(m => ({ default: m.FeedbackScoreHeader })));
 
 interface FeedbackAnalysisPanelProps {
   interview: Interview;
@@ -19,7 +20,9 @@ export const FeedbackAnalysisPanel: React.FC<FeedbackAnalysisPanelProps> = ({
   mermaidRef2,
 }) => (
   <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
-    <FeedbackScoreHeader interview={interview} feedback={feedback} />
+    <Suspense fallback={<div className="h-48 flex items-center justify-center bg-card rounded-lg border border-border animate-pulse">Loading analysis summary...</div>}>
+      <FeedbackScoreHeader interview={interview} feedback={feedback} />
+    </Suspense>
 
     <Card className="bg-card border-border">
       <CardHeader>

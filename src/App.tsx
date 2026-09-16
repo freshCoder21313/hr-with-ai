@@ -10,6 +10,7 @@ import { NotificationProvider } from '@/components/providers/NotificationProvide
 import { Toaster } from 'sonner';
 import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
 import { GlobalErrorHandler } from '@/components/shared/GlobalErrorHandler';
+import { db } from '@/lib/db';
 
 // Lazy load features
 const SetupRoom = lazy(() => import('@/features/dashboard/SetupRoom'));
@@ -28,6 +29,18 @@ const PageLoader = () => (
 );
 
 const App: React.FC = () => {
+  useEffect(() => {
+    // Run background cleanup on mount (once)
+    const cleanup = async () => {
+      try {
+        await db.cleanOldResumes();
+      } catch (err) {
+        console.error('Background cleanup failed', err);
+      }
+    };
+    cleanup();
+  }, []);
+
   return (
     <ThemeProvider defaultTheme="system" storageKey="hr-ai-theme">
       <HelmetProvider>

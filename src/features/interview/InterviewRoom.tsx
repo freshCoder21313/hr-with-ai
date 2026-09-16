@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { notificationService } from '@/services/core/notificationService';
 import { useParams } from 'react-router-dom';
-import { Editor, TLShapeId } from 'tldraw';
+import type { Editor, TLShapeId } from 'tldraw';
 import { useInterview } from '@/hooks/useInterview';
 import { useInterviewLoader } from '@/hooks/useInterviewLoader';
 import { svgToPngBase64 } from '@/lib/svgUtils';

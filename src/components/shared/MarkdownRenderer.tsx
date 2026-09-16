@@ -3,18 +3,11 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { Search, Copy, Check, AlertTriangle } from 'lucide-react';
-import mermaid from 'mermaid';
+import { Search, Copy, Check, AlertTriangle, Loader2 } from 'lucide-react';
 
 interface MarkdownRendererProps {
   content: string;
 }
-
-mermaid.initialize({
-  startOnLoad: false,
-  theme: 'default',
-  securityLevel: 'loose',
-});
 
 const CopyButton: React.FC<{ text: string }> = ({ text }) => {
   const [copied, setCopied] = useState(false);
@@ -43,11 +36,20 @@ const CopyButton: React.FC<{ text: string }> = ({ text }) => {
 const MermaidBlock: React.FC<{ code: string }> = ({ code }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState(false);
+  const [isRendering, setIsRendering] = useState(true);
 
   useEffect(() => {
     const renderDiagram = async () => {
       if (!containerRef.current) return;
+      setIsRendering(true);
       try {
+        const { default: mermaid } = await import('mermaid');
+        mermaid.initialize({
+          startOnLoad: false,
+          theme: 'default',
+          securityLevel: 'loose',
+        });
+
         const id = `mermaid-${Math.random().toString(36).substring(2, 9)}`;
         const { svg } = await mermaid.render(id, code);
         if (containerRef.current) {
@@ -60,6 +62,8 @@ const MermaidBlock: React.FC<{ code: string }> = ({ code }) => {
         if (containerRef.current) {
           containerRef.current.innerHTML = '';
         }
+      } finally {
+        setIsRendering(false);
       }
     };
 
@@ -79,8 +83,13 @@ const MermaidBlock: React.FC<{ code: string }> = ({ code }) => {
   }
 
   return (
-    <div className="my-4 p-4 rounded-lg bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 overflow-x-auto flex justify-center">
-      <div ref={containerRef} />
+    <div className="my-4 p-4 rounded-lg bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 overflow-x-auto flex justify-center min-h-[100px] items-center relative">
+      {isRendering && (
+        <div className="absolute inset-0 flex items-center justify-center bg-background/50 z-10">
+          <Loader2 className="w-6 h-6 animate-spin text-primary" />
+        </div>
+      )}
+      <div ref={containerRef} className={isRendering ? 'opacity-0' : 'opacity-100'} />
     </div>
   );
 };

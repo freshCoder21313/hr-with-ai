@@ -2,7 +2,7 @@ import React, { Suspense } from 'react';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Code2, PenTool, X } from 'lucide-react';
-import { Editor } from 'tldraw';
+import type { Editor } from 'tldraw';
 
 // Lazy load components
 const CodeEditor = React.lazy(() => import('@/features/interview/CodeEditor'));

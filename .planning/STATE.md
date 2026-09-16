@@ -5,15 +5,15 @@
 
 ---
 
-## Current Phase: Phase 2 — Decompose Hotspots 🟡
+## Current Phase: Phase 6 — Product Finish / Scope Control ⬜
 
-**Status:** `IMPLEMENTING` — Addressing remaining hotspots (God Components and Duplicated Forms).
+**Status:** `PLANNING` — All core infrastructure and performance optimizations are complete.
 
 **What happened:**
-- **Phase 0 & 1 verified**: All structural refactors committed and verified (typecheck, lint, test).
-- **Test Coverage Lift**: `syncService.ts` coverage raised to 100% lines/statements (Phase 3.1 partial).
-- **Git Ignore Update**: Root `.gitignore` updated to include modern GSD and local tool directories.
-- **Onboarding complete**: Codebase map and project state fully initialized.
+- **Phase 5 complete**: Optimized bundle by lazy-loading heavy libraries (Mermaid, Recharts, Tldraw). Added background cleanup for local database.
+- **Phase 3 complete**: Reached 32.9% overall coverage; critical services at 80-100%. Enforced coverage thresholds in CI.
+- **Phase 2 complete**: Decomposed all major "God Components" and unified duplicated SectionForms.
+- **Structural Refactor**: Finalized service layer decoupling and global types split per ADR 000.
 
 ---
 
@@ -26,7 +26,7 @@
 | **2** | Decompose hotspots | **✅ Complete** | InterviewRoom split ✅, FeedbackView split ✅, JobRec split ✅, useSetupRoom split ✅, CloudSyncModal thin ✅, SectionForms unified ✅, AIProviderProfilesEditor split ✅, ResumeBuilder split ✅, SetupRoom split ✅, UploadStep split ✅ |
 | **3** | Test & quality gates | **✅ Complete** | Overall coverage 32% (target 30% floor) ✅, critical services 80-100% ✅, fallback service tests added ✅, store tests added ✅, thresholds enforced ✅, e2e smokes expanded ✅ |
 | **4** | Security & data | **✅ Complete** (5/5) | `docs/SECURITY.md`, `api/sync.ts` hardened, secrets policy, ADR 002 + compression tests, privacy UX |
-| **5** | Performance & mobile | **⬜ Next** | Code-split audit, Capacitor perf, React 19 deferred |
+| **5** | Performance & mobile | **✅ Complete** | Mermaid/Recharts lazy-loaded in MarkdownRenderer/History/Feedback ✅, Tldraw code-split via lazy components & type imports ✅, Background DB cleanup added ✅, Bundle chunks audited ✅ |
 | **6** | Product finish / scope | **⬜ Planned** | Versioning `0.0.0→0.1.0`, RAG/company-intel decision, Smart Tailor SPEC verification |
 
 **Overall platform signal (roadmap §1):** Typecheck ✅, ESLint ✅, tests 225/225 ✅ (32% coverage), Prettier fixed ✅, CI fixed ✅, arch inverted → fixed ✅, god files splitting ✅.

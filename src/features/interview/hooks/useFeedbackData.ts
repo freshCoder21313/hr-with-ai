@@ -1,5 +1,4 @@
 import { useEffect, useState, useRef } from 'react';
-import mermaid from 'mermaid';
 import { db } from '@/lib/db';
 import { generateInterviewFeedback } from '@/services/interview/interviewAIService';
 import { getStoredAIConfig } from '@/services/ai/aiConfigService';
@@ -14,10 +13,6 @@ export function useFeedbackData(id: string | undefined) {
   const [analysisMap, setAnalysisMap] = useState<Record<number, AnalysisItem>>({});
   const mermaidRef1 = useRef<HTMLDivElement>(null);
   const mermaidRef2 = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    mermaid.initialize({ startOnLoad: false, theme: 'default' });
-  }, []);
 
   useEffect(() => {
     if (!interview?.messages || !feedback?.keyQuestionAnalysis) return;
@@ -79,6 +74,9 @@ export function useFeedbackData(id: string | undefined) {
         return;
       }
       try {
+        const { default: mermaid } = await import('mermaid');
+        mermaid.initialize({ startOnLoad: false, theme: 'default' });
+
         mermaidRef1.current.innerHTML = '';
         mermaidRef2.current.innerHTML = '';
         const { svg: svg1 } = await mermaid.render('mermaid-chart-1', feedback.mermaidGraphCurrent);

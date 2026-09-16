@@ -15,12 +15,13 @@ import {
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import ProgressCharts from './ProgressCharts';
 import LearningPath from './LearningPath';
-import SkillRadarChart from './SkillRadarChart';
 import SEO from '@/components/shared/SEO';
 import ShareModal from './components/ShareModal';
 import { Share2 } from 'lucide-react';
+
+const ProgressCharts = React.lazy(() => import('./ProgressCharts'));
+const SkillRadarChart = React.lazy(() => import('./SkillRadarChart'));
 
 const HistoryPage: React.FC = () => {
   const [interviews, setInterviews] = useState<Interview[]>([]);
@@ -120,15 +121,17 @@ const HistoryPage: React.FC = () => {
       {/* Progress Charts Section */}
       {interviews.length > 0 && (
         <div className="mb-8 animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-8">
-          <ProgressCharts interviews={interviews} />
-          <div className="flex flex-col gap-8 w-full">
-            <div className="w-full">
-              <SkillRadarChart interviews={interviews} />
+          <React.Suspense fallback={<div className="h-48 flex items-center justify-center bg-card rounded-lg border border-border animate-pulse">Loading charts...</div>}>
+            <ProgressCharts interviews={interviews} />
+            <div className="flex flex-col gap-8 w-full">
+              <div className="w-full">
+                <SkillRadarChart interviews={interviews} />
+              </div>
+              <div className="w-full">
+                <LearningPath interviews={interviews} />
+              </div>
             </div>
-            <div className="w-full">
-              <LearningPath interviews={interviews} />
-            </div>
-          </div>
+          </React.Suspense>
         </div>
       )}
 
