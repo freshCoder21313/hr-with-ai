@@ -182,6 +182,118 @@ describe('syncService', () => {
         })
       );
     });
+
+    it('does not update if cloud version is older', async () => {
+      const local = { id: 1, updatedAt: 2000 };
+      const olderCloud = { id: 1, updatedAt: 1000 };
+
+      vi.mocked(db.userSettings.toArray).mockResolvedValue([local]);
+      vi.mocked(db.interviews.toArray).mockResolvedValue([]);
+      vi.mocked(db.resumes.toArray).mockResolvedValue([]);
+      vi.mocked(db.userSettings.orderBy).mockReturnValue({
+        first: vi.fn().mockResolvedValue(local),
+      } as any);
+
+      await syncService.importData({
+        interviews: [],
+        userSettings: [olderCloud],
+        resumes: [],
+      });
+
+      expect(db.userSettings.put).not.toHaveBeenCalled();
+    });
+
+    it('adds new resumes', async () => {
+      const cloudResume = {
+        createdAt: 3000,
+        updatedAt: 3000,
+        title: 'New Resume',
+        content: {},
+      };
+
+      vi.mocked(db.userSettings.toArray).mockResolvedValue([]);
+      vi.mocked(db.interviews.toArray).mockResolvedValue([]);
+      vi.mocked(db.resumes.toArray).mockResolvedValue([]);
+      vi.mocked(db.userSettings.orderBy).mockReturnValue({
+        first: vi.fn().mockResolvedValue(undefined),
+      } as any);
+
+      await syncService.importData({
+        interviews: [],
+        userSettings: [],
+        resumes: [cloudResume],
+      });
+
+      expect(db.resumes.add).toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'New Resume' })
+      );
+    });
+
+    it('updates existing resumes if cloud is newer', async () => {
+      const localResume = { id: 5, createdAt: 3000, updatedAt: 3000, title: 'Old' };
+      const newerCloud = { ...localResume, title: 'New', updatedAt: 4000 };
+
+      vi.mocked(db.userSettings.toArray).mockResolvedValue([]);
+      vi.mocked(db.interviews.toArray).mockResolvedValue([]);
+      vi.mocked(db.resumes.toArray).mockResolvedValue([localResume]);
+      vi.mocked(db.userSettings.orderBy).mockReturnValue({
+        first: vi.fn().mockResolvedValue(undefined),
+      } as any);
+
+      await syncService.importData({
+        interviews: [],
+        userSettings: [],
+        resumes: [newerCloud],
+      });
+
+      expect(db.resumes.put).toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'New', id: 5 })
+      );
+    });
+
+    it('adds new interviews when no match is found', async () => {
+      const cloudInterview = {
+        createdAt: 5000,
+        company: 'Brand New',
+        status: InterviewStatus.CREATED,
+      };
+
+      vi.mocked(db.interviews.toArray).mockResolvedValue([]);
+      vi.mocked(db.userSettings.toArray).mockResolvedValue([]);
+      vi.mocked(db.resumes.toArray).mockResolvedValue([]);
+      vi.mocked(db.userSettings.orderBy).mockReturnValue({
+        first: vi.fn().mockResolvedValue(undefined),
+      } as any);
+
+      await syncService.importData({
+        interviews: [cloudInterview as any],
+        userSettings: [],
+        resumes: [],
+      });
+
+      expect(db.interviews.add).toHaveBeenCalledWith(
+        expect.objectContaining({ company: 'Brand New' })
+      );
+    });
+
+    it('adds new settings when no match is found', async () => {
+      const cloudSetting = { id: 'new-id', theme: 'dark' };
+
+      vi.mocked(db.userSettings.toArray).mockResolvedValue([]);
+      vi.mocked(db.interviews.toArray).mockResolvedValue([]);
+      vi.mocked(db.resumes.toArray).mockResolvedValue([]);
+      vi.mocked(db.userSettings.orderBy).mockReturnValue({
+        first: vi.fn().mockResolvedValue(undefined),
+      } as any);
+
+      await syncService.importData({
+        interviews: [],
+        userSettings: [cloudSetting as any],
+        resumes: [],
+      });
+
+      expect(db.userSettings.add).toHaveBeenCalledWith(cloudSetting);
+    });
   });
 
   describe('uploadToCloud', () => {
@@ -222,6 +334,57 @@ describe('syncService', () => {
       expect(result.success).toBe(false);
       expect(result.message).toMatch(/Invalid password/i);
     });
+
+    it('uses error message if statusText is missing on upload', async () => {
+      const err = {
+        isAxiosError: true,
+        response: { status: 500 },
+        message: 'Internal Server Error',
+      };
+      vi.spyOn(axios, 'isAxiosError').mockReturnValue(true);
+      vi.mocked(apiClient.post).mockRejectedValue(err);
+
+      const result = await syncService.uploadToCloud('id', 'pass', {
+        interviews: [],
+        userSettings: [],
+        resumes: [],
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.message).toBe('Upload failed: Internal Server Error');
+    });
+
+    it('maps 429 to rate limit message', async () => {
+      const err = {
+        isAxiosError: true,
+        response: { status: 429, statusText: 'Too Many Requests' },
+      };
+      vi.spyOn(axios, 'isAxiosError').mockReturnValue(true);
+      vi.mocked(apiClient.post).mockRejectedValue(err);
+
+      const result = await syncService.uploadToCloud('abcdefghijklmnop', 'pass', {
+        interviews: [],
+        userSettings: [],
+        resumes: [],
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.message).toMatch(/Rate limit/i);
+    });
+
+    it('handles generic Error during upload', async () => {
+      vi.spyOn(axios, 'isAxiosError').mockReturnValue(false);
+      vi.mocked(apiClient.post).mockRejectedValue(new Error('Network error'));
+
+      const result = await syncService.uploadToCloud('abcdefghijklmnop', 'pass', {
+        interviews: [],
+        userSettings: [],
+        resumes: [],
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.message).toBe('Network error');
+    });
   });
 
   describe('downloadFromCloud', () => {
@@ -252,6 +415,34 @@ describe('syncService', () => {
       expect(result.data?.interviews[0].company).toBe('X');
     });
 
+    it('falls back to UTF16 decompression', async () => {
+      const original = { interviews: [], userSettings: [], resumes: [] };
+      const compressed = LZString.compressToUTF16(JSON.stringify(original));
+      vi.mocked(apiClient.get).mockResolvedValue({ data: { compressed } });
+
+      const result = await syncService.downloadFromCloud('abcdefghijklmnop');
+      expect(result.success).toBe(true);
+      expect(result.data).toEqual(original);
+    });
+
+    it('handles legacy uncompressed data', async () => {
+      const original = { interviews: [], userSettings: [], resumes: [] };
+      vi.mocked(apiClient.get).mockResolvedValue({ data: original });
+
+      const result = await syncService.downloadFromCloud('abcdefghijklmnop');
+      expect(result.success).toBe(true);
+      expect(result.data).toEqual(original);
+    });
+
+    it('throws error if decompression fails', async () => {
+      // LZString returns null or empty string on failed decompression
+      vi.mocked(apiClient.get).mockResolvedValue({ data: { compressed: '!!!' } });
+
+      const result = await syncService.downloadFromCloud('abcdefghijklmnop');
+      expect(result.success).toBe(false);
+      expect(result.message).toBe('Failed to decompress data');
+    });
+
     it('maps 404 to not found message', async () => {
       const err = {
         isAxiosError: true,
@@ -265,6 +456,45 @@ describe('syncService', () => {
 
       expect(result.success).toBe(false);
       expect(result.message).toMatch(/not found/i);
+    });
+
+    it('uses error message if statusText is missing on download', async () => {
+      const err = {
+        isAxiosError: true,
+        response: { status: 500 },
+        message: 'Internal Server Error',
+      };
+      vi.spyOn(axios, 'isAxiosError').mockReturnValue(true);
+      vi.mocked(apiClient.get).mockRejectedValue(err);
+
+      const result = await syncService.downloadFromCloud('id');
+
+      expect(result.success).toBe(false);
+      expect(result.message).toBe('Download failed: Internal Server Error');
+    });
+
+    it('maps 429 to rate limit message', async () => {
+      const err = {
+        isAxiosError: true,
+        response: { status: 429, statusText: 'Too Many Requests' },
+      };
+      vi.spyOn(axios, 'isAxiosError').mockReturnValue(true);
+      vi.mocked(apiClient.get).mockRejectedValue(err);
+
+      const result = await syncService.downloadFromCloud('abcdefghijklmnop');
+
+      expect(result.success).toBe(false);
+      expect(result.message).toMatch(/Rate limit/i);
+    });
+
+    it('handles generic Error during download', async () => {
+      vi.spyOn(axios, 'isAxiosError').mockReturnValue(false);
+      vi.mocked(apiClient.get).mockRejectedValue(new Error('Network error'));
+
+      const result = await syncService.downloadFromCloud('abcdefghijklmnop');
+
+      expect(result.success).toBe(false);
+      expect(result.message).toBe('Network error');
     });
   });
 });
