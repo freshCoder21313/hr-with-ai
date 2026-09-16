@@ -5,15 +5,15 @@
 
 ---
 
-## Current Phase: Phase 6 — Product Finish / Scope Control ⬜
+## Current Phase: Phase 6 — Product Finish / Scope Control ✅
 
-**Status:** `PLANNING` — All core infrastructure and performance optimizations are complete.
+**Status:** `COMPLETED` — Released version 0.1.0. All core roadmap phases are now complete.
 
 **What happened:**
+- **Version 0.1.0**: Updated \`package.json\` and tagged the first semver release.
+- **Backlog Archival**: Moved old design plans to \`docs/backlog/\` and stopped gitignoring them.
+- **Documentation Refresh**: Updated \`AGENTS.md\` and \`SECURITY.md\`. Verified single source of truth.
 - **Phase 5 complete**: Optimized bundle by lazy-loading heavy libraries (Mermaid, Recharts, Tldraw). Added background cleanup for local database.
-- **Phase 3 complete**: Reached 32.9% overall coverage; critical services at 80-100%. Enforced coverage thresholds in CI.
-- **Phase 2 complete**: Decomposed all major "God Components" and unified duplicated SectionForms.
-- **Structural Refactor**: Finalized service layer decoupling and global types split per ADR 000.
 
 ---
 

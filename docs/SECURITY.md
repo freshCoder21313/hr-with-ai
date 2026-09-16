@@ -6,7 +6,7 @@
 
 | Package                   | Severity | Status          | Notes                                                                                  |
 | ------------------------- | -------- | --------------- | -------------------------------------------------------------------------------------- |
-| `tldraw@2.x` → `nanoid@4` | moderate | **Deferred**    | Requires major tldraw upgrade (Phase 5). Whiteboard only; not network-facing server.   |
+| `tldraw@2.x` → `nanoid@4` | **high** | **Deferred**    | Requires major tldraw upgrade (Phase 5). Whiteboard only; not network-facing server.   |
 | `smol-toml` (transitive)  | moderate | **Deferred**    | Transitive via toolchain; not used for untrusted user TOML input.                      |
 | High/critical             | —        | **0 remaining** | Cleared in Phase 0 via vite pin + overrides (`undici`, `path-to-regexp`, `minimatch`). |
 

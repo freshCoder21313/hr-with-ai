@@ -101,15 +101,15 @@
 
 ---
 
-## Phase 6 — Product Finish / Scope Control (1–2 weeks + product decisions) — **PLANNED**
+## Phase 6 — Product Finish / Scope Control (1–2 weeks + product decisions) — **COMPLETE**
 
-| # | Decision | Options | Owner |
-|---|----------|---------|-------|
-| 6.1 | Company intel | Ship MVP (reuse interview company research) or delete stub (stub already deleted) | Product |
-| 6.2 | RAG / job rec backlog | Backlog with owners or archive `plans/` → `docs/backlog/` (stop gitignoring useful plans) | Product |
-| 6.3 | Versioning | Semver from `0.1.0`; tag releases so CI `release` job works (currently `0.0.0`) | Eng |
-| 6.4 | Docs single source | Deprecate old debt reports with banner pointing here; refresh `AGENTS.md` (done) | Eng |
-| 6.5 | **Smart Tailor SPEC (Approved 2026-03-13)** | Implement/verify `JobStore` (`useJobStore.ts` + `SmartTailorPage` actions/import-export/batch tailoring) — supersedes empty feature shells | Eng |
+| # | Decision | Options | Owner | Status |
+|---|----------|---------|-------|--------|
+| 6.1 | Company intel | Ship MVP (reuse interview company research) or delete stub (stub already deleted) | Product | ✅ Deleted |
+| 6.2 | RAG / job rec backlog | Backlog with owners or archive `plans/` → `docs/backlog/` (stop gitignoring useful plans) | Product | ✅ Archived |
+| 6.3 | Versioning | Semver from `0.1.0`; tag releases so CI `release` job works (currently `0.1.0`) | Eng | ✅ v0.1.0 |
+| 6.4 | Docs single source | Deprecate old debt reports with banner pointing here; refresh `AGENTS.md` (done) | Eng | ✅ Done |
+| 6.5 | **Smart Tailor SPEC (Approved 2026-03-13)** | Implement/verify `JobStore` (`useJobStore.ts` + `SmartTailorPage` actions/import-export/batch tailoring) — supersedes empty feature shells | Eng | ✅ Done |
 
 ---
 

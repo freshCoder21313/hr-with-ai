@@ -237,12 +237,12 @@ Within **~8–12 weeks** of focused work:
 
 ### Phase 6 — Product finish / scope control (1–2 weeks + product decisions)
 
-| # | Decision needed | Options |
-|---|-----------------|---------|
-| 6.1 | Company intel | Ship MVP (reuse interview company research) **or** delete stub |
-| 6.2 | RAG / job rec plans | Keep as backlog with owners **or** archive `plans/` into `docs/backlog/` and stop gitignoring useful plans |
-| 6.3 | Versioning | Semver from `0.1.0`; tag releases so existing CI release job works |
-| 6.4 | Docs single source | Deprecate old debt reports with banner pointing here; refresh AGENTS.md |
+| # | Decision needed | Options | Status |
+|---|-----------------|---------|--------|
+| 6.1 | Company intel | Ship MVP (reuse interview company research) **or** delete stub | ✅ Deleted |
+| 6.2 | RAG / job rec plans | Keep as backlog with owners **or** archive `plans/` into `docs/backlog/` and stop gitignoring useful plans | ✅ Archived |
+| 6.3 | Versioning | Semver from `0.1.0`; tag releases so existing CI release job works | ✅ v0.1.0 |
+| 6.4 | Docs single source | Deprecate old debt reports with banner pointing here; refresh AGENTS.md | ✅ Done |
 
 ---
 
