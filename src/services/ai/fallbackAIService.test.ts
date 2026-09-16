@@ -143,7 +143,9 @@ describe('Fallback AI Service', () => {
       const generator = fallbackService.streamText([]);
       
       await expect(async () => {
-        for await (const _ of generator) {}
+        for await (const _ of generator) {
+            // consume
+        }
       }).rejects.toThrow('Mid-stream fail');
     });
 
@@ -157,7 +159,9 @@ describe('Fallback AI Service', () => {
         const fallbackService = new FallbackAIService(mockConfig);
         const generator = fallbackService.streamText([]);
         await expect(async () => {
-            for await (const _ of generator) {}
+            for await (const _ of generator) {
+                // consume
+            }
         }).rejects.toThrow(/exhausted all candidates \(stream\)/);
     });
   });

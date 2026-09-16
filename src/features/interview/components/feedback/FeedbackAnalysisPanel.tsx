@@ -1,5 +1,5 @@
 import React, { RefObject, Suspense, lazy } from 'react';
-import { AlertCircle, BarChart2, BookOpen, CheckCircle2, ExternalLink, Loader2 } from 'lucide-react';
+import { AlertCircle, BarChart2, BookOpen, CheckCircle2, ExternalLink } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { InterviewFeedback } from '@/types';
 import { Interview } from '@/types';
