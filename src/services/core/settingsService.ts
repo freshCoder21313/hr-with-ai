@@ -33,7 +33,7 @@ let migrationPromise: Promise<UserSettings> | null = null;
  */
 export async function loadUserSettings(): Promise<UserSettings> {
   if (migrationPromise) return migrationPromise;
-  
+
   migrationPromise = (async () => {
     try {
       // Load from IndexedDB first
@@ -70,8 +70,9 @@ export async function loadUserSettings(): Promise<UserSettings> {
       const migrated = migrateLegacySettings(settings);
 
       // Persist migration once if needed
-      const needsSave = !storedDB || JSON.stringify(storedDB.aiProfiles) !== JSON.stringify(migrated.aiProfiles);
-      
+      const needsSave =
+        !storedDB || JSON.stringify(storedDB.aiProfiles) !== JSON.stringify(migrated.aiProfiles);
+
       if (needsSave) {
         // Save without recursive loadUserSettings
         await persistSettings(migrated);

@@ -54,7 +54,8 @@ export class OpenAICustomStrategy implements AIProviderStrategy {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${this.apiKey}`,
-          'HTTP-Referer': typeof window !== 'undefined' ? window.location.origin : 'https://hr-with-ai',
+          'HTTP-Referer':
+            typeof window !== 'undefined' ? window.location.origin : 'https://hr-with-ai',
           'X-Title': 'HR-With-AI',
         },
         body: JSON.stringify(body),

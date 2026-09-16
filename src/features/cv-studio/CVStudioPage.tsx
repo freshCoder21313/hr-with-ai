@@ -1,10 +1,8 @@
 import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SEO from '@/components/shared/SEO';
-import ResumePreview from '@/features/resume-builder/ResumePreview';
-import SectionReorderDialog from '@/features/resume-builder/components/SectionReorderDialog';
+import { ResumePreview, SectionReorderDialog, GitHubImportModal } from '@/features/resume-builder';
 import { EditGlobalPromptModal } from './components/EditGlobalPromptModal';
-import { GitHubImportModal } from '@/features/resume-builder/github-import/GitHubImportModal';
 import { CVJobPanel } from './components/CVJobPanel';
 import { CVChatPanel } from './components/CVChatPanel';
 import { CVPreviewPanel } from './components/CVPreviewPanel';

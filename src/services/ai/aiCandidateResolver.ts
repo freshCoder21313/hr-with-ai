@@ -10,9 +10,7 @@ export interface CandidateConfig extends AIConfig {
 /**
  * Resolves a marker AIConfig into a prioritized list of candidates based on user settings.
  */
-export const resolveCandidates = async (
-  config: AIConfig
-): Promise<CandidateConfig[]> => {
+export const resolveCandidates = async (config: AIConfig): Promise<CandidateConfig[]> => {
   // Explicit bypass: if source is 'explicit' or missing, return single candidate
   if (config.source !== 'active-profile') {
     return [{ ...config }];
@@ -37,7 +35,7 @@ export const resolveCandidates = async (
         // Deduplication key: provider + baseUrl + modelId + profileId
         const key = `${profile.provider}:${profile.baseUrl || 'default'}:${modelId || 'default'}:${profile.id}`;
         if (seenCandidates.has(key)) continue;
-        
+
         candidates.push({
           apiKey: profile.apiKey,
           baseUrl: profile.baseUrl,
@@ -46,14 +44,14 @@ export const resolveCandidates = async (
           profileId: profile.id,
           profileName: profile.name,
           isFallback,
-          source: 'active-profile'
+          source: 'active-profile',
         });
         seenCandidates.add(key);
       }
     };
 
     // 1. Resolve Active Profile first
-    const activeProfile = profiles.find(p => p.id === activeProfileId);
+    const activeProfile = profiles.find((p) => p.id === activeProfileId);
     if (activeProfile) {
       addProfileCandidates(activeProfile, false);
     }
@@ -61,7 +59,7 @@ export const resolveCandidates = async (
     // 2. Resolve configured fallbacks in order
     for (const fallbackId of fallbackProfileIds) {
       if (fallbackId === activeProfileId) continue; // Safety check
-      const fallbackProfile = profiles.find(p => p.id === fallbackId);
+      const fallbackProfile = profiles.find((p) => p.id === fallbackId);
       if (fallbackProfile) {
         addProfileCandidates(fallbackProfile, true);
       }
@@ -82,7 +80,7 @@ export const resolveCandidates = async (
     return candidates;
   } catch (error) {
     if (error instanceof AIProviderError) throw error;
-    
+
     // On failure, throw safe configuration error
     throw new AIProviderError(
       'Failed to resolve AI configuration. Check your settings.',

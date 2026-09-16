@@ -4,7 +4,7 @@ import { GoogleGeminiStrategy } from './strategies/google-gemini';
 import { AnthropicStrategy } from './strategies/anthropic';
 
 vi.mock('./strategies/google-gemini', () => ({
-  GoogleGeminiStrategy: vi.fn().mockImplementation(function() {
+  GoogleGeminiStrategy: vi.fn().mockImplementation(function () {
     return {
       generateText: vi.fn(),
       streamText: vi.fn(),
@@ -14,7 +14,7 @@ vi.mock('./strategies/google-gemini', () => ({
 }));
 
 vi.mock('./strategies/anthropic', () => ({
-  AnthropicStrategy: vi.fn().mockImplementation(function() {
+  AnthropicStrategy: vi.fn().mockImplementation(function () {
     return {
       generateText: vi.fn(),
       streamText: vi.fn(),
@@ -24,7 +24,7 @@ vi.mock('./strategies/anthropic', () => ({
 }));
 
 vi.mock('./strategies/openai-custom', () => ({
-  OpenAICustomStrategy: vi.fn().mockImplementation(function() {
+  OpenAICustomStrategy: vi.fn().mockImplementation(function () {
     return {
       generateText: vi.fn(),
       streamText: vi.fn(),
@@ -34,7 +34,7 @@ vi.mock('./strategies/openai-custom', () => ({
 }));
 
 vi.mock('./strategies/openrouter', () => ({
-  OpenRouterStrategy: vi.fn().mockImplementation(function() {
+  OpenRouterStrategy: vi.fn().mockImplementation(function () {
     return {
       generateText: vi.fn(),
       streamText: vi.fn(),
@@ -54,9 +54,9 @@ describe('AIService', () => {
       provider: 'google',
       modelId: 'gemini-exp',
     } as any;
-    
+
     new AIService(config);
-    
+
     // This will FAIL currently because it only takes (apiKey, baseUrl)
     expect(GoogleGeminiStrategy).toHaveBeenCalledWith('key', undefined, 'gemini-exp');
   });
@@ -67,9 +67,9 @@ describe('AIService', () => {
       provider: 'anthropic',
       modelId: 'claude-3-opus',
     } as any;
-    
+
     new AIService(config);
-    
+
     // This will FAIL currently
     expect(AnthropicStrategy).toHaveBeenCalledWith('key', undefined, 'claude-3-opus');
   });
@@ -79,9 +79,9 @@ describe('AIService', () => {
       apiKey: 'key',
       provider: 'google',
     } as any;
-    
+
     new AIService(config);
-    
+
     expect(GoogleGeminiStrategy).toHaveBeenCalledWith('key', undefined, undefined);
   });
 });

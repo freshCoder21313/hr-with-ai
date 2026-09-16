@@ -27,7 +27,9 @@ describe('Fallback AI Service', () => {
     const mockService = {
       generateText: vi.fn().mockResolvedValue({ text: 'success' }),
     };
-    (AIService as any).mockImplementation(function() { return mockService; });
+    (AIService as any).mockImplementation(function () {
+      return mockService;
+    });
 
     const fallbackService = new FallbackAIService(mockConfig);
     const result = await fallbackService.generateText([{ role: 'user', content: 'hi' }]);
@@ -38,12 +40,12 @@ describe('Fallback AI Service', () => {
 
   it('falls back to second candidate on eligible error', async () => {
     const error = new AIProviderError('fail', 'network', 'google', undefined, true, true);
-    
+
     const service1 = { generateText: vi.fn().mockRejectedValue(error) };
     const service2 = { generateText: vi.fn().mockResolvedValue({ text: 'fallback success' }) };
-    
+
     let callCount = 0;
-    (AIService as any).mockImplementation(function() {
+    (AIService as any).mockImplementation(function () {
       callCount++;
       return callCount === 1 ? service1 : service2;
     });
@@ -59,8 +61,10 @@ describe('Fallback AI Service', () => {
   it('stops immediately on auth error', async () => {
     const authError = new AIProviderError('auth fail', 'auth', 'google', 401, false, false);
     const service1 = { generateText: vi.fn().mockRejectedValue(authError) };
-    
-    (AIService as any).mockImplementation(function() { return service1; });
+
+    (AIService as any).mockImplementation(function () {
+      return service1;
+    });
 
     const fallbackService = new FallbackAIService(mockConfig);
     await expect(fallbackService.generateText([])).rejects.toThrow('auth fail');
@@ -69,8 +73,10 @@ describe('Fallback AI Service', () => {
   it('stops immediately on structured output error', async () => {
     const parseError = new AIStructuredOutputError('parse fail');
     const service1 = { generateStructured: vi.fn().mockRejectedValue(parseError) };
-    
-    (AIService as any).mockImplementation(function() { return service1; });
+
+    (AIService as any).mockImplementation(function () {
+      return service1;
+    });
 
     const fallbackService = new FallbackAIService(mockConfig);
     await expect(fallbackService.generateStructured([], {} as any)).rejects.toThrow('parse fail');
@@ -78,7 +84,7 @@ describe('Fallback AI Service', () => {
 
   it('throws secret-safe aggregate error when all fail', async () => {
     const error = new AIProviderError('fail', 'network', 'google', undefined, true, true);
-    (AIService as any).mockImplementation(function() {
+    (AIService as any).mockImplementation(function () {
       return {
         generateText: vi.fn().mockRejectedValue(error),
       };

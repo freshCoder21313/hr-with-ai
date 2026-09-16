@@ -116,13 +116,5 @@ export const classifyProviderError = (
     }
   }
 
-  return new AIProviderError(
-    message,
-    kind,
-    provider,
-    status,
-    retryable,
-    fallbackEligible,
-    error
-  );
+  return new AIProviderError(message, kind, provider, status, retryable, fallbackEligible, error);
 };

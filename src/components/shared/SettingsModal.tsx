@@ -260,9 +260,9 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onOpenChange, onSet
                     <p className="text-xs text-muted-foreground leading-relaxed">
                       Configure multiple AI providers, API keys, and model fallback sequences.
                     </p>
-                    <Button 
-                      onClick={handleManageProfiles} 
-                      variant="outline" 
+                    <Button
+                      onClick={handleManageProfiles}
+                      variant="outline"
                       className="w-full h-9 text-xs"
                     >
                       Manage AI Profiles

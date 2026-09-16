@@ -68,10 +68,10 @@ describe('AIProviderProfilesEditor', () => {
     render(<AIProviderProfilesEditor />);
 
     await waitFor(() => screen.getAllByText('Fallback Profile'));
-    
+
     // Click the one in the main list (first one)
     fireEvent.click(screen.getAllByText('Fallback Profile')[0]);
-    
+
     await waitFor(() => {
       expect(screen.getByDisplayValue('Fallback Profile')).toBeDefined();
       expect(screen.getByDisplayValue('key-2')).toBeDefined();
@@ -119,9 +119,11 @@ describe('AIProviderProfilesEditor', () => {
 
     fireEvent.click(screen.getByText('Run Test'));
 
-    expect(aiConfigService.testAIConnection).toHaveBeenCalledWith(expect.objectContaining({
-      apiKey: 'key-1',
-      source: 'explicit'
-    }));
+    expect(aiConfigService.testAIConnection).toHaveBeenCalledWith(
+      expect.objectContaining({
+        apiKey: 'key-1',
+        source: 'explicit',
+      })
+    );
   });
 });

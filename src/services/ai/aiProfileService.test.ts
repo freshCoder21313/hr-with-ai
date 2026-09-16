@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { 
-  migrateLegacySettings, 
-  normalizeUserSettings, 
-  getActiveProfileConfig, 
+import {
+  migrateLegacySettings,
+  normalizeUserSettings,
+  getActiveProfileConfig,
   LEGACY_DEFAULT_ID,
   toSafeSyncProfiles,
-  mergeImportedProfiles
+  mergeImportedProfiles,
 } from './aiProfileService';
 import { UserSettings, AIProviderProfile } from '@/types';
 
@@ -43,15 +43,17 @@ describe('aiProfileService', () => {
 
     it('should be idempotent', () => {
       const settingsWithProfiles: UserSettings = {
-        aiProfiles: [{
-          id: 'existing-id',
-          name: 'Existing',
-          provider: 'google',
-          apiKey: 'key',
-          modelIds: [],
-          enabled: true
-        }],
-        activeAIProfileId: 'existing-id'
+        aiProfiles: [
+          {
+            id: 'existing-id',
+            name: 'Existing',
+            provider: 'google',
+            apiKey: 'key',
+            modelIds: [],
+            enabled: true,
+          },
+        ],
+        activeAIProfileId: 'existing-id',
       };
 
       const result = migrateLegacySettings(settingsWithProfiles);
@@ -67,7 +69,7 @@ describe('aiProfileService', () => {
           { id: '1', name: 'Profile', provider: 'google', apiKey: '', modelIds: [], enabled: true },
           { id: '2', name: 'profile', provider: 'google', apiKey: '', modelIds: [], enabled: true },
           { id: '3', name: 'PROFILE', provider: 'google', apiKey: '', modelIds: [], enabled: true },
-        ]
+        ],
       };
 
       const normalized = normalizeUserSettings(settings);
@@ -82,7 +84,7 @@ describe('aiProfileService', () => {
           { id: '1', name: 'P1', provider: 'google', apiKey: '', modelIds: [], enabled: false },
           { id: '2', name: 'P2', provider: 'google', apiKey: '', modelIds: [], enabled: true },
         ],
-        activeAIProfileId: '1'
+        activeAIProfileId: '1',
       };
 
       const normalized = normalizeUserSettings(settings);
@@ -92,13 +94,20 @@ describe('aiProfileService', () => {
     it('should filter fallback list', () => {
       const settings: UserSettings = {
         aiProfiles: [
-          { id: 'active', name: 'Active', provider: 'google', apiKey: '', modelIds: [], enabled: true },
+          {
+            id: 'active',
+            name: 'Active',
+            provider: 'google',
+            apiKey: '',
+            modelIds: [],
+            enabled: true,
+          },
           { id: 'f1', name: 'F1', provider: 'google', apiKey: '', modelIds: [], enabled: true },
           { id: 'f2', name: 'F2', provider: 'google', apiKey: '', modelIds: [], enabled: false },
           { id: 'f3', name: 'F3', provider: 'google', apiKey: '', modelIds: [], enabled: true },
         ],
         activeAIProfileId: 'active',
-        aiFallbackProfileIds: ['active', 'f1', 'f2', 'f3', 'non-existent', 'f1']
+        aiFallbackProfileIds: ['active', 'f1', 'f2', 'f3', 'non-existent', 'f1'],
       };
 
       const normalized = normalizeUserSettings(settings);
@@ -110,9 +119,16 @@ describe('aiProfileService', () => {
     it('should return active config marker', () => {
       const settings: UserSettings = {
         aiProfiles: [
-          { id: '1', name: 'P1', provider: 'openai', apiKey: 'key', modelIds: ['m1'], enabled: true },
+          {
+            id: '1',
+            name: 'P1',
+            provider: 'openai',
+            apiKey: 'key',
+            modelIds: ['m1'],
+            enabled: true,
+          },
         ],
-        activeAIProfileId: '1'
+        activeAIProfileId: '1',
       };
 
       const config = getActiveProfileConfig(settings);
@@ -122,7 +138,7 @@ describe('aiProfileService', () => {
         modelId: 'm1',
         provider: 'openai',
         profileId: '1',
-        source: 'active-profile'
+        source: 'active-profile',
       });
     });
   });
@@ -130,7 +146,7 @@ describe('aiProfileService', () => {
   describe('Sync Safety', () => {
     const mockProfiles: AIProviderProfile[] = [
       { id: '1', name: 'P1', provider: 'google', apiKey: 'secret-1', modelIds: [], enabled: true },
-      { id: '2', name: 'P2', provider: 'openai', apiKey: 'secret-2', modelIds: [], enabled: true }
+      { id: '2', name: 'P2', provider: 'openai', apiKey: 'secret-2', modelIds: [], enabled: true },
     ];
 
     it('toSafeSyncProfiles should strip apiKey', () => {
@@ -142,9 +158,16 @@ describe('aiProfileService', () => {
 
     it('mergeImportedProfiles should preserve local keys for matching IDs', () => {
       const imported: AIProviderProfile[] = [
-        { id: '1', name: 'P1-Updated', provider: 'google', apiKey: '', modelIds: ['new-model'], enabled: true }
+        {
+          id: '1',
+          name: 'P1-Updated',
+          provider: 'google',
+          apiKey: '',
+          modelIds: ['new-model'],
+          enabled: true,
+        },
       ];
-      
+
       const merged = mergeImportedProfiles(mockProfiles, imported);
       expect(merged).toHaveLength(2);
       expect(merged[0].id).toBe('1');
@@ -154,11 +177,11 @@ describe('aiProfileService', () => {
 
     it('mergeImportedProfiles should disable new profiles with no key', () => {
       const imported: AIProviderProfile[] = [
-        { id: 'new', name: 'New', provider: 'anthropic', apiKey: '', modelIds: [], enabled: true }
+        { id: 'new', name: 'New', provider: 'anthropic', apiKey: '', modelIds: [], enabled: true },
       ];
-      
+
       const merged = mergeImportedProfiles(mockProfiles, imported);
-      const newProfile = merged.find(p => p.id === 'new');
+      const newProfile = merged.find((p) => p.id === 'new');
       expect(newProfile).toBeDefined();
       expect(newProfile?.apiKey).toBe('');
       expect(newProfile?.enabled).toBe(false);

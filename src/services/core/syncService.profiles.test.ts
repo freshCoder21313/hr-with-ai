@@ -24,8 +24,15 @@ describe('syncService Profiles', () => {
         {
           id: 1,
           aiProfiles: [
-            { id: '1', name: 'P1', provider: 'google' as const, apiKey: 'secret', modelIds: [], enabled: true }
-          ]
+            {
+              id: '1',
+              name: 'P1',
+              provider: 'google' as const,
+              apiKey: 'secret',
+              modelIds: [],
+              enabled: true,
+            },
+          ],
         },
       ]);
 
@@ -39,12 +46,30 @@ describe('syncService Profiles', () => {
     it('safe import should preserve matching local apiKey', async () => {
       const local = {
         id: 1,
-        aiProfiles: [{ id: '1', name: 'P1', provider: 'google' as const, apiKey: 'local-secret', modelIds: [], enabled: true }],
+        aiProfiles: [
+          {
+            id: '1',
+            name: 'P1',
+            provider: 'google' as const,
+            apiKey: 'local-secret',
+            modelIds: [],
+            enabled: true,
+          },
+        ],
         updatedAt: 1000,
       } as any;
       const cloud = {
         id: 1,
-        aiProfiles: [{ id: '1', name: 'P1-Cloud', provider: 'google' as const, apiKey: '', modelIds: ['new'], enabled: true }],
+        aiProfiles: [
+          {
+            id: '1',
+            name: 'P1-Cloud',
+            provider: 'google' as const,
+            apiKey: '',
+            modelIds: ['new'],
+            enabled: true,
+          },
+        ],
         updatedAt: 2000,
       } as any;
 
@@ -64,8 +89,8 @@ describe('syncService Profiles', () => {
       expect(db.userSettings.put).toHaveBeenCalledWith(
         expect.objectContaining({
           aiProfiles: expect.arrayContaining([
-            expect.objectContaining({ id: '1', apiKey: 'local-secret', name: 'P1-Cloud' })
-          ])
+            expect.objectContaining({ id: '1', apiKey: 'local-secret', name: 'P1-Cloud' }),
+          ]),
         })
       );
     });
@@ -74,7 +99,16 @@ describe('syncService Profiles', () => {
       const local = { id: 1, aiProfiles: [], updatedAt: 1000 } as any;
       const cloud = {
         id: 1,
-        aiProfiles: [{ id: 'new', name: 'New', provider: 'openai' as const, apiKey: '', modelIds: [], enabled: true }],
+        aiProfiles: [
+          {
+            id: 'new',
+            name: 'New',
+            provider: 'openai' as const,
+            apiKey: '',
+            modelIds: [],
+            enabled: true,
+          },
+        ],
         updatedAt: 2000,
       } as any;
 
@@ -94,8 +128,8 @@ describe('syncService Profiles', () => {
       expect(db.userSettings.put).toHaveBeenCalledWith(
         expect.objectContaining({
           aiProfiles: expect.arrayContaining([
-            expect.objectContaining({ id: 'new', apiKey: '', enabled: false })
-          ])
+            expect.objectContaining({ id: 'new', apiKey: '', enabled: false }),
+          ]),
         })
       );
     });

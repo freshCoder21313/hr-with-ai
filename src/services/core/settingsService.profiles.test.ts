@@ -26,15 +26,21 @@ describe('settingsService Profiles', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    Object.keys(mockLocalStorage).forEach(key => delete mockLocalStorage[key]);
-    
+    Object.keys(mockLocalStorage).forEach((key) => delete mockLocalStorage[key]);
+
     // Mock localStorage
     Object.defineProperty(window, 'localStorage', {
       value: {
         getItem: vi.fn((key) => mockLocalStorage[key] || null),
-        setItem: vi.fn((key, value) => { mockLocalStorage[key] = value; }),
-        removeItem: vi.fn((key) => { delete mockLocalStorage[key]; }),
-        clear: vi.fn(() => { Object.keys(mockLocalStorage).forEach(key => delete mockLocalStorage[key]); }),
+        setItem: vi.fn((key, value) => {
+          mockLocalStorage[key] = value;
+        }),
+        removeItem: vi.fn((key) => {
+          delete mockLocalStorage[key];
+        }),
+        clear: vi.fn(() => {
+          Object.keys(mockLocalStorage).forEach((key) => delete mockLocalStorage[key]);
+        }),
       },
       writable: true,
     });
@@ -43,7 +49,7 @@ describe('settingsService Profiles', () => {
   it('loadUserSettings should migrate legacy localStorage if no DB record', async () => {
     mockLocalStorage['gemini_api_key'] = 'legacy-key';
     mockLocalStorage['ai_provider'] = 'openai';
-    
+
     (db.userSettings.orderBy as any)().first.mockResolvedValue(null);
     (db.userSettings.add as any).mockResolvedValue(1);
 
@@ -59,9 +65,16 @@ describe('settingsService Profiles', () => {
   it('saveUserSettings should mirror active profile to localStorage', async () => {
     const settings: UserSettings = {
       aiProfiles: [
-        { id: 'p1', name: 'P1', provider: 'anthropic', apiKey: 'ant-key', modelIds: ['claude-3'], enabled: true }
+        {
+          id: 'p1',
+          name: 'P1',
+          provider: 'anthropic',
+          apiKey: 'ant-key',
+          modelIds: ['claude-3'],
+          enabled: true,
+        },
       ],
-      activeAIProfileId: 'p1'
+      activeAIProfileId: 'p1',
     };
 
     (db.userSettings.orderBy as any)().first.mockResolvedValue({ id: 1 });
@@ -79,11 +92,18 @@ describe('settingsService Profiles', () => {
     const stored = {
       id: 1,
       aiProfiles: [
-        { id: 'db-p', name: 'DB', provider: 'google', apiKey: 'db-key', modelIds: ['gemini-pro'], enabled: true }
+        {
+          id: 'db-p',
+          name: 'DB',
+          provider: 'google',
+          apiKey: 'db-key',
+          modelIds: ['gemini-pro'],
+          enabled: true,
+        },
       ],
-      activeAIProfileId: 'db-p'
+      activeAIProfileId: 'db-p',
     };
-    
+
     (db.userSettings.orderBy as any)().first.mockResolvedValue(stored);
     mockLocalStorage['gemini_api_key'] = 'wrong-key';
 

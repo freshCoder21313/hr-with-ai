@@ -24,15 +24,21 @@ describe('settingsService', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    Object.keys(mockLocalStorage).forEach(key => delete mockLocalStorage[key]);
-    
+    Object.keys(mockLocalStorage).forEach((key) => delete mockLocalStorage[key]);
+
     // Mock localStorage
     Object.defineProperty(window, 'localStorage', {
       value: {
         getItem: vi.fn((key) => mockLocalStorage[key] || null),
-        setItem: vi.fn((key, value) => { mockLocalStorage[key] = value; }),
-        removeItem: vi.fn((key) => { delete mockLocalStorage[key]; }),
-        clear: vi.fn(() => { Object.keys(mockLocalStorage).forEach(key => delete mockLocalStorage[key]); }),
+        setItem: vi.fn((key, value) => {
+          mockLocalStorage[key] = value;
+        }),
+        removeItem: vi.fn((key) => {
+          delete mockLocalStorage[key];
+        }),
+        clear: vi.fn(() => {
+          Object.keys(mockLocalStorage).forEach((key) => delete mockLocalStorage[key]);
+        }),
       },
       writable: true,
     });

@@ -54,20 +54,24 @@ describe('useCVChat Task 4', () => {
 
   it('Test A (mixed): only valid changes become pending and warning is emitted', async () => {
     const validChange = {
-      proposedChanges: [{
-        section: 'basics',
-        action: 'update',
-        newData: { name: 'Valid Name' },
-        explanation: 'Valid change'
-      }]
+      proposedChanges: [
+        {
+          section: 'basics',
+          action: 'update',
+          newData: { name: 'Valid Name' },
+          explanation: 'Valid change',
+        },
+      ],
     };
     const invalidChange = {
-      proposedChanges: [{
-        section: 'invalid_section',
-        action: 'update',
-        newData: { foo: 'bar' },
-        explanation: 'Invalid change'
-      }]
+      proposedChanges: [
+        {
+          section: 'invalid_section',
+          action: 'update',
+          newData: { foo: 'bar' },
+          explanation: 'Invalid change',
+        },
+      ],
     };
 
     const cannedText = `
@@ -81,17 +85,21 @@ describe('useCVChat Task 4', () => {
       \`\`\`
     `;
 
-    (streamCVChatMessage as any).mockReturnValue((async function* () {
-      yield cannedText;
-    })());
+    (streamCVChatMessage as any).mockReturnValue(
+      (async function* () {
+        yield cannedText;
+      })()
+    );
 
-    const { result } = renderHook(() => useCVChat({
-      mainCV: mockMainCV,
-      setMainCV,
-      resumes: [mockMainCV],
-      jobs: [],
-      chatResumeId: 1
-    }));
+    const { result } = renderHook(() =>
+      useCVChat({
+        mainCV: mockMainCV,
+        setMainCV,
+        resumes: [mockMainCV],
+        jobs: [],
+        chatResumeId: 1,
+      })
+    );
 
     await act(async () => {
       await result.current.handleSendMessage('update my name');
@@ -106,20 +114,22 @@ describe('useCVChat Task 4', () => {
   });
 
   it('Test B (write boundary): handleAcceptChange rejects invalid change object', async () => {
-    const { result } = renderHook(() => useCVChat({
-      mainCV: mockMainCV,
-      setMainCV,
-      resumes: [mockMainCV],
-      jobs: [],
-      chatResumeId: 1
-    }));
+    const { result } = renderHook(() =>
+      useCVChat({
+        mainCV: mockMainCV,
+        setMainCV,
+        resumes: [mockMainCV],
+        jobs: [],
+        chatResumeId: 1,
+      })
+    );
 
     const invalidChange = {
       id: 'c2',
       section: 'non_existent_section',
       action: 'update',
       newData: { something: 'else' },
-      explanation: 'Sneaky invalid change'
+      explanation: 'Sneaky invalid change',
     } as any;
 
     await act(async () => {
@@ -132,20 +142,22 @@ describe('useCVChat Task 4', () => {
   });
 
   it('Test C (positive): valid change updates DB + mainCV', async () => {
-    const { result } = renderHook(() => useCVChat({
-      mainCV: mockMainCV,
-      setMainCV,
-      resumes: [mockMainCV],
-      jobs: [],
-      chatResumeId: 1
-    }));
+    const { result } = renderHook(() =>
+      useCVChat({
+        mainCV: mockMainCV,
+        setMainCV,
+        resumes: [mockMainCV],
+        jobs: [],
+        chatResumeId: 1,
+      })
+    );
 
     const validChange = {
       id: 'c1',
       section: 'basics',
       action: 'update',
       newData: { name: 'Accepted Name' },
-      explanation: 'Legit update'
+      explanation: 'Legit update',
     } as any;
 
     // Set it as pending first to test removal
@@ -158,31 +170,36 @@ describe('useCVChat Task 4', () => {
       await result.current.handleAcceptChange(validChange);
     });
 
-    expect(db.resumes.update).toHaveBeenCalledWith(1, expect.objectContaining({
-      parsedData: expect.objectContaining({
-        basics: { name: 'Accepted Name' }
+    expect(db.resumes.update).toHaveBeenCalledWith(
+      1,
+      expect.objectContaining({
+        parsedData: expect.objectContaining({
+          basics: { name: 'Accepted Name' },
+        }),
       })
-    }));
+    );
     expect(setMainCV).toHaveBeenCalled();
   });
 
   it('Test D (DB failure): handles db.resumes.update failure', async () => {
     (db.resumes.update as any).mockRejectedValue(new Error('DB Error'));
 
-    const { result } = renderHook(() => useCVChat({
-      mainCV: mockMainCV,
-      setMainCV,
-      resumes: [mockMainCV],
-      jobs: [],
-      chatResumeId: 1
-    }));
+    const { result } = renderHook(() =>
+      useCVChat({
+        mainCV: mockMainCV,
+        setMainCV,
+        resumes: [mockMainCV],
+        jobs: [],
+        chatResumeId: 1,
+      })
+    );
 
     const validChange = {
       id: 'c1',
       section: 'basics',
       action: 'update',
       newData: { name: 'Failed Name' },
-      explanation: 'Legit update'
+      explanation: 'Legit update',
     } as any;
 
     await act(async () => {

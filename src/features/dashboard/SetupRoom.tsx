@@ -26,8 +26,8 @@ import {
 } from '@/components/ui/dialog';
 import SEO from '@/components/shared/SEO';
 import ResumeList from './ResumeList';
-import ResumeAnalysisView from '@/features/resume-analysis/ResumeAnalysisView';
-import JobRecommendationModal from '@/features/interview/JobRecommendationModal';
+import { ResumeAnalysisView } from '@/features/resume-analysis';
+import { JobRecommendationModal } from '@/features/interview';
 import { TailorResumeModal } from './TailorResumeModal';
 import { isNonEmptyString } from '@/lib/validation';
 import { useSetupRoom } from './hooks/useSetupRoom';

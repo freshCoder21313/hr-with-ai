@@ -113,7 +113,6 @@ export const syncService = {
         }
       }
 
-
       // 2. Merge Interviews (Match by createdAt as proxy for unique ID)
       if (cloudData.interviews?.length) {
         const localInterviews = await db.interviews.toArray();

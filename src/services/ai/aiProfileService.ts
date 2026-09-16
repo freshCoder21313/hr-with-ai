@@ -50,7 +50,7 @@ export function normalizeUserSettings(settings: UserSettings): UserSettings {
     const originalName = profile.name.trim() || 'Unnamed Profile';
     let uniqueName = originalName;
     let nameKey = uniqueName.toLowerCase();
-    
+
     if (seenNames.has(nameKey)) {
       let counter = 1;
       while (seenNames.has(`${nameKey} ${counter}`)) {
@@ -128,7 +128,7 @@ export function getActiveProfileConfig(settings: UserSettings): AIConfig | null 
  */
 export function mirrorActiveProfileToLocalStorage(settings: UserSettings): void {
   const activeConfig = getActiveProfileConfig(settings);
-  
+
   if (activeConfig) {
     localStorage.setItem('gemini_api_key', activeConfig.apiKey || '');
     if (activeConfig.baseUrl) {

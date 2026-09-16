@@ -82,7 +82,7 @@ export const getServiceWithOptions = (
 ): TIService => {
   const config = resolveConfig(input);
 
-  // Fallback service resolution is async, so getServiceWithOptions (sync) 
+  // Fallback service resolution is async, so getServiceWithOptions (sync)
   // remains explicit-only/single-provider for now to avoid breaking sync callers.
   const provider = config.provider || (config.baseUrl ? 'openai' : 'google');
   let baseUrl = config.baseUrl;
@@ -110,12 +110,12 @@ export const testAIConnection = async (config: AIConfig): Promise<boolean> => {
     const service = getServiceWithOptions(config, {
       retry: { maxRetries: 0 },
     });
-    
+
     const response = await service.generateText(
       [{ role: 'user', content: 'Say "Connection Successful"' }],
       { temperature: 0.1 }
     );
-    
+
     return !!response.text;
   } catch (error) {
     // Log only provider/kind/status metadata, not raw message
@@ -125,7 +125,7 @@ export const testAIConnection = async (config: AIConfig): Promise<boolean> => {
         kind: error.kind,
         status: error.status,
       });
-      
+
       // Map known AIProviderError kinds to fixed generic messages
       switch (error.kind) {
         case 'auth':
@@ -150,7 +150,7 @@ export const testAIConnection = async (config: AIConfig): Promise<boolean> => {
 
 export const getStoredAIConfig = (): AIConfig => {
   const profileId = localStorage.getItem('ai_active_profile_id');
-  
+
   return {
     apiKey: localStorage.getItem('gemini_api_key') || '',
     baseUrl: localStorage.getItem('custom_base_url') || undefined,
@@ -185,7 +185,7 @@ export const fetchProviderModels = async (config: AIConfig): Promise<string[]> =
           throw classifyProviderError(new Error(response.statusText), 'google', response.status);
         }
         const data = await response.json();
-        models = (data.models || []).map((m: { name: string }) => 
+        models = (data.models || []).map((m: { name: string }) =>
           typeof m.name === 'string' ? m.name.replace(/^models\//, '') : ''
         );
       } else {
@@ -201,26 +201,26 @@ export const fetchProviderModels = async (config: AIConfig): Promise<string[]> =
     } else if (provider === 'openai' || provider === 'openrouter') {
       const defaultBaseUrl = provider === 'openrouter' ? 'https://openrouter.ai/api/v1' : '';
       const effectiveBaseUrl = (baseUrl || defaultBaseUrl).replace(/\/$/, '');
-      
+
       if (!effectiveBaseUrl && provider === 'openai') {
         throw new Error('Base URL is required for OpenAI-compatible provider');
       }
-      
+
       const url = `${effectiveBaseUrl}/models`;
       const headers: Record<string, string> = {};
       if (apiKey) {
         headers['Authorization'] = `Bearer ${apiKey}`;
       }
-      
-      const response = await fetch(url, { 
-        headers, 
-        signal: controller.signal 
+
+      const response = await fetch(url, {
+        headers,
+        signal: controller.signal,
       });
-      
+
       if (!response.ok) {
         throw classifyProviderError(new Error(response.statusText), provider, response.status);
       }
-      
+
       const data = await response.json();
       models = (data.data || []).map((m: { id: string }) => m.id);
     } else if (provider === 'anthropic') {
@@ -236,23 +236,23 @@ export const fetchProviderModels = async (config: AIConfig): Promise<string[]> =
         if (afterId) {
           currentUrl.searchParams.set('after_id', afterId);
         }
-        
+
         const response = await fetch(currentUrl.toString(), {
           headers: {
             'x-api-key': apiKey,
-            'anthropic-version': '2023-06-01'
+            'anthropic-version': '2023-06-01',
           },
-          signal: controller.signal
+          signal: controller.signal,
         });
-        
+
         if (!response.ok) {
           throw classifyProviderError(new Error(response.statusText), 'anthropic', response.status);
         }
-        
+
         const data = await response.json();
         const pageModels = (data.data || []).map((m: { id: string }) => m.id);
         allModels.push(...pageModels);
-        
+
         hasMore = !!data.has_more;
         afterId = data.last_id;
         pageCount++;

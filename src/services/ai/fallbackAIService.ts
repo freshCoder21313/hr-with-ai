@@ -12,7 +12,10 @@ export class FallbackAIService implements AIProviderStrategy {
   private candidates: CandidateConfig[] = [];
   private options?: AIServiceOptions;
 
-  constructor(private initialConfig: AIConfig, options?: AIServiceOptions) {
+  constructor(
+    private initialConfig: AIConfig,
+    options?: AIServiceOptions
+  ) {
     this.options = options;
   }
 
@@ -26,11 +29,9 @@ export class FallbackAIService implements AIProviderStrategy {
     return new AIService(config, this.options);
   }
 
-  private async executeWithFallback<T>(
-    operation: (service: AIService) => Promise<T>
-  ): Promise<T> {
+  private async executeWithFallback<T>(operation: (service: AIService) => Promise<T>): Promise<T> {
     await this.ensureResolved();
-    
+
     const errors: Array<{ provider: string; model?: string; kind: string }> = [];
 
     for (let i = 0; i < this.candidates.length; i++) {
@@ -46,15 +47,17 @@ export class FallbackAIService implements AIProviderStrategy {
         }
 
         if (
-          error instanceof AIProviderError && 
-          error.fallbackEligible && 
+          error instanceof AIProviderError &&
+          error.fallbackEligible &&
           i < this.candidates.length - 1
         ) {
-          logger.warn(`AI Provider ${candidate.provider} failed (${error.kind}). Falling back to next candidate...`);
-          errors.push({ 
-            provider: candidate.provider, 
-            model: candidate.modelId, 
-            kind: error.kind 
+          logger.warn(
+            `AI Provider ${candidate.provider} failed (${error.kind}). Falling back to next candidate...`
+          );
+          errors.push({
+            provider: candidate.provider,
+            model: candidate.modelId,
+            kind: error.kind,
           });
           continue;
         }
@@ -62,15 +65,15 @@ export class FallbackAIService implements AIProviderStrategy {
         // If we reached here, it's either not fallback eligible or it's the last candidate
         if (errors.length > 0) {
           const finalKind = error instanceof AIProviderError ? error.kind : 'unknown';
-          errors.push({ 
-            provider: candidate.provider, 
-            model: candidate.modelId, 
-            kind: finalKind 
+          errors.push({
+            provider: candidate.provider,
+            model: candidate.modelId,
+            kind: finalKind,
           });
           // Secret-safe aggregate error
           throw new Error(`AI service exhausted all candidates: ${JSON.stringify(errors)}`);
         }
-        
+
         throw error;
       }
     }
@@ -87,7 +90,9 @@ export class FallbackAIService implements AIProviderStrategy {
     schema: z.ZodType<T>,
     options?: AIRequestOptions
   ): Promise<T> {
-    return this.executeWithFallback((service) => service.generateStructured(messages, schema, options));
+    return this.executeWithFallback((service) =>
+      service.generateStructured(messages, schema, options)
+    );
   }
 
   async *streamText(messages: ChatMessage[], options?: AIRequestOptions): AsyncIterable<string> {
@@ -114,35 +119,43 @@ export class FallbackAIService implements AIProviderStrategy {
         }
 
         if (
-          error instanceof AIProviderError && 
-          error.fallbackEligible && 
+          error instanceof AIProviderError &&
+          error.fallbackEligible &&
           i < this.candidates.length - 1
         ) {
-          logger.warn(`AI Provider ${candidate.provider} stream failed before first yield. Falling back...`);
-          errors.push({ 
-            provider: candidate.provider, 
-            model: candidate.modelId, 
-            kind: error.kind 
+          logger.warn(
+            `AI Provider ${candidate.provider} stream failed before first yield. Falling back...`
+          );
+          errors.push({
+            provider: candidate.provider,
+            model: candidate.modelId,
+            kind: error.kind,
           });
           continue;
         }
 
         if (errors.length > 0) {
           const finalKind = error instanceof AIProviderError ? error.kind : 'unknown';
-          errors.push({ 
-            provider: candidate.provider, 
-            model: candidate.modelId, 
-            kind: finalKind 
+          errors.push({
+            provider: candidate.provider,
+            model: candidate.modelId,
+            kind: finalKind,
           });
-          throw new Error(`AI service exhausted all candidates (stream): ${JSON.stringify(errors)}`);
+          throw new Error(
+            `AI service exhausted all candidates (stream): ${JSON.stringify(errors)}`
+          );
         }
-        
+
         throw error;
       }
     }
   }
 
-  async ask(prompt: string, history: ChatMessage[] = [], options?: AIRequestOptions): Promise<AIResponse> {
+  async ask(
+    prompt: string,
+    history: ChatMessage[] = [],
+    options?: AIRequestOptions
+  ): Promise<AIResponse> {
     const messages: ChatMessage[] = [...history, { role: 'user', content: prompt }];
     return this.generateText(messages, options);
   }

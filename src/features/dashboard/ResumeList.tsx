@@ -3,7 +3,7 @@ import { Resume } from '@/types';
 import { FileText, Trash2, Check, Clock, Edit, Wand2, Star, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { GitHubImportModal } from '@/features/resume-builder/github-import/GitHubImportModal';
+import { GitHubImportModal } from '@/features/resume-builder';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface ResumeListProps {

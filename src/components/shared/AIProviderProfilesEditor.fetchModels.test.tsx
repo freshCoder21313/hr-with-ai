@@ -10,21 +10,21 @@ vi.mock('@/services/ai/aiConfigService', async () => {
   return {
     ...actual,
     fetchProviderModels: vi.fn(),
-    testAIConnection: vi.fn()
+    testAIConnection: vi.fn(),
   };
 });
 
 vi.mock('@/services/core/settingsService', () => ({
   loadUserSettings: vi.fn(),
-  saveUserSettings: vi.fn()
+  saveUserSettings: vi.fn(),
 }));
 
 vi.mock('sonner', () => ({
   toast: {
     success: vi.fn(),
     error: vi.fn(),
-    info: vi.fn()
-  }
+    info: vi.fn(),
+  },
 }));
 
 describe('AIProviderProfilesEditor Fetch Models', () => {
@@ -37,10 +37,10 @@ describe('AIProviderProfilesEditor Fetch Models', () => {
         apiKey: 'sk-test',
         baseUrl: 'https://api.openai.com/v1',
         modelIds: ['gpt-4'],
-        enabled: true
-      }
+        enabled: true,
+      },
     ],
-    activeAIProfileId: 'p1'
+    activeAIProfileId: 'p1',
   };
 
   beforeEach(() => {
@@ -51,7 +51,7 @@ describe('AIProviderProfilesEditor Fetch Models', () => {
   it('renders fetch models button', async () => {
     render(<AIProviderProfilesEditor />);
     await waitFor(() => expect(screen.getByText('OpenAI Profile')).toBeDefined());
-    
+
     expect(screen.getByText('Fetch Models')).toBeDefined();
   });
 
@@ -66,7 +66,7 @@ describe('AIProviderProfilesEditor Fetch Models', () => {
     fireEvent.click(fetchButton);
 
     await waitFor(() => expect(screen.getByText('Available Models')).toBeDefined());
-    
+
     // Check that models are displayed (excluding the one already in modelIds which might be hidden or disabled)
     expect(screen.getByText('gpt-4o')).toBeDefined();
     expect(screen.getByText('gpt-3.5-turbo')).toBeDefined();

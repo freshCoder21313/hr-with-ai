@@ -131,3 +131,24 @@ export interface ResumeData {
     };
   };
 }
+
+export interface Resume {
+  id?: number;
+  createdAt: number;
+  updatedAt?: number; // Added for sync merging
+  fileName: string;
+  rawText: string;
+  parsedData?: ResumeData; // Structured JSON Resume
+  compressedData?: string; // LZ-String compressed JSON for storage optimization
+  formatted?: boolean; // True if AI parsing is done
+  analysisResult?: ResumeAnalysis;
+  analyzedJobDescription?: string;
+  isMain?: boolean; // True if this is the Main CV
+}
+
+export interface ResumeAnalysis {
+  matchScore: number;
+  summary: string;
+  missingKeywords: string[];
+  improvements: string[];
+}

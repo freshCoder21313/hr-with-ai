@@ -21,9 +21,30 @@ describe('AI Candidate Resolver', () => {
   it('resolves active profile and fallbacks in order', async () => {
     const mockSettings = {
       aiProfiles: [
-        { id: 'p1', name: 'Profile 1', provider: 'google', apiKey: 'k1', modelIds: ['m1'], enabled: true },
-        { id: 'p2', name: 'Profile 2', provider: 'openai', apiKey: 'k2', modelIds: ['m2'], enabled: true },
-        { id: 'p3', name: 'Profile 3', provider: 'anthropic', apiKey: 'k3', modelIds: ['m3'], enabled: false }, // Disabled
+        {
+          id: 'p1',
+          name: 'Profile 1',
+          provider: 'google',
+          apiKey: 'k1',
+          modelIds: ['m1'],
+          enabled: true,
+        },
+        {
+          id: 'p2',
+          name: 'Profile 2',
+          provider: 'openai',
+          apiKey: 'k2',
+          modelIds: ['m2'],
+          enabled: true,
+        },
+        {
+          id: 'p3',
+          name: 'Profile 3',
+          provider: 'anthropic',
+          apiKey: 'k3',
+          modelIds: ['m3'],
+          enabled: false,
+        }, // Disabled
       ],
       activeAIProfileId: 'p1',
       aiFallbackProfileIds: ['p2', 'p3'],
@@ -58,7 +79,14 @@ describe('AI Candidate Resolver', () => {
   it('deduplicates multiple models within the SAME profile', async () => {
     const mockSettings = {
       aiProfiles: [
-        { id: 'p1', name: 'P1', provider: 'google', apiKey: 'k1', modelIds: ['m1', 'm1'], enabled: true },
+        {
+          id: 'p1',
+          name: 'P1',
+          provider: 'google',
+          apiKey: 'k1',
+          modelIds: ['m1', 'm1'],
+          enabled: true,
+        },
       ],
       activeAIProfileId: 'p1',
     };
@@ -71,19 +99,35 @@ describe('AI Candidate Resolver', () => {
   it('throws a configuration error when no candidates are resolved', async () => {
     const mockSettings = {
       aiProfiles: [
-        { id: 'p1', name: 'P1', provider: 'google', apiKey: 'k1', modelIds: ['m1'], enabled: false }, // Disabled
+        {
+          id: 'p1',
+          name: 'P1',
+          provider: 'google',
+          apiKey: 'k1',
+          modelIds: ['m1'],
+          enabled: false,
+        }, // Disabled
       ],
       activeAIProfileId: 'p1',
     };
     (loadUserSettings as any).mockResolvedValue(mockSettings);
 
-    await expect(resolveCandidates({ source: 'active-profile' } as any)).rejects.toThrow('No enabled AI profiles found');
+    await expect(resolveCandidates({ source: 'active-profile' } as any)).rejects.toThrow(
+      'No enabled AI profiles found'
+    );
   });
 
   it('handles multiple models in a single profile', async () => {
     const mockSettings = {
       aiProfiles: [
-        { id: 'p1', name: 'P1', provider: 'google', apiKey: 'k1', modelIds: ['m1', 'm2'], enabled: true },
+        {
+          id: 'p1',
+          name: 'P1',
+          provider: 'google',
+          apiKey: 'k1',
+          modelIds: ['m1', 'm2'],
+          enabled: true,
+        },
       ],
       activeAIProfileId: 'p1',
     };

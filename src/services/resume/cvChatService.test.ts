@@ -4,7 +4,9 @@ import { getService } from '@/services/ai/aiConfigService';
 import { ResumeData } from '@/types/resume';
 
 vi.mock('@/services/ai/aiConfigService', () => ({
-  resolveConfig: vi.fn((input) => (typeof input === 'string' ? { apiKey: input, provider: 'google' } : input)),
+  resolveConfig: vi.fn((input) =>
+    typeof input === 'string' ? { apiKey: input, provider: 'google' } : input
+  ),
   getService: vi.fn(),
 }));
 
@@ -39,9 +41,9 @@ describe('cvChatService', () => {
 
     const configInput = { apiKey: 'key', provider: 'openrouter', modelId: 'model' } as any;
     const history = [{ role: 'user', content: 'hi' }] as any;
-    
+
     const stream = streamCVChatMessage(history, 'new message', mockResume, configInput);
-    
+
     let result = '';
     for await (const chunk of stream) {
       result += chunk;
@@ -52,9 +54,7 @@ describe('cvChatService', () => {
     // and calls new AIService instead of getService.
     expect(getService).toHaveBeenCalledWith(configInput);
     expect(mockService.streamText).toHaveBeenCalledWith(
-      expect.arrayContaining([
-        expect.objectContaining({ role: 'user', content: 'new message' })
-      ]),
+      expect.arrayContaining([expect.objectContaining({ role: 'user', content: 'new message' })]),
       expect.objectContaining({ systemInstruction: 'system prompt' })
     );
   });
@@ -69,9 +69,9 @@ describe('cvChatService', () => {
 
     const configInput = { apiKey: 'key', provider: 'anthropic', modelId: 'claude-3' } as any;
     const history = [] as any;
-    
+
     const stream = streamCVChatMessage(history, 'hi', mockResume, configInput);
-    
+
     const chunks = [];
     for await (const chunk of stream) {
       chunks.push(chunk);

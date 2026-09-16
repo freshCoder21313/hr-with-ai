@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { 
-  resolveConfig, 
-  getService, 
-  getStoredAIConfig, 
+import {
+  resolveConfig,
+  getService,
+  getStoredAIConfig,
   AIConfig,
-  testAIConnection
+  testAIConnection,
 } from './aiConfigService';
 import { AIProviderError } from './aiErrors';
 
@@ -14,7 +14,7 @@ vi.mock('@/services/core/settingsService', () => ({
 
 vi.mock('@/services/ai/ai.service', () => {
   return {
-    AIService: vi.fn().mockImplementation(function(this: any) {
+    AIService: vi.fn().mockImplementation(function (this: any) {
       this.generateText = vi.fn().mockResolvedValue({ text: 'Connection Successful' });
       this.generateStructured = vi.fn();
       this.streamText = vi.fn();
@@ -117,11 +117,11 @@ describe('aiConfigService', () => {
   describe('testAIConnection', () => {
     it('should return true when connection is successful', async () => {
       const { AIService } = await import('@/services/ai/ai.service');
-      (AIService as any).mockImplementationOnce(function(this: any) {
+      (AIService as any).mockImplementationOnce(function (this: any) {
         this.generateText = vi.fn().mockResolvedValue({ text: 'Connection Successful' });
         return this;
       });
-      
+
       const config: AIConfig = { apiKey: 'valid-key', provider: 'google' };
       const result = await testAIConnection(config);
       expect(result).toBe(true);
@@ -129,13 +129,17 @@ describe('aiConfigService', () => {
 
     it('should throw sanitized error when authentication fails', async () => {
       const { AIService } = await import('@/services/ai/ai.service');
-      (AIService as any).mockImplementationOnce(function(this: any) {
-        this.generateText = vi.fn().mockRejectedValue(new AIProviderError('401 Unauthorized', 'auth', 'google', 401));
+      (AIService as any).mockImplementationOnce(function (this: any) {
+        this.generateText = vi
+          .fn()
+          .mockRejectedValue(new AIProviderError('401 Unauthorized', 'auth', 'google', 401));
         return this;
       });
 
       const config: AIConfig = { apiKey: 'invalid-key', provider: 'google' };
-      await expect(testAIConnection(config)).rejects.toThrow('Authentication failed. Check your API Key.');
+      await expect(testAIConnection(config)).rejects.toThrow(
+        'Authentication failed. Check your API Key.'
+      );
     });
   });
 });

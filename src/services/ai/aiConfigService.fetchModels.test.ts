@@ -10,10 +10,10 @@ vi.mock('@google/genai', () => {
           [Symbol.asyncIterator]: async function* () {
             yield { name: 'models/sdk-model-1' };
             yield { name: 'models/sdk-model-2' };
-          }
-        })
-      }
-    }
+          },
+        }),
+      };
+    },
   };
 });
 
@@ -31,16 +31,16 @@ describe('fetchProviderModels', () => {
           models: [
             { name: 'models/gemini-pro' },
             { name: 'models/gemini-ultra' },
-            { name: 'other-prefix/some-model' }
-          ]
-        })
+            { name: 'other-prefix/some-model' },
+          ],
+        }),
       };
       (global.fetch as any).mockResolvedValue(mockResponse);
 
       const models = await fetchProviderModels({
         provider: 'google',
         apiKey: 'test-key',
-        baseUrl: 'https://custom.google.api'
+        baseUrl: 'https://custom.google.api',
       });
 
       expect(global.fetch).toHaveBeenCalledWith(
@@ -54,19 +54,15 @@ describe('fetchProviderModels', () => {
       const mockResponse = {
         ok: true,
         json: async () => ({
-          models: [
-            { name: 'models/b' },
-            { name: 'models/a' },
-            { name: 'models/b' }
-          ]
-        })
+          models: [{ name: 'models/b' }, { name: 'models/a' }, { name: 'models/b' }],
+        }),
       };
       (global.fetch as any).mockResolvedValue(mockResponse);
 
       const models = await fetchProviderModels({
         provider: 'google',
         apiKey: 'test-key',
-        baseUrl: 'https://custom.google.api'
+        baseUrl: 'https://custom.google.api',
       });
 
       expect(models).toEqual(['a', 'b']);
@@ -75,7 +71,7 @@ describe('fetchProviderModels', () => {
     it('fetches models using SDK when no baseUrl is provided', async () => {
       const models = await fetchProviderModels({
         provider: 'google',
-        apiKey: 'test-key'
+        apiKey: 'test-key',
       });
 
       expect(models).toEqual(['sdk-model-1', 'sdk-model-2']);
@@ -87,26 +83,23 @@ describe('fetchProviderModels', () => {
       const mockResponse = {
         ok: true,
         json: async () => ({
-          data: [
-            { id: 'gpt-4' },
-            { id: 'gpt-3.5-turbo' }
-          ]
-        })
+          data: [{ id: 'gpt-4' }, { id: 'gpt-3.5-turbo' }],
+        }),
       };
       (global.fetch as any).mockResolvedValue(mockResponse);
 
       const models = await fetchProviderModels({
         provider: 'openai',
         apiKey: 'test-key',
-        baseUrl: 'https://api.openai.com/v1/'
+        baseUrl: 'https://api.openai.com/v1/',
       });
 
       expect(global.fetch).toHaveBeenCalledWith(
         'https://api.openai.com/v1/models',
         expect.objectContaining({
           headers: expect.objectContaining({
-            'Authorization': 'Bearer test-key'
-          })
+            Authorization: 'Bearer test-key',
+          }),
         })
       );
       expect(models).toEqual(['gpt-3.5-turbo', 'gpt-4']);
@@ -115,13 +108,13 @@ describe('fetchProviderModels', () => {
     it('uses default OpenRouter URL if not provided', async () => {
       const mockResponse = {
         ok: true,
-        json: async () => ({ data: [] })
+        json: async () => ({ data: [] }),
       };
       (global.fetch as any).mockResolvedValue(mockResponse);
 
       await fetchProviderModels({
         provider: 'openrouter',
-        apiKey: 'test-key'
+        apiKey: 'test-key',
       });
 
       expect(global.fetch).toHaveBeenCalledWith(
@@ -136,14 +129,14 @@ describe('fetchProviderModels', () => {
       const mockResponse = {
         ok: true,
         json: async () => ({
-          data: [{ id: 'claude-3' }]
-        })
+          data: [{ id: 'claude-3' }],
+        }),
       };
       (global.fetch as any).mockResolvedValue(mockResponse);
 
       const models = await fetchProviderModels({
         provider: 'anthropic',
-        apiKey: 'test-key'
+        apiKey: 'test-key',
       });
 
       expect(global.fetch).toHaveBeenCalledWith(
@@ -151,8 +144,8 @@ describe('fetchProviderModels', () => {
         expect.objectContaining({
           headers: expect.objectContaining({
             'x-api-key': 'test-key',
-            'anthropic-version': '2023-06-01'
-          })
+            'anthropic-version': '2023-06-01',
+          }),
         })
       );
       expect(models).toEqual(['claude-3']);
@@ -165,20 +158,20 @@ describe('fetchProviderModels', () => {
           json: async () => ({
             data: [{ id: 'm1' }],
             has_more: true,
-            last_id: 'm1'
-          })
+            last_id: 'm1',
+          }),
         })
         .mockResolvedValueOnce({
           ok: true,
           json: async () => ({
             data: [{ id: 'm2' }],
-            has_more: false
-          })
+            has_more: false,
+          }),
         });
 
       const models = await fetchProviderModels({
         provider: 'anthropic',
-        apiKey: 'test-key'
+        apiKey: 'test-key',
       });
 
       expect(models).toEqual(['m1', 'm2']);
@@ -192,14 +185,16 @@ describe('fetchProviderModels', () => {
       (global.fetch as any).mockResolvedValue({
         ok: false,
         status: 401,
-        statusText: 'Unauthorized'
+        statusText: 'Unauthorized',
       });
 
-      await expect(fetchProviderModels({
-        provider: 'openai',
-        apiKey: 'wrong-key',
-        baseUrl: 'https://api.openai.com/v1'
-      })).rejects.toThrow(AIProviderError);
+      await expect(
+        fetchProviderModels({
+          provider: 'openai',
+          apiKey: 'wrong-key',
+          baseUrl: 'https://api.openai.com/v1',
+        })
+      ).rejects.toThrow(AIProviderError);
     });
 
     it('aborts on timeout', async () => {
@@ -219,11 +214,11 @@ describe('fetchProviderModels', () => {
       const promise = fetchProviderModels({
         provider: 'google',
         apiKey: 'key',
-        baseUrl: 'https://url'
+        baseUrl: 'https://url',
       });
 
       vi.advanceTimersByTime(31000);
-      
+
       await expect(promise).rejects.toThrow(AIProviderError);
       vi.useRealTimers();
     });

@@ -1,34 +1,31 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { 
-  Plus, 
-  Trash2, 
-  Copy, 
-  CheckCircle2, 
-  ArrowUp, 
-  ArrowDown, 
-  AlertCircle, 
+import {
+  Plus,
+  Trash2,
+  Copy,
+  CheckCircle2,
+  ArrowUp,
+  ArrowDown,
+  AlertCircle,
   ExternalLink,
   RefreshCw,
   Play,
-  ShieldCheck
+  ShieldCheck,
 } from 'lucide-react';
-import { 
-  AIProviderProfile, 
-  UserSettings, 
-  AIModelProvider 
-} from '@/types';
-import { 
-  loadUserSettings, 
-  saveUserSettings 
-} from '@/services/core/settingsService';
-import { 
-  normalizeUserSettings 
-} from '@/services/ai/aiProfileService';
+import { AIProviderProfile, UserSettings, AIModelProvider } from '@/types';
+import { loadUserSettings, saveUserSettings } from '@/services/core/settingsService';
+import { normalizeUserSettings } from '@/services/ai/aiProfileService';
 import { testAIConnection, fetchProviderModels } from '@/services/ai/aiConfigService';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
@@ -41,9 +38,9 @@ interface AIProviderProfilesEditorProps {
   className?: string;
 }
 
-export const AIProviderProfilesEditor: React.FC<AIProviderProfilesEditorProps> = ({ 
+export const AIProviderProfilesEditor: React.FC<AIProviderProfilesEditorProps> = ({
   onSave,
-  className 
+  className,
 }) => {
   const [settings, setSettings] = useState<UserSettings | null>(null);
   const [editingProfileId, setEditingProfileId] = useState<string | null>(null);
@@ -68,17 +65,20 @@ export const AIProviderProfilesEditor: React.FC<AIProviderProfilesEditorProps> =
 
   const profiles = useMemo(() => settings?.aiProfiles || [], [settings?.aiProfiles]);
   const activeId = settings?.activeAIProfileId;
-  const fallbackIds = useMemo(() => settings?.aiFallbackProfileIds || [], [settings?.aiFallbackProfileIds]);
+  const fallbackIds = useMemo(
+    () => settings?.aiFallbackProfileIds || [],
+    [settings?.aiFallbackProfileIds]
+  );
 
-  const editingProfile = useMemo(() => 
-    profiles.find(p => p.id === editingProfileId), 
+  const editingProfile = useMemo(
+    () => profiles.find((p) => p.id === editingProfileId),
     [profiles, editingProfileId]
   );
 
   // Reset fetched models when config changes to avoid stale results
   useEffect(() => {
     if (editingProfileId) {
-      setFetchedModels(prev => {
+      setFetchedModels((prev) => {
         if (!prev[editingProfileId]) return prev;
         const next = { ...prev };
         delete next[editingProfileId];
@@ -96,12 +96,12 @@ export const AIProviderProfilesEditor: React.FC<AIProviderProfilesEditorProps> =
       modelIds: [],
       enabled: true,
     };
-    
-    setSettings(prev => {
+
+    setSettings((prev) => {
       if (!prev) return null;
       return {
         ...prev,
-        aiProfiles: [...(prev.aiProfiles || []), newProfile]
+        aiProfiles: [...(prev.aiProfiles || []), newProfile],
       };
     });
     setEditingProfileId(newProfile.id);
@@ -114,12 +114,12 @@ export const AIProviderProfilesEditor: React.FC<AIProviderProfilesEditorProps> =
       name: `${profile.name} (Copy)`,
       enabled: true,
     };
-    
-    setSettings(prev => {
+
+    setSettings((prev) => {
       if (!prev) return null;
       return {
         ...prev,
-        aiProfiles: [...(prev.aiProfiles || []), newProfile]
+        aiProfiles: [...(prev.aiProfiles || []), newProfile],
       };
     });
     setEditingProfileId(newProfile.id);
@@ -131,12 +131,12 @@ export const AIProviderProfilesEditor: React.FC<AIProviderProfilesEditorProps> =
       return;
     }
 
-    setSettings(prev => {
+    setSettings((prev) => {
       if (!prev) return null;
       return {
         ...prev,
-        aiProfiles: (prev.aiProfiles || []).filter(p => p.id !== id),
-        aiFallbackProfileIds: (prev.aiFallbackProfileIds || []).filter(fid => fid !== id)
+        aiProfiles: (prev.aiProfiles || []).filter((p) => p.id !== id),
+        aiFallbackProfileIds: (prev.aiFallbackProfileIds || []).filter((fid) => fid !== id),
       };
     });
 
@@ -146,37 +146,37 @@ export const AIProviderProfilesEditor: React.FC<AIProviderProfilesEditorProps> =
   };
 
   const handleSetActive = (id: string) => {
-    const profile = profiles.find(p => p.id === id);
+    const profile = profiles.find((p) => p.id === id);
     if (profile && !profile.enabled) {
       toast.error('Cannot set a disabled profile as active.');
       return;
     }
 
-    setSettings(prev => {
+    setSettings((prev) => {
       if (!prev) return null;
       // Remove from fallback if it was there
-      const newFallbackIds = (prev.aiFallbackProfileIds || []).filter(fid => fid !== id);
+      const newFallbackIds = (prev.aiFallbackProfileIds || []).filter((fid) => fid !== id);
       return {
         ...prev,
         activeAIProfileId: id,
-        aiFallbackProfileIds: newFallbackIds
+        aiFallbackProfileIds: newFallbackIds,
       };
     });
   };
 
   const handleUpdateProfile = (id: string, updates: Partial<AIProviderProfile>) => {
-    setSettings(prev => {
+    setSettings((prev) => {
       if (!prev) return null;
-      const newProfiles = (prev.aiProfiles || []).map(p => 
+      const newProfiles = (prev.aiProfiles || []).map((p) =>
         p.id === id ? { ...p, ...updates } : p
       );
-      
+
       // If disabling an active profile, we'll need to handle that on save or normalization
       // But for UI responsiveness, we keep it as is.
-      
+
       return {
         ...prev,
-        aiProfiles: newProfiles
+        aiProfiles: newProfiles,
       };
     });
   };
@@ -184,19 +184,25 @@ export const AIProviderProfilesEditor: React.FC<AIProviderProfilesEditorProps> =
   const handleReorderFallback = (id: string, direction: 'up' | 'down') => {
     const index = fallbackIds.indexOf(id);
     if (index === -1) return;
-    
+
     const newFallbackIds = [...fallbackIds];
     if (direction === 'up' && index > 0) {
-      [newFallbackIds[index], newFallbackIds[index - 1]] = [newFallbackIds[index - 1], newFallbackIds[index]];
+      [newFallbackIds[index], newFallbackIds[index - 1]] = [
+        newFallbackIds[index - 1],
+        newFallbackIds[index],
+      ];
     } else if (direction === 'down' && index < newFallbackIds.length - 1) {
-      [newFallbackIds[index], newFallbackIds[index + 1]] = [newFallbackIds[index + 1], newFallbackIds[index]];
+      [newFallbackIds[index], newFallbackIds[index + 1]] = [
+        newFallbackIds[index + 1],
+        newFallbackIds[index],
+      ];
     }
-    
-    setSettings(prev => {
+
+    setSettings((prev) => {
       if (!prev) return null;
       return {
         ...prev,
-        aiFallbackProfileIds: newFallbackIds
+        aiFallbackProfileIds: newFallbackIds,
       };
     });
   };
@@ -204,20 +210,20 @@ export const AIProviderProfilesEditor: React.FC<AIProviderProfilesEditorProps> =
   const handleToggleFallback = (id: string) => {
     if (id === activeId) return;
 
-    setSettings(prev => {
+    setSettings((prev) => {
       if (!prev) return null;
       const isFallback = (prev.aiFallbackProfileIds || []).includes(id);
       let newFallbackIds: string[];
-      
+
       if (isFallback) {
-        newFallbackIds = (prev.aiFallbackProfileIds || []).filter(fid => fid !== id);
+        newFallbackIds = (prev.aiFallbackProfileIds || []).filter((fid) => fid !== id);
       } else {
         newFallbackIds = [...(prev.aiFallbackProfileIds || []), id];
       }
-      
+
       return {
         ...prev,
-        aiFallbackProfileIds: newFallbackIds
+        aiFallbackProfileIds: newFallbackIds,
       };
     });
   };
@@ -237,7 +243,7 @@ export const AIProviderProfilesEditor: React.FC<AIProviderProfilesEditorProps> =
         provider: profile.provider,
         source: 'explicit' as const,
       };
-      
+
       await testAIConnection(config);
       toast.success(`Connection to ${profile.name} successful!`);
     } catch (error) {
@@ -257,7 +263,7 @@ export const AIProviderProfilesEditor: React.FC<AIProviderProfilesEditorProps> =
       return;
     }
 
-    setFetchingModels(prev => ({ ...prev, [profile.id]: true }));
+    setFetchingModels((prev) => ({ ...prev, [profile.id]: true }));
     try {
       const config = {
         apiKey: profile.apiKey,
@@ -265,9 +271,9 @@ export const AIProviderProfilesEditor: React.FC<AIProviderProfilesEditorProps> =
         provider: profile.provider,
         source: 'explicit' as const,
       };
-      
+
       const models = await fetchProviderModels(config);
-      setFetchedModels(prev => ({ ...prev, [profile.id]: models }));
+      setFetchedModels((prev) => ({ ...prev, [profile.id]: models }));
       if (models.length === 0) {
         toast.info('No models found for this provider.');
       } else {
@@ -276,19 +282,19 @@ export const AIProviderProfilesEditor: React.FC<AIProviderProfilesEditorProps> =
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to fetch models');
     } finally {
-      setFetchingModels(prev => ({ ...prev, [profile.id]: false }));
+      setFetchingModels((prev) => ({ ...prev, [profile.id]: false }));
     }
   };
 
   const handleAddModels = (id: string, newModelIds: string[]) => {
-    setSettings(prev => {
+    setSettings((prev) => {
       if (!prev) return null;
-      const profile = prev.aiProfiles?.find(p => p.id === id);
+      const profile = prev.aiProfiles?.find((p) => p.id === id);
       if (!profile) return prev;
 
       const currentIds = profile.modelIds || [];
       const combined = [...currentIds];
-      
+
       for (const mid of newModelIds) {
         if (!combined.includes(mid)) {
           combined.push(mid);
@@ -297,9 +303,7 @@ export const AIProviderProfilesEditor: React.FC<AIProviderProfilesEditorProps> =
 
       return {
         ...prev,
-        aiProfiles: prev.aiProfiles?.map(p => 
-          p.id === id ? { ...p, modelIds: combined } : p
-        )
+        aiProfiles: prev.aiProfiles?.map((p) => (p.id === id ? { ...p, modelIds: combined } : p)),
       };
     });
   };
@@ -330,7 +334,7 @@ export const AIProviderProfilesEditor: React.FC<AIProviderProfilesEditorProps> =
       return 'An active profile must be selected.';
     }
 
-    const active = settings.aiProfiles.find(p => p.id === settings.activeAIProfileId);
+    const active = settings.aiProfiles.find((p) => p.id === settings.activeAIProfileId);
     if (!active) return 'Selected active profile does not exist.';
     if (!active.enabled) return 'Active profile must be enabled.';
 
@@ -364,7 +368,7 @@ export const AIProviderProfilesEditor: React.FC<AIProviderProfilesEditorProps> =
   if (!settings) return <div className="p-8 text-center">Loading profiles...</div>;
 
   return (
-    <div className={cn("flex flex-col h-full space-y-4", className)}>
+    <div className={cn('flex flex-col h-full space-y-4', className)}>
       <div className="flex flex-col md:flex-row gap-6 h-full overflow-hidden">
         {/* Left Side: Profile List */}
         <div className="w-full md:w-64 flex flex-col space-y-2 border-r pr-4 overflow-y-auto">
@@ -374,30 +378,40 @@ export const AIProviderProfilesEditor: React.FC<AIProviderProfilesEditorProps> =
               <Plus className="w-4 h-4" />
             </Button>
           </div>
-          
+
           <div className="space-y-1">
-            {profiles.map(profile => (
-              <div 
+            {profiles.map((profile) => (
+              <div
                 key={profile.id}
                 className={cn(
-                  "group flex items-center justify-between p-2 rounded-md cursor-pointer transition-colors",
-                  editingProfileId === profile.id ? "bg-primary/10 text-primary" : "hover:bg-muted"
+                  'group flex items-center justify-between p-2 rounded-md cursor-pointer transition-colors',
+                  editingProfileId === profile.id ? 'bg-primary/10 text-primary' : 'hover:bg-muted'
                 )}
                 onClick={() => setEditingProfileId(profile.id)}
               >
                 <div className="flex flex-col overflow-hidden">
                   <span className="text-sm font-medium truncate">{profile.name}</span>
                   <div className="flex items-center gap-1">
-                    <span className="text-[10px] text-muted-foreground uppercase">{profile.provider}</span>
-                    {!profile.enabled && <Badge variant="outline" className="text-[8px] h-3 px-1">Disabled</Badge>}
-                    {activeId === profile.id && <Badge className="text-[8px] h-3 px-1 bg-green-500 hover:bg-green-600">Active</Badge>}
+                    <span className="text-[10px] text-muted-foreground uppercase">
+                      {profile.provider}
+                    </span>
+                    {!profile.enabled && (
+                      <Badge variant="outline" className="text-[8px] h-3 px-1">
+                        Disabled
+                      </Badge>
+                    )}
+                    {activeId === profile.id && (
+                      <Badge className="text-[8px] h-3 px-1 bg-green-500 hover:bg-green-600">
+                        Active
+                      </Badge>
+                    )}
                   </div>
                 </div>
                 <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
-                   <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="h-6 w-6" 
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleDuplicateProfile(profile);
@@ -406,10 +420,10 @@ export const AIProviderProfilesEditor: React.FC<AIProviderProfilesEditorProps> =
                   >
                     <Copy className="w-3 h-3" />
                   </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="h-6 w-6 text-destructive hover:text-destructive" 
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 text-destructive hover:text-destructive"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleDeleteProfile(profile.id);
@@ -425,46 +439,51 @@ export const AIProviderProfilesEditor: React.FC<AIProviderProfilesEditorProps> =
           </div>
 
           <div className="mt-6 border-t pt-4">
-          <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
-            Fallback Chain
-            <span title="If the active profile fails, these will be tried in order.">
-              <AlertCircle className="w-3 h-3 text-muted-foreground" />
-            </span>
-          </h3>
+            <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
+              Fallback Chain
+              <span title="If the active profile fails, these will be tried in order.">
+                <AlertCircle className="w-3 h-3 text-muted-foreground" />
+              </span>
+            </h3>
 
             <div className="space-y-1">
               {fallbackIds.length === 0 && (
-                <p className="text-[10px] text-muted-foreground italic">No fallback profiles configured.</p>
+                <p className="text-[10px] text-muted-foreground italic">
+                  No fallback profiles configured.
+                </p>
               )}
               {fallbackIds.map((fid, idx) => {
-                const profile = profiles.find(p => p.id === fid);
+                const profile = profiles.find((p) => p.id === fid);
                 if (!profile) return null;
                 return (
-                  <div key={fid} className="flex items-center justify-between p-2 bg-muted/50 rounded-md text-[11px]">
+                  <div
+                    key={fid}
+                    className="flex items-center justify-between p-2 bg-muted/50 rounded-md text-[11px]"
+                  >
                     <span className="truncate max-w-[100px]">{profile.name}</span>
                     <div className="flex items-center gap-0.5">
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-5 w-5" 
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-5 w-5"
                         onClick={() => handleReorderFallback(fid, 'up')}
                         disabled={idx === 0}
                       >
                         <ArrowUp className="w-3 h-3" />
                       </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-5 w-5" 
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-5 w-5"
                         onClick={() => handleReorderFallback(fid, 'down')}
                         disabled={idx === fallbackIds.length - 1}
                       >
                         <ArrowDown className="w-3 h-3" />
                       </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-5 w-5 text-destructive" 
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-5 w-5 text-destructive"
                         onClick={() => handleToggleFallback(fid)}
                       >
                         <Trash2 className="w-3 h-3" />
@@ -484,24 +503,30 @@ export const AIProviderProfilesEditor: React.FC<AIProviderProfilesEditorProps> =
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-bold">Edit Profile</h3>
                 <div className="flex items-center gap-2">
-                  <Button 
-                    variant={activeId === editingProfile.id ? "secondary" : "outline"} 
+                  <Button
+                    variant={activeId === editingProfile.id ? 'secondary' : 'outline'}
                     size="sm"
                     onClick={() => handleSetActive(editingProfile.id)}
                     disabled={activeId === editingProfile.id || !editingProfile.enabled}
                   >
                     {activeId === editingProfile.id ? (
-                      <><CheckCircle2 className="w-3 h-3 mr-1 text-green-500" /> Active</>
+                      <>
+                        <CheckCircle2 className="w-3 h-3 mr-1 text-green-500" /> Active
+                      </>
                     ) : (
-                      "Set as Active"
+                      'Set as Active'
                     )}
                   </Button>
                   <div className="flex items-center gap-2 ml-2">
-                    <Label htmlFor="profile-enabled" className="text-xs">Enabled</Label>
-                    <Switch 
-                      id="profile-enabled" 
+                    <Label htmlFor="profile-enabled" className="text-xs">
+                      Enabled
+                    </Label>
+                    <Switch
+                      id="profile-enabled"
                       checked={editingProfile.enabled}
-                      onCheckedChange={(c) => handleUpdateProfile(editingProfile.id, { enabled: c })}
+                      onCheckedChange={(c) =>
+                        handleUpdateProfile(editingProfile.id, { enabled: c })
+                      }
                       disabled={activeId === editingProfile.id}
                     />
                   </div>
@@ -511,17 +536,21 @@ export const AIProviderProfilesEditor: React.FC<AIProviderProfilesEditorProps> =
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Profile Name</Label>
-                  <Input 
+                  <Input
                     value={editingProfile.name}
-                    onChange={(e) => handleUpdateProfile(editingProfile.id, { name: e.target.value })}
+                    onChange={(e) =>
+                      handleUpdateProfile(editingProfile.id, { name: e.target.value })
+                    }
                     placeholder="e.g., Gemini Pro (Work)"
                   />
                 </div>
                 <div className="space-y-2">
                   <Label>Provider</Label>
-                  <Select 
+                  <Select
                     value={editingProfile.provider}
-                    onValueChange={(v) => handleUpdateProfile(editingProfile.id, { provider: v as AIModelProvider })}
+                    onValueChange={(v) =>
+                      handleUpdateProfile(editingProfile.id, { provider: v as AIModelProvider })
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -539,12 +568,15 @@ export const AIProviderProfilesEditor: React.FC<AIProviderProfilesEditorProps> =
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label>API Key</Label>
-                  <a 
+                  <a
                     href={
-                      editingProfile.provider === 'google' ? "https://aistudio.google.com/app/apikey" :
-                      editingProfile.provider === 'openrouter' ? "https://openrouter.ai/keys" :
-                      editingProfile.provider === 'anthropic' ? "https://console.anthropic.com/settings/keys" :
-                      "https://platform.openai.com/api-keys"
+                      editingProfile.provider === 'google'
+                        ? 'https://aistudio.google.com/app/apikey'
+                        : editingProfile.provider === 'openrouter'
+                          ? 'https://openrouter.ai/keys'
+                          : editingProfile.provider === 'anthropic'
+                            ? 'https://console.anthropic.com/settings/keys'
+                            : 'https://platform.openai.com/api-keys'
                     }
                     target="_blank"
                     rel="noreferrer"
@@ -553,24 +585,37 @@ export const AIProviderProfilesEditor: React.FC<AIProviderProfilesEditorProps> =
                     Get Key <ExternalLink className="w-2 h-2" />
                   </a>
                 </div>
-                <Input 
+                <Input
                   type="password"
                   value={editingProfile.apiKey}
-                  onChange={(e) => handleUpdateProfile(editingProfile.id, { apiKey: e.target.value })}
-                  placeholder={editingProfile.provider === 'google' ? "AIzaSy..." : "sk-..."}
+                  onChange={(e) =>
+                    handleUpdateProfile(editingProfile.id, { apiKey: e.target.value })
+                  }
+                  placeholder={editingProfile.provider === 'google' ? 'AIzaSy...' : 'sk-...'}
                 />
               </div>
 
-              {(editingProfile.provider === 'openai' || editingProfile.provider === 'openrouter' || editingProfile.provider === 'google') && (
+              {(editingProfile.provider === 'openai' ||
+                editingProfile.provider === 'openrouter' ||
+                editingProfile.provider === 'google') && (
                 <div className="space-y-2">
-                  <Label>Base URL {editingProfile.provider === 'openai' && <span className="text-destructive">*</span>}</Label>
-                  <Input 
+                  <Label>
+                    Base URL{' '}
+                    {editingProfile.provider === 'openai' && (
+                      <span className="text-destructive">*</span>
+                    )}
+                  </Label>
+                  <Input
                     value={editingProfile.baseUrl || ''}
-                    onChange={(e) => handleUpdateProfile(editingProfile.id, { baseUrl: e.target.value })}
+                    onChange={(e) =>
+                      handleUpdateProfile(editingProfile.id, { baseUrl: e.target.value })
+                    }
                     placeholder={
-                      editingProfile.provider === 'openrouter' ? "https://openrouter.ai/api/v1" :
-                      editingProfile.provider === 'google' ? "https://generativelanguage.googleapis.com" :
-                      "https://api.openai.com/v1"
+                      editingProfile.provider === 'openrouter'
+                        ? 'https://openrouter.ai/api/v1'
+                        : editingProfile.provider === 'google'
+                          ? 'https://generativelanguage.googleapis.com'
+                          : 'https://api.openai.com/v1'
                     }
                   />
                   {editingProfile.baseUrl && (
@@ -584,9 +629,9 @@ export const AIProviderProfilesEditor: React.FC<AIProviderProfilesEditorProps> =
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label>Model IDs (One per line, first is primary)</Label>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     className="h-7 text-[10px] gap-1 px-2"
                     onClick={() => handleFetchModels(editingProfile)}
                     disabled={fetchingModels[editingProfile.id]}
@@ -599,52 +644,62 @@ export const AIProviderProfilesEditor: React.FC<AIProviderProfilesEditorProps> =
                     Fetch Models
                   </Button>
                 </div>
-                
-                {fetchedModels[editingProfile.id] && fetchedModels[editingProfile.id].length > 0 && (
-                  <div className="bg-muted/30 border border-border rounded-md p-2 mb-2 max-h-40 overflow-y-auto">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-[10px] font-semibold text-muted-foreground uppercase">Available Models</span>
-                      <Button 
-                        variant="link" 
-                        size="sm" 
-                        className="h-auto p-0 text-[10px]"
-                        onClick={() => handleAddModels(editingProfile.id, fetchedModels[editingProfile.id])}
-                      >
-                        Add All
-                      </Button>
-                    </div>
-                    <div className="flex flex-wrap gap-1">
-                      {fetchedModels[editingProfile.id].map(mid => {
-                        const isAdded = editingProfile.modelIds.includes(mid);
-                        return (
-                          <Badge 
-                            key={mid} 
-                            variant={isAdded ? "secondary" : "outline"}
-                            className={cn(
-                              "text-[9px] py-0 cursor-pointer hover:bg-primary/20 transition-colors",
-                              isAdded && "opacity-60 cursor-default"
-                            )}
-                            onClick={() => !isAdded && handleAddModels(editingProfile.id, [mid])}
-                          >
-                            {mid}
-                            {!isAdded && <Plus className="w-2 h-2 ml-1" />}
-                          </Badge>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
 
-                <Textarea 
+                {fetchedModels[editingProfile.id] &&
+                  fetchedModels[editingProfile.id].length > 0 && (
+                    <div className="bg-muted/30 border border-border rounded-md p-2 mb-2 max-h-40 overflow-y-auto">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-[10px] font-semibold text-muted-foreground uppercase">
+                          Available Models
+                        </span>
+                        <Button
+                          variant="link"
+                          size="sm"
+                          className="h-auto p-0 text-[10px]"
+                          onClick={() =>
+                            handleAddModels(editingProfile.id, fetchedModels[editingProfile.id])
+                          }
+                        >
+                          Add All
+                        </Button>
+                      </div>
+                      <div className="flex flex-wrap gap-1">
+                        {fetchedModels[editingProfile.id].map((mid) => {
+                          const isAdded = editingProfile.modelIds.includes(mid);
+                          return (
+                            <Badge
+                              key={mid}
+                              variant={isAdded ? 'secondary' : 'outline'}
+                              className={cn(
+                                'text-[9px] py-0 cursor-pointer hover:bg-primary/20 transition-colors',
+                                isAdded && 'opacity-60 cursor-default'
+                              )}
+                              onClick={() => !isAdded && handleAddModels(editingProfile.id, [mid])}
+                            >
+                              {mid}
+                              {!isAdded && <Plus className="w-2 h-2 ml-1" />}
+                            </Badge>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                <Textarea
                   value={editingProfile.modelIds.join('\n')}
                   onChange={(e) => {
-                    const ids = e.target.value.split('\n').map(s => s.trim()).filter(Boolean);
+                    const ids = e.target.value
+                      .split('\n')
+                      .map((s) => s.trim())
+                      .filter(Boolean);
                     handleUpdateProfile(editingProfile.id, { modelIds: ids });
                   }}
                   placeholder={
-                    editingProfile.provider === 'google' ? "gemini-1.5-pro\ngemini-1.5-flash" :
-                    editingProfile.provider === 'openrouter' ? "google/gemini-pro-1.5\nanthropic/claude-3-sonnet" :
-                    "gpt-4o\ngpt-4-turbo"
+                    editingProfile.provider === 'google'
+                      ? 'gemini-1.5-pro\ngemini-1.5-flash'
+                      : editingProfile.provider === 'openrouter'
+                        ? 'google/gemini-pro-1.5\nanthropic/claude-3-sonnet'
+                        : 'gpt-4o\ngpt-4-turbo'
                   }
                   rows={3}
                   className="font-mono text-xs"
@@ -655,11 +710,13 @@ export const AIProviderProfilesEditor: React.FC<AIProviderProfilesEditorProps> =
                 <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
                   <div className="flex flex-col">
                     <span className="text-xs font-medium">Test Configuration</span>
-                    <span className="text-[10px] text-muted-foreground">Verify this profile works without fallback.</span>
+                    <span className="text-[10px] text-muted-foreground">
+                      Verify this profile works without fallback.
+                    </span>
                   </div>
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
+                  <Button
+                    size="sm"
+                    variant="outline"
                     onClick={() => handleTestConnection(editingProfile)}
                     disabled={isTesting === editingProfile.id}
                   >
@@ -676,9 +733,11 @@ export const AIProviderProfilesEditor: React.FC<AIProviderProfilesEditorProps> =
                   <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
                     <div className="flex flex-col">
                       <span className="text-xs font-medium">Use as Fallback</span>
-                      <span className="text-[10px] text-muted-foreground">Add to fallback chain if active profile fails.</span>
+                      <span className="text-[10px] text-muted-foreground">
+                        Add to fallback chain if active profile fails.
+                      </span>
                     </div>
-                    <Switch 
+                    <Switch
                       checked={fallbackIds.includes(editingProfile.id)}
                       onCheckedChange={() => handleToggleFallback(editingProfile.id)}
                       disabled={!editingProfile.enabled}
@@ -696,18 +755,15 @@ export const AIProviderProfilesEditor: React.FC<AIProviderProfilesEditorProps> =
       </div>
 
       <div className="flex justify-end gap-2 pt-4 border-t">
-         <Alert className="flex-1 py-2 bg-primary/5 border-primary/10">
+        <Alert className="flex-1 py-2 bg-primary/5 border-primary/10">
           <ShieldCheck className="h-3 w-3 text-primary" />
           <AlertDescription className="text-[10px] leading-tight">
-            Keys stay <strong>on this device</strong>. They are sent only to the configured Base URLs.
+            Keys stay <strong>on this device</strong>. They are sent only to the configured Base
+            URLs.
           </AlertDescription>
         </Alert>
-        <Button 
-          onClick={handleSave} 
-          disabled={isSaving}
-          className="min-w-[100px]"
-        >
-          {isSaving ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : "Save All"}
+        <Button onClick={handleSave} disabled={isSaving} className="min-w-[100px]">
+          {isSaving ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : 'Save All'}
         </Button>
       </div>
     </div>
