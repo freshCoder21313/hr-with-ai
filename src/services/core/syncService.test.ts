@@ -88,7 +88,7 @@ describe('syncService', () => {
           elevenLabsApiKey: 'e',
           deepgramApiKey: 'd',
           hintsEnabled: true,
-        },
+        } as any,
       ]);
 
       const data = await syncService.exportData();
@@ -102,7 +102,7 @@ describe('syncService', () => {
       vi.mocked(db.interviews.toArray).mockResolvedValue([]);
       vi.mocked(db.resumes.toArray).mockResolvedValue([]);
       vi.mocked(db.userSettings.toArray).mockResolvedValue([
-        { id: 1, apiKey: 'secret-key', hintsEnabled: false },
+        { id: 1, apiKey: 'secret-key', hintsEnabled: false } as any,
       ]);
 
       const data = await syncService.exportData({ includeSensitive: true });
@@ -137,7 +137,7 @@ describe('syncService', () => {
       vi.mocked(db.resumes.toArray).mockResolvedValue([]);
       vi.mocked(db.userSettings.orderBy).mockReturnValue({
         first: vi.fn().mockResolvedValue(undefined),
-      } as unknown as ReturnType<typeof db.userSettings.orderBy>);
+      } as any);
 
       await syncService.importData({
         interviews: [newerCloud],
@@ -162,16 +162,16 @@ describe('syncService', () => {
         updatedAt: 2000,
       };
 
-      vi.mocked(db.userSettings.toArray).mockResolvedValue([local]);
+      vi.mocked(db.userSettings.toArray).mockResolvedValue([local as any]);
       vi.mocked(db.interviews.toArray).mockResolvedValue([]);
       vi.mocked(db.resumes.toArray).mockResolvedValue([]);
       vi.mocked(db.userSettings.orderBy).mockReturnValue({
         first: vi.fn().mockResolvedValue({ ...cloud, apiKey: 'local-secret' }),
-      } as unknown as ReturnType<typeof db.userSettings.orderBy>);
+      } as any);
 
       await syncService.importData({
         interviews: [],
-        userSettings: [cloud],
+        userSettings: [cloud as any],
         resumes: [],
       });
 
@@ -187,7 +187,7 @@ describe('syncService', () => {
       const local = { id: 1, updatedAt: 2000 };
       const olderCloud = { id: 1, updatedAt: 1000 };
 
-      vi.mocked(db.userSettings.toArray).mockResolvedValue([local]);
+      vi.mocked(db.userSettings.toArray).mockResolvedValue([local as any]);
       vi.mocked(db.interviews.toArray).mockResolvedValue([]);
       vi.mocked(db.resumes.toArray).mockResolvedValue([]);
       vi.mocked(db.userSettings.orderBy).mockReturnValue({
@@ -196,7 +196,7 @@ describe('syncService', () => {
 
       await syncService.importData({
         interviews: [],
-        userSettings: [olderCloud],
+        userSettings: [olderCloud as any],
         resumes: [],
       });
 
@@ -208,6 +208,8 @@ describe('syncService', () => {
         createdAt: 3000,
         updatedAt: 3000,
         title: 'New Resume',
+        fileName: 'resume.pdf',
+        rawText: 'text',
         content: {},
       };
 
@@ -221,7 +223,7 @@ describe('syncService', () => {
       await syncService.importData({
         interviews: [],
         userSettings: [],
-        resumes: [cloudResume],
+        resumes: [cloudResume as any],
       });
 
       expect(db.resumes.add).toHaveBeenCalledWith(
@@ -230,12 +232,19 @@ describe('syncService', () => {
     });
 
     it('updates existing resumes if cloud is newer', async () => {
-      const localResume = { id: 5, createdAt: 3000, updatedAt: 3000, title: 'Old' };
+      const localResume = {
+        id: 5,
+        createdAt: 3000,
+        updatedAt: 3000,
+        title: 'Old',
+        fileName: 'f',
+        rawText: 't',
+      };
       const newerCloud = { ...localResume, title: 'New', updatedAt: 4000 };
 
       vi.mocked(db.userSettings.toArray).mockResolvedValue([]);
       vi.mocked(db.interviews.toArray).mockResolvedValue([]);
-      vi.mocked(db.resumes.toArray).mockResolvedValue([localResume]);
+      vi.mocked(db.resumes.toArray).mockResolvedValue([localResume as any]);
       vi.mocked(db.userSettings.orderBy).mockReturnValue({
         first: vi.fn().mockResolvedValue(undefined),
       } as any);
@@ -243,7 +252,7 @@ describe('syncService', () => {
       await syncService.importData({
         interviews: [],
         userSettings: [],
-        resumes: [newerCloud],
+        resumes: [newerCloud as any],
       });
 
       expect(db.resumes.put).toHaveBeenCalledWith(

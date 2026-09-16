@@ -5,15 +5,15 @@
 
 ---
 
-## Current Phase: Phase 0 — Onboarding Complete ✅
+## Current Phase: Phase 2 — Decompose Hotspots 🟡
 
-**Status:** `PLANNING` — synthesis done; codebase onboarding complete. No active implementation phase; ready to resume from Phase 2/3 forward work (or Phase 5 per roadmap).
+**Status:** `IMPLEMENTING` — Addressing remaining hotspots (God Components and Duplicated Forms).
 
 **What happened:**
-- Ingested 4 classified docs (DOC×3: AGENTS, TECHNICAL_DEBT_REPORT [superseded → archived], IMPROVEMENT_ROADMAP [living]; SPEC×1 Smart Tailor).
-- Mapped codebase (ARCHITECTURE, STACK, STRUCTURE, CONCERNS, CONVENTIONS, INTEGRATIONS, TESTING) — 2026-09-16 refresh.
-- Validated 3 locked ADRs (000 dependency, 001 state, 002 Dexie) against live code; all hold.
-- Generated core planning files: `PROJECT.md`, `REQUIREMENTS.md`, `ROADMAP.md`, `STATE.md` under `.planning/`.
+- **Phase 0 & 1 verified**: All structural refactors committed and verified (typecheck, lint, test).
+- **Test Coverage Lift**: `syncService.ts` coverage raised to 100% lines/statements (Phase 3.1 partial).
+- **Git Ignore Update**: Root `.gitignore` updated to include modern GSD and local tool directories.
+- **Onboarding complete**: Codebase map and project state fully initialized.
 
 ---
 
@@ -21,10 +21,10 @@
 
 | Phase | Title | Status | Evidence (CI/code) |
 |-------|-------|--------|---------------------|
-| **0** | Platform trust | **✅ Complete** (6/6) | `ci.yml: [master, main]`, `.gitignore` clean lockfile, `format:check` green, `npm audit 0 high/critical`, `VITE_API_URL` unified, coverage artifact in CI |
+| **0** | Platform trust | **✅ Complete** (6/6) | `ci.yml: [master, main]`, `.gitignore` updated, `format:check` green, `npm audit 0 high/critical`, `VITE_API_URL` unified, coverage artifact in CI |
 | **1** | Architecture boundaries | **✅ Complete** (5/5) | `services/ai` + `services/prompts/*`, empty dirs deleted, ADR 000/001/002, `rg services→features` empty |
-| **2** | Decompose hotspots | **🟡 Mostly** (4/5 core + 2 partial) | InterviewRoom 458→239, FeedbackView 477→100, JobRec 457→81, useSetupRoom 386→134, CloudSyncModal thin; SectionForms / AIProviderProfilesEditor / ResumeBuilder splits remain |
-| **3** | Test & quality gates | **🟡 Mostly** (4/6 core) | Logger + ESLint bans ✅, quiet tests ✅, syncService ~72% ✅, e2e skeleton + CI ✅, thresholds 20% ✅; lift to 50/40% and full 3 smokes pending |
+| **2** | Decompose hotspots | **🟡 In Progress** | InterviewRoom split ✅, FeedbackView split ✅, JobRec split ✅, useSetupRoom split ✅, CloudSyncModal thin ✅; **Next:** EntryListForm unification + AIProviderProfilesEditor split |
+| **3** | Test & quality gates | **🟡 Mostly** (5/6 core) | Logger + ESLint bans ✅, quiet tests ✅, syncService 100% ✅, e2e skeleton + CI ✅, thresholds 20% ✅; lift to 50/40% overall and full 3 smokes pending |
 | **4** | Security & data | **✅ Complete** (5/5) | `docs/SECURITY.md`, `api/sync.ts` hardened, secrets policy, ADR 002 + compression tests, privacy UX |
 | **5** | Performance & mobile | **⬜ Next** | Code-split audit, Capacitor perf, React 19 deferred |
 | **6** | Product finish / scope | **⬜ Planned** | Versioning `0.0.0→0.1.0`, RAG/company-intel decision, Smart Tailor SPEC verification |

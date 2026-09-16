@@ -1,10 +1,7 @@
 import React from 'react';
-import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import { Education } from '@/types/resume';
-import { analyzeResumeSection } from '@/services/resume/resumeAIService';
-import { getStoredAIConfig } from '@/services/ai/aiConfigService';
-import { GridField } from './entry-list.shared';
+import { GridField, useSectionAnalysis } from './entry-list.shared';
 import { GenericSectionForm } from './GenericSectionForm';
 
 interface EducationFormProps {
@@ -21,31 +18,7 @@ const defaultEntry: Education = {
 };
 
 const EducationForm: React.FC<EducationFormProps> = ({ data, onChange }) => {
-  const handleAnalyze = async (
-    index: number,
-    entry: Education,
-    setAnalyzingIndex: (i: number | null) => void
-  ) => {
-    const config = getStoredAIConfig();
-    if (!config.apiKey) {
-      toast.error('Please set API Key in settings.');
-      return;
-    }
-
-    setAnalyzingIndex(index);
-    try {
-      const result = await analyzeResumeSection('Education Entry', entry, config);
-      toast.info(
-        `AI Critique:\n${result.critique}\n\nSuggestion:\n${result.suggestions.join('\n- ')}`,
-        { duration: 8000 }
-      );
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : 'Analysis failed';
-      toast.error('Analysis failed: ' + msg);
-    } finally {
-      setAnalyzingIndex(null);
-    }
-  };
+  const { handleAnalyze } = useSectionAnalysis<Education>('Education Entry');
 
   return (
     <GenericSectionForm<Education>

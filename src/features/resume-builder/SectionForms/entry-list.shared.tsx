@@ -6,7 +6,10 @@ import { Label } from '@/components/ui/label';
 import { LoadingButton } from '@/components/ui/loading-button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Plus, Trash2, Wand2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { createEntry, ensureEntryIds, getEntryKey, WithEntryId } from './entryIds';
+import { analyzeResumeSection } from '@/services/resume/resumeAIService';
+import { getStoredAIConfig } from '@/services/ai/aiConfigService';
 
 export function useEntryList<T>(data: T[], onChange: (data: T[]) => void) {
   const [analyzingIndex, setAnalyzingIndex] = useState<number | null>(null);
@@ -35,6 +38,57 @@ export function useEntryList<T>(data: T[], onChange: (data: T[]) => void) {
   };
 
   return { analyzingIndex, setAnalyzingIndex, handleAdd, handleRemove, handleChange };
+}
+
+/**
+ * Shared hook for AI-powered resume section analysis
+ */
+export function useSectionAnalysis<T>(sectionName: string) {
+  const handleAnalyze = async (
+    index: number,
+    entry: T,
+    setAnalyzingIndex: (i: number | null) => void,
+    validate?: (entry: T) => string | null
+  ) => {
+    // Optional validation check
+    if (validate) {
+      const error = validate(entry);
+      if (error) {
+        toast.error(error);
+        return;
+      }
+    }
+
+    const config = getStoredAIConfig();
+    if (!config.apiKey) {
+      toast.error('Please set API Key in settings.');
+      return;
+    }
+
+    setAnalyzingIndex(index);
+    try {
+      const result = await analyzeResumeSection(sectionName, entry, config);
+      
+      let message = `AI Critique:\n${result.critique}`;
+      
+      if (result.rewrittenExample) {
+        message += `\n\nRewritten Example:\n${result.rewrittenExample}`;
+      }
+      
+      if (result.suggestions && result.suggestions.length > 0) {
+        message += `\n\nSuggestions:\n- ${result.suggestions.join('\n- ')}`;
+      }
+      
+      toast.info(message, { duration: 8000 });
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Analysis failed';
+      toast.error('Analysis failed: ' + msg);
+    } finally {
+      setAnalyzingIndex(null);
+    }
+  };
+
+  return { handleAnalyze };
 }
 
 interface EntryCardActionsProps {

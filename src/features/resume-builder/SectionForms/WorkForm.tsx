@@ -1,11 +1,8 @@
 import React from 'react';
-import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Work } from '@/types/resume';
-import { analyzeResumeSection } from '@/services/resume/resumeAIService';
-import { getStoredAIConfig } from '@/services/ai/aiConfigService';
-import { GridField } from './entry-list.shared';
+import { GridField, useSectionAnalysis } from './entry-list.shared';
 import { GenericSectionForm } from './GenericSectionForm';
 
 interface WorkFormProps {
@@ -16,34 +13,13 @@ interface WorkFormProps {
 const defaultEntry: Work = { name: '', position: '', summary: '' };
 
 const WorkForm: React.FC<WorkFormProps> = ({ data, onChange }) => {
-  const handleAnalyze = async (
-    index: number,
-    entry: Work,
-    setAnalyzingIndex: (i: number | null) => void
-  ) => {
-    if (!entry.summary && (!entry.highlights || entry.highlights.length === 0)) {
-      toast.error('Please add some content (Summary or Highlights) to analyze.');
-      return;
-    }
-    const config = getStoredAIConfig();
-    if (!config.apiKey) {
-      toast.error('Please set API Key in settings.');
-      return;
-    }
+  const { handleAnalyze } = useSectionAnalysis<Work>('Work Experience Entry');
 
-    setAnalyzingIndex(index);
-    try {
-      const result = await analyzeResumeSection('Work Experience Entry', entry, config);
-      toast.info(
-        `AI Critique:\n${result.critique}\n\nRewritten Example:\n${result.rewrittenExample}`,
-        { duration: 8000 }
-      );
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : 'Analysis failed';
-      toast.error('Analysis failed: ' + msg);
-    } finally {
-      setAnalyzingIndex(null);
+  const validate = (entry: Work) => {
+    if (!entry.summary && (!entry.highlights || entry.highlights.length === 0)) {
+      return 'Please add some content (Summary or Highlights) to analyze.';
     }
+    return null;
   };
 
   return (
@@ -55,7 +31,7 @@ const WorkForm: React.FC<WorkFormProps> = ({ data, onChange }) => {
       emptyMessage='No work experience added yet. Click "Add Job" to start.'
       defaultEntry={defaultEntry}
       getTitle={(entry) => entry.name || '(New Position)'}
-      onAnalyze={handleAnalyze}
+      onAnalyze={(idx, entry, setIdx) => handleAnalyze(idx, entry, setIdx, validate)}
       renderFields={(entry, handleChange) => (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

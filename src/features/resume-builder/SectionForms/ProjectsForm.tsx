@@ -1,11 +1,8 @@
 import React from 'react';
-import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Project } from '@/types/resume';
-import { analyzeResumeSection } from '@/services/resume/resumeAIService';
-import { getStoredAIConfig } from '@/services/ai/aiConfigService';
-import { GridField } from './entry-list.shared';
+import { GridField, useSectionAnalysis } from './entry-list.shared';
 import { GenericSectionForm } from './GenericSectionForm';
 
 interface ProjectsFormProps {
@@ -16,34 +13,11 @@ interface ProjectsFormProps {
 const defaultEntry: Project = { name: '', description: '' };
 
 const ProjectsForm: React.FC<ProjectsFormProps> = ({ data, onChange }) => {
-  const handleAnalyze = async (
-    index: number,
-    entry: Project,
-    setAnalyzingIndex: (i: number | null) => void
-  ) => {
-    if (!entry.description) {
-      toast.error('Please add a description to analyze.');
-      return;
-    }
-    const config = getStoredAIConfig();
-    if (!config.apiKey) {
-      toast.error('Please set API Key in settings.');
-      return;
-    }
+  const { handleAnalyze } = useSectionAnalysis<Project>('Project Entry');
 
-    setAnalyzingIndex(index);
-    try {
-      const result = await analyzeResumeSection('Project Entry', entry, config);
-      toast.info(
-        `AI Critique:\n${result.critique}\n\nRewritten Example:\n${result.rewrittenExample}`,
-        { duration: 8000 }
-      );
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : 'Analysis failed';
-      toast.error('Analysis failed: ' + msg);
-    } finally {
-      setAnalyzingIndex(null);
-    }
+  const validate = (entry: Project) => {
+    if (!entry.description) return 'Please add a description to analyze.';
+    return null;
   };
 
   return (
@@ -55,7 +29,7 @@ const ProjectsForm: React.FC<ProjectsFormProps> = ({ data, onChange }) => {
       emptyMessage="No projects added yet."
       defaultEntry={defaultEntry}
       getTitle={(entry) => entry.name || '(New Project)'}
-      onAnalyze={handleAnalyze}
+      onAnalyze={(idx, entry, setIdx) => handleAnalyze(idx, entry, setIdx, validate)}
       analyzeTooltip="AI Check"
       renderFields={(entry, handleChange) => (
         <>
