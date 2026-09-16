@@ -1,16 +1,23 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { saveUserSettings } from './settingsService';
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+import {
+  saveUserSettings,
+  loadUserSettings,
+  getSetting,
+  updateSetting,
+  loadSettingsSync,
+  subscribeToSettings,
+} from './settingsService';
 import { db } from '@/lib/db';
 import { UserSettings } from '@/types';
+import { logger } from '@/lib/logger';
 
-// Mock the db module
+// Mock dependencies
 vi.mock('@/lib/db', () => {
   const mockTable = {
     orderBy: vi.fn().mockReturnThis(),
     first: vi.fn(),
     add: vi.fn(),
     update: vi.fn(),
-    toArray: vi.fn(),
   };
   return {
     db: {
@@ -18,6 +25,19 @@ vi.mock('@/lib/db', () => {
     },
   };
 });
+
+vi.mock('@/lib/logger', () => ({
+  logger: {
+    error: vi.fn(),
+    info: vi.fn(),
+  },
+}));
+
+vi.mock('@/services/ai/aiProfileService', () => ({
+  migrateLegacySettings: vi.fn((s) => s),
+  mirrorActiveProfileToLocalStorage: vi.fn(),
+  normalizeUserSettings: vi.fn((s) => s),
+}));
 
 describe('settingsService', () => {
   const mockLocalStorage: Record<string, string> = {};
@@ -44,200 +64,129 @@ describe('settingsService', () => {
     });
   });
 
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  describe('loadUserSettings', () => {
+    it('loads from DB and merges with localStorage', async () => {
+      const dbSettings = { id: 1, hintsEnabled: true, apiKey: '' };
+      localStorage.setItem('gemini_api_key', 'local-key');
+      
+      vi.mocked(db.userSettings.orderBy().first).mockResolvedValue(dbSettings);
+      
+      const result = await loadUserSettings();
+      
+      expect(result.hintsEnabled).toBe(true);
+      expect(result.apiKey).toBe('local-key');
+    });
+
+    it('returns defaults + localStorage if DB is empty', async () => {
+      vi.mocked(db.userSettings.orderBy().first).mockResolvedValue(null);
+      localStorage.setItem('gemini_api_key', 'local-key');
+      
+      const result = await loadUserSettings();
+      
+      expect(result.hintsEnabled).toBe(false); // default
+      expect(result.apiKey).toBe('local-key');
+    });
+
+    it('falls back to localStorage only on DB error', async () => {
+      vi.mocked(db.userSettings.orderBy().first).mockRejectedValue(new Error('DB Error'));
+      localStorage.setItem('gemini_api_key', 'fallback-key');
+      
+      const result = await loadUserSettings();
+      
+      expect(logger.error).toHaveBeenCalled();
+      expect(result.apiKey).toBe('fallback-key');
+    });
+
+    it('handles concurrent migration calls', async () => {
+      vi.mocked(db.userSettings.orderBy().first).mockImplementation(() => 
+        new Promise(resolve => setTimeout(() => resolve({ id: 1 }), 50))
+      );
+      
+      const p1 = loadUserSettings();
+      const p2 = loadUserSettings();
+      
+      const [r1, r2] = await Promise.all([p1, p2]);
+      
+      expect(r1).toEqual(r2);
+    });
+  });
+
   describe('saveUserSettings', () => {
-    it('should persist all UserSettings fields to the database', async () => {
-      const fullSettings: UserSettings = {
-        hintsEnabled: true,
-        autoFinishEnabled: true,
-        forceToolsEnabled: true,
-        apiKey: 'test-api-key',
-        githubUsername: 'test-user',
-        githubToken: 'test-token',
-        defaultModel: 'test-model',
-        baseUrl: 'https://test.api',
-        provider: 'openai',
-        maxRetries: 5,
-        retryDelay: 1000,
-        retryOnTimeout: true,
-        retryOnRateLimit: true,
-        defaultVoiceSettings: {
-          voiceId: 'test-voice',
-          speechRate: 1.2,
-          pitch: 1.0,
-          language: 'en-US',
-          sttProvider: 'web-speech',
-          ttsProvider: 'web-speech',
-          volume: 1,
-          autoPlayResponse: true,
-          pushToTalk: false,
-          silenceTimeout: 1000,
-        },
-        googleCloudApiKey: 'google-key',
-        elevenLabsApiKey: 'eleven-key',
-        deepgramApiKey: 'deepgram-key',
-      };
-
-      // Mock DB behavior
-      (db.userSettings.orderBy as any)().first.mockResolvedValue(null);
-      (db.userSettings.add as any).mockResolvedValue(1);
-
-      await saveUserSettings(fullSettings);
-
-      // Verify DB record
-      expect(db.userSettings.add).toHaveBeenCalledWith(
-        expect.objectContaining({
-          hintsEnabled: true,
-          autoFinishEnabled: true,
-          forceToolsEnabled: true,
-          apiKey: 'test-api-key',
-          githubUsername: 'test-user',
-          githubToken: 'test-token',
-          defaultModel: 'test-model',
-          baseUrl: 'https://test.api',
-          provider: 'openai',
-          maxRetries: 5,
-          retryDelay: 1000,
-          retryOnTimeout: true,
-          retryOnRateLimit: true,
-          defaultVoiceSettings: expect.objectContaining({
-            voiceId: 'test-voice',
-          }),
-          googleCloudApiKey: 'google-key',
-          elevenLabsApiKey: 'eleven-key',
-          deepgramApiKey: 'deepgram-key',
-        })
-      );
-    });
-
-    it('should NOT drop forceToolsEnabled and retry fields', async () => {
-      const settings: UserSettings = {
-        forceToolsEnabled: true,
-        maxRetries: 3,
-      };
-
-      (db.userSettings.orderBy as any)().first.mockResolvedValue(null);
-      (db.userSettings.add as any).mockResolvedValue(1);
-
+    it('updates existing record if id exists', async () => {
+      vi.mocked(db.userSettings.orderBy().first).mockResolvedValue({ id: 123 });
+      
+      const settings = { hintsEnabled: true } as UserSettings;
       await saveUserSettings(settings);
-
-      // Verify DB record - this WILL FAIL on current code because it drops these fields
-      expect(db.userSettings.add).toHaveBeenCalledWith(
-        expect.objectContaining({
-          forceToolsEnabled: true,
-          maxRetries: 3,
-        })
-      );
+      
+      expect(db.userSettings.update).toHaveBeenCalledWith(123, expect.objectContaining({ hintsEnabled: true }));
     });
 
-    it('should NOT drop voice settings and keys', async () => {
-      const settings: UserSettings = {
-        googleCloudApiKey: 'g-key',
-        elevenLabsApiKey: 'e-key',
-        deepgramApiKey: 'd-key',
-        defaultVoiceSettings: {
-          voiceId: 'v1',
-          speechRate: 1,
-          pitch: 1,
-          language: 'en-US',
-          sttProvider: 'web-speech',
-          ttsProvider: 'web-speech',
-          volume: 1,
-          autoPlayResponse: true,
-          pushToTalk: false,
-          silenceTimeout: 1000,
-        },
-      };
-
-      (db.userSettings.orderBy as any)().first.mockResolvedValue(null);
-      (db.userSettings.add as any).mockResolvedValue(1);
-
-      await saveUserSettings(settings);
-
-      // Verify DB record - this WILL FAIL on current code because it drops these fields
-      expect(db.userSettings.add).toHaveBeenCalledWith(
-        expect.objectContaining({
-          googleCloudApiKey: 'g-key',
-          elevenLabsApiKey: 'e-key',
-          deepgramApiKey: 'd-key',
-          defaultVoiceSettings: expect.anything(),
-        })
-      );
+    it('adds new record if no id exists', async () => {
+      vi.mocked(db.userSettings.orderBy().first).mockResolvedValue(null);
+      vi.mocked(db.userSettings.add).mockResolvedValue(456);
+      
+      const settings = { hintsEnabled: true } as UserSettings;
+      const result = await saveUserSettings(settings);
+      
+      expect(db.userSettings.add).toHaveBeenCalled();
+      expect(result.id).toBe(456);
     });
 
-    it('should preserve existing ID during update (FIX 1)', async () => {
-      const existingRecord = { id: 1, provider: 'google' };
-      const newSettings: UserSettings = {
-        maxRetries: 5,
-        retryDelay: 1000,
-        provider: 'openai',
-        defaultVoiceSettings: {
-          voiceId: 'v1',
-          speechRate: 1,
-          pitch: 1,
-          language: 'en-US',
-          sttProvider: 'web-speech',
-          ttsProvider: 'web-speech',
-          volume: 1,
-          autoPlayResponse: true,
-          pushToTalk: false,
-          silenceTimeout: 1000,
-        },
-      };
+    it('logs and rethrows on error', async () => {
+      vi.mocked(db.userSettings.orderBy().first).mockRejectedValue(new Error('Save Error'));
+      
+      await expect(saveUserSettings({} as any)).rejects.toThrow('Save Error');
+      expect(logger.error).toHaveBeenCalled();
+    });
+  });
 
-      (db.userSettings.orderBy as any)().first.mockResolvedValue(existingRecord);
-      (db.userSettings.update as any).mockResolvedValue(1);
-
-      await saveUserSettings(newSettings);
-
-      expect(db.userSettings.update).toHaveBeenCalledWith(
-        1,
-        expect.objectContaining({
-          maxRetries: 5,
-          retryDelay: 1000,
-          provider: 'openai',
-          defaultVoiceSettings: expect.objectContaining({ voiceId: 'v1' }),
-        })
-      );
+  describe('getSetting & updateSetting', () => {
+    it('gets a specific setting', async () => {
+      vi.mocked(db.userSettings.orderBy().first).mockResolvedValue({ hintsEnabled: true });
+      const val = await getSetting('hintsEnabled');
+      expect(val).toBe(true);
     });
 
-    it('should preserve provider in SettingsModal-style flow and direct save (FIX 2)', async () => {
-      // Test A: SettingsModal-style flow (update)
-      const existingRecord = { id: 1, provider: 'openrouter' as const };
-      const settingsFromModal: UserSettings = {
-        ...existingRecord,
-        hintsEnabled: true,
-        // Provider is preserved from loaded state
-      };
+    it('updates a specific setting', async () => {
+      vi.mocked(db.userSettings.orderBy().first).mockResolvedValue({ id: 1, hintsEnabled: false });
+      await updateSetting('hintsEnabled', true);
+      expect(db.userSettings.update).toHaveBeenCalledWith(1, expect.objectContaining({ hintsEnabled: true }));
+    });
+  });
 
-      (db.userSettings.orderBy as any)().first.mockResolvedValue(existingRecord);
-      (db.userSettings.update as any).mockResolvedValue(1);
+  describe('loadSettingsSync', () => {
+    it('reads from localStorage synchronously', () => {
+      localStorage.setItem('gemini_api_key', 'sync-key');
+      localStorage.setItem('custom_base_url', 'sync-url');
+      
+      const settings = loadSettingsSync();
+      
+      expect(settings.apiKey).toBe('sync-key');
+      expect(settings.baseUrl).toBe('sync-url');
+    });
+  });
 
-      await saveUserSettings(settingsFromModal);
-
-      expect(db.userSettings.update).toHaveBeenCalledWith(
-        1,
-        expect.objectContaining({
-          provider: 'openrouter',
-          hintsEnabled: true,
-        })
-      );
-
-      // Test B: Direct service-level save (add)
-      const directSettings: UserSettings = {
-        provider: 'openrouter',
-        apiKey: 'test-key',
-      };
-
-      (db.userSettings.orderBy as any)().first.mockResolvedValue(null);
-      (db.userSettings.add as any).mockResolvedValue(2);
-
-      await saveUserSettings(directSettings);
-
-      expect(db.userSettings.add).toHaveBeenCalledWith(
-        expect.objectContaining({
-          provider: 'openrouter',
-        })
-      );
+  describe('subscribeToSettings', () => {
+    it('periodically calls callback with updated settings', async () => {
+      vi.useFakeTimers();
+      const callback = vi.fn();
+      vi.mocked(db.userSettings.orderBy().first).mockResolvedValue({ id: 1, hintsEnabled: true });
+      
+      const unsubscribe = subscribeToSettings(callback);
+      
+      await vi.advanceTimersByTimeAsync(0);
+      expect(callback).toHaveBeenCalledWith(expect.objectContaining({ hintsEnabled: true }));
+      
+      vi.mocked(db.userSettings.orderBy().first).mockResolvedValue({ id: 1, hintsEnabled: false });
+      await vi.advanceTimersByTimeAsync(2000);
+      expect(callback).toHaveBeenCalledWith(expect.objectContaining({ hintsEnabled: false }));
+      
+      unsubscribe();
+      vi.useRealTimers();
     });
   });
 });

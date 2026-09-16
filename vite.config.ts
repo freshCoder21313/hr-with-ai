@@ -39,10 +39,10 @@ export default defineConfig(({ mode }) => {
         ],
         // Phase 3 floors — prevent coverage regression; raise gradually
         thresholds: {
-          lines: 20,
-          functions: 15,
-          branches: 12,
-          statements: 20,
+          lines: 30,
+          functions: 25,
+          branches: 25,
+          statements: 30,
         },
       },
     },

@@ -24,12 +24,12 @@
 | **0** | Platform trust | **✅ Complete** (6/6) | `ci.yml: [master, main]`, `.gitignore` updated, `format:check` green, `npm audit 0 high/critical`, `VITE_API_URL` unified, coverage artifact in CI |
 | **1** | Architecture boundaries | **✅ Complete** (5/5) | `services/ai` + `services/prompts/*`, empty dirs deleted, ADR 000/001/002, `rg services→features` empty |
 | **2** | Decompose hotspots | **✅ Complete** | InterviewRoom split ✅, FeedbackView split ✅, JobRec split ✅, useSetupRoom split ✅, CloudSyncModal thin ✅, SectionForms unified ✅, AIProviderProfilesEditor split ✅, ResumeBuilder split ✅, SetupRoom split ✅, UploadStep split ✅ |
-| **3** | Test & quality gates | **🟡 Mostly** (5/6 core) | Logger + ESLint bans ✅, quiet tests ✅, syncService 100% ✅, interviewAIService 90% ✅, resumeAIService 80% ✅, e2e skeleton + CI ✅, thresholds 20% ✅; lift remaining critical services to 60%+ pending |
+| **3** | Test & quality gates | **✅ Complete** | Overall coverage 32% (target 30% floor) ✅, critical services 80-100% ✅, fallback service tests added ✅, store tests added ✅, thresholds enforced ✅, e2e smokes expanded ✅ |
 | **4** | Security & data | **✅ Complete** (5/5) | `docs/SECURITY.md`, `api/sync.ts` hardened, secrets policy, ADR 002 + compression tests, privacy UX |
 | **5** | Performance & mobile | **⬜ Next** | Code-split audit, Capacitor perf, React 19 deferred |
 | **6** | Product finish / scope | **⬜ Planned** | Versioning `0.0.0→0.1.0`, RAG/company-intel decision, Smart Tailor SPEC verification |
 
-**Overall platform signal (roadmap §1):** Typecheck ✅, ESLint ✅, tests 90/90 ⚠️ (thin coverage), Prettier fixed ✅, CI fixed ✅, arch inverted → fixed ⚠️, god files splitting ⚠️.
+**Overall platform signal (roadmap §1):** Typecheck ✅, ESLint ✅, tests 225/225 ✅ (32% coverage), Prettier fixed ✅, CI fixed ✅, arch inverted → fixed ✅, god files splitting ✅.
 
 ---
 

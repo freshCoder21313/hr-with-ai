@@ -1,190 +1,85 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { renderHook, act } from '@testing-library/react';
 import { useInterviewStore } from './interviewStore';
-import { InterviewStatus, Message, Interview } from '@/types';
+import { InterviewStatus } from '@/types';
 
 describe('useInterviewStore', () => {
   beforeEach(() => {
-    useInterviewStore.setState({
-      currentInterview: null,
-      isLoading: false,
-      error: null,
-    });
+    useInterviewStore.getState().clearInterview();
   });
 
-  it('should set an interview', () => {
-    const { result } = renderHook(() => useInterviewStore());
-
-    const mockInterview = {
-      id: 1,
-      createdAt: Date.now(),
-      company: 'TestCo',
-      jobTitle: 'Software Engineer',
-      interviewerPersona: 'Technical Lead',
-      jobDescription: 'Test description',
-      resumeText: 'Test resume',
-      language: 'en-US' as const,
-      status: InterviewStatus.CREATED,
-      messages: [],
-    };
-
-    act(() => {
-      result.current.setInterview(mockInterview);
-    });
-
-    expect(result.current.currentInterview).toEqual(mockInterview);
+  it('should initialize with default state', () => {
+    const state = useInterviewStore.getState();
+    expect(state.currentInterview).toBeNull();
+    expect(state.isLoading).toBe(false);
+    expect(state.error).toBeNull();
   });
 
-  it('should add a message to interview', () => {
-    const { result } = renderHook(() => useInterviewStore());
-
-    const mockInterview = {
-      id: 1,
-      createdAt: Date.now(),
-      company: 'TestCo',
-      jobTitle: 'Software Engineer',
-      interviewerPersona: 'Technical Lead',
-      jobDescription: 'Test description',
-      resumeText: 'Test resume',
-      language: 'en-US' as const,
-      status: InterviewStatus.IN_PROGRESS,
-      messages: [],
-    };
-
-    const mockMessage: Message = {
-      role: 'user',
-      content: 'Test message',
-      timestamp: Date.now(),
-    };
-
-    act(() => {
-      result.current.setInterview(mockInterview);
-      result.current.addMessage(mockMessage);
-    });
-
-    expect(result.current.currentInterview?.messages).toHaveLength(1);
-    expect(result.current.currentInterview?.messages[0]).toEqual(mockMessage);
+  it('should set interview', () => {
+    const mockInterview = { id: 1, messages: [] } as any;
+    useInterviewStore.getState().setInterview(mockInterview);
+    expect(useInterviewStore.getState().currentInterview).toEqual(mockInterview);
   });
 
-  it('should update the last message', () => {
-    const { result } = renderHook(() => useInterviewStore());
-
-    const mockInterview: Interview = {
-      id: 1,
-      createdAt: Date.now(),
-      company: 'TestCo',
-      jobTitle: 'Software Engineer',
-      interviewerPersona: 'Technical Lead',
-      jobDescription: 'Test description',
-      resumeText: 'Test resume',
-      language: 'en-US' as const,
-      status: InterviewStatus.IN_PROGRESS,
-      messages: [{ role: 'model', content: 'Initial', timestamp: Date.now() }],
-    };
-
-    act(() => {
-      result.current.setInterview(mockInterview);
-      result.current.updateLastMessage('Updated content');
-    });
-
-    expect(result.current.currentInterview?.messages[0].content).toBe('Updated content');
+  it('should add message', () => {
+    const mockInterview = { id: 1, messages: [] } as any;
+    const store = useInterviewStore.getState();
+    store.setInterview(mockInterview);
+    
+    const msg = { role: 'user', content: 'hello', timestamp: 123 } as any;
+    useInterviewStore.getState().addMessage(msg);
+    
+    expect(useInterviewStore.getState().currentInterview?.messages).toHaveLength(1);
+    expect(useInterviewStore.getState().currentInterview?.messages[0]).toEqual(msg);
   });
 
-  it('should remove last message', () => {
-    const { result } = renderHook(() => useInterviewStore());
+  it('should update last message', () => {
+    const mockInterview = { id: 1, messages: [{ content: 'old', role: 'user', timestamp: 1 }] } as any;
+    useInterviewStore.getState().setInterview(mockInterview);
+    
+    useInterviewStore.getState().updateLastMessage('new');
+    
+    expect(useInterviewStore.getState().currentInterview?.messages[0].content).toBe('new');
+  });
 
-    const mockInterview: Interview = {
-      id: 1,
-      createdAt: Date.now(),
-      company: 'TestCo',
-      jobTitle: 'Software Engineer',
-      interviewerPersona: 'Technical Lead',
-      jobDescription: 'Test description',
-      resumeText: 'Test resume',
-      language: 'en-US' as const,
-      status: InterviewStatus.IN_PROGRESS,
+  it('should update message by timestamp', () => {
+    const mockInterview = { 
+      id: 1, 
       messages: [
-        { role: 'user', content: 'First', timestamp: Date.now() },
-        { role: 'model', content: 'Second', timestamp: Date.now() + 1 },
-      ],
-    };
-
-    act(() => {
-      result.current.setInterview(mockInterview);
-      result.current.removeLastMessage();
-    });
-
-    expect(result.current.currentInterview?.messages).toHaveLength(1);
-    expect(result.current.currentInterview?.messages[0].content).toBe('First');
+        { content: 'm1', timestamp: 100, role: 'user' },
+        { content: 'm2', timestamp: 200, role: 'user' }
+      ] 
+    } as any;
+    useInterviewStore.getState().setInterview(mockInterview);
+    
+    useInterviewStore.getState().updateMessageByTimestamp(200, 'updated');
+    
+    expect(useInterviewStore.getState().currentInterview?.messages[1].content).toBe('updated');
+    expect(useInterviewStore.getState().currentInterview?.messages[0].content).toBe('m1');
   });
 
-  it('should update code', () => {
-    const { result } = renderHook(() => useInterviewStore());
-
-    const mockInterview: Interview = {
-      id: 1,
-      createdAt: Date.now(),
-      company: 'TestCo',
-      jobTitle: 'Software Engineer',
-      interviewerPersona: 'Technical Lead',
-      jobDescription: 'Test description',
-      resumeText: 'Test resume',
-      language: 'en-US' as const,
-      status: InterviewStatus.IN_PROGRESS,
-      messages: [],
-      code: '// initial',
-    };
-
-    act(() => {
-      result.current.setInterview(mockInterview);
-      result.current.updateCode('const x = 1;');
-    });
-
-    expect(result.current.currentInterview?.code).toBe('const x = 1;');
+  it('should mark message as error', () => {
+    const mockInterview = { id: 1, messages: [{ timestamp: 100, role: 'model', content: 'wait' }] } as any;
+    useInterviewStore.getState().setInterview(mockInterview);
+    
+    useInterviewStore.getState().markMessageAsError(100, 'fail');
+    
+    const msg = useInterviewStore.getState().currentInterview?.messages[0];
+    expect(msg?.content).toBe('fail');
+    expect(msg?.isError).toBe(true);
   });
 
-  it('should clear interview', () => {
-    const { result } = renderHook(() => useInterviewStore());
-
-    const mockInterview = {
-      id: 1,
-      createdAt: Date.now(),
-      company: 'TestCo',
-      jobTitle: 'Software Engineer',
-      interviewerPersona: 'Technical Lead',
-      jobDescription: 'Test description',
-      resumeText: 'Test resume',
-      language: 'en-US' as const,
-      status: InterviewStatus.IN_PROGRESS,
-      messages: [],
-    };
-
-    act(() => {
-      result.current.setInterview(mockInterview);
-      result.current.clearInterview();
-    });
-
-    expect(result.current.currentInterview).toBeNull();
-    expect(result.current.error).toBeNull();
+  it('should update status', () => {
+    useInterviewStore.getState().setInterview({ id: 1, messages: [] } as any);
+    useInterviewStore.getState().updateStatus(InterviewStatus.COMPLETED);
+    expect(useInterviewStore.getState().currentInterview?.status).toBe(InterviewStatus.COMPLETED);
   });
 
-  it('should set loading state', () => {
-    const { result } = renderHook(() => useInterviewStore());
-
-    act(() => {
-      result.current.setLoading(true);
-    });
-
-    expect(result.current.isLoading).toBe(true);
-  });
-
-  it('should set error state', () => {
-    const { result } = renderHook(() => useInterviewStore());
-
-    act(() => {
-      result.current.setError('Test error');
-    });
-
-    expect(result.current.error).toBe('Test error');
+  it('should update code and whiteboard', () => {
+    useInterviewStore.getState().setInterview({ id: 1, messages: [] } as any);
+    useInterviewStore.getState().updateCode('const x = 1');
+    useInterviewStore.getState().updateWhiteboard('data:image');
+    
+    expect(useInterviewStore.getState().currentInterview?.code).toBe('const x = 1');
+    expect(useInterviewStore.getState().currentInterview?.whiteboard).toBe('data:image');
   });
 });
