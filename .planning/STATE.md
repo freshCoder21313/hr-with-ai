@@ -23,8 +23,8 @@
 |-------|-------|--------|---------------------|
 | **0** | Platform trust | **✅ Complete** (6/6) | `ci.yml: [master, main]`, `.gitignore` updated, `format:check` green, `npm audit 0 high/critical`, `VITE_API_URL` unified, coverage artifact in CI |
 | **1** | Architecture boundaries | **✅ Complete** (5/5) | `services/ai` + `services/prompts/*`, empty dirs deleted, ADR 000/001/002, `rg services→features` empty |
-| **2** | Decompose hotspots | **🟡 In Progress** | InterviewRoom split ✅, FeedbackView split ✅, JobRec split ✅, useSetupRoom split ✅, CloudSyncModal thin ✅; **Next:** EntryListForm unification + AIProviderProfilesEditor split |
-| **3** | Test & quality gates | **🟡 Mostly** (5/6 core) | Logger + ESLint bans ✅, quiet tests ✅, syncService 100% ✅, e2e skeleton + CI ✅, thresholds 20% ✅; lift to 50/40% overall and full 3 smokes pending |
+| **2** | Decompose hotspots | **🟡 In Progress** | InterviewRoom split ✅, FeedbackView split ✅, JobRec split ✅, useSetupRoom split ✅, CloudSyncModal thin ✅, SectionForms unified ✅; **Next:** AIProviderProfilesEditor split |
+| **3** | Test & quality gates | **🟡 Mostly** (5/6 core) | Logger + ESLint bans ✅, quiet tests ✅, syncService 100% ✅, e2e skeleton + CI ✅, thresholds 20% ✅; lift remaining critical services to 60%+ pending |
 | **4** | Security & data | **✅ Complete** (5/5) | `docs/SECURITY.md`, `api/sync.ts` hardened, secrets policy, ADR 002 + compression tests, privacy UX |
 | **5** | Performance & mobile | **⬜ Next** | Code-split audit, Capacitor perf, React 19 deferred |
 | **6** | Product finish / scope | **⬜ Planned** | Versioning `0.0.0→0.1.0`, RAG/company-intel decision, Smart Tailor SPEC verification |
