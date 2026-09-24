@@ -21,7 +21,7 @@ interface BuilderHeaderProps {
   onSave: () => void;
 }
 
-export const BuilderHeader: React.FC<BuilderHeaderProps> = ({
+const BuilderHeaderBase: React.FC<BuilderHeaderProps> = ({
   resume,
   viewMode,
   isProcessing,
@@ -106,3 +106,5 @@ export const BuilderHeader: React.FC<BuilderHeaderProps> = ({
     </header>
   );
 };
+
+export const BuilderHeader = React.memo(BuilderHeaderBase);

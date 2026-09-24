@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { logger } from '@/lib/logger';
 import { textToSpeechService } from '@/services/voice/textToSpeechService';
 import { VoiceSettings } from '@/types';
 
@@ -16,7 +17,7 @@ export const useTextToSpeech = (config: VoiceSettings) => {
           setIsSpeaking(false);
         },
         onError: (e) => {
-          console.error(e);
+          logger.error(e);
           setIsSpeaking(false);
         },
       });

@@ -1,4 +1,5 @@
 import { VoiceSettings } from '@/types';
+import { logger } from '@/lib/logger';
 
 export interface STTResult {
   transcript: string;
@@ -62,7 +63,7 @@ class SpeechToTextService {
     };
 
     this.recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
-      console.error('Speech recognition error', event.error);
+      logger.error('Speech recognition error', event.error);
       if (this.onErrorCallback) {
         this.onErrorCallback(event.error);
       }
@@ -103,7 +104,7 @@ class SpeechToTextService {
       this.isListening = true;
       this.resetSilenceTimer();
     } catch (e) {
-      console.error('Failed to start recognition:', e);
+      logger.error('Failed to start recognition:', e);
       onError('Failed to start recording');
     }
   }

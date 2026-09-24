@@ -7,7 +7,7 @@ import InterviewHintView from '@/features/interview/InterviewHintView';
 import { InterviewHints } from '@/services/interview/interviewAIService';
 import { LoadingButton } from '@/components/ui/loading-button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { useBrowserSpeechToText } from '@/hooks/useBrowserSpeechToText';
+import { useBrowserSpeechToText } from '@/features/interview/hooks/useBrowserSpeechToText';
 import { isNonEmptyString } from '@/lib/validation';
 
 interface InputAreaProps {

@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 // Remove top-level import
 // import * as pdfjsLib from 'pdfjs-dist';
 
@@ -66,7 +67,7 @@ export const parseResume = async (file: File): Promise<string> => {
       throw new Error('Unsupported file type. Please upload PDF or TXT.');
     }
   } catch (error) {
-    console.error('Error parsing resume:', error);
+    logger.error('Error parsing resume:', error);
     throw error;
   }
 };

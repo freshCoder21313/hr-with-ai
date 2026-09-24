@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { logger } from '@/lib/logger';
 import { useParams, useNavigate } from 'react-router-dom';
 import { db } from '@/lib/db';
 import { useInterviewStore } from '@/features/interview/interviewStore';
@@ -41,7 +42,7 @@ export const useInterviewLoader = (): UseInterviewLoaderReturn => {
       }
     } catch (err) {
       setError('Failed to load interview');
-      console.error('Error loading interview:', err);
+      logger.error('Error loading interview:', err);
       navigate('/');
     } finally {
       setIsLoading(false);

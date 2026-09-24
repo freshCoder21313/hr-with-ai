@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { Loader2 } from 'lucide-react';
 import Joyride from 'react-joyride';
 import SEO from '@/components/shared/SEO';
@@ -12,10 +12,20 @@ import { SplitView } from './components/builder/SplitView';
 
 const ResumeBuilder: React.FC = () => {
   const { state, actions } = useResumeBuilder();
+  const { data, template } = state;
+  const { navigate, setShowReorderDialog } = actions;
+
+  const handleBack = useCallback(() => navigate('/setup'), [navigate]);
+  const closeReorder = useCallback(() => setShowReorderDialog(false), [setShowReorderDialog]);
+  const openReorder = useCallback(() => setShowReorderDialog(true), [setShowReorderDialog]);
+  const reorderData = useMemo(
+    () => (data ? { ...data, meta: { ...data.meta, template } } : null),
+    [data, template]
+  );
 
   if (state.isLoading) {
     return (
-      <div className="flex h-screen items-center justify-center">
+      <div className="flex h-[100dvh] items-center justify-center">
         <Loader2 className="animate-spin" />
       </div>
     );
@@ -23,7 +33,7 @@ const ResumeBuilder: React.FC = () => {
 
   if (state.notFound) return <div className="p-8">Resume not found</div>;
 
-  const { data, resume, template } = state;
+  const { resume } = state;
   const viewMode = state.isSplitView ? 'split' : state.showPreview ? 'preview' : 'editor';
 
   return (
@@ -39,8 +49,8 @@ const ResumeBuilder: React.FC = () => {
 
       <SectionReorderDialog
         isOpen={state.showReorderDialog}
-        onClose={() => actions.setShowReorderDialog(false)}
-        data={{ ...data!, meta: { ...data!.meta, template } }}
+        onClose={closeReorder}
+        data={reorderData!}
         onSave={actions.handleOrderSave}
       />
 
@@ -56,12 +66,12 @@ const ResumeBuilder: React.FC = () => {
         }}
       />
 
-      <div className="flex flex-col h-screen bg-background text-foreground print:hidden">
+      <div className="flex flex-col h-[100dvh] bg-background text-foreground print:hidden">
         <BuilderHeader
           resume={resume!}
           viewMode={viewMode}
           isProcessing={state.isProcessing}
-          onBack={() => actions.navigate('/setup')}
+          onBack={handleBack}
           onViewModeChange={actions.handleViewMode}
           onSmartFormat={actions.handleSmartFormat}
           onSave={actions.handleSave}
@@ -87,7 +97,7 @@ const ResumeBuilder: React.FC = () => {
               onFontChange={actions.handleFontChange}
               onTranslate={actions.handleTranslate}
               onPrint={actions.handlePrint}
-              onShowReorder={() => actions.setShowReorderDialog(true)}
+              onShowReorder={openReorder}
             />
           ) : (
             <EditorView

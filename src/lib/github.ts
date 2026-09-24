@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 export interface GitHubRepo {
   id: number;
   name: string;
@@ -60,7 +61,7 @@ export const fetchGitHubRepos = async (username: string, token?: string): Promis
     }
     return allRepos;
   } catch (error) {
-    console.error('Error fetching GitHub repos:', error);
+    logger.error('Error fetching GitHub repos:', error);
     throw error;
   }
 };
@@ -86,7 +87,7 @@ export const fetchReadme = async (owner: string, repo: string, token?: string): 
 
     return await response.text();
   } catch (error) {
-    console.warn(`Failed to fetch README for ${owner}/${repo}:`, error);
+    logger.warn(`Failed to fetch README for ${owner}/${repo}:`, error);
     return '';
   }
 };
@@ -119,7 +120,7 @@ export const fetchFileTree = async (
     const data = await response.json();
     return (data.tree as { path: string }[]).map((t) => t.path).join('\n');
   } catch (error) {
-    console.warn(`Failed to fetch file tree for ${owner}/${repo}:`, error);
+    logger.warn(`Failed to fetch file tree for ${owner}/${repo}:`, error);
     return 'File tree unavailable';
   }
 };

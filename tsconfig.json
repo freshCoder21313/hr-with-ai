@@ -19,5 +19,5 @@
     "noEmit": true,
     "strict": true
   },
-  "include": ["src", "api", "vite.config.ts", "local-api-plugin.ts"]
+  "include": ["src", "api", "vite.config.ts", "scripts/local-api-plugin.ts"]
 }

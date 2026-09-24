@@ -1,4 +1,5 @@
 import { useEffect, useCallback } from 'react';
+import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
 import { useVoiceInterviewStore } from '@/features/interview/stores/voiceInterviewStore';
 import { useSpeechToText } from './useSpeechToText';
@@ -96,7 +97,7 @@ export const useVoiceInterview = () => {
 
     // Optional: Start visualizer
     recorder.startRecording().catch((err) => {
-      console.error('Failed to start recording', err);
+      logger.error('Failed to start recording', err);
       toast.error('Could not access microphone. Please check permissions.');
       setCurrentState('idle');
       stt.stopListening();
@@ -163,7 +164,7 @@ export const useVoiceInterview = () => {
 
         setLoading(false);
       } catch (error: unknown) {
-        console.error(error);
+        logger.error(error);
         updateLastMessage('Error: ' + getErrorMessage(error));
         setCurrentState('idle');
         setLoading(false);

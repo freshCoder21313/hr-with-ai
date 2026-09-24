@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { logger } from '@/lib/logger';
 import { syncService } from '@/services/core/syncService';
 
 export function useCloudSync() {
@@ -150,7 +151,7 @@ export function useCloudSync() {
       setSuccess('Data imported successfully! The page will reload momentarily.');
       setTimeout(() => window.location.reload(), 2000);
     } catch (err: unknown) {
-      console.error(err);
+      logger.error(err);
       setError('Failed to process file. Make sure it is a valid backup JSON.');
     } finally {
       setIsLoading(false);

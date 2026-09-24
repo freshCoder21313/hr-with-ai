@@ -189,6 +189,14 @@ class HRDatabase extends Dexie {
       logger.error('Failed to clean old resumes:', e);
     }
   }
+
+  /**
+   * Fetches one page of interviews ordered by newest first.
+   * Query-level pagination only — no schema change (ADR 002).
+   */
+  async getInterviewsPage(offset: number, limit: number): Promise<Interview[]> {
+    return this.interviews.orderBy('createdAt').reverse().offset(offset).limit(limit).toArray();
+  }
 }
 
 export const db = new HRDatabase();

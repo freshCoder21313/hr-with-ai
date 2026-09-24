@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
 
 export const useBrowserSpeechToText = (language: string = 'vi-VN') => {
@@ -37,7 +38,7 @@ export const useBrowserSpeechToText = (language: string = 'vi-VN') => {
       };
 
       recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
-        console.error('Speech recognition error', event.error);
+        logger.error('Speech recognition error', event.error);
         if (event.error !== 'no-speech') {
           setError(`Error: ${event.error}`);
         }
@@ -72,7 +73,7 @@ export const useBrowserSpeechToText = (language: string = 'vi-VN') => {
       try {
         recognitionRef.current.start();
       } catch (err) {
-        console.error('Failed to start speech recognition:', err);
+        logger.error('Failed to start speech recognition:', err);
       }
     }
   }, [isListening, error]);

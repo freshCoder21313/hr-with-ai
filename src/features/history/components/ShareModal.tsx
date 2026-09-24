@@ -1,4 +1,5 @@
 import React, { useRef, useState } from 'react';
+import { logger } from '@/lib/logger';
 import { toPng, toBlob } from 'html-to-image';
 import { Share2, Download, Copy, Loader2, Check } from 'lucide-react';
 import {
@@ -33,7 +34,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ interview, trigger }) => {
       link.href = dataUrl;
       link.click();
     } catch (err) {
-      console.error('Failed to generate image', err);
+      logger.error('Failed to generate image', err);
     } finally {
       setIsGenerating(false);
     }
@@ -50,7 +51,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ interview, trigger }) => {
         setTimeout(() => setCopied(false), 2000);
       }
     } catch (err) {
-      console.error('Failed to copy image', err);
+      logger.error('Failed to copy image', err);
     } finally {
       setIsGenerating(false);
     }

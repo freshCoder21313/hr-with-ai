@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '@/lib/db';
 import { Interview } from '@/types';
@@ -19,21 +19,38 @@ import LearningPath from './LearningPath';
 import SEO from '@/components/shared/SEO';
 import ShareModal from './components/ShareModal';
 import { Share2 } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { EmptyState } from '@/components/ui/empty-state';
 
 const ProgressCharts = React.lazy(() => import('./ProgressCharts'));
 const SkillRadarChart = React.lazy(() => import('./SkillRadarChart'));
 
+const PAGE_SIZE = 20;
+
 const HistoryPage: React.FC = () => {
   const [interviews, setInterviews] = useState<Interview[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasMore, setHasMore] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchHistory = async () => {
-      const allInterviews = await db.interviews.orderBy('createdAt').reverse().toArray();
-      setInterviews(allInterviews);
+      try {
+        const page = await db.getInterviewsPage(0, PAGE_SIZE);
+        setInterviews(page);
+        setHasMore(page.length === PAGE_SIZE);
+      } finally {
+        setIsLoading(false);
+      }
     };
     fetchHistory();
   }, []);
+
+  const loadMore = useCallback(async () => {
+    const page = await db.getInterviewsPage(interviews.length, PAGE_SIZE);
+    setInterviews((prev) => [...prev, ...page]);
+    setHasMore(page.length === PAGE_SIZE);
+  }, [interviews.length]);
 
   const stats = {
     total: interviews.length,
@@ -75,7 +92,7 @@ const HistoryPage: React.FC = () => {
       />
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Interview History</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Interview History</h1>
           <p className="text-muted-foreground mt-1">Track your progress and review past sessions</p>
         </div>
         <Button onClick={() => navigate('/setup')} className="gap-2">
@@ -135,23 +152,27 @@ const HistoryPage: React.FC = () => {
         </div>
       )}
 
-      {interviews.length === 0 ? (
-        <Card className="text-center py-12 bg-card border-border">
-          <CardContent className="flex flex-col items-center gap-4">
+      {isLoading ? (
+        <div className="grid gap-4">
+          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-24 w-full" />
+        </div>
+      ) : interviews.length === 0 ? (
+        <EmptyState
+          icon={
             <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center">
               <Briefcase className="text-muted-foreground" />
             </div>
-            <div className="space-y-2">
-              <h3 className="text-lg font-semibold text-foreground">No interviews recorded yet</h3>
-              <p className="text-muted-foreground max-w-sm mx-auto">
-                Start your first mock interview to get AI-powered feedback and improve your skills.
-              </p>
-            </div>
-            <Button variant="outline" onClick={() => navigate('/setup')} className="mt-2">
+          }
+          title="No interviews recorded yet"
+          message="Start your first mock interview to get AI-powered feedback and improve your skills."
+          action={
+            <Button variant="outline" onClick={() => navigate('/setup')}>
               Start your first session
             </Button>
-          </CardContent>
-        </Card>
+          }
+        />
       ) : (
         <div className="grid gap-4">
           {interviews.map((interview) => (
@@ -254,6 +275,11 @@ const HistoryPage: React.FC = () => {
               </CardContent>
             </Card>
           ))}
+          {hasMore && (
+            <Button variant="outline" onClick={loadMore} className="w-full mt-4">
+              Load more
+            </Button>
+          )}
         </div>
       )}
     </div>

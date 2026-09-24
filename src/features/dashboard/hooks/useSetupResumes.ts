@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { logger } from '@/lib/logger';
 import { useNavigate } from 'react-router-dom';
 import { SetupFormData, Resume, JobRecommendation } from '@/types';
 import { ResumeData } from '@/types/resume';
@@ -63,7 +64,7 @@ export function useSetupResumes(
           setSelectedResumeId(newId);
           setFormData((prev) => ({ ...prev, resumeText: savedResume.rawText }));
         } catch (error) {
-          console.error('Failed to clone resume:', error);
+          logger.error('Failed to clone resume:', error);
           toast.error('Failed to clone resume');
           setSelectedResumeId(pendingMainResume.id);
           setFormData((prev) => ({ ...prev, resumeText: pendingMainResume.rawText }));
@@ -97,7 +98,7 @@ export function useSetupResumes(
         }
         toast.success('Resume deleted successfully');
       } catch (error) {
-        console.error('Failed to delete resume:', error);
+        logger.error('Failed to delete resume:', error);
         toast.error('Failed to delete resume');
       }
     },
@@ -112,7 +113,8 @@ export function useSetupResumes(
         const updated = await db.resumes.toArray();
         setSavedResumes(updated.sort((a, b) => b.createdAt - a.createdAt));
       } catch (error) {
-        console.error('Failed to set main CV:', error);
+        logger.error('Failed to set main CV:', error);
+        toast.error('Failed to set main CV');
       }
     },
     [setSavedResumes]
@@ -148,7 +150,7 @@ export function useSetupResumes(
         const newId = await db.resumes.add(newResume);
         navigate(`/resumes/${newId}/edit`);
       } catch (error) {
-        console.error(error);
+        logger.error(error);
         toast.error('Failed to tailor resume: ' + getErrorMessage(error));
       }
     },
@@ -201,7 +203,8 @@ export function useSetupResumes(
           setSavedResumes((prev) => [{ ...newResume, id: newId }, ...prev]);
           setSelectedResumeId(newId);
         } catch (e) {
-          console.error('Failed to save tailored resume:', e);
+          logger.error('Failed to save tailored resume:', e);
+          toast.error('Failed to save tailored resume');
         }
       }
       setIsJobModalOpen(false);

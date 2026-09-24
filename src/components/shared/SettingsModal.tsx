@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { logger } from '@/lib/logger';
 import {
   Dialog,
   DialogContent,
@@ -53,7 +54,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onOpenChange, onSet
             modelId: stored.defaultModel || '',
           });
         } catch (error) {
-          console.error('Failed to load settings:', error);
+          logger.error('Failed to load settings:', error);
         } finally {
           setIsLoading(false);
         }
@@ -82,7 +83,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onOpenChange, onSet
       if (onSettingsChanged) onSettingsChanged(savedSettings);
       onOpenChange(false); // Close modal
     } catch (error) {
-      console.error('Failed to save settings:', error);
+      logger.error('Failed to save settings:', error);
       toast.error('Failed to save settings. Please try again.');
     }
   };

@@ -6,11 +6,6 @@ export type InterviewContentType = 'standard' | 'coding' | 'system_design' | 'be
 /** How the candidate interacts (channel). */
 export type InterviewInteractionMode = 'text' | 'voice' | 'hybrid';
 
-/**
- * @deprecated Prefer `InterviewContentType`. Kept as an alias for existing imports.
- */
-export type InterviewMode = InterviewContentType;
-
 /** Content types that may have been stored historically in `mode`. */
 const CONTENT_TYPES: ReadonlySet<string> = new Set([
   'standard',

@@ -1,11 +1,12 @@
 import { ResumeAnalysis } from '@/types';
+import { logger } from '@/lib/logger';
 import { db } from '@/lib/db';
 import {
   getResumeAnalysisPrompt,
   getParseResumePrompt,
   getAnalyzeSectionPrompt,
   getTailoredResumePrompt,
-} from '@/services/interview/promptSystem';
+} from '@/services/prompts';
 import { ResumeData } from '@/types/resume';
 import { getService, AIConfigInput } from '@/services/ai/aiConfigService';
 import {
@@ -57,7 +58,7 @@ export const analyzeResume = async (
 
     return result;
   } catch (error) {
-    console.error('Error analyzing resume:', error);
+    logger.error('Error analyzing resume:', error);
     throw error;
   }
 };
@@ -75,7 +76,7 @@ export const parseResumeToJSON = async (
       resumeDataSchema
     )) as unknown as ResumeData;
   } catch (error) {
-    console.error('Error parsing resume:', error);
+    logger.error('Error parsing resume:', error);
     throw error;
   }
 };
@@ -94,7 +95,7 @@ export const analyzeResumeSection = async (
       resumeSectionAnalysisSchema
     );
   } catch (error) {
-    console.error('Error analyzing section:', error);
+    logger.error('Error analyzing section:', error);
     throw error;
   }
 };
@@ -114,7 +115,7 @@ export const tailorResumeToJob = async (
       resumeDataSchema
     )) as unknown as ResumeData;
   } catch (error) {
-    console.error('Error tailoring resume:', error);
+    logger.error('Error tailoring resume:', error);
     throw error;
   }
 };
@@ -131,7 +132,7 @@ export const tailorResumeV2 = async (
       resumeDataSchema
     )) as unknown as ResumeData;
   } catch (error) {
-    console.error('Error tailoring resume (V2):', error);
+    logger.error('Error tailoring resume (V2):', error);
     throw error;
   }
 };
@@ -157,7 +158,7 @@ ${JSON.stringify(resumeData)}`;
     translated.language = targetLanguage;
     return translated;
   } catch (error) {
-    console.error('Error translating resume:', error);
+    logger.error('Error translating resume:', error);
     throw error;
   }
 };

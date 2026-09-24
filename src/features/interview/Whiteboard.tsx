@@ -1,4 +1,5 @@
 import React, { useCallback, useRef } from 'react';
+import { logger } from '@/lib/logger';
 import { Tldraw, Editor } from 'tldraw';
 import 'tldraw/tldraw.css';
 
@@ -48,7 +49,7 @@ const Whiteboard: React.FC<WhiteboardProps> = ({
         const snapshot = JSON.parse(initialData);
         editorInstance.store.loadSnapshot(snapshot);
       } catch (e) {
-        console.error('Failed to load whiteboard data', e);
+        logger.error('Failed to load whiteboard data', e);
       }
       isInitialLoad.current = false;
     }

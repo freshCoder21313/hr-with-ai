@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { logger } from '@/lib/logger';
 import { SetupFormData, Resume, SavedJob } from '@/types';
 import { useInterview } from '@/hooks/useInterview';
 import { db } from '@/lib/db';
@@ -37,7 +38,7 @@ export const useSetupRoom = () => {
       const jobs = await db.jobs.toArray();
       setSavedJobs(jobs.sort((a, b) => b.updatedAt - a.updatedAt));
     } catch (error) {
-      console.error('Failed to load data:', error);
+      logger.error('Failed to load data:', error);
     }
   }, []);
 
@@ -51,7 +52,7 @@ export const useSetupRoom = () => {
         setSavedResumes(resumes.sort((a, b) => b.createdAt - a.createdAt));
         setSavedJobs(jobsList.sort((a, b) => b.updatedAt - a.updatedAt));
       } catch (error) {
-        console.error('Failed to load data:', error);
+        logger.error('Failed to load data:', error);
       }
     })();
     return () => {

@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Label } from '@/components/ui/label';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { EmptyState } from '@/components/ui/empty-state';
 import {
   Briefcase,
   Plus,
@@ -199,15 +200,17 @@ export const CVJobPanel: React.FC<CVJobPanelProps> = ({
             </Tooltip>
           </div>
 
+          <p className="text-[11px] text-muted-foreground leading-relaxed px-3 py-1.5 border-b border-border">
+            <span className="font-semibold">Note:</span> Your Jobs list and Prompts are saved locally in
+            this browser and are not synced to the cloud. Use Export to create backups.
+          </p>
+
           <div className="flex-1 overflow-y-auto p-2 space-y-2">
             {jobs.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                <Briefcase className="w-8 h-8 mx-auto mb-2 opacity-30" />
-                <p className="text-xs">No jobs yet.</p>
-                <p className="text-xs">
-                  Click <strong>+</strong> to add one.
-                </p>
-              </div>
+              <EmptyState
+                message="No jobs yet. Click + to add one."
+                icon={<Briefcase className="w-8 h-8 opacity-30" />}
+              />
             ) : (
               jobs.map((job) => (
                 <CVJobCard
@@ -247,7 +250,7 @@ export const CVJobPanel: React.FC<CVJobPanelProps> = ({
                 </>
               ) : (
                 <>
-                  <Play className="mr-2 h-4 w-4 fill-current" /> Run Tailor ({selectedJobs.size})
+                  <Play className="mr-2 h-4 w-4 fill-current" /> Start Tailoring ({selectedJobs.size})
                 </>
               )}
             </Button>
@@ -309,7 +312,7 @@ export const CVJobPanel: React.FC<CVJobPanelProps> = ({
                   )}
                 </Button>
               </TooltipTrigger>
-              <TooltipContent side="right">Run Tailoring ({selectedJobs.size} jobs)</TooltipContent>
+              <TooltipContent side="right">Start Tailoring Selected Jobs</TooltipContent>
             </Tooltip>
           )}
         </div>

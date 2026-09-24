@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
+import { logger } from '@/lib/logger';
 import { useSkillAssessmentStore } from '@/features/skill-assessment/stores/useSkillAssessmentStore';
 import { parseResume } from '@/services/resume/resumeParser';
 import { getStoredAIConfig } from '@/services/ai/aiConfigService';
@@ -29,7 +30,7 @@ export const UploadStep: React.FC = () => {
       const resumes = await db.resumes.toArray();
       setSavedResumes(resumes.sort((a, b) => b.createdAt - a.createdAt));
     } catch (err) {
-      console.error('Failed to load resumes:', err);
+      logger.error('Failed to load resumes:', err);
     }
   };
 
@@ -52,7 +53,7 @@ export const UploadStep: React.FC = () => {
       }
       toast.success('Resume deleted successfully');
     } catch (err) {
-      console.error('Failed to delete resume:', err);
+      logger.error('Failed to delete resume:', err);
       toast.error('Failed to delete resume');
     }
   };
@@ -107,7 +108,7 @@ export const UploadStep: React.FC = () => {
           try {
             skills = await extractSkills(text, skillExtractionConfig);
           } catch (skillExtractionError) {
-            console.warn(
+            logger.warn(
               'AI skill extraction failed, falling back to heuristic parsing:',
               skillExtractionError
             );
@@ -125,7 +126,7 @@ export const UploadStep: React.FC = () => {
         throw new Error('No skills could be extracted automatically');
       }
     } catch (err) {
-      console.error(err);
+      logger.error(err);
       setError(err instanceof Error ? err.message : 'Failed to extract skills');
       setShowManual(true);
     } finally {
@@ -165,12 +166,12 @@ export const UploadStep: React.FC = () => {
         setSavedResumes((prev) => [savedResume, ...prev]);
         setSelectedResumeId(id);
       } catch (dbErr) {
-        console.error('Failed to save resume to DB', dbErr);
+        logger.error('Failed to save resume to DB', dbErr);
       }
 
       await processResumeText(text);
     } catch (err) {
-      console.error(err);
+      logger.error(err);
       setError(err instanceof Error ? err.message : 'Failed to process file');
       setShowManual(true);
       setIsLoading(false);
@@ -226,7 +227,7 @@ export const UploadStep: React.FC = () => {
       const updated = await db.resumes.toArray();
       setSavedResumes(updated.sort((a, b) => b.createdAt - a.createdAt));
     } catch (err) {
-      console.error('Failed to set main CV:', err);
+      logger.error('Failed to set main CV:', err);
     }
   };
 

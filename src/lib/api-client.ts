@@ -1,5 +1,6 @@
 /// <reference types="vite/client" />
 import axios from 'axios';
+import { logger } from '@/lib/logger';
 
 // Get Base URL from environment or default to relative path (handled by proxy)
 const BASE_URL = import.meta.env.VITE_API_URL || '/api';
@@ -38,14 +39,14 @@ apiClient.interceptors.response.use(
     // Handle global errors (like 401 Unauthorized) here
     if (error.response) {
       const { status, data } = error.response;
-      console.error(`API Error [${status}]:`, data?.message || error.message);
+      logger.error(`API Error [${status}]:`, data?.message || error.message);
 
       // Example: Redirect to login on 401 (if authentication is implemented later)
       // if (status === 401) { ... }
     } else if (error.request) {
-      console.error('API Error: No response received', error.request);
+      logger.error('API Error: No response received', error.request);
     } else {
-      console.error('API Error:', error.message);
+      logger.error('API Error:', error.message);
     }
 
     return Promise.reject(error);

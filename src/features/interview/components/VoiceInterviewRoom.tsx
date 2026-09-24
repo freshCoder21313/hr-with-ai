@@ -53,7 +53,7 @@ export const VoiceInterviewRoom: React.FC<VoiceInterviewRoomProps> = ({ onSwitch
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-b from-slate-900 to-slate-950 text-white overflow-hidden relative">
+    <div className="flex flex-col h-[100dvh] bg-gradient-to-b from-slate-900 to-slate-950 text-white overflow-hidden relative">
       {/* Header / Status Bar */}
       <div className="px-6 py-4 flex items-center justify-between border-b border-white/10 bg-black/20 backdrop-blur-sm z-10">
         <div>

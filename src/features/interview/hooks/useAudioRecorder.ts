@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { logger } from '@/lib/logger';
 import { audioRecorderService } from '@/services/voice/audioRecorderService'; // Assuming service is exported as singleton
 
 export const useAudioRecorder = () => {
@@ -16,7 +17,7 @@ export const useAudioRecorder = () => {
       setAudioBlob(null);
       setAudioUrl(null);
     } catch (e) {
-      console.error(e);
+      logger.error(e);
     }
   }, []);
 
@@ -29,7 +30,7 @@ export const useAudioRecorder = () => {
       setAudioUrl(url);
       return blob;
     } catch (e) {
-      console.error(e);
+      logger.error(e);
       setIsRecording(false);
       return null;
     }

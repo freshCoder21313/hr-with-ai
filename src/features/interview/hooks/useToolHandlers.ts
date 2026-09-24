@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
+import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
 import type { Editor, TLShapeId } from 'tldraw';
 import { svgToPngBase64 } from '@/lib/svgUtils';
@@ -70,12 +71,12 @@ export const useToolHandlers = (
                   if (pngData) {
                     imageBase64 = pngData;
                   } else {
-                    console.error('Failed to convert whiteboard SVG to PNG');
+                    logger.error('Failed to convert whiteboard SVG to PNG');
                   }
                 }
               }
             } catch (e) {
-              console.error('Failed to capture whiteboard', e);
+              logger.error('Failed to capture whiteboard', e);
             }
           }
           content = 'I have sketched the system design. Please review the attached diagram.';

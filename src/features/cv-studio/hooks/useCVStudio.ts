@@ -86,7 +86,7 @@ export const useCVStudio = () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'hr-jobs-export.json';
+    a.download = 'jobs-backup.json';
     a.click();
     URL.revokeObjectURL(url);
   }, [jobs, globalPrompt]);
@@ -110,7 +110,7 @@ export const useCVStudio = () => {
               customPrompt: j.customPrompt || '',
             }))
           );
-          jobActions.setGlobalPrompt(gp);
+          if (typeof gp === 'string') jobActions.setGlobalPrompt(gp);
         } catch {
           toast.error('Failed to import jobs.');
         }

@@ -1,4 +1,5 @@
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 
 export type ToastVariant = 'success' | 'error' | 'info' | 'warning';
 
@@ -37,9 +38,9 @@ class NotificationService {
 
   public error(message: string, error?: unknown) {
     if (error) {
-      console.error(`[NotificationService] Error: ${message}`, error);
+      logger.error(`[NotificationService] Error: ${message}`, error);
     } else {
-      console.error(`[NotificationService] Error: ${message}`);
+      logger.error(`[NotificationService] Error: ${message}`);
     }
     toast.error(message);
   }

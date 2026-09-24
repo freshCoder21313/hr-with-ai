@@ -272,4 +272,5 @@ const SectionReorderDialog: React.FC<SectionReorderDialogProps> = ({
   );
 };
 
-export default SectionReorderDialog;
+const MemoSectionReorderDialog = React.memo(SectionReorderDialog);
+export default MemoSectionReorderDialog;

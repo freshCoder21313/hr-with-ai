@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
 import { db } from '@/lib/db';
 import { Resume, Message } from '@/types';
@@ -154,7 +155,7 @@ export const useCVChat = ({ mainCV, setMainCV, resumes, jobs, chatResumeId }: Us
           toast.warning('Some proposed changes were invalid and were skipped.');
         }
       } catch (error) {
-        console.error('Chat error:', error);
+        logger.error('Chat error:', error);
         setMessages((prev) =>
           prev.map((m) =>
             m.timestamp === aiMsgId
@@ -193,7 +194,7 @@ export const useCVChat = ({ mainCV, setMainCV, resumes, jobs, chatResumeId }: Us
         setMainCV({ ...mainCV, parsedData: updated });
         removePendingChange(change);
       } catch (error) {
-        console.error('Failed to accept change:', error);
+        logger.error('Failed to accept change:', error);
         toast.error('Failed to apply change. Please try again.');
       }
     },

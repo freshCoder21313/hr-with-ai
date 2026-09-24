@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
 import { useParams, useNavigate } from 'react-router-dom';
 import { db } from '@/lib/db';
@@ -60,6 +61,17 @@ export const useResumeBuilder = () => {
   const [runTour, setRunTour] = useState(false);
   const [showStyleEditor, setShowStyleEditor] = useState(false);
 
+  // Mirror volatile state in refs so data-dependent callbacks stay referentially
+  // stable across keystrokes (identities no longer change when `data` changes).
+  const dataRef = useRef(data);
+  dataRef.current = data;
+  const resumeRef = useRef(resume);
+  resumeRef.current = resume;
+  const templateRef = useRef(template);
+  templateRef.current = template;
+  const viewLanguageRef = useRef(viewLanguage);
+  viewLanguageRef.current = viewLanguage;
+
   useEffect(() => {
     let ignore = false;
     const loadResume = async () => {
@@ -95,7 +107,8 @@ export const useResumeBuilder = () => {
         }
       } catch (error) {
         if (!ignore) {
-          console.error('Failed to load resume', error);
+          logger.error('Failed to load resume', error);
+          toast.error('Failed to load resume');
         }
       } finally {
         if (!ignore) {
@@ -123,7 +136,8 @@ export const useResumeBuilder = () => {
           updatedAt: Date.now(),
         });
       } catch (error) {
-        console.error('Auto-save failed:', error);
+        logger.error('Auto-save failed:', error);
+        toast.error('Auto-save failed');
       }
     };
 
@@ -131,6 +145,9 @@ export const useResumeBuilder = () => {
   }, [debouncedData, id]);
 
   const handleSmartFormat = useCallback(async () => {
+    const resume = resumeRef.current;
+    const data = dataRef.current;
+    const template = templateRef.current;
     if (!resume?.rawText) return;
     if (data?.meta?.lastParsedRawText === resume.rawText) {
       toast.info('The current text has already been formatted.');
@@ -149,14 +166,16 @@ export const useResumeBuilder = () => {
       await db.resumes.update(parseInt(id!), { parsedData: parsed, formatted: true });
       setResume((prev) => (prev ? { ...prev, formatted: true } : null));
     } catch (error) {
-      console.error(error);
+      logger.error(error);
       toast.error('Failed to format resume: ' + getErrorMessage(error));
     } finally {
       setIsProcessing(false);
     }
-  }, [resume, data, template, id]);
+  }, [id]);
 
   const handleSave = useCallback(async () => {
+    const data = dataRef.current;
+    const template = templateRef.current;
     if (!id || !data) return;
     const dataToSave = sanitizeResumeDataForSave({ ...data, meta: { ...data.meta, template } });
     try {
@@ -164,20 +183,24 @@ export const useResumeBuilder = () => {
       setData(dataToSave);
       toast.success('Saved successfully!');
     } catch (error) {
-      console.error(error);
+      logger.error(error);
       toast.error('Failed to save.');
     }
-  }, [id, data, template]);
+  }, [id]);
 
   const handleOrderSave = useCallback(
     (newOrder: { main: string[]; sidebar?: string[] }) => {
+      const data = dataRef.current;
+      const template = templateRef.current;
       if (!data) return;
       setData({ ...data, meta: { ...data.meta, sectionOrder: newOrder, template } });
     },
-    [data, template]
+    []
   );
 
   const handleTranslate = useCallback(async () => {
+    const data = dataRef.current;
+    const viewLanguage = viewLanguageRef.current;
     if (!data) return;
     const targetLang = viewLanguage === 'en' ? 'vi' : 'en';
     const config = getStoredAIConfig();
@@ -195,31 +218,33 @@ export const useResumeBuilder = () => {
         `Translated to ${targetLang === 'vi' ? 'Vietnamese' : 'English'} successfully!`
       );
     } catch (error) {
-      console.error(error);
+      logger.error(error);
       toast.error('Translation failed.');
     } finally {
       setIsTranslating(false);
     }
-  }, [data, viewLanguage, id]);
+  }, [id]);
 
   const handleThemeColorChange = useCallback(
     (color: string) => {
+      const data = dataRef.current;
       if (!data || !id) return;
       const newData = { ...data, meta: { ...data.meta, themeColor: color } };
       setData(newData);
       db.resumes.update(parseInt(id), { parsedData: newData });
     },
-    [data, id]
+    [id]
   );
 
   const handleFontChange = useCallback(
     (fontFamily: 'sans' | 'serif' | 'mono') => {
+      const data = dataRef.current;
       if (!data || !id) return;
       const newData = { ...data, meta: { ...data.meta, fontFamily } };
       setData(newData);
       db.resumes.update(parseInt(id), { parsedData: newData });
     },
-    [data, id]
+    [id]
   );
 
   const handlePrint = useCallback(() => {
@@ -236,6 +261,7 @@ export const useResumeBuilder = () => {
   const handleAddSection = useCallback(
     (section: 'work' | 'education' | 'skills' | 'projects') => {
       setActiveTab(section);
+      const data = dataRef.current;
       if (!data) return;
       const newItems = {
         work: { name: 'New Company', position: 'Role', startDate: '', endDate: '', summary: '' },
@@ -252,7 +278,7 @@ export const useResumeBuilder = () => {
       const currentList = (data[section] as unknown[]) || [];
       updateSection(section, [...currentList!, newItems[section]] as (typeof data)[typeof section]);
     },
-    [data, updateSection]
+    [updateSection]
   );
 
   const handleDirectUpdate = useCallback(
@@ -281,8 +307,8 @@ export const useResumeBuilder = () => {
   const isLoadingState = isLoading;
   const isNotFound = !isLoading && (!resume || !data);
 
-  return {
-    state: {
+  const state = useMemo(
+    () => ({
       resume,
       data,
       debouncedData,
@@ -300,8 +326,29 @@ export const useResumeBuilder = () => {
       showStyleEditor,
       id,
       tourSteps: TOUR_STEPS,
-    },
-    actions: {
+    }),
+    [
+      resume,
+      data,
+      debouncedData,
+      isLoadingState,
+      isNotFound,
+      isProcessing,
+      activeTab,
+      showPreview,
+      isSplitView,
+      showReorderDialog,
+      template,
+      isTranslating,
+      viewLanguage,
+      runTour,
+      showStyleEditor,
+      id,
+    ]
+  );
+
+  const actions = useMemo(
+    () => ({
       setActiveTab,
       setShowReorderDialog,
       setTemplate,
@@ -322,6 +369,30 @@ export const useResumeBuilder = () => {
       handleTourFinish,
       navigate,
       updateSection,
-    },
-  };
+    }),
+    [
+      setActiveTab,
+      setShowReorderDialog,
+      setTemplate,
+      setShowStyleEditor,
+      setShowPreview,
+      setIsSplitView,
+      setRunTour,
+      handleSmartFormat,
+      handleSave,
+      handleOrderSave,
+      handleTranslate,
+      handleThemeColorChange,
+      handleFontChange,
+      handlePrint,
+      handleAddSection,
+      handleDirectUpdate,
+      handleViewMode,
+      handleTourFinish,
+      navigate,
+      updateSection,
+    ]
+  );
+
+  return { state, actions };
 };

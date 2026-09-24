@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { logger } from '@/lib/logger';
 import { SetupFormData, SavedJob } from '@/types';
 import { db } from '@/lib/db';
 import { toast } from 'sonner';
@@ -43,7 +44,7 @@ export function useSetupJobs(
       }
       loadData();
     } catch (error) {
-      console.error('Failed to save job:', error);
+      logger.error('Failed to save job:', error);
       toast.error('Failed to save job');
     }
   }, [formData, selectedJobId, loadData]);
@@ -64,7 +65,7 @@ export function useSetupJobs(
         loadData();
         toast.success('Job deleted successfully');
       } catch (error) {
-        console.error('Failed to delete job:', error);
+        logger.error('Failed to delete job:', error);
         toast.error('Failed to delete job');
       }
     },

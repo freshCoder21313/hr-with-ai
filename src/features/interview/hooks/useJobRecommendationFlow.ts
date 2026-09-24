@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { logger } from '@/lib/logger';
 import { Resume, JobRecommendation } from '@/types';
 import { ResumeData } from '@/types/resume';
 import {
@@ -109,7 +110,7 @@ export function useJobRecommendationFlow({
         setProgress(0);
       }, 500);
     } catch (err) {
-      console.error('Error generating jobs:', err);
+      logger.error('Error generating jobs:', err);
       setError(err instanceof Error ? err.message : 'Failed to generate job recommendations');
       setIsGenerating(false);
       setStep('select-resume');
@@ -137,7 +138,7 @@ export function useJobRecommendationFlow({
           onClose();
         }, 2000);
       } catch (err) {
-        console.error('Error generating tailored resume:', err);
+        logger.error('Error generating tailored resume:', err);
         setError('Failed to generate tailored resume. Please try selecting another job.');
         setStep('results');
       }

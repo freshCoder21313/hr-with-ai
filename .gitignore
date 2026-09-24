@@ -26,6 +26,7 @@ dist-ssr
 .opencode/
 .codegraph/
 .openclaude/
+.claude/
 .serena/
 coverage/
 .env

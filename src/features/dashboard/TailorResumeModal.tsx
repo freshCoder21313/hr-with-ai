@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { logger } from '@/lib/logger';
 import {
   Dialog,
   DialogContent,
@@ -42,7 +43,7 @@ export const TailorResumeModal: React.FC<TailorResumeModalProps> = ({
       setJobDescription('');
       onClose();
     } catch (error) {
-      console.error('Failed to tailor resume:', error);
+      logger.error('Failed to tailor resume:', error);
     } finally {
       setIsProcessing(false);
     }

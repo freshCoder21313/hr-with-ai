@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { ResumeData } from '@/types/resume';
 import ClassicTemplate from './templates/ClassicTemplate';
 import ModernTemplate from './templates/ModernTemplate';
@@ -22,21 +22,24 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({
   const themeColor = data.meta?.themeColor;
   const fontFamily = data.meta?.fontFamily || 'sans';
 
-  const handleOrderChange = (newSidebar: string[], newMain: string[]) => {
-    if (onUpdate) {
-      onUpdate({
-        ...data,
-        meta: {
-          ...data.meta,
-          sectionOrder: {
-            ...data.meta?.sectionOrder,
-            sidebar: newSidebar,
-            main: newMain,
+  const handleOrderChange = useCallback(
+    (newSidebar: string[], newMain: string[]) => {
+      if (onUpdate) {
+        onUpdate({
+          ...data,
+          meta: {
+            ...data.meta,
+            sectionOrder: {
+              ...data.meta?.sectionOrder,
+              sidebar: newSidebar,
+              main: newMain,
+            },
           },
-        },
-      });
-    }
-  };
+        });
+      }
+    },
+    [data, onUpdate]
+  );
 
   const renderTemplate = () => {
     const customStyles = data.meta?.customStyles;
@@ -136,4 +139,5 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({
   );
 };
 
-export default ResumePreview;
+const MemoResumePreview = React.memo(ResumePreview);
+export default MemoResumePreview;

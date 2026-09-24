@@ -41,7 +41,7 @@ const COLORS = [
   '#4f46e5', '#0891b2', '#0d9488', '#0284c7',
 ];
 
-export const PreviewView: React.FC<PreviewViewProps> = ({
+const PreviewViewBase: React.FC<PreviewViewProps> = ({
   data,
   template,
   viewLanguage,
@@ -266,3 +266,5 @@ export const PreviewView: React.FC<PreviewViewProps> = ({
     </div>
   );
 };
+
+export const PreviewView = React.memo(PreviewViewBase);

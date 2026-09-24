@@ -1,4 +1,5 @@
 import React, { memo, useEffect, useRef, useState, useCallback } from 'react';
+import { logger } from '@/lib/logger';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -18,7 +19,7 @@ const CopyButton: React.FC<{ text: string }> = ({ text }) => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      console.error('Failed to copy:', err);
+      logger.error('Failed to copy:', err);
     }
   }, [text]);
 
@@ -57,7 +58,7 @@ const MermaidBlock: React.FC<{ code: string }> = ({ code }) => {
           setError(false);
         }
       } catch (e) {
-        console.error('Mermaid rendering error:', e);
+        logger.error('Mermaid rendering error:', e);
         setError(true);
         if (containerRef.current) {
           containerRef.current.innerHTML = '';

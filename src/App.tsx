@@ -1,7 +1,8 @@
 import React, { Suspense, lazy, useEffect } from 'react';
+import { logger } from '@/lib/logger';
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
-import ApiKeyModal from '@/components/shared/ApiKeyModal';
+import ApiKeyModal from '@/features/settings/ApiKeyModal';
 import { Loader2 } from 'lucide-react';
 import { ThemeProvider } from '@/components/shared/theme-provider';
 import Header from '@/components/layout/Header';
@@ -35,7 +36,7 @@ const App: React.FC = () => {
       try {
         await db.cleanOldResumes();
       } catch (err) {
-        console.error('Background cleanup failed', err);
+        logger.error('Background cleanup failed', err);
       }
     };
     cleanup();

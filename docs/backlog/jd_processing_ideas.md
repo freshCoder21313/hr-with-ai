@@ -1,10 +1,10 @@
-# Kế hoạch xử lý và tích hợp JDs.md
+# Kế hoạch xử lý và tích hợp docs/data/JDs.md
 
-Dưới đây là các ý tưởng để xử lý và tích hợp file `JDs.md` vào dự án `hr-with-ai`, tận dụng các tính năng sẵn có như Dexie.js, AI và React:
+Dưới đây là các ý tưởng để xử lý và tích hợp file `docs/data/JDs.md` vào dự án `hr-with-ai`, tận dụng các tính năng sẵn có như Dexie.js, AI và React:
 
 ## 1. Tính năng "Job Board" (Bảng công việc)
 Hiện tại file đang ở dạng Markdown tĩnh. Cần chuyển đổi nó thành dữ liệu động để hiển thị trên ứng dụng.
-*   **Xử lý:** Viết script (hoặc AI function) để parse file `JDs.md` thành mảng JSON objects.
+*   **Xử lý:** Viết script (hoặc AI function) để parse file `docs/data/JDs.md` thành mảng JSON objects.
 *   **Lưu trữ:** Lưu vào `Dexie.js` (IndexedDB) dưới bảng `jobs`.
 *   **UI:** Tạo giao diện hiển thị danh sách việc làm, cho phép filter theo:
     *   Mức lương (Salary range)

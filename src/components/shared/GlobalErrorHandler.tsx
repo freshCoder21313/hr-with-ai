@@ -1,10 +1,11 @@
 import { useEffect } from 'react';
+import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
 
 export function GlobalErrorHandler() {
   useEffect(() => {
     const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
-      console.error('Unhandled promise rejection:', event.reason);
+      logger.error('Unhandled promise rejection:', event.reason);
       event.preventDefault();
 
       const message =
@@ -16,7 +17,7 @@ export function GlobalErrorHandler() {
     };
 
     const handleError = (event: ErrorEvent) => {
-      console.error('Global error:', event.error);
+      logger.error('Global error:', event.error);
     };
 
     window.addEventListener('unhandledrejection', handleUnhandledRejection);

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { logger } from '@/lib/logger';
 import { fetchGitHubRepos, fetchReadme, GitHubRepo } from '@/lib/github';
 import { loadUserSettings, saveUserSettings } from '@/services/core/settingsService';
 import { convertRepoToProject } from './githubAIService';
@@ -145,7 +146,7 @@ export function useGitHubImport({ isOpen, onClose, onImportComplete }: UseGitHub
                 token
               );
             } catch (err) {
-              console.error(`Failed to process ${repo.name}`, err);
+              logger.error(`Failed to process ${repo.name}`, err);
               const errMsg = err instanceof Error ? err.message : '';
               if (errMsg.includes('API Key') || errMsg.includes('API_KEY_INVALID')) {
                 throw err;

@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { logger } from '@/lib/logger';
 import { useNavigate } from 'react-router-dom';
 import { useInterviewStore } from '@/features/interview/interviewStore';
 import {
@@ -110,7 +111,7 @@ export const useInterview = () => {
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : 'Failed to start interview';
         setError(msg);
-        console.error(err);
+        logger.error(err);
       } finally {
         setLoading(false);
       }
@@ -275,7 +276,7 @@ export const useInterview = () => {
         }
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : 'An unexpected error occurred.';
-        console.error('Error sending message:', err);
+        logger.error('Error sending message:', err);
         // Mark the last message (the placeholder) as error
         if (streamId) {
           markMessageAsError(streamId, msg);
@@ -349,7 +350,7 @@ export const useInterview = () => {
 
       await sendMessage(userMsg.content, userMsg.image);
     } catch (error) {
-      console.error('Error regenerating response:', error);
+      logger.error('Error regenerating response:', error);
       setError((error as Error).message);
     }
   }, [removeLastMessage, sendMessage, setLoading, setError]);

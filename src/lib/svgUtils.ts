@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 export const svgToPngBase64 = (svg: SVGElement): Promise<string> => {
   return new Promise((resolve) => {
     try {
@@ -23,12 +24,12 @@ export const svgToPngBase64 = (svg: SVGElement): Promise<string> => {
       };
       img.onerror = (e) => {
         URL.revokeObjectURL(url);
-        console.error('Image loading failed', e);
+        logger.error('Image loading failed', e);
         resolve('');
       };
       img.src = url;
     } catch (e) {
-      console.error('SVG conversion failed', e);
+      logger.error('SVG conversion failed', e);
       resolve('');
     }
   });

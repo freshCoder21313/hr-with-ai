@@ -1,4 +1,5 @@
 import { Message } from '@/types';
+import { logger } from '@/lib/logger';
 import { ResumeData } from '@/types/resume';
 import { getCVChatSystemPrompt } from '@/services/resume/cvPrompt';
 import { getService, AIConfigInput } from '@/services/ai/aiConfigService';
@@ -29,7 +30,7 @@ export async function* streamCVChatMessage(
       yield chunk;
     }
   } catch (error) {
-    console.error('Error in CV Chat:', error);
+    logger.error('Error in CV Chat:', error);
     yield 'I encountered an error processing your request.';
   }
 }

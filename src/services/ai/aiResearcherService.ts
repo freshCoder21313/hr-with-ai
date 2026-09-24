@@ -1,4 +1,5 @@
-import { getCompanyIntelPrompt } from '@/services/interview/promptSystem';
+import { getCompanyIntelPrompt } from '@/services/prompts';
+import { logger } from '@/lib/logger';
 import { AIService } from '@/services/ai/ai.service';
 import { getStoredAIConfig } from './aiConfigService';
 import { loadUserSettings } from '@/services/core/settingsService';
@@ -53,7 +54,7 @@ export const researchCompany = async (companyName: string): Promise<CompanyIntel
     jsonText = jsonText.replace(/```json\n?|\n?```/g, '').trim();
     return JSON.parse(jsonText) as CompanyIntel;
   } catch (error) {
-    console.error('Error researching company:', error);
+    logger.error('Error researching company:', error);
     throw error;
   }
 };

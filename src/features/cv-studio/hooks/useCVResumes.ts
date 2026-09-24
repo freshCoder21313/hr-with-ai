@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { logger } from '@/lib/logger';
 import { notificationService } from '@/services/core/notificationService';
 import { db } from '@/lib/db';
 import { Resume } from '@/types';
@@ -25,7 +26,7 @@ export const useCVResumes = () => {
           setChatResumeId(cv.id);
         }
       } catch (err) {
-        console.error('Failed to load studio resumes', err);
+        logger.error('Failed to load studio resumes', err);
       } finally {
         setIsLoading(false);
       }

@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
+import { logger } from '@/lib/logger';
 import { db } from '@/lib/db';
 import { generateInterviewFeedback } from '@/services/interview/interviewAIService';
 import { getStoredAIConfig } from '@/services/ai/aiConfigService';
@@ -54,7 +55,7 @@ export function useFeedbackData(id: string | undefined) {
         await db.interviews.update(parseInt(id, 10), { feedback: newFeedback });
         setFeedback(newFeedback);
       } catch (e) {
-        console.error(e);
+        logger.error(e);
       } finally {
         setLoading(false);
       }
@@ -87,7 +88,7 @@ export function useFeedbackData(id: string | undefined) {
         );
         mermaidRef2.current.innerHTML = svg2;
       } catch (error) {
-        console.error('Mermaid rendering failed:', error);
+        logger.error('Mermaid rendering failed:', error);
         if (mermaidRef1.current) {
           mermaidRef1.current.innerHTML =
             '<p class="text-red-500 text-sm">Error rendering chart</p>';

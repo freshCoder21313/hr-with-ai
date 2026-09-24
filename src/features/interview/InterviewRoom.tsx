@@ -1,9 +1,10 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import { logger } from '@/lib/logger';
 import { notificationService } from '@/services/core/notificationService';
 import { useParams } from 'react-router-dom';
 import type { Editor, TLShapeId } from 'tldraw';
 import { useInterview } from '@/hooks/useInterview';
-import { useInterviewLoader } from '@/hooks/useInterviewLoader';
+import { useInterviewLoader } from '@/features/interview/hooks/useInterviewLoader';
 import { svgToPngBase64 } from '@/lib/svgUtils';
 import { useInterviewStore } from './interviewStore';
 import { JobRecommendation, resolveInterviewInteractionMode } from '@/types';
@@ -86,7 +87,7 @@ const InterviewRoom: React.FC = () => {
           }
         }
       } catch (e) {
-        console.error('Failed to capture whiteboard', e);
+        logger.error('Failed to capture whiteboard', e);
       }
     }
 
@@ -135,7 +136,7 @@ const InterviewRoom: React.FC = () => {
 
   if (!currentInterview || isInterviewLoading) {
     return (
-      <div className="h-screen flex items-center justify-center text-slate-500">
+      <div className="h-[100dvh] flex items-center justify-center text-muted-foreground">
         Loading room...
       </div>
     );

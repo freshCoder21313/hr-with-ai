@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 export class AudioRecorderService {
   private mediaRecorder: MediaRecorder | null = null;
   private audioChunks: Blob[] = [];
@@ -29,7 +30,7 @@ export class AudioRecorderService {
 
       this.mediaRecorder.start();
     } catch (error) {
-      console.error('Error starting audio recording:', error);
+      logger.error('Error starting audio recording:', error);
       throw error;
     }
   }

@@ -9,7 +9,7 @@ interface SplitViewProps {
   onUpdate: (data: ResumeData) => void;
 }
 
-export const SplitView: React.FC<SplitViewProps> = ({
+const SplitViewBase: React.FC<SplitViewProps> = ({
   resume,
   data,
   template,
@@ -45,3 +45,5 @@ export const SplitView: React.FC<SplitViewProps> = ({
     </div>
   );
 };
+
+export const SplitView = React.memo(SplitViewBase);

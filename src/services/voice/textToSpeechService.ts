@@ -1,4 +1,5 @@
 import { VoiceSettings } from '@/types';
+import { logger } from '@/lib/logger';
 
 export interface TTSConfig extends VoiceSettings {
   onStart?: () => void;
@@ -68,7 +69,7 @@ class TextToSpeechService {
     };
 
     utterance.onerror = (event) => {
-      console.error('TTS Error:', event);
+      logger.error('TTS Error:', event);
       config.onError?.(event);
     };
 

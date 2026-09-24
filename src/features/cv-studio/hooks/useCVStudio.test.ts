@@ -122,4 +122,49 @@ describe('useCVStudio', () => {
 
     expect(result.current.ui.template).toBe('classic');
   });
+
+  it('exports jobs to jobs-backup.json', async () => {
+    URL.createObjectURL = vi.fn(() => 'blob:mock');
+    URL.revokeObjectURL = vi.fn();
+    const downloads: string[] = [];
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (
+      this: HTMLAnchorElement
+    ) {
+      downloads.push(this.download);
+    });
+    useJobStore.setState({
+      jobs: [{ id: '1', company: 'C', title: 'T', description: 'D', customPrompt: '' }],
+      globalPrompt: 'gp',
+    });
+    const { result } = await renderReadyCVStudio();
+    act(() => result.current.actions.handleExportJobs());
+    expect(downloads[0]).toBe('jobs-backup.json');
+  });
+
+  it('does not overwrite globalPrompt when the import payload lacks one', async () => {
+    vi.stubGlobal(
+      'FileReader',
+      class {
+        onload: ((ev: { target: { result: string } }) => void) | null = null;
+        readAsText() {
+          this.onload?.({ target: { result: JSON.stringify({ jobs: [] }) } });
+        }
+      }
+    );
+    const originalCreate = document.createElement.bind(document);
+    const fakeInput = {
+      type: '',
+      accept: '',
+      onchange: null as null | ((e: unknown) => void),
+      click() {
+        this.onchange?.({ target: { files: [new File(['{}'], 'jobs.json')] } });
+      },
+    };
+    vi.spyOn(document, 'createElement').mockImplementation((tag: string) =>
+      tag === 'input' ? (fakeInput as unknown as HTMLElement) : originalCreate(tag)
+    );
+    const { result } = await renderReadyCVStudio();
+    act(() => result.current.actions.handleImportJobs());
+    expect(useJobStore.getState().globalPrompt).toBe('default');
+  });
 });

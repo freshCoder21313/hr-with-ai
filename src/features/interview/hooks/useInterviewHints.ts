@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
 import { Interview } from '@/types';
 import { generateInterviewHints, InterviewHints } from '@/services/interview/interviewAIService';
@@ -31,7 +32,7 @@ export function useInterviewHints(currentInterview: Interview | null) {
       const result = await generateInterviewHints(lastQuestion.content, context, config);
       setHints(result);
     } catch (error) {
-      console.error(error);
+      logger.error(error);
       toast.error('Failed to get hints. Please try again.');
     } finally {
       setIsLoadingHints(false);

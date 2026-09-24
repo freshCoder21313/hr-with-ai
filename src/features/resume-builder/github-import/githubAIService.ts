@@ -1,4 +1,5 @@
 import { GitHubRepo } from '@/lib/github';
+import { logger } from '@/lib/logger';
 import { Project } from '@/types/resume';
 import { AIConfigInput } from '@/services/ai/aiConfigService';
 import { getRepoToProjectPrompt, getGitHubInterviewPrompt } from './githubPrompt';
@@ -44,7 +45,7 @@ export const convertRepoToProject = async (
 
     return project;
   } catch (error) {
-    console.error(`Error converting repo ${repo.name}:`, error);
+    logger.error(`Error converting repo ${repo.name}:`, error);
     return {
       name: repo.name,
       description: repo.description || 'GitHub Repository',
@@ -73,7 +74,7 @@ export const generateGitHubInterviewQuestions = async (
       githubInterviewQuestionsSchema
     );
   } catch (error) {
-    console.error('Error generating GitHub questions:', error);
+    logger.error('Error generating GitHub questions:', error);
     return [];
   }
 };

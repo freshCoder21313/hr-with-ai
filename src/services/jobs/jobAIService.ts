@@ -1,6 +1,7 @@
 import { UserSettings, JobRecommendation } from '@/types';
+import { logger } from '@/lib/logger';
 import { db } from '@/lib/db';
-import { getExtractJDInfoPrompt } from '@/services/interview/promptSystem';
+import { getExtractJDInfoPrompt } from '@/services/prompts';
 import { generateJobRecommendationsPrompt, generateTailoredResumePrompt } from './jobPromptSystem';
 import { ResumeData } from '@/types/resume';
 import { DBJobRecommendation } from './jobRecommendationService';
@@ -24,7 +25,7 @@ export const extractInfoFromJD = async (
   try {
     return await service.generateStructured([{ role: 'user', content: prompt }], jdExtractSchema);
   } catch (error) {
-    console.error('Error extracting info from JD:', error);
+    logger.error('Error extracting info from JD:', error);
     throw error;
   }
 };
@@ -109,7 +110,7 @@ export const generateJobRecommendations = async (
 
     return mappedRecommendations;
   } catch (error) {
-    console.error('Error generating job recommendations:', error);
+    logger.error('Error generating job recommendations:', error);
     throw error;
   }
 };
@@ -129,7 +130,7 @@ export const generateTailoredResumeForJob = async (
       resumeDataSchema
     )) as unknown as ResumeData;
   } catch (error) {
-    console.error('Error generating tailored resume:', error);
+    logger.error('Error generating tailored resume:', error);
     throw error;
   }
 };

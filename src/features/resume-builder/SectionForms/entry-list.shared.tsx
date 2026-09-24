@@ -162,15 +162,7 @@ export const EntryListHeader: React.FC<EntryListHeaderProps> = ({ title, addLabe
   </div>
 );
 
-interface EmptyStateProps {
-  message: string;
-}
-
-export const EmptyState: React.FC<EmptyStateProps> = ({ message }) => (
-  <div className="text-center py-12 border-2 border-dashed border-border rounded-lg text-muted-foreground">
-    {message}
-  </div>
-);
+export { EmptyState } from '@/components/ui/empty-state';
 
 interface GridFieldProps {
   label: string;

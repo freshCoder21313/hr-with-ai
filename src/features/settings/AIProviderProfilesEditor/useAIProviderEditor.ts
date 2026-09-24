@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
 import { AIProviderProfile, UserSettings } from '@/types';
 import { loadUserSettings, saveUserSettings } from '@/services/core/settingsService';
@@ -319,7 +320,7 @@ export function useAIProviderEditor(onSave?: (settings: UserSettings) => void) {
       toast.success('AI Profiles saved successfully.');
       if (onSave) onSave(saved);
     } catch (error) {
-      console.error('Failed to save profiles:', error);
+      logger.error('Failed to save profiles:', error);
       toast.error('Failed to save profiles.');
     } finally {
       setIsSaving(false);

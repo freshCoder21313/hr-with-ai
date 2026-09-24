@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { logger } from '@/lib/logger';
 import { db } from '@/lib/db';
 import { loadUserSettings } from '@/services/core/settingsService';
 import {
@@ -34,7 +35,7 @@ export function useInterviewRoomBootstrap(
         const stored = await loadUserSettings();
         if (!cancelled) setUserSettings(stored);
       } catch (error) {
-        console.error('Failed to load settings:', error);
+        logger.error('Failed to load settings:', error);
       } finally {
         if (!cancelled) setIsSettingsLoaded(true);
       }
@@ -52,7 +53,7 @@ export function useInterviewRoomBootstrap(
         const stored = await loadUserSettings();
         if (!cancelled) setUserSettings(stored);
       } catch (error) {
-        console.error('Failed to reload settings:', error);
+        logger.error('Failed to reload settings:', error);
       }
     })();
     return () => {
@@ -67,7 +68,7 @@ export function useInterviewRoomBootstrap(
         const resumes = await db.resumes.toArray();
         if (!cancelled) setAvailableResumes(resumes);
       } catch (error) {
-        console.error('Failed to load resumes:', error);
+        logger.error('Failed to load resumes:', error);
       }
     })();
     return () => {

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { logger } from '@/lib/logger';
 import { useSkillAssessmentStore } from '@/features/skill-assessment/stores/useSkillAssessmentStore';
 import {
   generateSubSkills,
@@ -92,7 +93,7 @@ export const SelectSkillStep: React.FC = () => {
       setQuizQuestions(questions);
       setStep('quiz');
     } catch (err) {
-      console.error(err);
+      logger.error(err);
       setError(err instanceof Error ? err.message : 'Failed to initialize assessment');
     } finally {
       setIsLoading(false);
