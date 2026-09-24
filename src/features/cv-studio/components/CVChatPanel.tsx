@@ -6,6 +6,15 @@ import { SimpleInputArea } from '@/components/shared/SimpleInputArea';
 import { ChangeReviewCard } from './ChangeReviewCard';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Input } from '@/components/ui/input';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { useState } from 'react';
 import {
   MessageSquare,
   Plus,
@@ -62,11 +71,19 @@ export const CVChatPanel: React.FC<CVChatPanelProps> = ({
   onSetContextJobId,
   onGitHubImportOpen,
 }) => {
+  const [renameOpen, setRenameOpen] = useState(false);
+  const [renameValue, setRenameValue] = useState('');
+
+  const handleRenameSubmit = () => {
+    const trimmed = renameValue.trim();
+    if (chatResumeId && trimmed) {
+      onRenameCV(chatResumeId, trimmed);
+    }
+    setRenameOpen(false);
+  };
+
   return (
-    <div
-      className="flex flex-col border-r border-border bg-background overflow-hidden"
-      style={{ width: '38%', minWidth: '280px' }}
-    >
+    <div className="flex flex-col border-r border-border bg-background overflow-hidden w-full md:w-[38%] md:min-w-[280px]">
       <div className="h-12 px-4 border-b border-border flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2">
           <MessageSquare className="w-4 h-4 text-primary" />
@@ -153,11 +170,8 @@ export const CVChatPanel: React.FC<CVChatPanelProps> = ({
                 className="h-7 w-7 shrink-0 opacity-60 hover:opacity-100 hover:bg-primary/10"
                 onClick={() => {
                   if (!chatResumeId) return;
-                  const currentName = resumes.find((r) => r.id === chatResumeId)?.fileName || '';
-                  const newName = window.prompt('Enter new CV name:', currentName);
-                  if (newName && newName !== currentName && newName.trim()) {
-                    onRenameCV(chatResumeId, newName.trim());
-                  }
+                  setRenameValue(resumes.find((r) => r.id === chatResumeId)?.fileName || '');
+                  setRenameOpen(true);
                 }}
                 disabled={!chatResumeId}
               >
@@ -249,6 +263,31 @@ export const CVChatPanel: React.FC<CVChatPanelProps> = ({
             : 'No CV selected'
         }
       />
+
+      <Dialog open={renameOpen} onOpenChange={setRenameOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Rename CV</DialogTitle>
+          </DialogHeader>
+          <Input
+            value={renameValue}
+            onChange={(e) => setRenameValue(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleRenameSubmit();
+            }}
+            placeholder="Enter new CV name"
+            autoFocus
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRenameOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleRenameSubmit} disabled={!renameValue.trim()}>
+              Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

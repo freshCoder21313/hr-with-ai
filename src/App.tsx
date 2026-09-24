@@ -54,7 +54,7 @@ const App: React.FC = () => {
                   <ApiKeyModal />
                   <Header />
 
-                  <Toaster position="bottom-center" toastOptions={{ className: 'mb-safe' }} />
+                  <Toaster position="bottom-center" richColors closeButton toastOptions={{ className: 'mb-safe' }} />
 
                   <main className="flex-1 container mx-auto px-0 md:px-4 py-0 md:py-6 print:p-0 print:m-0 print:max-w-none print:block print:flex-none">
                     <Suspense fallback={<PageLoader />}>

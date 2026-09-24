@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SEO from '@/components/shared/SEO';
 import { ResumePreview, SectionReorderDialog, GitHubImportModal } from '@/features/resume-builder';
@@ -8,10 +8,12 @@ import { CVChatPanel } from './components/CVChatPanel';
 import { CVPreviewPanel } from './components/CVPreviewPanel';
 import { useCVStudio } from './hooks/useCVStudio';
 import { Loader2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const CVStudioPage: React.FC = () => {
   const navigate = useNavigate();
   const { state, ui, actions } = useCVStudio();
+  const [mobileTab, setMobileTab] = useState<'jobs' | 'chat' | 'preview'>('chat');
 
   const handleViewResult = useCallback(
     (id: number) => {
@@ -40,11 +42,33 @@ const CVStudioPage: React.FC = () => {
         )}
       </div>
 
-      <div className="flex h-[calc(100vh-64px)] overflow-hidden bg-background print:hidden">
+      <div className="flex flex-col h-[calc(100dvh-4rem)] overflow-hidden bg-background print:hidden">
         <SEO
           title="CV Studio \u2014 HR With AI"
           description="Unified CV editing, tailoring, and AI chat."
         />
+
+        <div className="flex md:hidden border-b border-border shrink-0">
+          {(['jobs', 'chat', 'preview'] as const).map((tab) => (
+            <button
+              key={tab}
+              type="button"
+              onClick={() => setMobileTab(tab)}
+              aria-pressed={mobileTab === tab}
+              className={cn(
+                'flex-1 py-2.5 text-sm font-medium capitalize transition-colors',
+                mobileTab === tab
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-card text-muted-foreground hover:bg-muted'
+              )}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex flex-1 overflow-hidden min-h-0">
+          <div className={cn(mobileTab === 'jobs' ? 'flex flex-1 min-w-0' : 'hidden', 'md:contents')}>
 
         <CVJobPanel
           jobs={state.jobs}
@@ -68,6 +92,8 @@ const CVStudioPage: React.FC = () => {
           onOpenPromptModal={() => ui.setIsPromptModalOpen(true)}
           onViewResult={handleViewResult}
         />
+          </div>
+          <div className={cn(mobileTab === 'chat' ? 'flex flex-1 min-w-0' : 'hidden', 'md:contents')}>
 
         <CVChatPanel
           messages={state.messages}
@@ -90,6 +116,10 @@ const CVStudioPage: React.FC = () => {
           onSetContextJobId={actions.setContextJobId}
           onGitHubImportOpen={() => ui.setIsGitHubModalOpen(true)}
         />
+          </div>
+          <div
+            className={cn(mobileTab === 'preview' ? 'flex flex-1 min-w-0' : 'hidden', 'md:contents')}
+          >
 
         <CVPreviewPanel
           previewData={state.previewData}
@@ -104,6 +134,8 @@ const CVStudioPage: React.FC = () => {
           onOpenReorderDialog={() => ui.setShowReorderDialog(true)}
           onPrint={() => window.print()}
         />
+          </div>
+        </div>
 
         <SectionReorderDialog
           isOpen={ui.showReorderDialog}

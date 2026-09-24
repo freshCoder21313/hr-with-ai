@@ -66,7 +66,7 @@ const ResumeBuilder: React.FC = () => {
         }}
       />
 
-      <div className="flex flex-col h-[100dvh] bg-background text-foreground print:hidden">
+      <div className="flex flex-col h-[100dvh] bg-background text-foreground pb-[var(--safe-bottom)] print:hidden">
         <BuilderHeader
           resume={resume!}
           viewMode={viewMode}

@@ -5,6 +5,7 @@ import {
   Save,
   Eye,
   Columns,
+  Check,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { LoadingButton } from '@/components/ui/loading-button';
@@ -92,12 +93,19 @@ const BuilderHeaderBase: React.FC<BuilderHeaderProps> = ({
             disabled={isProcessing}
             isLoading={isProcessing}
             loadingText=""
-            className="bg-purple-600 hover:bg-purple-700 text-white"
+            className="bg-accent text-accent-foreground hover:bg-accent/80"
             leftIcon={<Wand2 className="w-4 h-4" />}
           >
             Smart Format
           </LoadingButton>
         )}
+
+        <span
+          className="hidden sm:inline-flex items-center gap-1 text-xs text-muted-foreground"
+          title="Changes are saved automatically"
+        >
+          <Check className="w-3.5 h-3.5" /> Auto-save on
+        </span>
 
         <Button onClick={onSave} className="gap-2">
           <Save className="w-4 h-4" /> Save

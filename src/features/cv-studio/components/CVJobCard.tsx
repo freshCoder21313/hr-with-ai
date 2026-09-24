@@ -53,13 +53,13 @@ export const CVJobCard: React.FC<CVJobCardProps> = ({
             {job.title || 'Untitled'}
             {job.company ? ` @ ${job.company}` : ''}
           </p>
-          <p className="text-[10px] text-muted-foreground truncate">
+          <p className="text-xs text-muted-foreground truncate">
             {job.description ? job.description.slice(0, 50) + '\u2026' : 'No JD yet'}
           </p>
         </div>
         <div className="flex items-center gap-1 shrink-0">
           {isDone && (
-            <Badge className="bg-green-500 hover:bg-green-600 text-[10px] h-5 px-1.5">
+            <Badge className="bg-emerald-600 text-white hover:bg-emerald-600/90 dark:bg-emerald-500 dark:text-emerald-950 text-[10px] h-5 px-1.5">
               <CheckCircle2 className="w-2.5 h-2.5 mr-0.5" /> Done
             </Badge>
           )}
@@ -75,6 +75,7 @@ export const CVJobCard: React.FC<CVJobCardProps> = ({
             className="h-6 w-6 text-muted-foreground hover:text-destructive"
             onClick={onRemove}
             disabled={isProcessing}
+            aria-label="Delete job"
           >
             <Trash2 className="w-3 h-3" />
           </Button>
@@ -83,6 +84,7 @@ export const CVJobCard: React.FC<CVJobCardProps> = ({
             size="icon"
             className="h-6 w-6 text-muted-foreground"
             onClick={() => setExpanded(!expanded)}
+            aria-label={expanded ? 'Collapse job details' : 'Expand job details'}
           >
             {expanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
           </Button>

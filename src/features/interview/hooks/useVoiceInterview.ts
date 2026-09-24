@@ -267,6 +267,8 @@ export const useVoiceInterview = () => {
     state: currentState,
     transcript: currentTranscript, // Combined final + interim handled by store
     interimTranscript: stt.interimTranscript,
+    speechError: stt.error,
+    speechSupported: stt.isSupported,
     isListening: stt.isListening,
     isSpeaking: tts.isSpeaking,
     audioLevel: useVoiceInterviewStore((s) => s.audioLevel),

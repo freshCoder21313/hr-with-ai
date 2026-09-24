@@ -51,6 +51,7 @@ export const SimpleInputArea: React.FC<SimpleInputAreaProps> = ({
               className="h-[44px] w-[44px] rounded-xl shrink-0"
               size="icon"
               isLoading={disabled}
+              aria-label="Send message"
             >
               <Send size={18} />
             </LoadingButton>

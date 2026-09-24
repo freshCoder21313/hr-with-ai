@@ -134,7 +134,14 @@ const SkillRadarChart: React.FC<SkillRadarChartProps> = ({ interviews }) => {
         </CardTitle>
       </CardHeader>
       <CardContent className="h-[400px]">
-        <ResponsiveContainer width="100%" height="100%">
+        <div
+          role="img"
+          aria-label={`Technical skill map radar chart showing proficiency across ${data.length} skills: ${data
+            .map((d) => d.subject)
+            .join(', ')}.`}
+          className="h-full w-full"
+        >
+          <ResponsiveContainer width="100%" height="100%">
           <RadarChart cx="50%" cy="50%" outerRadius="75%" data={data}>
             <defs>
               <linearGradient id="radarGradient" x1="0" y1="0" x2="0" y2="1">
@@ -167,7 +174,15 @@ const SkillRadarChart: React.FC<SkillRadarChartProps> = ({ interviews }) => {
               }}
             />
           </RadarChart>
-        </ResponsiveContainer>
+          </ResponsiveContainer>
+        </div>
+        <ul className="sr-only">
+          {data.map((d) => (
+            <li key={d.subject}>
+              {d.subject}: proficiency {d.proficiency} out of 10
+            </li>
+          ))}
+        </ul>
       </CardContent>
     </Card>
   );

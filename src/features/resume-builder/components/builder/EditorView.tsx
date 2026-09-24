@@ -63,11 +63,11 @@ export const EditorView: React.FC<EditorViewProps> = ({
       <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-background editor-scroll-area">
         <div className="max-w-3xl mx-auto">
           {!resume.formatted && !data.basics.name && (
-            <Card className="mb-8 p-6 bg-purple-500/10 border-purple-500/20 border tour-magic-format">
-              <h3 className="font-bold text-purple-700 dark:text-purple-400 mb-2 flex items-center gap-2">
+            <Card className="mb-8 p-6 bg-accent/10 border-accent/30 border text-accent-foreground tour-magic-format">
+              <h3 className="font-bold text-foreground mb-2 flex items-center gap-2">
                 <Wand2 className="w-5 h-5" /> AI Magic Available
               </h3>
-              <p className="text-purple-600 dark:text-purple-300 text-sm mb-4">
+              <p className="text-muted-foreground text-sm mb-4">
                 This resume seems to be raw text. Use &quot;Smart Format&quot; to
                 automatically structure it into fields using AI.
               </p>

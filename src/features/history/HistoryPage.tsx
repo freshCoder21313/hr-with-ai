@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { LoadingButton } from '@/components/ui/loading-button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import LearningPath from './LearningPath';
 import SEO from '@/components/shared/SEO';
@@ -31,13 +32,19 @@ const HistoryPage: React.FC = () => {
   const [interviews, setInterviews] = useState<Interview[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hasMore, setHasMore] = useState(false);
+  const [totalCount, setTotalCount] = useState(0);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchHistory = async () => {
       try {
-        const page = await db.getInterviewsPage(0, PAGE_SIZE);
+        const [page, total] = await Promise.all([
+          db.getInterviewsPage(0, PAGE_SIZE),
+          db.interviews.count(),
+        ]);
         setInterviews(page);
+        setTotalCount(total);
         setHasMore(page.length === PAGE_SIZE);
       } finally {
         setIsLoading(false);
@@ -47,9 +54,14 @@ const HistoryPage: React.FC = () => {
   }, []);
 
   const loadMore = useCallback(async () => {
-    const page = await db.getInterviewsPage(interviews.length, PAGE_SIZE);
-    setInterviews((prev) => [...prev, ...page]);
-    setHasMore(page.length === PAGE_SIZE);
+    setIsLoadingMore(true);
+    try {
+      const page = await db.getInterviewsPage(interviews.length, PAGE_SIZE);
+      setInterviews((prev) => [...prev, ...page]);
+      setHasMore(page.length === PAGE_SIZE);
+    } finally {
+      setIsLoadingMore(false);
+    }
   }, [interviews.length]);
 
   const stats = {
@@ -261,6 +273,7 @@ const HistoryPage: React.FC = () => {
                         <Button
                           variant="ghost"
                           size="icon"
+                          aria-label="View interview details"
                           className="text-muted-foreground group-hover:text-primary ml-auto md:ml-0"
                         >
                           <ArrowRight size={20} />
@@ -275,11 +288,23 @@ const HistoryPage: React.FC = () => {
               </CardContent>
             </Card>
           ))}
-          {hasMore && (
-            <Button variant="outline" onClick={loadMore} className="w-full mt-4">
-              Load more
-            </Button>
-          )}
+          <div className="mt-4 flex flex-col items-center gap-2">
+            <p className="text-xs text-muted-foreground text-center">
+              Showing {interviews.length} of {totalCount} sessions · analytics above reflect
+              currently loaded sessions
+            </p>
+            {hasMore && (
+              <LoadingButton
+                variant="outline"
+                onClick={loadMore}
+                isLoading={isLoadingMore}
+                loadingText="Loading…"
+                className="w-full"
+              >
+                Load more
+              </LoadingButton>
+            )}
+          </div>
         </div>
       )}
     </div>

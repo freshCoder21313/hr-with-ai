@@ -8,6 +8,15 @@ import { Progress } from '@/components/ui/progress';
 import { Label } from '@/components/ui/label';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { EmptyState } from '@/components/ui/empty-state';
+import { Input } from '@/components/ui/input';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { useState } from 'react';
 import {
   Briefcase,
   Plus,
@@ -68,6 +77,16 @@ export const CVJobPanel: React.FC<CVJobPanelProps> = ({
   onViewResult,
 }) => {
   const selectedResumeName = resumes.find((r) => r.id === selectedResumeId)?.fileName;
+  const [renameOpen, setRenameOpen] = useState(false);
+  const [renameValue, setRenameValue] = useState('');
+
+  const handleRenameSubmit = () => {
+    const trimmed = renameValue.trim();
+    if (selectedResumeId && trimmed) {
+      onRenameResume(selectedResumeId, trimmed);
+    }
+    setRenameOpen(false);
+  };
 
   return (
     <div
@@ -135,12 +154,10 @@ export const CVJobPanel: React.FC<CVJobPanelProps> = ({
                     className="h-7 w-7 shrink-0 hover:bg-primary/10 hover:text-primary hover:border-primary/30"
                     onClick={() => {
                       if (!selectedResumeId) return;
-                      const currentName =
-                        resumes.find((r) => r.id === selectedResumeId)?.fileName || '';
-                      const newName = window.prompt('Enter new CV name:', currentName);
-                      if (newName && newName !== currentName && newName.trim()) {
-                        onRenameResume(selectedResumeId, newName.trim());
-                      }
+                      setRenameValue(
+                        resumes.find((r) => r.id === selectedResumeId)?.fileName || ''
+                      );
+                      setRenameOpen(true);
                     }}
                     disabled={!selectedResumeId}
                   >
@@ -254,6 +271,11 @@ export const CVJobPanel: React.FC<CVJobPanelProps> = ({
                 </>
               )}
             </Button>
+            {!isProcessing && (!selectedResumeId || selectedJobs.size === 0) && (
+              <p className="text-[11px] text-muted-foreground mt-1 text-center">
+                Select a source CV and check at least one job to start.
+              </p>
+            )}
           </div>
         </div>
       )}
@@ -317,6 +339,31 @@ export const CVJobPanel: React.FC<CVJobPanelProps> = ({
           )}
         </div>
       )}
+
+      <Dialog open={renameOpen} onOpenChange={setRenameOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Rename CV</DialogTitle>
+          </DialogHeader>
+          <Input
+            value={renameValue}
+            onChange={(e) => setRenameValue(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleRenameSubmit();
+            }}
+            placeholder="Enter new CV name"
+            autoFocus
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRenameOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleRenameSubmit} disabled={!renameValue.trim()}>
+              Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

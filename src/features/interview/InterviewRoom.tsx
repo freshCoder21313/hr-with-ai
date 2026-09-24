@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import { Loader2 } from 'lucide-react';
 import { logger } from '@/lib/logger';
 import { notificationService } from '@/services/core/notificationService';
 import { useParams } from 'react-router-dom';
@@ -136,7 +137,8 @@ const InterviewRoom: React.FC = () => {
 
   if (!currentInterview || isInterviewLoading) {
     return (
-      <div className="h-[100dvh] flex items-center justify-center text-muted-foreground">
+      <div className="h-[100dvh] flex flex-col items-center justify-center gap-3 text-muted-foreground">
+        <Loader2 className="animate-spin h-6 w-6 text-primary" />
         Loading room...
       </div>
     );

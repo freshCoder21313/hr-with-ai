@@ -56,6 +56,88 @@ const PreviewViewBase: React.FC<PreviewViewProps> = ({
 }) => {
   return (
     <div className="flex-1 relative overflow-hidden flex bg-muted/30">
+      {/* Mobile Toolbar (compact) — desktop uses the side rails above */}
+      <div className="flex md:hidden absolute bottom-4 left-1/2 -translate-x-1/2 z-20 items-center gap-1 p-1.5 rounded-full bg-card border border-border shadow-lg">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-9 w-9 rounded-full"
+              aria-label="Switch template"
+            >
+              <LayoutTemplate className="w-5 h-5" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent side="top" align="center">
+            {(['modern', 'classic', 'creative', 'minimalist', 'academic'] as const).map((t) => (
+              <DropdownMenuItem key={t} onClick={() => onSetTemplate(t)}>
+                {t.charAt(0).toUpperCase() + t.slice(1)}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-9 w-9 rounded-full relative overflow-hidden group"
+              aria-label="Change accent color"
+            >
+              <Palette className="w-5 h-5 z-10" />
+              <div
+                className="absolute inset-0 opacity-20 group-hover:opacity-40 transition-opacity"
+                style={{ backgroundColor: data.meta?.themeColor || '#2563eb' }}
+              />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent side="top" align="center" className="w-48 p-2">
+            <div className="grid grid-cols-4 gap-2">
+              {COLORS.map((color) => (
+                <button
+                  key={color}
+                  className="w-8 h-8 rounded-full border border-border shadow-sm hover:scale-110 transition-transform focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                  style={{ backgroundColor: color }}
+                  onClick={() => onThemeColorChange(color)}
+                  title={color}
+                  aria-label={`Accent color ${color}`}
+                />
+              ))}
+            </div>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onTranslate}
+          disabled={isTranslating}
+          className="h-9 w-9 rounded-full relative"
+          aria-label={`Translate (current: ${viewLanguage === 'en' ? 'English' : 'Vietnamese'})`}
+        >
+          {isTranslating ? (
+            <Loader2 className="w-5 h-5 animate-spin" />
+          ) : (
+            <Languages className="w-5 h-5" />
+          )}
+          <span className="absolute -bottom-1 -right-1 text-[8px] font-bold bg-primary text-primary-foreground px-1 rounded-sm uppercase">
+            {viewLanguage}
+          </span>
+        </Button>
+
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onPrint}
+          className="h-9 w-9 rounded-full text-primary"
+          aria-label="Export PDF"
+        >
+          <Printer className="w-5 h-5" />
+        </Button>
+      </div>
+
       {/* Left Toolbar */}
       <div className="hidden md:flex flex-col gap-2 p-4 w-16 items-center shrink-0 z-10 justify-center">
         <Tooltip delayDuration={0}>

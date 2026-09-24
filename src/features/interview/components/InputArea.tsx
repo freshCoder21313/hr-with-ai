@@ -185,6 +185,7 @@ export const InputArea: React.FC<InputAreaProps> = ({
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyPress}
             placeholder="Type your answer..."
+            aria-label="Interview answer"
             className={cn(
               'w-full min-h-[44px] max-h-[120px] resize-none pr-10 md:pr-12 py-2.5 md:py-3 shadow-sm text-sm md:text-base'
             )}
@@ -210,6 +211,9 @@ export const InputArea: React.FC<InputAreaProps> = ({
               <p>{isListening ? 'Stop Listening' : 'Start Voice Input'}</p>
             </TooltipContent>
           </Tooltip>
+          <p className="hidden md:block text-[11px] text-muted-foreground mt-1">
+            Enter to send · Shift+Enter for new line
+          </p>
         </div>
 
         <Tooltip>

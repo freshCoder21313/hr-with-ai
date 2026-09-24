@@ -117,7 +117,12 @@ const ProgressCharts: React.FC<ProgressChartsProps> = ({ interviews }) => {
           </CardTitle>
         </CardHeader>
         <CardContent className="h-[350px]">
-          <ResponsiveContainer width="100%" height="100%">
+          <div
+            role="img"
+            aria-label={`Performance metrics chart over the last ${data.length} completed sessions. Average score ${averageScore} out of 10, highest score ${highestScore}.`}
+            className="h-full w-full"
+          >
+            <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 5 }}>
               <defs>
                 <linearGradient id="scoreGradient" x1="0" y1="0" x2="0" y2="1">
@@ -176,7 +181,13 @@ const ProgressCharts: React.FC<ProgressChartsProps> = ({ interviews }) => {
                 radius={[4, 4, 0, 0]}
               />
             </ComposedChart>
-          </ResponsiveContainer>
+            </ResponsiveContainer>
+          </div>
+          <p className="sr-only">
+            Performance over the last {data.length} completed sessions. Average score{' '}
+            {averageScore} out of 10. Highest score {highestScore} out of 10. Metrics tracked:
+            overall score, resilience, and culture fit.
+          </p>
         </CardContent>
       </Card>
     </div>

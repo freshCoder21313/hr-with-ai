@@ -115,13 +115,13 @@ export const ChangeReviewCard: React.FC<ChangeReviewCardProps> = ({
           </div>
 
           {isExpanded ? (
-            <div className="max-h-40 overflow-y-auto bg-slate-50 p-2 rounded text-xs border">
+            <div className="max-h-40 overflow-y-auto bg-muted p-2 rounded text-xs border border-border">
               {newData.map((item, idx) => (
                 <div key={idx} className="mb-2 pb-2 border-b last:border-0">
                   <div className="font-semibold">
                     {item.name || item.institution || item.company || `Item ${idx + 1}`}
                   </div>
-                  <div className="text-slate-500">{item.position || item.area || item.level}</div>
+                  <div className="text-muted-foreground">{item.position || item.area || item.level}</div>
                 </div>
               ))}
             </div>
@@ -138,7 +138,7 @@ export const ChangeReviewCard: React.FC<ChangeReviewCardProps> = ({
                 </div>
               ))}
               {newData.length > 3 && (
-                <span className="text-slate-400 pl-3">+{newData.length - 3} more...</span>
+                <span className="text-muted-foreground pl-3">+{newData.length - 3} more...</span>
               )}
             </div>
           )}

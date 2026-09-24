@@ -55,7 +55,7 @@ export const ResumeSelector: React.FC<ResumeSelectorProps> = ({
             variant="outline"
             size="sm"
             onClick={onFindJobClick}
-            className="text-yellow-500 border-primary/20 hover:bg-primary/10 hover:border-primary/50 dark:text-primary dark:border-yellow-500/30 dark:hover:bg-primary/10"
+            className="text-primary border-primary/20 hover:bg-primary/10 hover:border-primary/50"
           >
             <Briefcase className="mr-2 h-4 w-4" /> Find Job with CV
           </Button>

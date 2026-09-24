@@ -12,6 +12,7 @@ import { ChatArea } from './ChatArea';
 import { Input } from '@/components/ui/input';
 import MarkdownRenderer from '@/components/shared/MarkdownRenderer';
 import { isNonEmptyString } from '@/lib/validation';
+import { notificationService } from '@/services/core/notificationService';
 
 interface VoiceInterviewRoomProps {
   onSwitchToText?: () => void;
@@ -28,6 +29,8 @@ export const VoiceInterviewRoom: React.FC<VoiceInterviewRoomProps> = ({ onSwitch
     isSpeaking,
     transcript,
     interimTranscript,
+    speechError,
+    speechSupported,
     state: interviewState,
     audioLevel,
     startListening,
@@ -51,6 +54,18 @@ export const VoiceInterviewRoom: React.FC<VoiceInterviewRoomProps> = ({ onSwitch
     sendTextMessage(textInput);
     setTextInput('');
   };
+
+  const handleEndCall = async () => {
+    const confirmed = await notificationService.confirm({
+      title: 'End Call',
+      message: 'Are you sure you want to end this voice interview?',
+    });
+    if (!confirmed) return;
+    endInterview();
+    navigate('/dashboard');
+  };
+
+  const showSpeechError = !speechSupported || !!speechError;
 
   return (
     <div className="flex flex-col h-[100dvh] bg-gradient-to-b from-slate-900 to-slate-950 text-white overflow-hidden relative">
@@ -97,16 +112,26 @@ export const VoiceInterviewRoom: React.FC<VoiceInterviewRoomProps> = ({ onSwitch
             variant="destructive"
             size="sm"
             className="gap-2"
-            onClick={() => {
-              endInterview();
-              navigate('/dashboard');
-            }}
+            onClick={handleEndCall}
           >
             <PhoneMissed className="w-4 h-4" />
             End Call
           </Button>
         </div>
       </div>
+
+      {showSpeechError && (
+        <div
+          role="alert"
+          className="mx-6 mt-4 rounded-xl border border-destructive bg-destructive px-4 py-3 text-sm text-destructive-foreground shadow-lg"
+        >
+          <p className="font-semibold">Microphone unavailable</p>
+          <p className="mt-1">
+            Your browser does not support voice input, or microphone access was denied. Grant
+            microphone permission and use a supported browser (e.g. Chrome), or switch to Text Mode.
+          </p>
+        </div>
+      )}
 
       {/* Main Stage */}
       <div
@@ -121,7 +146,7 @@ export const VoiceInterviewRoom: React.FC<VoiceInterviewRoomProps> = ({ onSwitch
           <div
             className={cn(
               'text-left max-w-2xl px-6 py-4 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 transition-opacity duration-300',
-              isSpeaking ? 'opacity-100' : 'opacity-0 invisible'
+              isSpeaking ? 'opacity-100' : 'opacity-60'
             )}
           >
             <div className="text-base text-slate-200 leading-relaxed font-light [&_p]:mb-2 [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4 [&_code]:bg-white/10 [&_code]:px-1 [&_code]:rounded [&_pre]:bg-black/30 [&_pre]:p-3 [&_pre]:rounded-lg [&_pre]:overflow-x-auto">

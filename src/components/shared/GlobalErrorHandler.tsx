@@ -18,6 +18,13 @@ export function GlobalErrorHandler() {
 
     const handleError = (event: ErrorEvent) => {
       logger.error('Global error:', event.error);
+
+      const message =
+        event.error instanceof Error ? event.error.message : 'An unexpected error occurred';
+
+      toast.error('Something went wrong', {
+        description: message,
+      });
     };
 
     window.addEventListener('unhandledrejection', handleUnhandledRejection);

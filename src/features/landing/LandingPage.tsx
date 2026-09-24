@@ -79,29 +79,39 @@ const LandingPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full max-w-3xl z-10">
-        <div className="flex flex-col items-center p-4 rounded-xl bg-card/30 border border-border/30">
-          <Clock className="h-5 w-5 text-blue-500 mb-2" />
-          <span className="text-2xl font-bold">{stats.interviews}</span>
-          <span className="text-xs text-muted-foreground">Interviews</span>
+      {/* Quick Stats — replaced with a welcome note on first visit to avoid an all-zero wall */}
+      {stats.interviews === 0 && stats.resumes === 0 ? (
+        <div className="w-full max-w-3xl z-10 text-center rounded-xl bg-card/30 border border-border/30 p-6">
+          <p className="text-base font-semibold text-foreground">Your journey starts here</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            Run your first mock interview or upload a resume — your progress stats will appear
+            here as you go.
+          </p>
         </div>
-        <div className="flex flex-col items-center p-4 rounded-xl bg-card/30 border border-border/30">
-          <Target className="h-5 w-5 text-indigo-500 mb-2" />
-          <span className="text-2xl font-bold">{stats.hours}</span>
-          <span className="text-xs text-muted-foreground">Hours Practiced</span>
+      ) : (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full max-w-3xl z-10">
+          <div className="flex flex-col items-center p-4 rounded-xl bg-card/30 border border-border/30">
+            <Clock className="h-5 w-5 text-blue-500 mb-2" />
+            <span className="text-2xl font-bold">{stats.interviews}</span>
+            <span className="text-xs text-muted-foreground">Interviews</span>
+          </div>
+          <div className="flex flex-col items-center p-4 rounded-xl bg-card/30 border border-border/30">
+            <Target className="h-5 w-5 text-indigo-500 mb-2" />
+            <span className="text-2xl font-bold">{stats.hours}</span>
+            <span className="text-xs text-muted-foreground">Hours Practiced</span>
+          </div>
+          <div className="flex flex-col items-center p-4 rounded-xl bg-card/30 border border-border/30">
+            <FileText className="h-5 w-5 text-emerald-500 mb-2" />
+            <span className="text-2xl font-bold">{stats.resumes}</span>
+            <span className="text-xs text-muted-foreground">Resumes</span>
+          </div>
+          <div className="flex flex-col items-center p-4 rounded-xl bg-card/30 border border-border/30">
+            <Zap className="h-5 w-5 text-orange-500 mb-2" />
+            <span className="text-2xl font-bold">{stats.resumes > 0 ? '✓' : '-'}</span>
+            <span className="text-xs text-muted-foreground">AI Analyzed</span>
+          </div>
         </div>
-        <div className="flex flex-col items-center p-4 rounded-xl bg-card/30 border border-border/30">
-          <FileText className="h-5 w-5 text-emerald-500 mb-2" />
-          <span className="text-2xl font-bold">{stats.resumes}</span>
-          <span className="text-xs text-muted-foreground">Resumes</span>
-        </div>
-        <div className="flex flex-col items-center p-4 rounded-xl bg-card/30 border border-border/30">
-          <Zap className="h-5 w-5 text-orange-500 mb-2" />
-          <span className="text-2xl font-bold">{stats.resumes > 0 ? '✓' : '-'}</span>
-          <span className="text-xs text-muted-foreground">AI Analyzed</span>
-        </div>
-      </div>
+      )}
 
       {/* Benefits */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-4xl z-10">

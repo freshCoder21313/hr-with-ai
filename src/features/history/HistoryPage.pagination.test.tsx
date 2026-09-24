@@ -10,6 +10,9 @@ import HistoryPage from './HistoryPage';
 vi.mock('@/lib/db', () => ({
   db: {
     getInterviewsPage: vi.fn(),
+    interviews: {
+      count: vi.fn(),
+    },
   },
 }));
 
@@ -60,6 +63,7 @@ describe('HistoryPage pagination', () => {
     vi.mocked(db.getInterviewsPage).mockImplementation((offset: number, limit: number) =>
       Promise.resolve(fixture.slice(offset, offset + limit))
     );
+    vi.mocked(db.interviews.count).mockResolvedValue(fixture.length);
   });
 
   it('loads pages of 20 and stops when exhausted', async () => {
