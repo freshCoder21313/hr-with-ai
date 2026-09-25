@@ -35,23 +35,26 @@ const SkillAssessmentPage: React.FC = () => {
   };
   return (
     <div className="container py-6">
-      <h1 className="text-3xl font-bold mb-8 text-center tracking-tight text-foreground">Skill Assessment</h1>
+      <h1 className="text-3xl font-bold mb-8 text-center tracking-tight text-foreground">
+        Skill Assessment
+      </h1>
       <div className="mx-auto mb-8 flex max-w-2xl items-start">
         {STEPS.map((s, i) => {
           const isCompleted = i < currentIndex;
           const isActive = i === currentIndex;
           return (
             <React.Fragment key={s.key}>
-              <div
+              <button
+                type="button"
+                disabled={!isCompleted}
+                onClick={() => handleStepClick(s.key, i)}
+                aria-current={isActive ? 'step' : undefined}
                 className={cn(
                   'flex flex-col items-center gap-1.5',
                   isCompleted && 'cursor-pointer group'
                 )}
-                onClick={() => isCompleted && handleStepClick(s.key, i)}
-                role={isCompleted ? 'button' : undefined}
-                tabIndex={isCompleted ? 0 : undefined}
               >
-                <div
+                <span
                   className={cn(
                     'flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold transition-colors',
                     isActive || isCompleted
@@ -61,7 +64,7 @@ const SkillAssessmentPage: React.FC = () => {
                   )}
                 >
                   {isCompleted ? <Check className="h-4 w-4" /> : i + 1}
-                </div>
+                </span>
                 <span
                   className={cn(
                     'text-xs font-medium',
@@ -71,7 +74,7 @@ const SkillAssessmentPage: React.FC = () => {
                 >
                   {s.label}
                 </span>
-              </div>
+              </button>
               {i < STEPS.length - 1 && (
                 <div
                   className={cn(

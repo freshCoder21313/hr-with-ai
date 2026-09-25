@@ -12,7 +12,6 @@ import {
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Interview } from '@/types';
-import { useTheme } from '@/hooks/useTheme';
 import { Trophy, Target, Zap, TrendingUp } from 'lucide-react';
 
 interface ProgressChartsProps {
@@ -20,8 +19,6 @@ interface ProgressChartsProps {
 }
 
 const ProgressCharts: React.FC<ProgressChartsProps> = ({ interviews }) => {
-  const { theme } = useTheme();
-
   // 1. Filter completed interviews with valid scores
   const completedInterviews = interviews
     .filter((i) => i.status === 'completed' && i.feedback && typeof i.feedback.score === 'number')
@@ -61,13 +58,13 @@ const ProgressCharts: React.FC<ProgressChartsProps> = ({ interviews }) => {
   }));
 
   // Determine chart colors based on theme
-  const isDark =
-    theme === 'dark' ||
-    (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-  const gridColor = isDark ? '#334155' : '#e2e8f0';
-  const axisColor = isDark ? '#94a3b8' : '#64748b';
-  const tooltipBg = isDark ? '#1e293b' : '#fff';
-  const tooltipText = isDark ? '#f8fafc' : '#0f172a';
+  const primaryColor = 'hsl(var(--primary))';
+  const infoColor = 'hsl(var(--info))';
+  const successColor = 'hsl(var(--success))';
+  const gridColor = 'hsl(var(--border))';
+  const axisColor = 'hsl(var(--muted-foreground))';
+  const tooltipBg = 'hsl(var(--popover))';
+  const tooltipText = 'hsl(var(--popover-foreground))';
 
   return (
     <div className="space-y-6">
@@ -84,24 +81,24 @@ const ProgressCharts: React.FC<ProgressChartsProps> = ({ interviews }) => {
             </div>
           </CardContent>
         </Card>
-        <Card className="bg-emerald-500/5 border-emerald-500/20 shadow-sm">
+        <Card className="bg-success/5 border-success/20 shadow-sm">
           <CardContent className="p-6 flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-muted-foreground">Highest Score</p>
-              <h3 className="text-2xl font-bold text-emerald-600">{highestScore}</h3>
+              <h3 className="text-2xl font-bold text-success">{highestScore}</h3>
             </div>
-            <div className="p-3 bg-emerald-500/10 rounded-full text-emerald-600">
+            <div className="p-3 bg-success/10 rounded-full text-success">
               <Trophy size={24} />
             </div>
           </CardContent>
         </Card>
-        <Card className="bg-blue-500/5 border-blue-500/20 shadow-sm">
+        <Card className="bg-info/5 border-info/20 shadow-sm">
           <CardContent className="p-6 flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-muted-foreground">Total Sessions</p>
-              <h3 className="text-2xl font-bold text-blue-600">{totalInterviews}</h3>
+              <h3 className="text-2xl font-bold text-info">{totalInterviews}</h3>
             </div>
-            <div className="p-3 bg-blue-500/10 rounded-full text-blue-600">
+            <div className="p-3 bg-info/10 rounded-full text-info">
               <Target size={24} />
             </div>
           </CardContent>
@@ -112,7 +109,7 @@ const ProgressCharts: React.FC<ProgressChartsProps> = ({ interviews }) => {
       <Card className="shadow-lg bg-card border-border">
         <CardHeader>
           <CardTitle className="text-xl font-bold text-foreground flex items-center gap-2">
-            <Zap className="w-5 h-5 text-yellow-500" />
+            <Zap className="w-5 h-5 text-warning" />
             Performance Metrics (Last 10 Sessions)
           </CardTitle>
         </CardHeader>
@@ -123,70 +120,70 @@ const ProgressCharts: React.FC<ProgressChartsProps> = ({ interviews }) => {
             className="h-full w-full"
           >
             <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 5 }}>
-              <defs>
-                <linearGradient id="scoreGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8} />
-                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={gridColor} />
-              <XAxis
-                dataKey="name"
-                stroke={axisColor}
-                fontSize={12}
-                tickLine={false}
-                axisLine={false}
-              />
-              <YAxis
-                domain={[0, 10]}
-                stroke={axisColor}
-                fontSize={12}
-                tickLine={false}
-                axisLine={false}
-              />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: tooltipBg,
-                  color: tooltipText,
-                  borderRadius: '8px',
-                  border: 'none',
-                  boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
-                }}
-                itemStyle={{ color: tooltipText }}
-                labelStyle={{ color: axisColor }}
-              />
-              <Legend />
-              {/* Areas & Bars */}
-              <Area
-                type="monotone"
-                dataKey="score"
-                name="Overall Score"
-                fill="url(#scoreGradient)"
-                stroke="#3b82f6"
-                strokeWidth={3}
-              />
-              <Bar
-                dataKey="resilience"
-                name="Resilience"
-                barSize={12}
-                fill="#8b5cf6"
-                radius={[4, 4, 0, 0]}
-              />
-              <Bar
-                dataKey="culture"
-                name="Culture Fit"
-                barSize={12}
-                fill="#10b981"
-                radius={[4, 4, 0, 0]}
-              />
-            </ComposedChart>
+              <ComposedChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 5 }}>
+                <defs>
+                  <linearGradient id="scoreGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor={primaryColor} stopOpacity={0.8} />
+                    <stop offset="95%" stopColor={primaryColor} stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={gridColor} />
+                <XAxis
+                  dataKey="name"
+                  stroke={axisColor}
+                  fontSize={12}
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <YAxis
+                  domain={[0, 10]}
+                  stroke={axisColor}
+                  fontSize={12}
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: tooltipBg,
+                    color: tooltipText,
+                    borderRadius: '8px',
+                    border: 'none',
+                    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                  }}
+                  itemStyle={{ color: tooltipText }}
+                  labelStyle={{ color: axisColor }}
+                />
+                <Legend />
+                {/* Areas & Bars */}
+                <Area
+                  type="monotone"
+                  dataKey="score"
+                  name="Overall Score"
+                  fill="url(#scoreGradient)"
+                  stroke={primaryColor}
+                  strokeWidth={3}
+                />
+                <Bar
+                  dataKey="resilience"
+                  name="Resilience"
+                  barSize={12}
+                  fill={infoColor}
+                  radius={[4, 4, 0, 0]}
+                />
+                <Bar
+                  dataKey="culture"
+                  name="Culture Fit"
+                  barSize={12}
+                  fill={successColor}
+                  radius={[4, 4, 0, 0]}
+                />
+              </ComposedChart>
             </ResponsiveContainer>
           </div>
           <p className="sr-only">
-            Performance over the last {data.length} completed sessions. Average score{' '}
-            {averageScore} out of 10. Highest score {highestScore} out of 10. Metrics tracked:
-            overall score, resilience, and culture fit.
+            Performance over the last {data.length} completed sessions. Average score {averageScore}{' '}
+            out of 10. Highest score {highestScore} out of 10. Metrics tracked: overall score,
+            resilience, and culture fit.
           </p>
         </CardContent>
       </Card>

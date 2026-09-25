@@ -124,32 +124,32 @@ const HistoryPage: React.FC = () => {
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div className="p-4 rounded-lg bg-card border border-border/50">
-            <div className="flex items-center gap-2 text-muted-foreground text-sm">
-              <Briefcase className="h-4 w-4" />
-              <span>Total Sessions</span>
+              <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                <Briefcase className="h-4 w-4" />
+                <span>Total Sessions</span>
+              </div>
+              <div className="text-2xl font-bold">{stats.total}</div>
             </div>
-            <div className="text-2xl font-bold">{stats.total}</div>
-          </div>
-          <div className="p-4 rounded-lg bg-card border border-border/50">
-            <div className="flex items-center gap-2 text-muted-foreground text-sm">
-              <Building className="h-4 w-4" />
-              <span>Companies</span>
+            <div className="p-4 rounded-lg bg-card border border-border/50">
+              <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                <Building className="h-4 w-4" />
+                <span>Companies</span>
+              </div>
+              <div className="text-2xl font-bold">{stats.companies}</div>
             </div>
-            <div className="text-2xl font-bold">{stats.companies}</div>
-          </div>
-          <div className="p-4 rounded-lg bg-card border border-border/50">
-            <div className="flex items-center gap-2 text-muted-foreground text-sm">
-              <Award className="h-4 w-4" />
-              <span>Avg Score</span>
+            <div className="p-4 rounded-lg bg-card border border-border/50">
+              <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                <Award className="h-4 w-4" />
+                <span>Avg Score</span>
+              </div>
+              <div className="text-2xl font-bold">{stats.avgScore || '-'}</div>
             </div>
-            <div className="text-2xl font-bold">{stats.avgScore || '-'}</div>
-          </div>
-          <div className="p-4 rounded-lg bg-card border border-border/50">
-            <div className="flex items-center gap-2 text-muted-foreground text-sm">
-              <Clock className="h-4 w-4" />
-              <span>Hours</span>
-            </div>
-            <div className="text-2xl font-bold">{stats.hours}</div>
+            <div className="p-4 rounded-lg bg-card border border-border/50">
+              <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                <Clock className="h-4 w-4" />
+                <span>Hours</span>
+              </div>
+              <div className="text-2xl font-bold">{stats.hours}</div>
             </div>
           </div>
         </div>
@@ -158,7 +158,13 @@ const HistoryPage: React.FC = () => {
       {/* Progress Charts Section */}
       {interviews.length > 0 && (
         <div className="mb-8 animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-8">
-          <React.Suspense fallback={<div className="h-48 flex items-center justify-center bg-card rounded-lg border border-border animate-pulse">Loading charts...</div>}>
+          <React.Suspense
+            fallback={
+              <div className="h-48 flex items-center justify-center bg-card rounded-lg border border-border animate-pulse">
+                Loading charts...
+              </div>
+            }
+          >
             <ProgressCharts interviews={interviews} />
             <div className="flex flex-col gap-8 w-full">
               <div className="w-full">
@@ -219,8 +225,8 @@ const HistoryPage: React.FC = () => {
                           className={`px-2.5 py-0.5 rounded-full text-xs font-bold border
                                 ${
                                   interview.feedback.score >= 8
-                                    ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
-                                    : 'bg-blue-500/10 text-blue-600 border-blue-500/20'
+                                    ? 'bg-success/10 text-success border-success/20'
+                                    : 'bg-info/10 text-info border-info/20'
                                 }`}
                         >
                           Score: {interview.feedback.score}

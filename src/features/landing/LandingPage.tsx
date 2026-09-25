@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   FileText,
   MessageSquare,
@@ -48,6 +48,7 @@ const LandingPage: React.FC = () => {
       {/* Hero Section */}
       <div className="text-center space-y-6 max-w-3xl pt-10">
         <button
+          type="button"
           className="inline-flex items-center rounded-full border px-3 py-1 text-sm font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80 mb-4 cursor-pointer"
           onClick={() => navigate('/skill-assessment')}
         >
@@ -55,7 +56,7 @@ const LandingPage: React.FC = () => {
         </button>
         <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-foreground leading-tight">
           Master Your{' '}
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-500 dark:from-blue-400 dark:to-indigo-400">
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-info">
             Interview
           </span>
         </h1>
@@ -88,29 +89,29 @@ const LandingPage: React.FC = () => {
         <div className="w-full max-w-3xl z-10 text-center rounded-xl bg-card/30 border border-border/30 p-6">
           <p className="text-base font-semibold text-foreground">Your journey starts here</p>
           <p className="text-sm text-muted-foreground mt-1">
-            Run your first mock interview or upload a resume — your progress stats will appear
-            here as you go.
+            Run your first mock interview or upload a resume — your progress stats will appear here
+            as you go.
           </p>
         </div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full max-w-3xl z-10">
           <div className="flex flex-col items-center p-4 rounded-xl bg-card/30 border border-border/30">
-            <Clock className="h-5 w-5 text-blue-500 mb-2" />
+            <Clock className="h-5 w-5 text-info mb-2" />
             <span className="text-2xl font-bold">{stats.interviews}</span>
             <span className="text-xs text-muted-foreground">Interviews</span>
           </div>
           <div className="flex flex-col items-center p-4 rounded-xl bg-card/30 border border-border/30">
-            <Target className="h-5 w-5 text-indigo-500 mb-2" />
+            <Target className="h-5 w-5 text-primary mb-2" />
             <span className="text-2xl font-bold">{stats.hours}</span>
             <span className="text-xs text-muted-foreground">Hours Practiced</span>
           </div>
           <div className="flex flex-col items-center p-4 rounded-xl bg-card/30 border border-border/30">
-            <FileText className="h-5 w-5 text-emerald-500 mb-2" />
+            <FileText className="h-5 w-5 text-success mb-2" />
             <span className="text-2xl font-bold">{stats.resumes}</span>
             <span className="text-xs text-muted-foreground">Resumes</span>
           </div>
           <div className="flex flex-col items-center p-4 rounded-xl bg-card/30 border border-border/30">
-            <Zap className="h-5 w-5 text-orange-500 mb-2" />
+            <Zap className="h-5 w-5 text-warning mb-2" />
             <span className="text-2xl font-bold">{stats.resumes > 0 ? '✓' : '-'}</span>
             <span className="text-xs text-muted-foreground">AI Analyzed</span>
           </div>
@@ -120,7 +121,7 @@ const LandingPage: React.FC = () => {
       {/* Benefits */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-4xl z-10">
         <div className="flex items-start gap-3 p-4 rounded-xl bg-card/30 border border-border/30">
-          <BookOpen className="h-5 w-5 text-blue-500 shrink-0 mt-0.5" />
+          <BookOpen className="h-5 w-5 text-info shrink-0 mt-0.5" />
           <div>
             <h4 className="font-medium text-sm">Learn by Doing</h4>
             <p className="text-xs text-muted-foreground">
@@ -129,14 +130,14 @@ const LandingPage: React.FC = () => {
           </div>
         </div>
         <div className="flex items-start gap-3 p-4 rounded-xl bg-card/30 border border-border/30">
-          <Users className="h-5 w-5 text-indigo-500 shrink-0 mt-0.5" />
+          <Users className="h-5 w-5 text-primary shrink-0 mt-0.5" />
           <div>
             <h4 className="font-medium text-sm">Personalized Feedback</h4>
             <p className="text-xs text-muted-foreground">AI adapts to your target role</p>
           </div>
         </div>
         <div className="flex items-start gap-3 p-4 rounded-xl bg-card/30 border border-border/30">
-          <TrendingUp className="h-5 w-5 text-emerald-500 shrink-0 mt-0.5" />
+          <TrendingUp className="h-5 w-5 text-success shrink-0 mt-0.5" />
           <div>
             <h4 className="font-medium text-sm">Track Progress</h4>
             <p className="text-xs text-muted-foreground">Visual charts show improvement</p>
@@ -146,55 +147,55 @@ const LandingPage: React.FC = () => {
 
       {/* Features Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl w-full z-10 pb-12">
-        <div
-          className="bg-card/50 backdrop-blur-sm p-8 rounded-2xl border border-border/50 hover:border-blue-500/50 transition-all hover:shadow-lg hover:shadow-blue-500/10 flex flex-col items-center text-center group cursor-pointer"
-          onClick={() => navigate('/studio')}
+        <Link
+          to="/studio"
+          className="w-full text-left bg-card/50 backdrop-blur-sm p-8 rounded-2xl border border-border/50 hover:border-info/50 transition-all hover:shadow-lg hover:shadow-info/10 flex flex-col items-center text-center group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
-          <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-2xl mb-6 group-hover:scale-110 transition-transform duration-300">
-            <FileText className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+          <div className="p-4 bg-info/10 rounded-2xl mb-6 group-hover:scale-110 transition-transform duration-300">
+            <FileText className="h-8 w-8 text-info" />
           </div>
           <h3 className="text-xl font-bold mb-3 text-foreground">Tailored Scenarios</h3>
           <p className="text-muted-foreground text-sm leading-relaxed">
             Upload your resume and JD. The AI adapts its persona to your specific target role.
           </p>
-        </div>
-        <div
-          className="bg-card/50 backdrop-blur-sm p-8 rounded-2xl border border-border/50 hover:border-indigo-500/50 transition-all hover:shadow-lg hover:shadow-indigo-500/10 flex flex-col items-center text-center group cursor-pointer"
-          onClick={() => navigate('/setup')}
+        </Link>
+        <Link
+          to="/setup"
+          className="w-full text-left bg-card/50 backdrop-blur-sm p-8 rounded-2xl border border-border/50 hover:border-primary/50 transition-all hover:shadow-lg hover:shadow-primary/10 flex flex-col items-center text-center group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
-          <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl mb-6 group-hover:scale-110 transition-transform duration-300">
-            <MessageSquare className="h-8 w-8 text-indigo-600 dark:text-indigo-400" />
+          <div className="p-4 bg-primary/10 rounded-2xl mb-6 group-hover:scale-110 transition-transform duration-300">
+            <MessageSquare className="h-8 w-8 text-primary" />
           </div>
           <h3 className="text-xl font-bold mb-3 text-foreground">Real-time Chat</h3>
           <p className="text-muted-foreground text-sm leading-relaxed">
             Experience a natural conversation flow. Handle behavioral and technical questions.
           </p>
-        </div>
-        <div
-          className="bg-card/50 backdrop-blur-sm p-8 rounded-2xl border border-border/50 hover:border-emerald-500/50 transition-all hover:shadow-lg hover:shadow-emerald-500/10 flex flex-col items-center text-center group cursor-pointer"
-          onClick={() => navigate('/history')}
+        </Link>
+        <Link
+          to="/history"
+          className="w-full text-left bg-card/50 backdrop-blur-sm p-8 rounded-2xl border border-border/50 hover:border-success/50 transition-all hover:shadow-lg hover:shadow-success/10 flex flex-col items-center text-center group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
-          <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl mb-6 group-hover:scale-110 transition-transform duration-300">
-            <BarChart3 className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
+          <div className="p-4 bg-success/10 rounded-2xl mb-6 group-hover:scale-110 transition-transform duration-300">
+            <BarChart3 className="h-8 w-8 text-success" />
           </div>
           <h3 className="text-xl font-bold mb-3 text-foreground">Visual Feedback</h3>
           <p className="text-muted-foreground text-sm leading-relaxed">
             Get deep insights and Mermaid charts analyzing your thought process structure.
           </p>
-        </div>
-        <div
-          className="bg-card/50 backdrop-blur-sm p-8 rounded-2xl border border-border/50 hover:border-orange-500/50 transition-all hover:shadow-lg hover:shadow-orange-500/10 flex flex-col items-center text-center group cursor-pointer"
-          onClick={() => navigate('/skill-assessment')}
+        </Link>
+        <Link
+          to="/skill-assessment"
+          className="w-full text-left bg-card/50 backdrop-blur-sm p-8 rounded-2xl border border-border/50 hover:border-warning/50 transition-all hover:shadow-lg hover:shadow-warning/10 flex flex-col items-center text-center group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
-          <div className="p-4 bg-orange-50 dark:bg-orange-900/20 rounded-2xl mb-6 group-hover:scale-110 transition-transform duration-300">
-            <CheckCircle className="h-8 w-8 text-orange-600 dark:text-orange-400" />
+          <div className="p-4 bg-warning/10 rounded-2xl mb-6 group-hover:scale-110 transition-transform duration-300">
+            <CheckCircle className="h-8 w-8 text-warning" />
           </div>
           <h3 className="text-xl font-bold mb-3 text-foreground">Skill Assessment</h3>
           <p className="text-muted-foreground text-sm leading-relaxed">
             Extract skills from your CV and take AI-generated quick quizzes to validate your
             knowledge.
           </p>
-        </div>
+        </Link>
       </div>
 
       {/* Simple Footer Placeholder */}

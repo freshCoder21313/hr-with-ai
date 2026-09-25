@@ -14,7 +14,7 @@ const buttonVariants = cva(
         secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
         ghost: 'hover:bg-accent hover:text-accent-foreground',
         link: 'text-primary underline-offset-4 hover:underline active:scale-100',
-        blue: 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500', // Custom variant for primary actions
+        blue: 'bg-primary text-primary-foreground hover:bg-primary/90 focus:ring-primary',
       },
       size: {
         default: 'h-11 md:h-10 px-4 py-2',

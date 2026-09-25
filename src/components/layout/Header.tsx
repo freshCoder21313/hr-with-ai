@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 import { Cloud, Menu, Key } from 'lucide-react';
 import { openApiKeyModal } from '@/events/apiKeyEvents';
 import { Button } from '@/components/ui/button';
@@ -23,39 +23,19 @@ const NavLinks = ({ mobile = false, closeMenu }: { mobile?: boolean; closeMenu?:
 
   return (
     <>
-      <NavLink
-        to="/"
-        className={linkClass}
-        onClick={() => mobile && closeMenu?.()}
-      >
+      <NavLink to="/" className={linkClass} onClick={() => mobile && closeMenu?.()}>
         Home
       </NavLink>
-      <NavLink
-        to="/setup"
-        className={linkClass}
-        onClick={() => mobile && closeMenu?.()}
-      >
+      <NavLink to="/setup" className={linkClass} onClick={() => mobile && closeMenu?.()}>
         Mock Interview
       </NavLink>
-      <NavLink
-        to="/studio"
-        className={linkClass}
-        onClick={() => mobile && closeMenu?.()}
-      >
+      <NavLink to="/studio" className={linkClass} onClick={() => mobile && closeMenu?.()}>
         CV Studio
       </NavLink>
-      <NavLink
-        to="/skill-assessment"
-        className={linkClass}
-        onClick={() => mobile && closeMenu?.()}
-      >
+      <NavLink to="/skill-assessment" className={linkClass} onClick={() => mobile && closeMenu?.()}>
         Skill Assessment
       </NavLink>
-      <NavLink
-        to="/history"
-        className={linkClass}
-        onClick={() => mobile && closeMenu?.()}
-      >
+      <NavLink to="/history" className={linkClass} onClick={() => mobile && closeMenu?.()}>
         History
       </NavLink>
     </>
@@ -78,10 +58,10 @@ const Header: React.FC = () => {
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center gap-2 font-bold text-xl">
-            <a href="#" className="flex items-center gap-2">
+            <Link to="/" aria-label="HR With AI home" className="flex items-center gap-2">
               <span className="bg-primary text-primary-foreground p-1 rounded-lg">HR</span>
               <span className="hidden sm:inline-block">With-AI</span>
-            </a>
+            </Link>
           </div>
 
           {/* Desktop Navigation */}

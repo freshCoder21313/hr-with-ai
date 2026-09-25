@@ -73,7 +73,7 @@ const LearningPath: React.FC<LearningPathProps> = ({ interviews }) => {
     <Card className="shadow-xl bg-card border-border/50 backdrop-blur-sm">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-xl font-bold">
-          <Target className="w-5 h-5 text-purple-600" />
+          <Target className="w-5 h-5 text-primary" />
           Personalized Learning Path
         </CardTitle>
       </CardHeader>
@@ -88,18 +88,18 @@ const LearningPath: React.FC<LearningPathProps> = ({ interviews }) => {
                 href={`https://www.google.com/search?q=${encodeURIComponent(topic + ' tutorial')}`}
                 target="_blank"
                 rel="noreferrer"
-                className="group flex flex-col justify-between p-5 rounded-xl border border-border bg-muted/30 hover:border-purple-500/50 hover:bg-purple-500/5 hover:shadow-lg hover:shadow-purple-500/10 transition-all duration-300 cursor-pointer"
+                className="group flex flex-col justify-between p-5 rounded-xl border border-border bg-muted/30 hover:border-primary/50 hover:bg-primary/5 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 cursor-pointer"
               >
                 <div>
                   <div className="flex justify-between items-start mb-3 gap-2 w-full">
-                    <h4 className="font-bold text-foreground group-hover:text-purple-500 transition-colors flex items-center gap-2 min-w-0 flex-1">
-                      <div className="p-1.5 rounded-lg bg-purple-500/10 text-purple-600 shrink-0">
+                    <h4 className="font-bold text-foreground group-hover:text-primary transition-colors flex items-center gap-2 min-w-0 flex-1">
+                      <div className="p-1.5 rounded-lg bg-primary/10 text-primary shrink-0">
                         <BookOpen size={16} />
                       </div>
                       <span className="truncate">{topic}</span>
                     </h4>
                     {data.count > 1 && (
-                      <span className="text-[10px] font-bold uppercase tracking-wider bg-purple-500/20 text-purple-700 px-2 py-0.5 rounded-full dark:text-purple-300 shrink-0">
+                      <span className="text-[10px] font-bold uppercase tracking-wider bg-primary/20 text-primary px-2 py-0.5 rounded-full shrink-0">
                         {data.count}x Frequency
                       </span>
                     )}
@@ -108,7 +108,7 @@ const LearningPath: React.FC<LearningPathProps> = ({ interviews }) => {
                     {data.description}
                   </p>
                 </div>
-                <div className="flex items-center text-xs text-purple-600 font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="flex items-center text-xs text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity">
                   Start Learning <ExternalLink size={12} className="ml-1" />
                 </div>
               </a>
@@ -125,18 +125,18 @@ const LearningPath: React.FC<LearningPathProps> = ({ interviews }) => {
                   href={`https://www.google.com/search?q=${encodeURIComponent(topic + ' interview preparation')}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="group flex flex-col justify-between p-5 rounded-xl border border-border bg-muted/30 hover:border-red-500/50 hover:bg-red-500/5 hover:shadow-lg hover:shadow-red-500/10 transition-all duration-300 cursor-pointer"
+                  className="group flex flex-col justify-between p-5 rounded-xl border border-border bg-muted/30 hover:border-danger/50 hover:bg-danger/5 hover:shadow-lg hover:shadow-danger/10 transition-all duration-300 cursor-pointer"
                 >
                   <div>
                     <div className="flex justify-between items-start mb-3 gap-2 w-full">
-                      <h4 className="font-bold text-foreground group-hover:text-red-500 transition-colors flex items-center gap-2 min-w-0 flex-1">
-                        <div className="p-1.5 rounded-lg bg-red-500/10 text-red-600 shrink-0">
+                      <h4 className="font-bold text-foreground group-hover:text-danger transition-colors flex items-center gap-2 min-w-0 flex-1">
+                        <div className="p-1.5 rounded-lg bg-danger/10 text-danger shrink-0">
                           <AlertTriangle size={16} />
                         </div>
                         <span className="truncate">{topic}</span>
                       </h4>
                       {data.count > 1 && (
-                        <span className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full dark:bg-red-900 dark:text-red-300 shrink-0">
+                        <span className="text-xs bg-danger/10 text-danger px-2 py-0.5 rounded-full shrink-0">
                           Flagged {data.count}x
                         </span>
                       )}
@@ -145,7 +145,7 @@ const LearningPath: React.FC<LearningPathProps> = ({ interviews }) => {
                       Identified as an area for improvement in your sessions.
                     </p>
                   </div>
-                  <div className="flex items-center text-xs text-red-600 font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="flex items-center text-xs text-danger font-medium opacity-0 group-hover:opacity-100 transition-opacity">
                     Find Resources <ExternalLink size={12} className="ml-1" />
                   </div>
                 </a>

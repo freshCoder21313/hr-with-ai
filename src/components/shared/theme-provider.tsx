@@ -21,19 +21,27 @@ export function ThemeProvider({
 
   useEffect(() => {
     const root = window.document.documentElement;
-
     root.classList.remove('light', 'dark');
 
-    if (theme === 'system') {
-      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches
-        ? 'dark'
-        : 'light';
-
-      root.classList.add(systemTheme);
-      return;
+    if (theme !== 'system') {
+      root.classList.add(theme);
     }
+  }, [theme]);
 
-    root.classList.add(theme);
+  useEffect(() => {
+    if (theme !== 'system') return;
+
+    const root = window.document.documentElement;
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const applySystemTheme = () => {
+      root.classList.remove('light', 'dark');
+      root.classList.add(mediaQuery.matches ? 'dark' : 'light');
+    };
+
+    applySystemTheme();
+    mediaQuery.addEventListener('change', applySystemTheme);
+
+    return () => mediaQuery.removeEventListener('change', applySystemTheme);
   }, [theme]);
 
   const value = {

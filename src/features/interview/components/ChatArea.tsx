@@ -117,18 +117,18 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
                 </div>
                 <div className="flex flex-col gap-2 w-full">
                   {msg.image && (
-                    <div className="rounded-lg overflow-hidden border border-border shadow-sm max-w-[200px]">
+                    <div className="rounded-lg overflow-hidden border border-border shadow-sm max-w-[200px] max-h-40">
                       <img
                         src={msg.image}
                         alt="Whiteboard snapshot"
-                        className="w-full h-auto bg-card"
+                        className="w-full h-full max-h-40 object-contain bg-card"
                       />
                     </div>
                   )}
                   <div
-                    className={`p-3 md:p-4 rounded-2xl text-xs md:text-sm leading-relaxed shadow-sm ${
+                    className={`p-3 md:p-4 rounded-2xl text-xs md:text-sm leading-relaxed shadow-sm break-words ${
                       msg.role === 'user'
-                        ? 'bg-primary text-primary-foreground rounded-tr-none'
+                        ? 'bg-primary/10 text-foreground border border-primary/20 rounded-tr-none'
                         : msg.isError
                           ? 'bg-destructive/10 text-destructive border-destructive/50 border rounded-tl-none'
                           : 'bg-card text-foreground border border-border rounded-tl-none'
