@@ -5,10 +5,16 @@ import { test, expect } from '@playwright/test';
  */
 test.describe('smoke journeys', () => {
   test('landing page loads with primary CTA', async ({ page }) => {
+    // Pre-seed localStorage to bypass onboarding ApiKeyModal dialog
+    await page.addInitScript(() => {
+      localStorage.setItem('ai_active_profile_id', 'e2e_profile');
+      localStorage.setItem('ai_setup_banner_dismissed', 'true');
+    });
+
     await page.goto('/#/');
+
     await expect(page).toHaveTitle(/HR|Interview|AI/i);
     await expect(page.getByRole('main')).toBeVisible();
-    // Landing copy varies; assert a primary action exists
     await expect(
       page.getByRole('button').or(page.getByRole('link')).first()
     ).toBeVisible({ timeout: 15_000 });
