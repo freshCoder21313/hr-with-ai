@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react';
 import { logger } from '@/lib/logger';
 import { toPng, toBlob } from 'html-to-image';
 import { Share2, Download, Copy, Loader2, Check } from 'lucide-react';
+import { toast } from 'sonner';
 import {
   Dialog,
   DialogContent,
@@ -49,9 +50,12 @@ const ShareModal: React.FC<ShareModalProps> = ({ interview, trigger }) => {
         await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
+      } else {
+        throw new Error('Image generation returned empty blob');
       }
     } catch (err) {
       logger.error('Failed to copy image', err);
+      toast.error('Could not copy image. Please use Download instead.');
     } finally {
       setIsGenerating(false);
     }
@@ -77,13 +81,14 @@ const ShareModal: React.FC<ShareModalProps> = ({ interview, trigger }) => {
 
         <div className="flex flex-col items-center gap-6 py-4">
           <div className="relative rounded-xl overflow-hidden shadow-lg border border-border max-w-full overflow-x-auto">
-            {/* Render the card - it needs to be visible for html-to-image but we can scale it down for preview if needed.
-                 However, since it's 600px wide, it fits in a max-w-3xl modal. */}
+            {/* Wrap the 600px card. Keep cardRef unscaled internally so html-to-image captures full resolution */}
             <div className="min-w-[600px]">
               <ShareableResultCard ref={cardRef} interview={interview} />
             </div>
           </div>
-
+          <p className="text-xs text-muted-foreground sm:hidden text-center">
+            Scroll sideways to preview the full card
+          </p>
           <div className="flex gap-4 w-full justify-center">
             <Button
               onClick={handleDownload}

@@ -12,6 +12,7 @@ import { openApiKeyModal } from '@/events/apiKeyEvents';
 import { useDebounce } from '@/hooks/useDebounce';
 import { getErrorMessage } from '@/lib/utils';
 import { sanitizeResumeDataForSave } from '../SectionForms/entryIds';
+import { Capacitor } from '@capacitor/core';
 
 const TOUR_STEPS: Step[] = [
   {
@@ -51,6 +52,7 @@ export const useResumeBuilder = () => {
   const debouncedData = useDebounce(data, 1000);
   const [isLoading, setIsLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('basics');
   const [showPreview, setShowPreview] = useState(false);
   const [isSplitView, setIsSplitView] = useState(false);
@@ -130,6 +132,7 @@ export const useResumeBuilder = () => {
       const resumeId = parseInt(id);
       if (isNaN(resumeId)) return;
 
+      setIsSaving(true);
       try {
         await db.resumes.update(resumeId, {
           parsedData: sanitizeResumeDataForSave(debouncedData),
@@ -138,6 +141,8 @@ export const useResumeBuilder = () => {
       } catch (error) {
         logger.error('Auto-save failed:', error);
         toast.error('Auto-save failed');
+      } finally {
+        setIsSaving(false);
       }
     };
 
@@ -178,6 +183,7 @@ export const useResumeBuilder = () => {
     const template = templateRef.current;
     if (!id || !data) return;
     const dataToSave = sanitizeResumeDataForSave({ ...data, meta: { ...data.meta, template } });
+    setIsSaving(true);
     try {
       await db.resumes.update(parseInt(id), { parsedData: dataToSave });
       setData(dataToSave);
@@ -185,6 +191,8 @@ export const useResumeBuilder = () => {
     } catch (error) {
       logger.error(error);
       toast.error('Failed to save.');
+    } finally {
+      setIsSaving(false);
     }
   }, [id]);
 
@@ -248,6 +256,10 @@ export const useResumeBuilder = () => {
   );
 
   const handlePrint = useCallback(() => {
+    if (Capacitor.isNativePlatform()) {
+      toast.info('PDF export requires opening the app in a browser.');
+      return;
+    }
     window.print();
   }, []);
 
@@ -315,6 +327,7 @@ export const useResumeBuilder = () => {
       isLoading: isLoadingState,
       notFound: isNotFound,
       isProcessing,
+      isSaving,
       activeTab,
       showPreview,
       isSplitView,
@@ -334,6 +347,7 @@ export const useResumeBuilder = () => {
       isLoadingState,
       isNotFound,
       isProcessing,
+      isSaving,
       activeTab,
       showPreview,
       isSplitView,

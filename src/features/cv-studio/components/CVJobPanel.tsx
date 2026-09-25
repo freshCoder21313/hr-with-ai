@@ -15,6 +15,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import { useState } from 'react';
 import {
@@ -90,8 +91,8 @@ export const CVJobPanel: React.FC<CVJobPanelProps> = ({
 
   return (
     <div
-      className={`flex flex-col border-r border-border bg-card shrink-0 transition-all duration-300 ease-in-out ${
-        isJobPanelOpen ? 'w-72' : 'w-12'
+      className={`flex flex-col border-r border-border bg-card shrink-0 transition-all duration-300 ease-in-out w-full ${
+        isJobPanelOpen ? 'md:w-72' : 'md:w-12'
       }`}
     >
       <div className="h-12 flex items-center justify-between px-2 border-b border-border shrink-0 gap-1">
@@ -106,25 +107,27 @@ export const CVJobPanel: React.FC<CVJobPanelProps> = ({
             )}
           </div>
         )}
-        <Tooltip delayDuration={0}>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 shrink-0"
-              onClick={onTogglePanel}
-            >
-              {isJobPanelOpen ? (
-                <PanelLeftClose className="w-4 h-4" />
-              ) : (
-                <PanelLeftOpen className="w-4 h-4" />
-              )}
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="right">
-            {isJobPanelOpen ? 'Collapse Job Panel' : 'Expand Job Panel'}
-          </TooltipContent>
-        </Tooltip>
+        <div className="hidden md:flex">
+          <Tooltip delayDuration={0}>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 shrink-0"
+                onClick={onTogglePanel}
+              >
+                {isJobPanelOpen ? (
+                  <PanelLeftClose className="w-4 h-4" />
+                ) : (
+                  <PanelLeftOpen className="w-4 h-4" />
+                )}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              {isJobPanelOpen ? 'Collapse Job Panel' : 'Expand Job Panel'}
+            </TooltipContent>
+          </Tooltip>
+        </div>
       </div>
 
       {isJobPanelOpen && (
@@ -319,23 +322,30 @@ export const CVJobPanel: React.FC<CVJobPanelProps> = ({
           </div>
 
           {selectedJobs.size > 0 && (
-            <Tooltip delayDuration={0}>
-              <TooltipTrigger asChild>
-                <Button
-                  size="icon"
-                  className="h-8 w-8 mt-2"
-                  onClick={onStartTailoring}
-                  disabled={isProcessing || !selectedResumeId}
-                >
-                  {isProcessing ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Play className="w-4 h-4 fill-current" />
-                  )}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="right">Start Tailoring Selected Jobs</TooltipContent>
-            </Tooltip>
+            <div className="flex flex-col items-center">
+              <Tooltip delayDuration={0}>
+                <TooltipTrigger asChild>
+                  <Button
+                    size="icon"
+                    className="h-8 w-8 mt-2"
+                    onClick={onStartTailoring}
+                    disabled={isProcessing || !selectedResumeId}
+                  >
+                    {isProcessing ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Play className="w-4 h-4 fill-current" />
+                    )}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="right">Start Tailoring Selected Jobs</TooltipContent>
+              </Tooltip>
+              {!isProcessing && !selectedResumeId && (
+                <span className="text-[9px] text-muted-foreground mt-1 text-center px-1 leading-tight">
+                  Select CV
+                </span>
+              )}
+            </div>
           )}
         </div>
       )}
@@ -344,16 +354,23 @@ export const CVJobPanel: React.FC<CVJobPanelProps> = ({
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
             <DialogTitle>Rename CV</DialogTitle>
+            <DialogDescription className="sr-only">
+              Change the name of the selected CV
+            </DialogDescription>
           </DialogHeader>
-          <Input
-            value={renameValue}
-            onChange={(e) => setRenameValue(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') handleRenameSubmit();
-            }}
-            placeholder="Enter new CV name"
-            autoFocus
-          />
+          <div className="space-y-2">
+            <Label htmlFor="cv-rename-input">CV Name</Label>
+            <Input
+              id="cv-rename-input"
+              value={renameValue}
+              onChange={(e) => setRenameValue(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && renameValue.trim()) handleRenameSubmit();
+              }}
+              placeholder="Enter new CV name"
+              autoFocus
+            />
+          </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setRenameOpen(false)}>
               Cancel

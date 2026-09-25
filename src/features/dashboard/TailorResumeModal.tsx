@@ -20,17 +20,25 @@ interface TailorResumeModalProps {
   isOpen: boolean;
   onClose: () => void;
   sourceResume: Resume | null;
+  initialJobDescription?: string;
   onGenerate: (jobDescription: string) => Promise<void>;
 }
-
 export const TailorResumeModal: React.FC<TailorResumeModalProps> = ({
   isOpen,
   onClose,
   sourceResume,
+  initialJobDescription = '',
   onGenerate,
 }) => {
-  const [jobDescription, setJobDescription] = useState('');
+  const [jobDescription, setJobDescription] = useState(initialJobDescription);
   const [isProcessing, setIsProcessing] = useState(false);
+
+  // Sync when initialJobDescription changes or modal opens
+  React.useEffect(() => {
+    if (isOpen) {
+      setJobDescription(initialJobDescription);
+    }
+  }, [isOpen, initialJobDescription]);
 
   if (!sourceResume) return null;
 

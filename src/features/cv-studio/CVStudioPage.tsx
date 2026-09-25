@@ -9,6 +9,8 @@ import { CVPreviewPanel } from './components/CVPreviewPanel';
 import { useCVStudio } from './hooks/useCVStudio';
 import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Capacitor } from '@capacitor/core';
+import { toast } from 'sonner';
 
 const CVStudioPage: React.FC = () => {
   const navigate = useNavigate();
@@ -132,7 +134,13 @@ const CVStudioPage: React.FC = () => {
           onSetActiveTab={ui.setActiveTab}
           onManualUpdate={actions.handleManualUpdate}
           onOpenReorderDialog={() => ui.setShowReorderDialog(true)}
-          onPrint={() => window.print()}
+          onPrint={() => {
+            if (Capacitor.isNativePlatform()) {
+              toast.info('PDF export requires opening the app in a browser.');
+              return;
+            }
+            window.print();
+          }}
         />
           </div>
         </div>

@@ -67,7 +67,7 @@ export const ProfileList: React.FC<ProfileListProps> = ({
                 )}
               </div>
             </div>
-            <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="flex items-center opacity-100 md:opacity-0 md:group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
               <Button
                 variant="ghost"
                 size="icon"
@@ -77,6 +77,7 @@ export const ProfileList: React.FC<ProfileListProps> = ({
                   onDuplicateProfile(profile);
                 }}
                 title="Duplicate"
+                aria-label="Duplicate profile"
               >
                 <Copy className="w-3 h-3" />
               </Button>
@@ -90,6 +91,7 @@ export const ProfileList: React.FC<ProfileListProps> = ({
                 }}
                 disabled={activeId === profile.id}
                 title="Delete"
+                aria-label="Delete profile"
               >
                 <Trash2 className="w-3 h-3" />
               </Button>

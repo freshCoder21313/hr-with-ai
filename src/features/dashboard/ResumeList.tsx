@@ -29,7 +29,14 @@ const ResumeList: React.FC<ResumeListProps> = ({
   const [isGitHubModalOpen, setIsGitHubModalOpen] = useState(false);
 
   if (resumes.length === 0) {
-    return null;
+    return (
+      <div className="border border-dashed border-border rounded-lg p-4 bg-muted/20 text-center my-3">
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          No saved CVs yet. Upload a PDF above or paste your text below — it will be saved for
+          future sessions.
+        </p>
+      </div>
+    );
   }
 
   const formatDate = (timestamp: number) => {

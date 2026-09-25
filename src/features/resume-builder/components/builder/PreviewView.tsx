@@ -58,6 +58,16 @@ const PreviewViewBase: React.FC<PreviewViewProps> = ({
     <div className="flex-1 relative overflow-hidden flex bg-muted/30">
       {/* Mobile Toolbar (compact) — desktop uses the side rails above */}
       <div className="flex md:hidden absolute bottom-4 left-1/2 -translate-x-1/2 z-20 items-center gap-1 p-1.5 rounded-full bg-card border border-border shadow-lg">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onShowReorder}
+          className="h-9 w-9 rounded-full"
+          aria-label="Arrange sections"
+        >
+          <List className="w-5 h-5" />
+        </Button>
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button

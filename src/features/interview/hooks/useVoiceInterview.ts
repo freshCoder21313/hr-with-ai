@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useState } from 'react';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
 import { useVoiceInterviewStore } from '@/features/interview/stores/voiceInterviewStore';
@@ -54,6 +54,7 @@ export const useVoiceInterview = () => {
   // Services Hooks
   const stt = useSpeechToText(voiceSettings);
   const tts = useTextToSpeech(voiceSettings);
+  const [permissionError, setPermissionError] = useState<string | null>(null);
   const recorder = useAudioRecorder(); // For visualization mainly, and optional recording
 
   // Audio Visualization Connection
@@ -93,11 +94,24 @@ export const useVoiceInterview = () => {
     setCurrentState('listening');
     clearTranscript();
     stt.resetTranscript();
+    setPermissionError(null);
     stt.startListening();
 
     // Optional: Start visualizer
-    recorder.startRecording().catch((err) => {
+    recorder.startRecording().catch((err: unknown) => {
       logger.error('Failed to start recording', err);
+      let isPermissionDenied = false;
+      if (err instanceof DOMException) {
+        isPermissionDenied = err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError';
+      } else if (err && typeof err === 'object' && 'name' in err) {
+        const errName = err.name;
+        isPermissionDenied = errName === 'NotAllowedError' || errName === 'PermissionDeniedError';
+      }
+      if (isPermissionDenied) {
+        setPermissionError('Microphone permission denied. Please allow microphone access in your browser settings.');
+      } else {
+        setPermissionError('Could not access microphone. Please check your audio device.');
+      }
       toast.error('Could not access microphone. Please check permissions.');
       setCurrentState('idle');
       stt.stopListening();
@@ -268,6 +282,7 @@ export const useVoiceInterview = () => {
     transcript: currentTranscript, // Combined final + interim handled by store
     interimTranscript: stt.interimTranscript,
     speechError: stt.error,
+    permissionError,
     speechSupported: stt.isSupported,
     isListening: stt.isListening,
     isSpeaking: tts.isSpeaking,

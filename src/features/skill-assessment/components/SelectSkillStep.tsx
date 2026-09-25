@@ -276,6 +276,11 @@ export const SelectSkillStep: React.FC = () => {
                     </>
                   )}
                 </Button>
+                {!selectedSkill && (
+                  <p className="text-xs text-muted-foreground text-center mt-2">
+                    Select a skill from the list or add your own to continue.
+                  </p>
+                )}
               </div>
             </CardContent>
           </Card>

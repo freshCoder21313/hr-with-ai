@@ -1,5 +1,4 @@
-import React from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import React, { useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -7,6 +6,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Cloud } from 'lucide-react';
 import { useCloudSync } from './useCloudSync';
 import { SyncStatusBanner } from './cloud-sync/SyncStatusBanner';
@@ -52,6 +52,15 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({ isOpen, onClose 
     handleFileChange,
   } = actions;
 
+  useEffect(() => {
+    if (success) {
+      const timer = setTimeout(() => {
+        resetStatus();
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [success, resetStatus]);
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-[460px] bg-background border-border">
@@ -69,7 +78,7 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({ isOpen, onClose 
           </div>
         </DialogHeader>
 
-        <SyncStatusBanner error={error} success={success} />
+        <SyncStatusBanner error={error} success={success} onDismiss={resetStatus} />
 
         <Tabs
           value={activeTab}

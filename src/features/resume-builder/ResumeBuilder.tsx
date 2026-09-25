@@ -71,6 +71,7 @@ const ResumeBuilder: React.FC = () => {
           resume={resume!}
           viewMode={viewMode}
           isProcessing={state.isProcessing}
+          isSaving={state.isSaving}
           onBack={handleBack}
           onViewModeChange={actions.handleViewMode}
           onSmartFormat={actions.handleSmartFormat}

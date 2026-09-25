@@ -39,8 +39,14 @@ export const ResultStep: React.FC = () => {
   const weaknesses = subSkillScores.filter((s) => s.score < 70);
 
   const handleDeepDive = () => {
-    // Điều hướng qua màn Setup Interview và truyền context (Sẽ xử lý sâu ở Phase 2)
-    navigate('/setup');
+    const weaknessList = weaknesses.map((w) => w.name);
+    navigate('/setup', {
+      state: {
+        source: 'skill-assessment',
+        targetSkill: selectedSkill || 'General',
+        weaknesses: weaknessList,
+      },
+    });
   };
 
   return (

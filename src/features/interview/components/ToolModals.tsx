@@ -43,7 +43,7 @@ export const ToolModals: React.FC<ToolModalsProps> = ({
     <>
       {/* Code Editor Modal */}
       <Dialog open={isCodeOpen} onOpenChange={setIsCodeOpen}>
-        <DialogContent className="max-w-[95vw] w-[1200px] h-[90vh] p-0 gap-0 bg-[#1e1e1e] border-slate-800 flex flex-col overflow-hidden [&>button]:hidden">
+        <DialogContent className="max-w-[95vw] w-[1200px] h-[90vh] max-sm:w-full max-sm:h-[100dvh] max-sm:max-w-none max-sm:rounded-none p-0 gap-0 bg-[#1e1e1e] border-slate-800 flex flex-col overflow-hidden [&>button]:hidden">
           <div className="flex items-center justify-between px-4 py-2 bg-[#2d2d2d] border-b border-white/10 shrink-0">
             <DialogTitle className="text-white text-sm font-mono flex items-center gap-2">
               <Code2 size={16} /> Live Code Editor

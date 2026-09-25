@@ -92,6 +92,7 @@ export const ChangeReviewCard: React.FC<ChangeReviewCardProps> = ({
   // Helper to render readable diff content
   const renderContent = () => {
     const { newData, action } = change;
+    const oldData = change.oldData;
 
     if (action === 'delete') {
       return <div className="text-sm text-red-600 italic">This section will be removed.</div>;
@@ -99,6 +100,61 @@ export const ChangeReviewCard: React.FC<ChangeReviewCardProps> = ({
 
     // Case 1: Arrays (Work, Education, Skills, Projects)
     if (Array.isArray(newData)) {
+      const getItemKey = (item: Record<string, unknown>) => {
+        if (!item || typeof item !== 'object') return '';
+        return String(
+          item.id ||
+            item.name ||
+            item.company ||
+            item.institution ||
+            item.title ||
+            ''
+        ).trim().toLowerCase();
+      };
+
+      const getItemTitle = (item: Record<string, unknown>, fallbackIdx: number) => {
+        if (!item || typeof item !== 'object') return `Item ${fallbackIdx + 1}`;
+        return (
+          (item.name as string) ||
+          (item.company as string) ||
+          (item.institution as string) ||
+          (item.title as string) ||
+          `Item ${fallbackIdx + 1}`
+        );
+      };
+
+      const oldArray = Array.isArray(oldData) ? (oldData as Record<string, unknown>[]) : [];
+      const newArray = newData as Record<string, unknown>[];
+
+      // Build lookup map for old items by stable key
+      const oldItemMap = new Map<string, Record<string, unknown>>();
+      oldArray.forEach((item, idx) => {
+        const key = getItemKey(item) || `__idx_${idx}`;
+        oldItemMap.set(key, item);
+      });
+
+      // Classify new items as Added or Changed
+      const classifiedNew = newArray.map((item, idx) => {
+        const key = getItemKey(item) || `__idx_${idx}`;
+        const existing = oldItemMap.get(key);
+        const isAdded = !existing;
+        const isChanged = existing && JSON.stringify(existing) !== JSON.stringify(item);
+        return {
+          item,
+          idx,
+          key,
+          title: getItemTitle(item, idx),
+          status: isAdded ? 'added' : isChanged ? 'changed' : 'unchanged',
+        };
+      });
+
+      // Find dropped / removed items from oldData
+      const newKeys = new Set(newArray.map((item, idx) => getItemKey(item) || `__idx_${idx}`));
+      const removedItems = oldArray.filter((item, idx) => {
+        const key = getItemKey(item) || `__idx_${idx}`;
+        return !newKeys.has(key);
+      });
+
       return (
         <div className="space-y-2">
           <div className="flex justify-between items-center text-xs text-muted-foreground">
@@ -115,30 +171,82 @@ export const ChangeReviewCard: React.FC<ChangeReviewCardProps> = ({
           </div>
 
           {isExpanded ? (
-            <div className="max-h-40 overflow-y-auto bg-muted p-2 rounded text-xs border border-border">
-              {newData.map((item, idx) => (
-                <div key={idx} className="mb-2 pb-2 border-b last:border-0">
-                  <div className="font-semibold">
-                    {item.name || item.institution || item.company || `Item ${idx + 1}`}
+            <div className="max-h-48 overflow-y-auto bg-muted p-2 rounded text-xs border border-border space-y-2">
+              {classifiedNew.map(({ item, idx, title, status }) => (
+                <div key={idx} className="pb-2 border-b last:border-0 border-border/60">
+                  <div className="flex items-center gap-1.5 justify-between">
+                    <span className="font-semibold truncate">{title}</span>
+                    {status === 'added' && (
+                      <Badge variant="outline" className="text-[10px] h-4 px-1 border-emerald-500 text-emerald-600 bg-emerald-50/50 dark:bg-emerald-950/20">
+                        Added
+                      </Badge>
+                    )}
+                    {status === 'changed' && (
+                      <Badge variant="outline" className="text-[10px] h-4 px-1 border-blue-500 text-blue-600 bg-blue-50/50 dark:bg-blue-950/20">
+                        Changed
+                      </Badge>
+                    )}
                   </div>
-                  <div className="text-muted-foreground">{item.position || item.area || item.level}</div>
+                  <div className="text-muted-foreground text-[11px]">
+                    {(item.position as string) || (item.area as string) || (item.level as string)}
+                  </div>
                 </div>
               ))}
+              {removedItems.length > 0 && (
+                <div className="pt-1 border-t border-border/60">
+                  <div className="text-[10px] font-medium text-muted-foreground mb-1 uppercase tracking-wider">
+                    Removed
+                  </div>
+                  {removedItems.map((item, idx) => (
+                    <div key={idx} className="line-through text-muted-foreground text-[11px] truncate">
+                      {getItemTitle(item, idx)}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           ) : (
-            // Preview last added/modified item logic is hard without diffing.
-            // We just show a summary of the first few items.
             <div className="text-xs space-y-1">
-              {newData.slice(0, 3).map((item, idx) => (
-                <div key={idx} className="flex items-center gap-1">
-                  <div className="w-1.5 h-1.5 rounded-full bg-blue-400" />
-                  <span className="truncate max-w-[200px] font-medium">
-                    {item.name || item.company || item.institution || 'Item'}
-                  </span>
+              {classifiedNew.slice(0, 3).map(({ idx, title, status }) => (
+                <div key={idx} className="flex items-center gap-1.5 justify-between">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <div
+                      className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                        status === 'added'
+                          ? 'bg-emerald-500'
+                          : status === 'changed'
+                          ? 'bg-blue-500'
+                          : 'bg-muted-foreground/60'
+                      }`}
+                    />
+                    <span className="truncate max-w-[170px] font-medium">{title}</span>
+                  </div>
+                  {status === 'added' && (
+                    <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium shrink-0">
+                      Added
+                    </span>
+                  )}
+                  {status === 'changed' && (
+                    <span className="text-[10px] text-blue-600 dark:text-blue-400 font-medium shrink-0">
+                      Changed
+                    </span>
+                  )}
                 </div>
               ))}
-              {newData.length > 3 && (
-                <span className="text-muted-foreground pl-3">+{newData.length - 3} more...</span>
+              {classifiedNew.length > 3 && (
+                <span className="text-muted-foreground pl-3 text-[11px] block">
+                  +{classifiedNew.length - 3} more...
+                </span>
+              )}
+              {removedItems.length > 0 && (
+                <div className="pt-1 border-t border-border/40 text-[11px] text-muted-foreground">
+                  <span className="line-through">
+                    {removedItems.slice(0, 2).map((item, idx) => getItemTitle(item, idx)).join(', ')}
+                  </span>
+                  {removedItems.length > 2 && (
+                    <span className="italic ml-1">+{removedItems.length - 2} removed</span>
+                  )}
+                </div>
               )}
             </div>
           )}

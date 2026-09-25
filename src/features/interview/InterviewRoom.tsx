@@ -8,7 +8,11 @@ import { useInterview } from '@/hooks/useInterview';
 import { useInterviewLoader } from '@/features/interview/hooks/useInterviewLoader';
 import { svgToPngBase64 } from '@/lib/svgUtils';
 import { useInterviewStore } from './interviewStore';
-import { JobRecommendation, resolveInterviewInteractionMode } from '@/types';
+import {
+  JobRecommendation,
+  resolveInterviewContentType,
+  resolveInterviewInteractionMode,
+} from '@/types';
 import SettingsModal from '@/components/shared/SettingsModal';
 import JobRecommendationModal from './JobRecommendationModal';
 import SEO from '@/components/shared/SEO';
@@ -68,46 +72,49 @@ const InterviewRoom: React.FC = () => {
     if (autoOpenWhiteboard) tools.setIsWhiteboardOpen(true);
   }, [autoOpenWhiteboard]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleSendMessage = useCallback(async () => {
-    if (!isNonEmptyString(inputValue) || !currentInterview) return;
+  const handleSendMessage = useCallback(
+    async (overrideText?: string) => {
+      const text = overrideText ?? inputValue;
+      if (!isNonEmptyString(text) || !currentInterview) return;
 
-    setHints(null);
-    setSuggestedAction(null);
+      setHints(null);
+      setSuggestedAction(null);
 
-    let imageBase64: string | undefined;
-    if (tools.isWhiteboardOpen && tools.editorRef.current) {
-      try {
-        const shapeIds = Array.from(
-          tools.editorRef.current.getCurrentPageShapeIds()
-        ) as TLShapeId[];
-        if (shapeIds.length > 0) {
-          const svg = await tools.editorRef.current.getSvg(shapeIds, { background: true });
-          if (svg) {
-            const pngData = await svgToPngBase64(svg);
-            if (pngData) imageBase64 = pngData;
+      let imageBase64: string | undefined;
+      if (tools.isWhiteboardOpen && tools.editorRef.current) {
+        try {
+          const shapeIds = Array.from(
+            tools.editorRef.current.getCurrentPageShapeIds()
+          ) as TLShapeId[];
+          if (shapeIds.length > 0) {
+            const svg = await tools.editorRef.current.getSvg(shapeIds, { background: true });
+            if (svg) {
+              const pngData = await svgToPngBase64(svg);
+              if (pngData) imageBase64 = pngData;
+            }
           }
+        } catch (e) {
+          logger.error('Failed to capture whiteboard', e);
         }
-      } catch (e) {
-        logger.error('Failed to capture whiteboard', e);
       }
-    }
 
-    const contentToSend = inputValue;
-    setInputValue('');
-    await sendMessage(contentToSend, imageBase64);
-  }, [
-    inputValue,
-    currentInterview,
-    tools.isWhiteboardOpen,
-    tools.editorRef,
-    sendMessage,
-    setHints,
-    setSuggestedAction,
-  ]);
-
-  const { timer } = useInterviewTimer(isProcessing, currentInterview?.difficulty, () =>
-    handleSendMessage()
+      setInputValue('');
+      await sendMessage(text, imageBase64);
+    },
+    [
+      inputValue,
+      currentInterview,
+      tools.isWhiteboardOpen,
+      tools.editorRef,
+      sendMessage,
+      setHints,
+      setSuggestedAction,
+    ]
   );
+
+  const { timer } = useInterviewTimer(isProcessing, currentInterview?.difficulty, () => {
+    handleSendMessage('[Time expired - no answer provided]');
+  });
 
   const handleEndInterview = useCallback(async () => {
     const confirmed = await notificationService.confirm({
@@ -149,7 +156,10 @@ const InterviewRoom: React.FC = () => {
   if (viewMode === 'voice') {
     return (
       <VoiceInterviewRoom
-        onSwitchToText={interaction === 'hybrid' ? () => setViewMode('text') : undefined}
+        onSwitchToText={
+          interaction === 'hybrid' || interaction === 'text' ? () => setViewMode('text') : undefined
+        }
+        onEndInterview={handleEndInterview}
       />
     );
   }
@@ -192,6 +202,7 @@ const InterviewRoom: React.FC = () => {
         onSendMessage={handleSendMessage}
         isCodeOpen={tools.isCodeOpen}
         setIsCodeOpen={tools.setIsCodeOpen}
+        contentType={resolveInterviewContentType(currentInterview)}
         isWhiteboardOpen={tools.isWhiteboardOpen}
         setIsWhiteboardOpen={tools.setIsWhiteboardOpen}
         suggestedAction={suggestedAction}

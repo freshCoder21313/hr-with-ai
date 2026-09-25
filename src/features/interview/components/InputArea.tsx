@@ -9,11 +9,12 @@ import { LoadingButton } from '@/components/ui/loading-button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useBrowserSpeechToText } from '@/features/interview/hooks/useBrowserSpeechToText';
 import { isNonEmptyString } from '@/lib/validation';
+import { InterviewContentType } from '@/types';
 
 interface InputAreaProps {
   inputValue: string;
   setInputValue: (val: string) => void;
-  onSendMessage: () => void;
+  onSendMessage: (overrideText?: string) => void;
 
   // Tools
   isCodeOpen: boolean;
@@ -32,6 +33,8 @@ interface InputAreaProps {
   onGetHints: () => void;
   hintsEnabled?: boolean;
   language?: string;
+  /** Interview content type; gates Code/Whiteboard tool visibility. */
+  contentType?: InterviewContentType;
 }
 
 export const InputArea: React.FC<InputAreaProps> = ({
@@ -51,6 +54,7 @@ export const InputArea: React.FC<InputAreaProps> = ({
   onGetHints,
   hintsEnabled,
   language,
+  contentType,
 }) => {
   const { isListening, toggleListening, transcript } = useBrowserSpeechToText(language || 'vi-VN');
   const [baseText, setBaseText] = useState('');
@@ -62,7 +66,7 @@ export const InputArea: React.FC<InputAreaProps> = ({
     }
     toggleListening();
   }, [isListening, inputValue, toggleListening]);
-
+  const showTools = contentType === 'coding' || contentType === 'system_design';
   useEffect(() => {
     if (isListening && transcript) {
       setInputValue((baseText + ' ' + transcript).trim());
@@ -132,10 +136,11 @@ export const InputArea: React.FC<InputAreaProps> = ({
             <TooltipContent>
               <p>Get AI Hints</p>
             </TooltipContent>
-          </Tooltip>
+        </Tooltip>
         )}
 
-        {/* Tools Group */}
+        {/* Tools Group (only relevant for coding / system-design interviews) */}
+        {showTools && (
         <div className="flex gap-1 mr-1">
           <Tooltip>
             <TooltipTrigger asChild>
@@ -178,12 +183,14 @@ export const InputArea: React.FC<InputAreaProps> = ({
             </TooltipContent>
           </Tooltip>
         </div>
+        )}
 
         <div className="relative flex-1">
           <Textarea
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyPress}
+            enterKeyHint="send"
             placeholder="Type your answer..."
             aria-label="Interview answer"
             className={cn(
@@ -219,7 +226,7 @@ export const InputArea: React.FC<InputAreaProps> = ({
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
-              onClick={onSendMessage}
+              onClick={() => onSendMessage()}
               disabled={!isNonEmptyString(inputValue) || isProcessing}
               className="h-[44px] w-[44px] md:h-[50px] md:w-[50px] rounded-xl shrink-0"
               size="icon"

@@ -6,6 +6,7 @@ export interface ProposedChange {
   section: keyof ResumeData;
   action: 'update' | 'add' | 'delete' | 'rewrite';
   newData: unknown;
+  oldData?: unknown;
   explanation: string;
 }
 

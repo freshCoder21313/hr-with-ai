@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { db } from '@/lib/db';
 import SEO from '@/components/shared/SEO';
+import { Button } from '@/components/ui/button';
 
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
@@ -63,19 +64,22 @@ const LandingPage: React.FC = () => {
           visualizations. Offline-first & Privacy-focused.
         </p>
         <div className="pt-6 flex flex-col sm:flex-row items-center justify-center gap-4">
-          <button
+          <Button
+            size="lg"
             onClick={() => navigate('/setup')}
-            className="w-full sm:w-auto inline-flex items-center justify-center px-8 py-3.5 border border-transparent text-base font-medium rounded-full shadow-sm text-primary-foreground bg-primary hover:bg-primary/90 transition-all motion-safe:transform motion-safe:hover:scale-105"
+            className="w-full sm:w-auto px-8 py-3.5 rounded-full shadow-sm text-base font-medium motion-safe:transform motion-safe:hover:scale-105 transition-all"
           >
             Start Practice Now
             <ArrowRight className="ml-2 -mr-1 h-5 w-5" />
-          </button>
-          <button
+          </Button>
+          <Button
+            size="lg"
+            variant="outline"
             onClick={() => navigate('/skill-assessment')}
-            className="w-full sm:w-auto inline-flex items-center justify-center px-8 py-3.5 border border-input bg-background hover:bg-accent hover:text-accent-foreground text-base font-medium rounded-full shadow-sm transition-all"
+            className="w-full sm:w-auto px-8 py-3.5 rounded-full shadow-sm text-base font-medium transition-all"
           >
             Take Skill Assessment
-          </button>
+          </Button>
         </div>
       </div>
 

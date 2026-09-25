@@ -41,7 +41,7 @@ export const FileUploadZone: React.FC<FileUploadZoneProps> = ({
           <UploadCloud className="w-5 h-5 text-primary" />
           New Upload
         </CardTitle>
-        <CardDescription>Upload a PDF, TXT, or DOCX file (Max 5MB)</CardDescription>
+        <CardDescription>Upload a PDF or TXT file (Max 5MB)</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <div
@@ -63,7 +63,7 @@ export const FileUploadZone: React.FC<FileUploadZoneProps> = ({
             type="file"
             ref={fileInputRef}
             className="hidden"
-            accept=".pdf,.txt,.docx"
+            accept=".pdf,.txt"
             onChange={onFileUpload}
             disabled={isLoading}
           />

@@ -33,15 +33,15 @@ export const DownloadTab: React.FC<DownloadTabProps> = ({
         />
       </div>
 
-      <div className="p-5 bg-orange-500/10 rounded-2xl border border-orange-500/20 flex gap-4">
-        <div className="p-2 bg-orange-500/20 rounded-xl h-fit">
-          <AlertCircle className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+      <div className="p-5 bg-amber-500/10 rounded-2xl border border-amber-500/30 flex gap-4">
+        <div className="p-2 bg-amber-500/20 rounded-xl h-fit">
+          <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400" />
         </div>
         <div className="space-y-1.5">
-          <h3 className="text-sm font-bold text-orange-900 dark:text-orange-200 uppercase tracking-tight">
+          <h3 className="text-sm font-bold text-amber-900 dark:text-amber-200 uppercase tracking-tight">
             Warning
           </h3>
-          <p className="text-xs text-orange-800 dark:text-orange-300 leading-relaxed opacity-90">
+          <p className="text-xs text-amber-800 dark:text-amber-300 leading-relaxed opacity-90">
             Data will be <span className="font-bold">smartly merged</span>. Newer versions
             from cloud will update local records. Unique local data is preserved.
           </p>
@@ -51,10 +51,10 @@ export const DownloadTab: React.FC<DownloadTabProps> = ({
       <LoadingButton
         onClick={handleDownload}
         disabled={isLoading}
-        variant="secondary"
+        variant="default"
         isLoading={isLoading}
         loadingText="Restoring..."
-        className="w-full h-14 bg-secondary hover:bg-secondary/80 text-secondary-foreground font-bold text-base rounded-2xl transition-all active:scale-[0.98]"
+        className="w-full h-14 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-base rounded-2xl shadow-[0_10px_20px_rgba(37,99,235,0.2)] disabled:opacity-50 disabled:shadow-none transition-all active:scale-[0.98]"
         leftIcon={<Download className="h-5 w-5" />}
       >
         Confirm & Merge

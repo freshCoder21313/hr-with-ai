@@ -61,6 +61,7 @@ export const JobDetailsForm: React.FC<JobDetailsFormProps> = ({
             type="button"
             variant="outline"
             onClick={onSaveJob}
+            disabled={!isNonEmptyString(formData.company) || !isNonEmptyString(formData.jobTitle)}
             title="Save current details as a reusable job template"
           >
             Save Job
@@ -146,7 +147,7 @@ export const JobDetailsForm: React.FC<JobDetailsFormProps> = ({
             name="language"
             value={formData.language}
             onChange={onChange}
-            className="flex h-11 md:h-[88px] w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex h-11 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <option value="en-US">English (US)</option>
             <option value="vi-VN">Tiếng Việt</option>

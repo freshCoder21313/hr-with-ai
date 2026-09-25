@@ -10,13 +10,15 @@ import {
   CardFooter,
 } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { ChevronLeft, ChevronRight, Play, Lightbulb } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Play, Lightbulb, ArrowLeft } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { notificationService } from '@/services/core/notificationService';
 
 export const QuizStep: React.FC = () => {
-  const { quizQuestions, userAnswers, answerQuestion, calculateScore, selectedSkill } =
+  const { quizQuestions, userAnswers, answerQuestion, calculateScore, selectedSkill, setStep } =
     useSkillAssessmentStore();
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [justSelectedOption, setJustSelectedOption] = useState<string | null>(null);
 
   const question = quizQuestions[currentIndex];
   const isLastQuestion = currentIndex === quizQuestions.length - 1;
@@ -33,12 +35,27 @@ export const QuizStep: React.FC = () => {
   const handleAnswer = (option: string) => {
     // Only auto-advance if the question was previously unanswered
     const isNewAnswer = !userAnswers[question.id];
+    setJustSelectedOption(option);
     answerQuestion(question.id, option);
 
     if (!isLastQuestion && isNewAnswer) {
       setTimeout(() => {
+        setJustSelectedOption(null);
         handleNext();
-      }, 500);
+      }, 900);
+    } else {
+      setTimeout(() => setJustSelectedOption(null), 900);
+    }
+  };
+
+  const handleBackToSkills = async () => {
+    const confirmed = await notificationService.confirm({
+      title: 'Leave quiz?',
+      message: 'Progress will be lost.',
+      variant: 'destructive',
+    });
+    if (confirmed) {
+      setStep('select_skill');
     }
   };
 
@@ -61,16 +78,34 @@ export const QuizStep: React.FC = () => {
           <div className="lg:col-span-3">
             <Card className="h-full flex flex-col shadow-sm border-border/50">
               <CardHeader className="pb-4">
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center justify-between gap-2 mb-4">
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleBackToSkills}
+                      className="gap-1.5 text-muted-foreground hover:text-foreground -ml-2"
+                    >
+                      <ArrowLeft className="w-4 h-4" />
+                      Back to Skills
+                    </Button>
+                  </div>
+                  <div className="text-sm font-medium bg-muted/50 px-3 py-1 rounded-full text-muted-foreground">
+                    {question.sub_skill || 'General'}
+                  </div>
+                </div>
+                <div className="flex items-center justify-between mb-2">
                   <CardTitle className="text-2xl font-bold tracking-tight">
                     Question {currentIndex + 1}
                     <span className="text-muted-foreground text-lg font-normal ml-2">
                       / {totalCount}
                     </span>
                   </CardTitle>
-                  <div className="text-sm font-medium bg-muted/50 px-3 py-1 rounded-full text-muted-foreground">
-                    {question.sub_skill || 'General'}
-                  </div>
+                  {selectedSkill && (
+                    <span className="text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded">
+                      {selectedSkill}
+                    </span>
+                  )}
                 </div>
                 <Progress value={progress} className="h-2 mb-6 bg-muted" />
                 <CardDescription className="text-xl font-medium text-foreground mt-4 leading-relaxed relative pr-8">
@@ -101,35 +136,43 @@ export const QuizStep: React.FC = () => {
               </CardHeader>
               <CardContent className="flex-1">
                 <div className="space-y-4 pt-2">
-                  {question.options.map((option, index) => (
-                    <label
-                      key={index}
-                      className={`flex items-center space-x-4 border rounded-xl p-5 cursor-pointer transition-all duration-200 group ${
-                        userAnswers[question.id] === option
-                          ? 'border-primary bg-primary/5 shadow-sm shadow-primary/10'
-                          : 'border-border hover:bg-muted/50 hover:border-primary/30'
-                      }`}
-                    >
-                      <div
-                        className={`flex items-center justify-center w-5 h-5 rounded-full border ${userAnswers[question.id] === option ? 'border-primary bg-primary text-primary-foreground' : 'border-muted-foreground group-hover:border-primary/50'}`}
+                  {question.options.map((option, index) => {
+                    const isSelected = userAnswers[question.id] === option;
+                    const isRecentlyChosen = justSelectedOption === option;
+                    return (
+                      <label
+                        key={index}
+                        className={`flex items-center space-x-4 border rounded-xl p-5 cursor-pointer transition-all duration-300 group ${
+                          isSelected
+                            ? 'border-primary bg-primary/5 shadow-sm shadow-primary/10'
+                            : 'border-border hover:bg-muted/50 hover:border-primary/30'
+                        } ${isRecentlyChosen ? 'ring-2 ring-primary ring-offset-2 scale-[1.005]' : ''}`}
                       >
-                        {userAnswers[question.id] === option && (
-                          <div className="w-2 h-2 rounded-full bg-white" />
-                        )}
-                      </div>
-                      <input
-                        type="radio"
-                        name={`question-${question.id}`}
-                        value={option}
-                        checked={userAnswers[question.id] === option}
-                        onChange={(e) => handleAnswer(e.target.value)}
-                        className="hidden"
-                      />
-                      <span className="flex-1 cursor-pointer font-normal text-[1.05rem] leading-snug">
-                        {option}
-                      </span>
-                    </label>
-                  ))}
+                        <div
+                          className={`flex items-center justify-center w-5 h-5 rounded-full border transition-colors ${
+                            isSelected
+                              ? 'border-primary bg-primary text-primary-foreground'
+                              : 'border-muted-foreground group-hover:border-primary/50'
+                          }`}
+                        >
+                          {isSelected && (
+                            <div className="w-2 h-2 rounded-full bg-white" />
+                          )}
+                        </div>
+                        <input
+                          type="radio"
+                          name={`question-${question.id}`}
+                          value={option}
+                          checked={isSelected}
+                          onChange={(e) => handleAnswer(e.target.value)}
+                          className="hidden"
+                        />
+                        <span className="flex-1 cursor-pointer font-normal text-[1.05rem] leading-snug">
+                          {option}
+                        </span>
+                      </label>
+                    );
+                  })}
                 </div>
               </CardContent>
               <CardFooter className="flex justify-between items-center mt-6 pt-6 border-t border-border/50">

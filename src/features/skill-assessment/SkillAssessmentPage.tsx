@@ -1,7 +1,9 @@
 import React from 'react';
 import { Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { notificationService } from '@/services/core/notificationService';
 import { useSkillAssessmentStore } from './stores/useSkillAssessmentStore';
+import { AssessmentStep } from './types';
 import { UploadStep } from './components/UploadStep';
 import { SelectSkillStep } from './components/SelectSkillStep';
 import { QuizStep } from './components/QuizStep';
@@ -16,8 +18,21 @@ const STEPS = [
 
 const SkillAssessmentPage: React.FC = () => {
   const step = useSkillAssessmentStore((state) => state.step);
+  const setStep = useSkillAssessmentStore((state) => state.setStep);
   const currentIndex = STEPS.findIndex((s) => s.key === step);
 
+  const handleStepClick = async (targetStep: AssessmentStep, targetIndex: number) => {
+    if (targetIndex >= currentIndex) return;
+    if (step === 'quiz') {
+      const confirmed = await notificationService.confirm({
+        title: 'Leave quiz?',
+        message: 'Progress will be lost.',
+        variant: 'destructive',
+      });
+      if (!confirmed) return;
+    }
+    setStep(targetStep);
+  };
   return (
     <div className="container py-6">
       <h1 className="text-3xl font-bold mb-8 text-center tracking-tight text-foreground">Skill Assessment</h1>
@@ -27,13 +42,22 @@ const SkillAssessmentPage: React.FC = () => {
           const isActive = i === currentIndex;
           return (
             <React.Fragment key={s.key}>
-              <div className="flex flex-col items-center gap-1.5">
+              <div
+                className={cn(
+                  'flex flex-col items-center gap-1.5',
+                  isCompleted && 'cursor-pointer group'
+                )}
+                onClick={() => isCompleted && handleStepClick(s.key, i)}
+                role={isCompleted ? 'button' : undefined}
+                tabIndex={isCompleted ? 0 : undefined}
+              >
                 <div
                   className={cn(
                     'flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold transition-colors',
                     isActive || isCompleted
                       ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted text-muted-foreground'
+                      : 'bg-muted text-muted-foreground',
+                    isCompleted && 'group-hover:opacity-80'
                   )}
                 >
                   {isCompleted ? <Check className="h-4 w-4" /> : i + 1}
@@ -41,7 +65,8 @@ const SkillAssessmentPage: React.FC = () => {
                 <span
                   className={cn(
                     'text-xs font-medium',
-                    isActive || isCompleted ? 'text-foreground' : 'text-muted-foreground'
+                    isActive || isCompleted ? 'text-foreground' : 'text-muted-foreground',
+                    isCompleted && 'group-hover:underline'
                   )}
                 >
                   {s.label}

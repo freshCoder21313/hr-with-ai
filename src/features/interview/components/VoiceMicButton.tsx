@@ -37,6 +37,7 @@ export const VoiceMicButton: React.FC<VoiceMicButtonProps> = ({
         )}
         onClick={isListening ? onStop : onStart}
         disabled={disabled}
+        aria-label={isListening ? 'Stop listening' : 'Start speaking'}
       >
         {isListening ? (
           <Square className="w-6 h-6 fill-current animate-pulse" />

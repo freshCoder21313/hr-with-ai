@@ -87,20 +87,21 @@ export const ProfileEditor: React.FC<ProfileEditorProps> = ({
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label>Profile Name</Label>
+          <Label htmlFor={`profile-name-${profile.id}`}>Profile Name</Label>
           <Input
+            id={`profile-name-${profile.id}`}
             value={profile.name}
             onChange={(e) => onUpdateProfile(profile.id, { name: e.target.value })}
             placeholder="e.g., Gemini Pro (Work)"
           />
         </div>
         <div className="space-y-2">
-          <Label>Provider</Label>
+          <Label htmlFor={`profile-provider-${profile.id}`}>Provider</Label>
           <Select
             value={profile.provider}
             onValueChange={(v) => onUpdateProfile(profile.id, { provider: v as AIModelProvider })}
           >
-            <SelectTrigger>
+            <SelectTrigger id={`profile-provider-${profile.id}`}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -115,7 +116,7 @@ export const ProfileEditor: React.FC<ProfileEditorProps> = ({
 
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <Label>API Key</Label>
+          <Label htmlFor={`profile-apiKey-${profile.id}`}>API Key</Label>
           <a
             href={
               profile.provider === 'google'
@@ -134,6 +135,7 @@ export const ProfileEditor: React.FC<ProfileEditorProps> = ({
           </a>
         </div>
         <Input
+          id={`profile-apiKey-${profile.id}`}
           type="password"
           value={profile.apiKey}
           onChange={(e) => onUpdateProfile(profile.id, { apiKey: e.target.value })}
@@ -145,10 +147,11 @@ export const ProfileEditor: React.FC<ProfileEditorProps> = ({
         profile.provider === 'openrouter' ||
         profile.provider === 'google') && (
         <div className="space-y-2">
-          <Label>
+          <Label htmlFor={`profile-baseUrl-${profile.id}`}>
             Base URL {profile.provider === 'openai' && <span className="text-destructive">*</span>}
           </Label>
           <Input
+            id={`profile-baseUrl-${profile.id}`}
             value={profile.baseUrl || ''}
             onChange={(e) => onUpdateProfile(profile.id, { baseUrl: e.target.value })}
             placeholder={
@@ -169,7 +172,7 @@ export const ProfileEditor: React.FC<ProfileEditorProps> = ({
 
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <Label>Model IDs (One per line, first is primary)</Label>
+          <Label htmlFor={`profile-modelIds-${profile.id}`}>Model IDs (One per line, first is primary)</Label>
           <Button
             variant="ghost"
             size="sm"
@@ -218,8 +221,8 @@ export const ProfileEditor: React.FC<ProfileEditorProps> = ({
             </div>
           </div>
         )}
-
         <Textarea
+          id={`profile-modelIds-${profile.id}`}
           value={profile.modelIds.join('\n')}
           onChange={(e) => {
             const ids = e.target.value

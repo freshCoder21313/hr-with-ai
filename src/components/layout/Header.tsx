@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { NavLink } from 'react-router-dom';
 import { Cloud, Menu, Key } from 'lucide-react';
 import { openApiKeyModal } from '@/events/apiKeyEvents';
 import { Button } from '@/components/ui/button';
@@ -14,46 +15,52 @@ import { ThemeToggle } from '@/components/shared/theme-toggle';
 import { CloudSyncModal } from '@/components/shared/CloudSyncModal';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
-const NavLinks = ({ mobile = false, closeMenu }: { mobile?: boolean; closeMenu?: () => void }) => (
-  <>
-    <a
-      href="#/"
-      className={`text-sm font-medium transition-colors hover:text-primary ${
-        mobile ? 'text-lg py-2 border-b border-border' : 'text-muted-foreground'
-      }`}
-      onClick={() => mobile && closeMenu?.()}
-    >
-      Home
-    </a>
-    <a
-      href="#/studio"
-      className={`text-sm font-medium transition-colors hover:text-primary ${
-        mobile ? 'text-lg py-2 border-b border-border' : 'text-muted-foreground'
-      }`}
-      onClick={() => mobile && closeMenu?.()}
-    >
-      CV Studio
-    </a>
-    <a
-      href="#/skill-assessment"
-      className={`text-sm font-medium transition-colors hover:text-primary ${
-        mobile ? 'text-lg py-2 border-b border-border' : 'text-muted-foreground'
-      }`}
-      onClick={() => mobile && closeMenu?.()}
-    >
-      Skill Assessment
-    </a>
-    <a
-      href="#/history"
-      className={`text-sm font-medium transition-colors hover:text-primary ${
-        mobile ? 'text-lg py-2 border-b border-border' : 'text-muted-foreground'
-      }`}
-      onClick={() => mobile && closeMenu?.()}
-    >
-      History
-    </a>
-  </>
-);
+const NavLinks = ({ mobile = false, closeMenu }: { mobile?: boolean; closeMenu?: () => void }) => {
+  const linkClass = ({ isActive }: { isActive: boolean }) =>
+    `text-sm font-medium transition-colors hover:text-primary ${
+      isActive ? 'text-primary font-semibold' : 'text-muted-foreground'
+    } ${mobile ? 'text-lg py-2 border-b border-border' : ''}`;
+
+  return (
+    <>
+      <NavLink
+        to="/"
+        className={linkClass}
+        onClick={() => mobile && closeMenu?.()}
+      >
+        Home
+      </NavLink>
+      <NavLink
+        to="/setup"
+        className={linkClass}
+        onClick={() => mobile && closeMenu?.()}
+      >
+        Mock Interview
+      </NavLink>
+      <NavLink
+        to="/studio"
+        className={linkClass}
+        onClick={() => mobile && closeMenu?.()}
+      >
+        CV Studio
+      </NavLink>
+      <NavLink
+        to="/skill-assessment"
+        className={linkClass}
+        onClick={() => mobile && closeMenu?.()}
+      >
+        Skill Assessment
+      </NavLink>
+      <NavLink
+        to="/history"
+        className={linkClass}
+        onClick={() => mobile && closeMenu?.()}
+      >
+        History
+      </NavLink>
+    </>
+  );
+};
 
 const Header: React.FC = () => {
   const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
@@ -90,6 +97,7 @@ const Header: React.FC = () => {
                   variant="ghost"
                   size="sm"
                   onClick={() => setIsSyncModalOpen(true)}
+                  aria-label="Cloud Sync"
                   className="hidden sm:flex gap-2"
                 >
                   <Cloud className="w-4 h-4" />
@@ -107,6 +115,7 @@ const Header: React.FC = () => {
                   variant="ghost"
                   size="sm"
                   onClick={handleOpenSettings}
+                  aria-label="API Key Settings"
                   className="hidden sm:flex gap-2 text-muted-foreground hover:text-primary"
                 >
                   <Key className="w-4 h-4" />

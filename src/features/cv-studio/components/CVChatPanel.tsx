@@ -6,12 +6,14 @@ import { SimpleInputArea } from '@/components/shared/SimpleInputArea';
 import { ChangeReviewCard } from './ChangeReviewCard';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
 import { useState } from 'react';
@@ -184,11 +186,11 @@ export const CVChatPanel: React.FC<CVChatPanelProps> = ({
 
         <div className="grid grid-cols-2 gap-2">
           <div className="relative flex items-center group">
-            <div className="absolute left-2 text-amber-500 opacity-60 group-focus-within:opacity-100 transition-opacity">
-              <FileSearch size={11} />
+            <div className="absolute left-2.5 text-amber-500 opacity-60 group-focus-within:opacity-100 transition-opacity pointer-events-none">
+              <FileSearch className="w-3.5 h-3.5" />
             </div>
             <select
-              className="w-full pl-6 pr-6 py-1 text-[10px] border border-border/60 bg-background/50 rounded-md focus:outline-none focus:ring-1 focus:ring-amber-400 appearance-none cursor-pointer transition-all hover:bg-background"
+              className="w-full h-9 pl-7 pr-6 text-base md:text-xs border border-border/60 bg-background/50 rounded-md focus:outline-none focus:ring-1 focus:ring-amber-400 appearance-none cursor-pointer transition-all hover:bg-background"
               value={contextResumeId ?? ''}
               onChange={(e) =>
                 onSetContextResumeId(e.target.value ? Number(e.target.value) : undefined)
@@ -205,17 +207,16 @@ export const CVChatPanel: React.FC<CVChatPanelProps> = ({
                 ))}
             </select>
             <ChevronDown
-              size={9}
-              className="absolute right-2 text-muted-foreground pointer-events-none opacity-40"
+              className="absolute right-2 text-muted-foreground pointer-events-none opacity-40 w-3 h-3"
             />
           </div>
 
           <div className="relative flex items-center group">
-            <div className="absolute left-2 text-emerald-500 opacity-60 group-focus-within:opacity-100 transition-opacity">
-              <Target size={11} />
+            <div className="absolute left-2.5 text-emerald-500 opacity-60 group-focus-within:opacity-100 transition-opacity pointer-events-none">
+              <Target className="w-3.5 h-3.5" />
             </div>
             <select
-              className="w-full pl-6 pr-6 py-1 text-[10px] border border-border/60 bg-background/50 rounded-md focus:outline-none focus:ring-1 focus:ring-emerald-400 appearance-none cursor-pointer transition-all hover:bg-background"
+              className="w-full h-9 pl-7 pr-6 text-base md:text-xs border border-border/60 bg-background/50 rounded-md focus:outline-none focus:ring-1 focus:ring-emerald-400 appearance-none cursor-pointer transition-all hover:bg-background"
               value={contextJobId ?? ''}
               onChange={(e) => onSetContextJobId(e.target.value || undefined)}
               title="Target Job Context"
@@ -228,8 +229,7 @@ export const CVChatPanel: React.FC<CVChatPanelProps> = ({
               ))}
             </select>
             <ChevronDown
-              size={9}
-              className="absolute right-2 text-muted-foreground pointer-events-none opacity-40"
+              className="absolute right-2 text-muted-foreground pointer-events-none opacity-40 w-3 h-3"
             />
           </div>
         </div>
@@ -243,14 +243,20 @@ export const CVChatPanel: React.FC<CVChatPanelProps> = ({
             <AlertCircle size={13} />
             <span>Proposed Changes \u2014 review before accepting</span>
           </div>
-          {pendingChanges.map((change, idx) => (
-            <ChangeReviewCard
-              key={idx}
-              change={change}
-              onAccept={() => onAcceptChange(change)}
-              onReject={() => onRejectChange(change)}
-            />
-          ))}
+          {pendingChanges.map((change, idx) => {
+            const sectionOldData = mainCV?.parsedData ? mainCV.parsedData[change.section] : undefined;
+            const changeWithOldData = change.oldData !== undefined
+              ? change
+              : { ...change, oldData: sectionOldData };
+            return (
+              <ChangeReviewCard
+                key={change.id || idx}
+                change={changeWithOldData}
+                onAccept={() => onAcceptChange(change)}
+                onReject={() => onRejectChange(change)}
+              />
+            );
+          })}
         </div>
       )}
 
@@ -268,16 +274,23 @@ export const CVChatPanel: React.FC<CVChatPanelProps> = ({
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
             <DialogTitle>Rename CV</DialogTitle>
+            <DialogDescription className="sr-only">
+              Change the name of the selected CV
+            </DialogDescription>
           </DialogHeader>
-          <Input
-            value={renameValue}
-            onChange={(e) => setRenameValue(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') handleRenameSubmit();
-            }}
-            placeholder="Enter new CV name"
-            autoFocus
-          />
+          <div className="space-y-2">
+            <Label htmlFor="chat-cv-rename-input">CV Name</Label>
+            <Input
+              id="chat-cv-rename-input"
+              value={renameValue}
+              onChange={(e) => setRenameValue(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && renameValue.trim()) handleRenameSubmit();
+              }}
+              placeholder="Enter new CV name"
+              autoFocus
+            />
+          </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setRenameOpen(false)}>
               Cancel

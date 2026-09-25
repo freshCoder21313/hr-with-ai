@@ -115,8 +115,15 @@ const HistoryPage: React.FC = () => {
 
       {/* Stats Summary */}
       {interviews.length > 0 && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-          <div className="p-4 rounded-lg bg-card border border-border/50">
+        <div className="space-y-2 mb-6">
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <span className="inline-flex items-center gap-1.5 bg-muted/60 px-2.5 py-1 rounded-full font-medium">
+              Showing analytics for {interviews.length} of {totalCount} loaded sessions
+              {hasMore ? ' — Load more to expand' : ''}
+            </span>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="p-4 rounded-lg bg-card border border-border/50">
             <div className="flex items-center gap-2 text-muted-foreground text-sm">
               <Briefcase className="h-4 w-4" />
               <span>Total Sessions</span>
@@ -143,6 +150,7 @@ const HistoryPage: React.FC = () => {
               <span>Hours</span>
             </div>
             <div className="text-2xl font-bold">{stats.hours}</div>
+            </div>
           </div>
         </div>
       )}
@@ -289,10 +297,6 @@ const HistoryPage: React.FC = () => {
             </Card>
           ))}
           <div className="mt-4 flex flex-col items-center gap-2">
-            <p className="text-xs text-muted-foreground text-center">
-              Showing {interviews.length} of {totalCount} sessions · analytics above reflect
-              currently loaded sessions
-            </p>
             {hasMore && (
               <LoadingButton
                 variant="outline"

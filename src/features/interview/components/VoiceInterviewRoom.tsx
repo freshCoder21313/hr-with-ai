@@ -16,9 +16,13 @@ import { notificationService } from '@/services/core/notificationService';
 
 interface VoiceInterviewRoomProps {
   onSwitchToText?: () => void;
+  onEndInterview?: () => Promise<void>;
 }
 
-export const VoiceInterviewRoom: React.FC<VoiceInterviewRoomProps> = ({ onSwitchToText }) => {
+export const VoiceInterviewRoom: React.FC<VoiceInterviewRoomProps> = ({
+  onSwitchToText,
+  onEndInterview,
+}) => {
   const navigate = useNavigate();
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [textInput, setTextInput] = useState('');
@@ -27,11 +31,12 @@ export const VoiceInterviewRoom: React.FC<VoiceInterviewRoomProps> = ({ onSwitch
   const {
     isListening,
     isSpeaking,
+    state: interviewState,
     transcript,
     interimTranscript,
     speechError,
+    permissionError,
     speechSupported,
-    state: interviewState,
     audioLevel,
     startListening,
     stopAndSend,
@@ -62,15 +67,19 @@ export const VoiceInterviewRoom: React.FC<VoiceInterviewRoomProps> = ({ onSwitch
     });
     if (!confirmed) return;
     endInterview();
-    navigate('/dashboard');
+    if (onEndInterview) {
+      await onEndInterview();
+    } else {
+      navigate('/dashboard');
+    }
   };
 
-  const showSpeechError = !speechSupported || !!speechError;
+  const showSpeechError = !speechSupported || !!speechError || !!permissionError;
 
   return (
     <div className="flex flex-col h-[100dvh] bg-gradient-to-b from-slate-900 to-slate-950 text-white overflow-hidden relative">
       {/* Header / Status Bar */}
-      <div className="px-6 py-4 flex items-center justify-between border-b border-white/10 bg-black/20 backdrop-blur-sm z-10">
+      <div className="px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between border-b border-white/10 bg-black/20 backdrop-blur-sm z-10 gap-2">
         <div>
           <h2 className="text-lg font-semibold tracking-tight">Voice Interview</h2>
           <p className="text-xs text-slate-400">
@@ -81,32 +90,39 @@ export const VoiceInterviewRoom: React.FC<VoiceInterviewRoomProps> = ({ onSwitch
             {interviewState === 'speaking_tts' && 'AI is speaking...'}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setIsChatOpen(!isChatOpen)}
             className={cn(
-              'text-slate-400 hover:text-white gap-2',
+              'text-slate-400 hover:text-white gap-1.5 px-2 sm:px-3',
               isChatOpen && 'bg-white/10 text-white'
             )}
+            aria-label="Toggle chat"
           >
-            <MessageSquare className="w-4 h-4" />
-            Chat
+            <MessageSquare className="w-4 h-4 shrink-0" />
+            <span className="hidden sm:inline">Chat</span>
           </Button>
           {onSwitchToText && (
             <Button
               variant="ghost"
               size="sm"
               onClick={onSwitchToText}
-              className="text-slate-400 hover:text-white gap-2"
+              className="text-slate-400 hover:text-white gap-1.5 px-2 sm:px-3"
+              aria-label="Switch to Text Mode"
             >
-              <MessageSquare className="w-4 h-4" />
-              Text Mode
+              <MessageSquare className="w-4 h-4 shrink-0" />
+              <span className="hidden sm:inline">Text Mode</span>
             </Button>
           )}
-          <Button variant="ghost" size="icon" className="text-slate-400 hover:text-white">
-            <Settings className="w-5 h-5" />
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-slate-400 hover:text-white h-8 w-8 sm:h-9 sm:w-9"
+            aria-label="Voice interview settings"
+          >
+            <Settings className="w-4 h-4 sm:w-5 sm:h-5" />
           </Button>
           <Button
             variant="destructive"
@@ -127,8 +143,9 @@ export const VoiceInterviewRoom: React.FC<VoiceInterviewRoomProps> = ({ onSwitch
         >
           <p className="font-semibold">Microphone unavailable</p>
           <p className="mt-1">
-            Your browser does not support voice input, or microphone access was denied. Grant
-            microphone permission and use a supported browser (e.g. Chrome), or switch to Text Mode.
+            {permissionError ||
+              speechError ||
+              'Your browser does not support voice input, or microphone access was denied. Grant microphone permission and use a supported browser (e.g. Chrome), or switch to Text Mode.'}
           </p>
         </div>
       )}
@@ -212,7 +229,12 @@ export const VoiceInterviewRoom: React.FC<VoiceInterviewRoomProps> = ({ onSwitch
       >
         <div className="h-16 border-b border-border flex items-center justify-between px-4 bg-muted/30">
           <h3 className="font-semibold text-foreground">Live Chat</h3>
-          <Button variant="ghost" size="icon" onClick={() => setIsChatOpen(false)}>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsChatOpen(false)}
+            aria-label="Close live chat"
+          >
             <X className="w-5 h-5" />
           </Button>
         </div>

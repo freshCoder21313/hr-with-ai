@@ -61,6 +61,31 @@ export const EditorView: React.FC<EditorViewProps> = ({
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-background editor-scroll-area">
+        <div className="md:hidden mb-4 border-b border-border pb-2">
+          <Tabs
+            value={activeTab}
+            onValueChange={onActiveTabChange}
+            className="w-full"
+          >
+            <TabsList className="flex h-auto w-full justify-start overflow-x-auto bg-muted/50 p-1 gap-1 no-scrollbar">
+              <TabsTrigger value="basics" className="shrink-0 px-3 py-1.5 text-xs">
+                Basics
+              </TabsTrigger>
+              <TabsTrigger value="work" className="shrink-0 px-3 py-1.5 text-xs">
+                Work
+              </TabsTrigger>
+              <TabsTrigger value="education" className="shrink-0 px-3 py-1.5 text-xs">
+                Education
+              </TabsTrigger>
+              <TabsTrigger value="skills" className="shrink-0 px-3 py-1.5 text-xs">
+                Skills
+              </TabsTrigger>
+              <TabsTrigger value="projects" className="shrink-0 px-3 py-1.5 text-xs">
+                Projects
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
         <div className="max-w-3xl mx-auto">
           {!resume.formatted && !data.basics.name && (
             <Card className="mb-8 p-6 bg-accent/10 border-accent/30 border text-accent-foreground tour-magic-format">

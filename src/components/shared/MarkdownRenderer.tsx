@@ -26,7 +26,7 @@ const CopyButton: React.FC<{ text: string }> = ({ text }) => {
   return (
     <button
       onClick={handleCopy}
-      className="absolute top-2 right-2 p-1.5 rounded-md bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white transition-colors"
+      className="absolute top-2 right-2 p-1.5 rounded-md bg-muted/80 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
       title="Copy code"
     >
       {copied ? <Check size={14} /> : <Copy size={14} />}
@@ -84,7 +84,7 @@ const MermaidBlock: React.FC<{ code: string }> = ({ code }) => {
   }
 
   return (
-    <div className="my-4 p-4 rounded-lg bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 overflow-x-auto flex justify-center min-h-[100px] items-center relative">
+    <div className="my-4 p-4 rounded-lg bg-muted/50 border border-border overflow-x-auto flex justify-center min-h-[100px] items-center relative">
       {isRendering && (
         <div className="absolute inset-0 flex items-center justify-center bg-background/50 z-10">
           <Loader2 className="w-6 h-6 animate-spin text-primary" />
@@ -129,14 +129,14 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = memo(({ content }) => 
           return !inline && match ? (
             <div className="relative my-4 group">
               <CopyButton text={codeText} />
-              <div className="absolute top-2 left-3 text-xs text-slate-400 font-mono uppercase tracking-wider">
+              <div className="absolute top-2 left-3 text-xs text-muted-foreground font-mono uppercase tracking-wider">
                 {lang}
               </div>
               <SyntaxHighlighter
                 style={vscDarkPlus}
                 language={match[1]}
                 PreTag="div"
-                className="rounded-lg !my-0 !bg-[#1e1e1e] border border-slate-700 shadow-sm pt-8"
+                className="rounded-lg !my-0 !bg-[#1e1e1e] border border-border shadow-sm pt-8"
               >
                 {codeText}
               </SyntaxHighlighter>
@@ -145,8 +145,8 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = memo(({ content }) => 
             <code
               className={`${
                 inline
-                  ? 'bg-slate-100 text-slate-900 px-1.5 py-0.5 rounded font-mono text-[0.9em] border border-slate-200 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-700'
-                  : 'block bg-slate-100 text-slate-900 p-4 rounded-lg my-2 overflow-x-auto text-sm border border-slate-200 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-700'
+                  ? 'bg-muted text-foreground px-1.5 py-0.5 rounded font-mono text-[0.9em] border border-border'
+                  : 'block bg-muted text-foreground p-4 rounded-lg my-2 overflow-x-auto text-sm border border-border'
               }`}
             >
               {children}
@@ -159,30 +159,30 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = memo(({ content }) => 
         ol: ({ children }) => <ol className="list-decimal pl-6 mb-3 space-y-1">{children}</ol>,
         li: ({ children }) => <li className="pl-1">{children}</li>,
         h1: ({ children }) => (
-          <h1 className="text-2xl font-bold mb-4 mt-6 pb-2 border-b border-slate-200">
+          <h1 className="text-2xl font-bold mb-4 mt-6 pb-2 border-b border-border text-foreground">
             {children}
           </h1>
         ),
-        h2: ({ children }) => <h2 className="text-xl font-bold mb-3 mt-5">{children}</h2>,
-        h3: ({ children }) => <h3 className="text-lg font-bold mb-2 mt-4">{children}</h3>,
+        h2: ({ children }) => <h2 className="text-xl font-bold mb-3 mt-5 text-foreground">{children}</h2>,
+        h3: ({ children }) => <h3 className="text-lg font-bold mb-2 mt-4 text-foreground">{children}</h3>,
         h4: ({ children }) => (
-          <h4 className="text-base font-bold mb-2 mt-3 text-slate-700 dark:text-slate-300">
+          <h4 className="text-base font-bold mb-2 mt-3 text-foreground">
             {children}
           </h4>
         ),
         h5: ({ children }) => (
-          <h5 className="text-sm font-bold mb-1 mt-2 text-slate-600 dark:text-slate-400">
+          <h5 className="text-sm font-bold mb-1 mt-2 text-muted-foreground">
             {children}
           </h5>
         ),
         h6: ({ children }) => (
-          <h6 className="text-sm font-semibold mb-1 mt-2 text-slate-500 dark:text-slate-500">
+          <h6 className="text-sm font-semibold mb-1 mt-2 text-muted-foreground">
             {children}
           </h6>
         ),
-        hr: () => <hr className="my-6 border-t border-slate-200 dark:border-slate-700" />,
+        hr: () => <hr className="my-6 border-t border-border" />,
         blockquote: ({ children }) => (
-          <blockquote className="border-l-4 border-blue-400 pl-4 py-1 my-3 bg-blue-50/50 italic text-slate-700 rounded-r">
+          <blockquote className="border-l-4 border-primary pl-4 py-1 my-3 bg-accent/50 italic text-foreground rounded-r">
             {children}
           </blockquote>
         ),
@@ -217,28 +217,28 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = memo(({ content }) => 
         },
         table: ({ children }) => (
           <div className="overflow-x-auto my-4">
-            <table className="min-w-full divide-y divide-slate-200 border border-slate-200 rounded-lg">
+            <table className="min-w-full divide-y divide-border border border-border rounded-lg">
               {children}
             </table>
           </div>
         ),
-        thead: ({ children }) => <thead className="bg-slate-50">{children}</thead>,
+        thead: ({ children }) => <thead className="bg-muted/50">{children}</thead>,
         th: ({ children }) => (
-          <th className="px-4 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider border-b">
+          <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider border-b border-border">
             {children}
           </th>
         ),
         td: ({ children }) => (
-          <td className="px-4 py-2 whitespace-nowrap text-sm border-b border-slate-100">
+          <td className="px-4 py-2 whitespace-nowrap text-sm border-b border-border">
             {children}
           </td>
         ),
         del: ({ children }) => (
-          <del className="line-through text-slate-500 dark:text-slate-400">{children}</del>
+          <del className="line-through text-muted-foreground">{children}</del>
         ),
         strong: ({ children }) => <strong className="font-bold text-foreground">{children}</strong>,
         em: ({ children }) => (
-          <em className="italic text-slate-700 dark:text-slate-300">{children}</em>
+          <em className="italic text-foreground">{children}</em>
         ),
       }}
     >

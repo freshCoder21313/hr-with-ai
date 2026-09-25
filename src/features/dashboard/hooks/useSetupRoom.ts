@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import { logger } from '@/lib/logger';
 import { SetupFormData, Resume, SavedJob } from '@/types';
 import { useInterview } from '@/hooks/useInterview';
@@ -8,6 +9,12 @@ import { validateInterviewSetup } from '@/lib/validation';
 import { useSetupJobs } from './useSetupJobs';
 import { useSetupResumes } from './useSetupResumes';
 import { useSetupAIActions } from './useSetupAIActions';
+
+interface SkillAssessmentNavigationState {
+  source?: 'skill-assessment';
+  targetSkill?: string;
+  weaknesses?: string[];
+}
 
 const DEFAULT_FORM: SetupFormData = {
   company: 'Tech Corp',
@@ -27,7 +34,24 @@ const DEFAULT_FORM: SetupFormData = {
 
 export const useSetupRoom = () => {
   const { startNewInterview, isLoading: isStarting } = useInterview();
-  const [formData, setFormData] = useState<SetupFormData>(DEFAULT_FORM);
+  const location = useLocation();
+  const navigationState = location.state as SkillAssessmentNavigationState | null;
+  const [formData, setFormData] = useState<SetupFormData>(() => {
+    if (navigationState?.source === 'skill-assessment') {
+      const targetSkill = navigationState.targetSkill?.trim() || 'General';
+      const weaknesses = navigationState.weaknesses || [];
+      const weaknessContext =
+        weaknesses.length > 0
+          ? `\n\nTarget Areas / Focus Weaknesses to Drill:\n${weaknesses.map((w) => `- ${w}`).join('\n')}`
+          : '';
+      return {
+        ...DEFAULT_FORM,
+        jobTitle: `${targetSkill} Deep-Dive Interview`,
+        jobDescription: `Deep-dive technical assessment into ${targetSkill}.${weaknessContext}`,
+      };
+    }
+    return DEFAULT_FORM;
+  });
   const [savedResumes, setSavedResumes] = useState<Resume[]>([]);
   const [savedJobs, setSavedJobs] = useState<SavedJob[]>([]);
 

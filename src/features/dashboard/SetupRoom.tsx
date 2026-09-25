@@ -97,6 +97,7 @@ const SetupRoom: React.FC = () => {
         isTailorModalOpen={state.isTailorModalOpen}
         onTailorModalClose={() => actions.setIsTailorModalOpen(false)}
         resumeToTailor={state.resumeToTailor}
+        initialJobDescription={formData.jobDescription}
         onGenerateTailoredResume={actions.handleGenerateTailoredResume}
       />
     </div>

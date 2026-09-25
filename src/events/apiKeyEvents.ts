@@ -9,3 +9,9 @@ export const subscribeToApiKeyModal = (callback: () => void) => {
   window.addEventListener(OPEN_API_KEY_MODAL_EVENT, handler);
   return () => window.removeEventListener(OPEN_API_KEY_MODAL_EVENT, handler);
 };
+
+export const hasActiveProfile = (): boolean => {
+  const hasLegacyKey = !!localStorage.getItem('gemini_api_key');
+  const hasActiveProfileId = !!localStorage.getItem('ai_active_profile_id');
+  return hasLegacyKey || hasActiveProfileId;
+};

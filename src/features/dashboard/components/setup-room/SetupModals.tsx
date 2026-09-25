@@ -27,9 +27,9 @@ interface SetupModalsProps {
   isTailorModalOpen: boolean;
   onTailorModalClose: () => void;
   resumeToTailor: Resume | null;
+  initialJobDescription?: string;
   onGenerateTailoredResume: (jobDescription: string) => Promise<void>;
 }
-
 export const SetupModals: React.FC<SetupModalsProps> = ({
   isJobModalOpen,
   onJobModalClose,
@@ -43,6 +43,7 @@ export const SetupModals: React.FC<SetupModalsProps> = ({
   isTailorModalOpen,
   onTailorModalClose,
   resumeToTailor,
+  initialJobDescription,
   onGenerateTailoredResume,
 }) => {
   return (
@@ -87,6 +88,7 @@ export const SetupModals: React.FC<SetupModalsProps> = ({
         isOpen={isTailorModalOpen}
         onClose={onTailorModalClose}
         sourceResume={resumeToTailor}
+        initialJobDescription={initialJobDescription}
         onGenerate={onGenerateTailoredResume}
       />
     </>

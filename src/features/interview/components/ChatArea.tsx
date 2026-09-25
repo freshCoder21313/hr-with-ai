@@ -38,20 +38,27 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
   isProcessing,
   onOpenTool,
 }) => {
+  const scrollRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   // Track which feedback items are expanded
   const [expandedFeedback, setExpandedFeedback] = useState<Record<number, boolean>>({});
+  const [isNearBottom, setIsNearBottom] = useState(true);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  const handleScroll = () => {
+    const el = scrollRef.current;
+    if (!el) return;
+    setIsNearBottom(el.scrollHeight - el.scrollTop - el.clientHeight < 80);
+  };
+
+  // Only auto-scroll when the user is already near the bottom; never hijack
+  // a deliberate scroll-up during streaming.
   useEffect(() => {
-    // Only scroll to bottom on initial load if we are not in "review mode" (implied by presence of analysisMap)
-    // If analysisMap is present, user might be reading history, so maybe don't force scroll?
-    // For now, consistent behavior is safer.
-    scrollToBottom();
-  }, [messages]);
+    if (isNearBottom) scrollToBottom();
+  }, [messages, isNearBottom]);
 
   const toggleFeedback = (idx: number) => {
     setExpandedFeedback((prev) => ({
@@ -76,7 +83,11 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
 
   return (
     <div className="flex-1 overflow-hidden relative flex flex-col bg-muted/30">
-      <div className="flex-1 overflow-y-auto p-3 md:p-6 space-y-4 md:space-y-6">
+      <div
+        ref={scrollRef}
+        onScroll={handleScroll}
+        className="flex-1 overflow-y-auto p-3 md:p-6 space-y-4 md:space-y-6"
+      >
         {messages.map((msg, idx) => {
           const feedback = analysisMap?.[idx];
           const isExpanded = expandedFeedback[idx];
@@ -264,6 +275,17 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
         )}
         <div ref={messagesEndRef} />
       </div>
+      {!isNearBottom && (
+        <button
+          type="button"
+          aria-label="Scroll to latest message"
+          onClick={scrollToBottom}
+          className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1.5 rounded-full border border-border bg-background/90 backdrop-blur px-3 py-1.5 text-xs shadow-md text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <ChevronDown size={14} />
+          Jump to latest
+        </button>
+      )}
     </div>
   );
 };

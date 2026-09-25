@@ -1,9 +1,9 @@
-import React, { Suspense, lazy, useEffect } from 'react';
+import React, { Suspense, lazy, useEffect, useState } from 'react';
 import { logger } from '@/lib/logger';
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import ApiKeyModal from '@/features/settings/ApiKeyModal';
-import { Loader2 } from 'lucide-react';
+import { Loader2, AlertCircle, X } from 'lucide-react';
 import { ThemeProvider } from '@/components/shared/theme-provider';
 import Header from '@/components/layout/Header';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -12,8 +12,9 @@ import { Toaster } from 'sonner';
 import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
 import { GlobalErrorHandler } from '@/components/shared/GlobalErrorHandler';
 import { db } from '@/lib/db';
-
-// Lazy load features
+import { hasActiveProfile, openApiKeyModal, subscribeToApiKeyModal } from '@/events/apiKeyEvents';
+import { Button } from '@/components/ui/button';
+import { Alert } from '@/components/ui/alert';
 const SetupRoom = lazy(() => import('@/features/dashboard/SetupRoom'));
 const InterviewRoom = lazy(() => import('@/features/interview/InterviewRoom'));
 const FeedbackView = lazy(() => import('@/features/interview/FeedbackView'));
@@ -30,6 +31,21 @@ const PageLoader = () => (
 );
 
 const App: React.FC = () => {
+  const [showConfigBanner, setShowConfigBanner] = useState(() => {
+    const dismissed = localStorage.getItem('ai_setup_banner_dismissed') === 'true';
+    return !dismissed && !hasActiveProfile();
+  });
+
+  useEffect(() => {
+    // When API key modal opens or user sets a key, re-check active profile
+    const unsubscribe = subscribeToApiKeyModal(() => {
+      if (hasActiveProfile()) {
+        setShowConfigBanner(false);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
   useEffect(() => {
     // Run background cleanup on mount (once)
     const cleanup = async () => {
@@ -41,6 +57,11 @@ const App: React.FC = () => {
     };
     cleanup();
   }, []);
+
+  const dismissBanner = () => {
+    localStorage.setItem('ai_setup_banner_dismissed', 'true');
+    setShowConfigBanner(false);
+  };
 
   return (
     <ThemeProvider defaultTheme="system" storageKey="hr-ai-theme">
@@ -54,6 +75,33 @@ const App: React.FC = () => {
                   <ApiKeyModal />
                   <Header />
 
+                  {showConfigBanner && (
+                    <div className="container mx-auto px-4 pt-3 print:hidden">
+                      <Alert className="py-2.5 px-4 flex items-center justify-between gap-3 bg-amber-500/10 border-amber-500/30 text-amber-900 dark:text-amber-200">
+                        <div className="flex items-center gap-2 text-xs sm:text-sm font-medium">
+                          <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
+                          <span>AI provider not configured — some features will fail.</span>
+                          <Button
+                            variant="link"
+                            size="sm"
+                            className="h-auto p-0 text-amber-700 dark:text-amber-300 font-semibold underline underline-offset-2 ml-1"
+                            onClick={() => openApiKeyModal()}
+                          >
+                            Set up now
+                          </Button>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 text-amber-800 dark:text-amber-200 hover:bg-amber-500/20 shrink-0"
+                          onClick={dismissBanner}
+                          aria-label="Dismiss banner"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </Button>
+                      </Alert>
+                    </div>
+                  )}
                   <Toaster position="bottom-center" richColors closeButton toastOptions={{ className: 'mb-safe' }} />
 
                   <main className="flex-1 container mx-auto px-0 md:px-4 py-0 md:py-6 print:p-0 print:m-0 print:max-w-none print:block print:flex-none">
