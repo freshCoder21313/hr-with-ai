@@ -37,7 +37,7 @@ export const FeedbackAnalysisPanel: React.FC<FeedbackAnalysisPanelProps> = ({
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <BarChart2 className="w-5 h-5 text-blue-600" />
+            <BarChart2 className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             Current Performance Flow
           </CardTitle>
         </CardHeader>
@@ -51,7 +51,7 @@ export const FeedbackAnalysisPanel: React.FC<FeedbackAnalysisPanelProps> = ({
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <BarChart2 className="w-5 h-5 text-emerald-600" />
+            <BarChart2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
             Potential & Improvement Path
           </CardTitle>
         </CardHeader>
@@ -107,7 +107,7 @@ export const FeedbackAnalysisPanel: React.FC<FeedbackAnalysisPanelProps> = ({
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <BookOpen className="w-5 h-5 text-purple-600" />
+            <BookOpen className="w-5 h-5 text-purple-600 dark:text-purple-400" />
             Recommended Learning Resources
           </CardTitle>
         </CardHeader>

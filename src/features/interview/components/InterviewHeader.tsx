@@ -39,7 +39,7 @@ export const InterviewHeader: React.FC<InterviewHeaderProps> = ({
               className={cn(
                 'flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-mono font-bold transition-all',
                 timer <= 10
-                  ? 'bg-red-500/10 text-red-500 border-red-500/30 animate-pulse'
+                  ? 'bg-red-500/10 text-red-500 dark:text-red-400 border-red-500/30 animate-pulse'
                   : 'bg-muted text-muted-foreground border-border'
               )}
             >

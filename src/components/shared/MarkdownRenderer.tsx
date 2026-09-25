@@ -195,7 +195,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = memo(({ content }) => 
                 href={`https://www.google.com/search?q=${encodeURIComponent(term)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded-md text-[0.9em] font-medium border border-blue-100 hover:bg-blue-100 hover:text-blue-800 transition-colors mx-0.5 no-underline"
+                className="inline-flex items-center gap-1 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 px-1.5 py-0.5 rounded-md text-[0.9em] font-medium border border-blue-100 dark:border-blue-900 hover:bg-blue-100 dark:hover:bg-blue-900/40 hover:text-blue-800 dark:hover:text-blue-300 transition-colors mx-0.5 no-underline"
                 title={`Search for "${term}"`}
                 onClick={(e) => e.stopPropagation()} // Prevent bubbling if needed
               >
@@ -209,7 +209,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = memo(({ content }) => 
               href={href}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-600 hover:underline font-medium"
+              className="text-blue-600 dark:text-blue-400 hover:underline font-medium"
             >
               {children}
             </a>

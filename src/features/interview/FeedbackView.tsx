@@ -36,7 +36,7 @@ const FeedbackView: React.FC = () => {
   }
 
   if (!feedback || !interview) {
-    return <div className="p-8 text-center text-red-500">Error loading feedback</div>;
+    return <div className="p-8 text-center text-red-500 dark:text-red-400">Error loading feedback</div>;
   }
 
   return (
@@ -83,7 +83,7 @@ const FeedbackView: React.FC = () => {
           <Card className="h-full border-none shadow-md overflow-hidden flex flex-col bg-card">
             <CardHeader className="border-b bg-muted/30 py-4 shrink-0">
               <CardTitle className="flex items-center gap-2 text-lg">
-                <FileText className="w-5 h-5 text-slate-500" />
+                <FileText className="w-5 h-5 text-muted-foreground" />
                 Review Transcript
               </CardTitle>
             </CardHeader>

@@ -95,7 +95,7 @@ export const ChangeReviewCard: React.FC<ChangeReviewCardProps> = ({
     const oldData = change.oldData;
 
     if (action === 'delete') {
-      return <div className="text-sm text-red-600 italic">This section will be removed.</div>;
+      return <div className="text-sm text-red-600 dark:text-red-400 italic">This section will be removed.</div>;
     }
 
     // Case 1: Arrays (Work, Education, Skills, Projects)

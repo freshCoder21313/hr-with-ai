@@ -104,7 +104,7 @@ export const JobDetailsForm: React.FC<JobDetailsFormProps> = ({
               disabled={isResearching || !isNonEmptyString(formData.company)}
               isLoading={isResearching}
               loadingText="Researching..."
-              className="text-xs text-blue-600 hover:text-blue-700 p-0 h-auto"
+              className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 p-0 h-auto"
               leftIcon={<Search className="w-3 h-3" />}
             >
               Auto-Research Company
