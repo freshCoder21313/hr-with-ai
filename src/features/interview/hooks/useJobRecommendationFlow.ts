@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { logger } from '@/lib/logger';
-import { Resume, JobRecommendation } from '@/types';
+import { Interview, Resume, JobRecommendation } from '@/types';
 import { ResumeData } from '@/types/resume';
 import {
   generateJobRecommendations,
@@ -49,6 +49,8 @@ interface UseJobRecommendationFlowOptions {
     tailoredResumeText: string,
     tailoredResumeData?: ResumeData
   ) => void;
+  /** Language for generated job descriptions; defaults to the interview language. */
+  language?: Interview['language'];
   onClose: () => void;
 }
 
@@ -56,6 +58,7 @@ export function useJobRecommendationFlow({
   isOpen,
   existingResumeId,
   availableResumes,
+  language = 'en-US',
   onSelectJob,
   onClose,
 }: UseJobRecommendationFlowOptions) {
@@ -82,40 +85,33 @@ export function useJobRecommendationFlow({
 
     setStep('analyzing');
     setIsGenerating(true);
-    setProgress(0);
     setError(null);
 
+    const progressInterval = setInterval(() => {
+      setProgress((prev) => (prev >= 90 ? 90 : prev + 10));
+    }, 200);
     try {
-      const progressInterval = setInterval(() => {
-        setProgress((prev) => (prev >= 90 ? 90 : prev + 10));
-      }, 200);
-
       const config = getStoredAIConfig();
       if (!config.apiKey) throw new Error('Please configure your API key in settings');
 
       const generatedJobs = await generateJobRecommendations(
         selectedResume.parsedData,
-        'en-US',
+        language,
         config,
         selectedResume.id
       );
 
-      clearInterval(progressInterval);
+      setJobs(generatedJobs);
       setProgress(100);
-
-      setTimeout(() => {
-        setJobs(generatedJobs);
-        setStep('results');
-        setIsGenerating(false);
-        setProgress(0);
-      }, 500);
     } catch (err) {
       logger.error('Error generating jobs:', err);
       setError(err instanceof Error ? err.message : 'Failed to generate job recommendations');
-      setIsGenerating(false);
       setStep('select-resume');
+    } finally {
+      clearInterval(progressInterval);
+      setIsGenerating(false);
     }
-  }, [selectedResume]);
+  }, [selectedResume, language]);
 
   const handleSelectJob = useCallback(
     async (job: JobRecommendation) => {

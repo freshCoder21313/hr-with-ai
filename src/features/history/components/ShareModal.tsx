@@ -36,6 +36,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ interview, trigger }) => {
       link.click();
     } catch (err) {
       logger.error('Failed to generate image', err);
+      toast.error('Could not generate the image. Please try again.');
     } finally {
       setIsGenerating(false);
     }
@@ -80,9 +81,9 @@ const ShareModal: React.FC<ShareModalProps> = ({ interview, trigger }) => {
         </DialogHeader>
 
         <div className="flex flex-col items-center gap-6 py-4">
-          <div className="relative rounded-xl overflow-hidden shadow-lg border border-border max-w-full overflow-x-auto">
-            {/* Wrap the 600px card. Keep cardRef unscaled internally so html-to-image captures full resolution */}
-            <div className="min-w-[600px]">
+          <div className="relative rounded-xl overflow-hidden shadow-lg border border-border w-full max-w-[600px] overflow-x-auto">
+            {/* Wrap the card. Keep cardRef unscaled internally so html-to-image captures full resolution */}
+            <div className="w-full min-w-[600px] flex justify-center">
               <ShareableResultCard ref={cardRef} interview={interview} />
             </div>
           </div>

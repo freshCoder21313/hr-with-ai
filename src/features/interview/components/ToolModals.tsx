@@ -18,7 +18,6 @@ interface ToolModalsProps {
   whiteboardData: string;
   onWhiteboardMount: (editor: Editor) => void;
   updateWhiteboard: (data: string) => void;
-  handleRunCode: () => void;
   onSubmit: (type: 'code' | 'whiteboard') => void;
   isHardcore: boolean;
   isSubmitting: boolean;
@@ -34,7 +33,6 @@ export const ToolModals: React.FC<ToolModalsProps> = ({
   whiteboardData,
   onWhiteboardMount,
   updateWhiteboard,
-  handleRunCode,
   onSubmit,
   isHardcore,
   isSubmitting,
@@ -78,8 +76,6 @@ export const ToolModals: React.FC<ToolModalsProps> = ({
               <CodeEditor
                 code={currentCode || ''}
                 onChange={(val) => val !== undefined && updateCode(val)}
-                onRun={handleRunCode}
-                isRunning={false}
                 isHardcore={isHardcore}
               />
             </Suspense>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { StopCircle, Settings as SettingsIcon } from 'lucide-react';
+import { StopCircle, Settings as SettingsIcon, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Interview } from '@/types';
@@ -34,6 +34,15 @@ export const InterviewHeader: React.FC<InterviewHeaderProps> = ({
           <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-muted text-muted-foreground border border-border shrink-0">
             {interview.language === 'vi-VN' ? 'VI' : 'EN'}
           </span>
+          {interview.isPanel && (
+            <span
+              className="flex items-center gap-1 px-2 py-0.5 rounded-full border border-border bg-muted text-[10px] font-bold text-muted-foreground shrink-0"
+              title="Panel interview: the AI simulates multiple interviewers"
+            >
+              <Users size={10} aria-hidden="true" />
+              PANEL
+            </span>
+          )}
           {interview.difficulty === 'hardcore' && (
             <div
               className={cn(
@@ -65,7 +74,7 @@ export const InterviewHeader: React.FC<InterviewHeaderProps> = ({
               variant="ghost"
               size="icon"
               onClick={onOpenSettings}
-              className="h-8 w-8 text-muted-foreground hover:text-foreground"
+              className="h-11 w-11 md:h-11 md:w-11 text-muted-foreground hover:text-foreground"
             >
               <SettingsIcon size={18} />
             </Button>
@@ -83,7 +92,7 @@ export const InterviewHeader: React.FC<InterviewHeaderProps> = ({
                 size="icon"
                 onClick={onSwitchViewMode}
                 className={cn(
-                  'h-8 w-8 hover:text-foreground',
+                'h-11 w-11 md:h-11 md:w-11 hover:text-foreground',
                   viewMode === 'voice' ? 'text-primary animate-pulse' : 'text-muted-foreground'
                 )}
               >
@@ -119,7 +128,7 @@ export const InterviewHeader: React.FC<InterviewHeaderProps> = ({
           variant="destructive"
           size="sm"
           onClick={onEndSession}
-          className="gap-2 h-8 px-3 text-xs"
+          className="gap-2 h-11 px-4 text-xs"
         >
           <StopCircle className="w-3 h-3" />
           <span className="hidden md:inline">End Session</span>

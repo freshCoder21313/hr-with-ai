@@ -1,6 +1,6 @@
 import React from 'react';
-import { useParams } from 'react-router-dom';
-import { BarChart2, FileText, Loader2, MessageSquare, Printer } from 'lucide-react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { AlertCircle, ArrowLeft, BarChart2, FileText, Loader2, MessageSquare, Printer } from 'lucide-react';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -12,10 +12,12 @@ import { FeedbackAnalysisPanel } from './components/feedback/FeedbackAnalysisPan
 
 const FeedbackView: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const {
     interview,
     feedback,
     loading,
+    error,
     activeTab,
     setActiveTab,
     analysisMap,
@@ -35,8 +37,20 @@ const FeedbackView: React.FC = () => {
     );
   }
 
-  if (!feedback || !interview) {
-    return <div className="p-8 text-center text-red-500 dark:text-red-400">Error loading feedback</div>;
+  if (error || !feedback || !interview) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-4 px-6 py-16 text-center">
+        <AlertCircle className="h-8 w-8 text-destructive" aria-hidden="true" />
+        <div className="space-y-1">
+          <h2 className="text-lg font-semibold text-foreground">Feedback unavailable</h2>
+          <p className="text-sm text-muted-foreground">{error ?? 'Error loading feedback'}</p>
+        </div>
+        <Button onClick={() => navigate('/')} className="gap-2">
+          <ArrowLeft className="w-4 h-4" />
+          Back to Dashboard
+        </Button>
+      </div>
+    );
   }
 
   return (

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { logger } from '@/lib/logger';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { db } from '@/lib/db';
 import { useInterviewStore } from '@/features/interview/interviewStore';
 import { Interview } from '@/types';
@@ -13,7 +13,6 @@ interface UseInterviewLoaderReturn {
 
 export const useInterviewLoader = (): UseInterviewLoaderReturn => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const { currentInterview, setInterview } = useInterviewStore();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -38,16 +37,14 @@ export const useInterviewLoader = (): UseInterviewLoaderReturn => {
         setError(null);
       } else {
         setError('Interview not found');
-        navigate('/');
       }
     } catch (err) {
       setError('Failed to load interview');
       logger.error('Error loading interview:', err);
-      navigate('/');
     } finally {
       setIsLoading(false);
     }
-  }, [id, currentInterview?.id, setInterview, navigate]);
+  }, [id, currentInterview?.id, setInterview]);
 
   useEffect(() => {
     loadInterview();

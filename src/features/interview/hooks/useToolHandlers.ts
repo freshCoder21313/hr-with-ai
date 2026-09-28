@@ -1,6 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
 import { logger } from '@/lib/logger';
-import { toast } from 'sonner';
 import type { Editor, TLShapeId } from 'tldraw';
 import { svgToPngBase64 } from '@/lib/svgUtils';
 import { Interview, JobRecommendation } from '@/types';
@@ -11,7 +10,6 @@ interface UseToolHandlersReturn {
   setIsCodeOpen: (open: boolean) => void;
   isWhiteboardOpen: boolean;
   setIsWhiteboardOpen: (open: boolean) => void;
-  handleRunCode: () => void;
   handleToolSubmit: (
     type: 'code' | 'whiteboard',
     sendMessage: (content: string, image?: string) => Promise<void>
@@ -35,9 +33,6 @@ export const useToolHandlers = (
   const [isWhiteboardOpen, setIsWhiteboardOpen] = useState(false);
   const editorRef = useRef<Editor | null>(null);
 
-  const handleRunCode = useCallback(() => {
-    toast.info('This feature is coming soon! (Backend integration in progress)');
-  }, []);
 
   const handleToolSubmit = useCallback(
     async (
@@ -124,7 +119,6 @@ export const useToolHandlers = (
     setIsCodeOpen,
     isWhiteboardOpen,
     setIsWhiteboardOpen,
-    handleRunCode,
     handleToolSubmit,
     handleSelectJob,
     editorRef,

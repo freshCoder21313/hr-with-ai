@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Loader2 } from 'lucide-react';
+import { AlertCircle, ArrowLeft, Loader2 } from 'lucide-react';
 import { logger } from '@/lib/logger';
 import { notificationService } from '@/services/core/notificationService';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import type { Editor, TLShapeId } from 'tldraw';
 import { useInterview } from '@/hooks/useInterview';
 import { useInterviewLoader } from '@/features/interview/hooks/useInterviewLoader';
@@ -17,6 +17,7 @@ import SettingsModal from '@/components/shared/SettingsModal';
 import JobRecommendationModal from './JobRecommendationModal';
 import SEO from '@/components/shared/SEO';
 import { isNonEmptyString } from '@/lib/validation';
+import { Button } from '@/components/ui/button';
 
 import { InterviewHeader } from './components/InterviewHeader';
 import { ChatArea } from './components/ChatArea';
@@ -33,6 +34,7 @@ import { useInterviewRoomBootstrap } from './hooks/useInterviewRoomBootstrap';
 
 const InterviewRoom: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const {
     currentInterview,
     sendMessage,
@@ -42,7 +44,10 @@ const InterviewRoom: React.FC = () => {
     isLoading: isProcessing,
   } = useInterview();
   const { setInterview, updateCode, updateWhiteboard } = useInterviewStore();
-  const { isLoading: isInterviewLoading } = useInterviewLoader();
+  const {
+    isLoading: isInterviewLoading,
+    error: interviewLoadError,
+  } = useInterviewLoader();
 
   const [inputValue, setInputValue] = useState('');
   const [isEndingSession, setIsEndingSession] = useState(false);
@@ -142,6 +147,22 @@ const InterviewRoom: React.FC = () => {
     [currentInterview, id, tools, setInterview]
   );
 
+  if (interviewLoadError) {
+    return (
+      <div className="h-[100dvh] flex flex-col items-center justify-center gap-4 px-6 text-center">
+        <AlertCircle className="h-8 w-8 text-destructive" aria-hidden="true" />
+        <div className="space-y-1">
+          <h2 className="text-lg font-semibold text-foreground">Could not open this interview</h2>
+          <p className="text-sm text-muted-foreground">{interviewLoadError}</p>
+        </div>
+        <Button onClick={() => navigate('/')} className="gap-2">
+          <ArrowLeft className="w-4 h-4" />
+          Back to Dashboard
+        </Button>
+      </div>
+    );
+  }
+
   if (!currentInterview || isInterviewLoading) {
     return (
       <div className="h-[100dvh] flex flex-col items-center justify-center gap-3 text-muted-foreground">
@@ -227,7 +248,6 @@ const InterviewRoom: React.FC = () => {
           tools.setEditor(editor);
         }}
         updateWhiteboard={updateWhiteboard}
-        handleRunCode={tools.handleRunCode}
         onSubmit={(type) => tools.handleToolSubmit(type, sendMessage)}
         isHardcore={currentInterview.difficulty === 'hardcore'}
         isSubmitting={isSubmitting}
@@ -244,6 +264,7 @@ const InterviewRoom: React.FC = () => {
         onSelectJob={handleSelectJob}
         existingResumeId={currentInterview.resumeId}
         availableResumes={availableResumes}
+        language={currentInterview.language}
         currentInterviewId={currentInterview.id}
       />
     </div>

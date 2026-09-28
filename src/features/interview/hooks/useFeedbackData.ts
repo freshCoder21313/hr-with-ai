@@ -10,6 +10,7 @@ export function useFeedbackData(id: string | undefined) {
   const [interview, setInterview] = useState<Interview | null>(null);
   const [feedback, setFeedback] = useState<InterviewFeedback | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('analysis');
   const [analysisMap, setAnalysisMap] = useState<Record<number, AnalysisItem>>({});
   const mermaidRef1 = useRef<HTMLDivElement>(null);
@@ -37,9 +38,14 @@ export function useFeedbackData(id: string | undefined) {
 
   useEffect(() => {
     const processFeedback = async () => {
-      if (!id) return;
+      if (!id) {
+        setError('No interview ID provided');
+        setLoading(false);
+        return;
+      }
       const data = await db.interviews.get(parseInt(id, 10));
       if (!data) {
+        setError('Interview not found');
         setLoading(false);
         return;
       }
@@ -54,8 +60,14 @@ export function useFeedbackData(id: string | undefined) {
         const newFeedback = await generateInterviewFeedback(data, aiConfig);
         await db.interviews.update(parseInt(id, 10), { feedback: newFeedback });
         setFeedback(newFeedback);
+        setError(null);
       } catch (e) {
         logger.error(e);
+        setError(
+          e instanceof Error
+            ? `Failed to generate feedback: ${e.message}`
+            : 'Failed to generate feedback'
+        );
       } finally {
         setLoading(false);
       }
@@ -102,6 +114,7 @@ export function useFeedbackData(id: string | undefined) {
     interview,
     feedback,
     loading,
+    error,
     activeTab,
     setActiveTab,
     analysisMap,

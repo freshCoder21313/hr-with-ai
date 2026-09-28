@@ -187,6 +187,15 @@ body {
 }
 
 /* Utility classes mapping to variables */
+/* Safe-area padding utilities (Tailwind v4 @utility) */
+@utility safe-area-bottom {
+  padding-bottom: var(--safe-bottom);
+}
+
+@utility safe-area-top {
+  padding-top: var(--safe-top);
+}
+
 
 @page {
   size: A4;

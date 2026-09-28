@@ -11,6 +11,24 @@ import {
   Radar,
 } from 'recharts';
 
+interface RadarAxis {
+  subject: string;
+  A: number;
+  fullMark: number;
+}
+
+/** Only axes with a real score in the feedback schema are plotted; nothing is inferred. */
+export function buildRadarData(feedback: InterviewFeedback): RadarAxis[] {
+  const axes: Array<{ subject: string; value: number | undefined }> = [
+    { subject: 'Overall', value: feedback.score },
+    { subject: 'Culture Fit', value: feedback.cultureFitScore },
+    { subject: 'Resilience', value: feedback.resilienceScore },
+  ];
+  return axes
+    .filter((axis): axis is { subject: string; value: number } => typeof axis.value === 'number')
+    .map((axis) => ({ subject: axis.subject, A: axis.value, fullMark: 10 }));
+}
+
 interface FeedbackScoreHeaderProps {
   interview: Interview;
   feedback: InterviewFeedback;
@@ -27,17 +45,8 @@ export const FeedbackScoreHeader: React.FC<FeedbackScoreHeaderProps> = ({
         ? 'border-yellow-500 text-yellow-600 bg-yellow-50 dark:border-yellow-500/60 dark:text-yellow-400 dark:bg-yellow-950/30'
         : 'border-red-500 text-red-600 bg-red-50 dark:border-red-500/60 dark:text-red-400 dark:bg-red-950/30';
 
-  const radarData = [
-    { subject: 'Technical', A: feedback.score, fullMark: 10 },
-    { subject: 'Culture', A: feedback.cultureFitScore || 5, fullMark: 10 },
-    { subject: 'Resilience', A: feedback.resilienceScore || 5, fullMark: 10 },
-    { subject: 'Comm', A: feedback.score * 0.9, fullMark: 10 },
-    {
-      subject: 'Problem Solving',
-      A: Math.min(feedback.score * 1.1, 10),
-      fullMark: 10,
-    },
-  ];
+  const radarData = buildRadarData(feedback);
+  const hasRadarData = radarData.length >= 3;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -108,22 +117,29 @@ export const FeedbackScoreHeader: React.FC<FeedbackScoreHeaderProps> = ({
           </div>
         </div>
 
-        <div className="h-[150px] w-full text-xs">
-          <ResponsiveContainer width="100%" height="100%">
-            <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
-              <PolarGrid stroke="#e2e8f0" />
-              <PolarAngleAxis dataKey="subject" tick={{ fill: '#64748b', fontSize: 10 }} />
-              <PolarRadiusAxis angle={30} domain={[0, 10]} tick={false} axisLine={false} />
-              <Radar
-                name="Candidate"
-                dataKey="A"
-                stroke="#2563eb"
-                fill="#3b82f6"
-                fillOpacity={0.3}
-              />
-            </RadarChart>
-          </ResponsiveContainer>
-        </div>
+        {hasRadarData && (
+          <div className="h-[150px] w-full text-xs" data-testid="feedback-radar">
+            <ResponsiveContainer width="100%" height="100%">
+              <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
+                <PolarGrid stroke="hsl(var(--border))" />
+                <PolarAngleAxis dataKey="subject" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} />
+                <PolarRadiusAxis angle={30} domain={[0, 10]} tick={false} axisLine={false} />
+                <Radar
+                  name="Candidate"
+                  dataKey="A"
+                  stroke="hsl(var(--primary))"
+                  fill="hsl(var(--primary))"
+                  fillOpacity={0.3}
+                />
+              </RadarChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+        {!hasRadarData && (
+          <p className="text-sm text-muted-foreground">
+            Not enough scored dimensions to chart a profile yet.
+          </p>
+        )}
       </Card>
     </div>
   );

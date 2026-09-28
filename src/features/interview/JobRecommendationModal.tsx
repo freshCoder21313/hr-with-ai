@@ -1,7 +1,7 @@
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Briefcase } from 'lucide-react';
-import { Resume, JobRecommendation } from '@/types';
+import { Interview, Resume, JobRecommendation } from '@/types';
 import { ResumeData } from '@/types/resume';
 import { useJobRecommendationFlow } from './hooks/useJobRecommendationFlow';
 import {
@@ -12,6 +12,7 @@ import {
 } from './components/job-rec/JobRecSteps';
 
 interface JobRecommendationModalProps {
+  language?: Interview['language'];
   isOpen: boolean;
   onClose: () => void;
   onSelectJob: (
@@ -26,6 +27,7 @@ interface JobRecommendationModalProps {
 
 const JobRecommendationModal: React.FC<JobRecommendationModalProps> = ({
   isOpen,
+  language,
   onClose,
   onSelectJob,
   existingResumeId,
@@ -35,6 +37,7 @@ const JobRecommendationModal: React.FC<JobRecommendationModalProps> = ({
   const flow = useJobRecommendationFlow({
     isOpen,
     existingResumeId,
+    language,
     availableResumes,
     onSelectJob,
     onClose,
