@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { logger } from '@/lib/logger';
+import { cn } from '@/lib/utils';
 import { useSkillAssessmentStore } from '@/features/skill-assessment/stores/useSkillAssessmentStore';
 import {
   generateSubSkills,
@@ -9,7 +10,6 @@ import { getStoredAIConfig } from '@/services/ai/aiConfigService';
 import { isNonEmptyString } from '@/lib/validation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import {
@@ -19,8 +19,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Search, Check, Loader2, Sparkles, Plus, Code2 } from 'lucide-react';
+import { Search, Check, Loader2, Sparkles, Plus, Code2, KeyRound } from 'lucide-react';
 import { toast } from 'sonner';
+import { openApiKeyModal, subscribeToApiKeyModal } from '@/events/apiKeyEvents';
 
 export const SelectSkillStep: React.FC = () => {
   const {
@@ -41,6 +42,12 @@ export const SelectSkillStep: React.FC = () => {
 
   const [manualSkill, setManualSkill] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [hasApiKey, setHasApiKey] = useState(() => !!getStoredAIConfig().apiKey);
+
+  // The API key modal can be closed from anywhere, so re-check on every open.
+  useEffect(() => subscribeToApiKeyModal(() => setHasApiKey(!!getStoredAIConfig().apiKey)), []);
+
+  const isApiKeyMissing = !hasApiKey;
 
   const filteredSkills = extractedSkills.filter((skill) =>
     skill.toLowerCase().includes(searchQuery.toLowerCase())
@@ -52,35 +59,22 @@ export const SelectSkillStep: React.FC = () => {
       return;
     }
 
+    const config = getStoredAIConfig();
+
+    if (!config.apiKey) {
+      openApiKeyModal();
+      toast.error('Please configure an AI API key to start a real assessment.');
+      // The quiz is scored against a real answer key, so there is nothing to
+      // fall back to: block instead of faking a score the user would believe.
+      setError(
+        'An AI API key is required to generate a real assessment. Add one to continue.'
+      );
+      return;
+    }
+
     try {
       setIsLoading(true);
       setError(null);
-      const config = getStoredAIConfig();
-
-      if (!config?.apiKey) {
-        // Fallback mock data when no API key
-        setSubSkills([
-          'Core Concepts',
-          'Best Practices',
-          'Problem Solving',
-          'Performance Optimization',
-          'Integration Patterns',
-        ]);
-
-        const mockCount = quizQuestionCount > 0 ? quizQuestionCount : 7;
-        const mockQuestions = Array.from({ length: mockCount }, (_, i) => ({
-          id: `q-${i}`,
-          question: `Mock Question ${i + 1} about ${selectedSkill}`,
-          options: ['Option A', 'Option B', 'Option C', 'Option D'],
-          correct_answer: 'Option A',
-          explanation: 'Detailed explanation will be provided when AI is connected.',
-          sub_skill: 'General Knowledge',
-        }));
-
-        setQuizQuestions(mockQuestions);
-        setStep('quiz');
-        return;
-      }
 
       const subSkills = await generateSubSkills(selectedSkill, config);
       setSubSkills(subSkills);
@@ -99,6 +93,7 @@ export const SelectSkillStep: React.FC = () => {
       setIsLoading(false);
     }
   };
+
 
   const handleAddManualSkill = () => {
     const newSkill = manualSkill.trim();
@@ -155,19 +150,24 @@ export const SelectSkillStep: React.FC = () => {
               <div className="bg-muted/10 border rounded-xl p-4 min-h-[200px] max-h-[350px] overflow-y-auto">
                 <div className="flex flex-wrap gap-2.5">
                   {filteredSkills.map((skill, index) => (
-                    <Badge
+                    <button
                       key={index}
-                      variant={selectedSkill === skill ? 'default' : 'outline'}
-                      className={`cursor-pointer text-sm py-1.5 px-3 flex items-center gap-1.5 transition-all hover:scale-105 ${
+                      type="button"
+                      aria-pressed={selectedSkill === skill}
+                      disabled={isLoading}
+                      className={cn(
+                        'inline-flex items-center rounded-full border px-3 py-1.5 text-sm font-semibold transition-colors hover:scale-105',
+                        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+                        'disabled:pointer-events-none disabled:opacity-50',
                         selectedSkill === skill
-                          ? 'shadow-md shadow-primary/20'
-                          : 'hover:border-primary/50 hover:bg-primary/5'
-                      }`}
+                          ? 'border-transparent bg-primary text-primary-foreground shadow-md shadow-primary/20'
+                          : 'border-border text-foreground hover:border-primary/50 hover:bg-primary/5'
+                      )}
                       onClick={() => setSelectedSkill(skill)}
                     >
                       {skill}
                       {selectedSkill === skill && <Check className="w-3.5 h-3.5" />}
-                    </Badge>
+                    </button>
                   ))}
                   {filteredSkills.length === 0 && (
                     <div className="text-sm text-muted-foreground flex flex-col items-center justify-center w-full py-8">
@@ -249,8 +249,31 @@ export const SelectSkillStep: React.FC = () => {
                 </p>
               </div>
 
-              {error && (
-                <div className="p-3 bg-destructive/10 text-destructive text-sm rounded-md border border-destructive/20">
+              {isApiKeyMissing && (
+                <div
+                  role="alert"
+                  className="p-3 bg-destructive/10 text-destructive text-sm rounded-md border border-destructive/20 space-y-2"
+                >
+                  <p className="font-medium">
+                    An AI API key is required to generate and score a real assessment.
+                  </p>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="border-destructive/30 text-destructive hover:bg-destructive/10"
+                    onClick={() => openApiKeyModal()}
+                  >
+                    <KeyRound className="w-4 h-4 mr-1" /> Configure API Key
+                  </Button>
+                </div>
+              )}
+
+              {error && !isApiKeyMissing && (
+                <div
+                  role="alert"
+                  className="p-3 bg-destructive/10 text-destructive text-sm rounded-md border border-destructive/20"
+                >
                   {error}
                 </div>
               )}
@@ -279,6 +302,12 @@ export const SelectSkillStep: React.FC = () => {
                 {!selectedSkill && (
                   <p className="text-xs text-muted-foreground text-center mt-2">
                     Select a skill from the list or add your own to continue.
+                  </p>
+                )}
+                {isApiKeyMissing && (
+                  <p className="text-xs text-muted-foreground text-center mt-2">
+                    We can&apos;t show a score without real questions, so the quiz stays locked
+                    until a key is configured.
                   </p>
                 )}
               </div>

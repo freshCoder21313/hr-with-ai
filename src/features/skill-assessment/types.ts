@@ -8,4 +8,6 @@ export interface QuizQuestion {
   hint?: string;
 }
 
+export type ExtractionMode = 'auto' | 'ai' | 'regex';
+
 export type AssessmentStep = 'upload' | 'select_skill' | 'quiz' | 'result';

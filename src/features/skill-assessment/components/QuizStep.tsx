@@ -15,7 +15,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { notificationService } from '@/services/core/notificationService';
 
 export const QuizStep: React.FC = () => {
-  const { quizQuestions, userAnswers, answerQuestion, calculateScore, selectedSkill, setStep } =
+  const { quizQuestions, userAnswers, answerQuestion, calculateScore, selectedSkill, setStep, clearQuiz } =
     useSkillAssessmentStore();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [justSelectedOption, setJustSelectedOption] = useState<string | null>(null);
@@ -55,6 +55,7 @@ export const QuizStep: React.FC = () => {
       variant: 'destructive',
     });
     if (confirmed) {
+      clearQuiz();
       setStep('select_skill');
     }
   };
@@ -146,7 +147,11 @@ export const QuizStep: React.FC = () => {
                           isSelected
                             ? 'border-primary bg-primary/5 shadow-sm shadow-primary/10'
                             : 'border-border hover:bg-muted/50 hover:border-primary/30'
-                        } ${isRecentlyChosen ? 'ring-2 ring-primary ring-offset-2 scale-[1.005]' : ''}`}
+                        } ${
+                          isRecentlyChosen
+                            ? 'ring-2 ring-primary ring-offset-2 scale-[1.005]'
+                            : ''
+                        } has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring has-[:focus-visible]:ring-offset-2`}
                       >
                         <div
                           className={`flex items-center justify-center w-5 h-5 rounded-full border transition-colors ${
@@ -165,7 +170,7 @@ export const QuizStep: React.FC = () => {
                           value={option}
                           checked={isSelected}
                           onChange={(e) => handleAnswer(e.target.value)}
-                          className="hidden"
+                          className="sr-only"
                         />
                         <span className="flex-1 cursor-pointer font-normal text-[1.05rem] leading-snug">
                           {option}

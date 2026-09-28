@@ -3,11 +3,12 @@ import { UploadCloud, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
 interface FileUploadZoneProps {
   isLoading: boolean;
-  selectedResumeId?: number;
+  isExtracting: boolean;
   error: string | null;
   showManual: boolean;
   manualSkills: string;
@@ -22,7 +23,7 @@ interface FileUploadZoneProps {
 
 export const FileUploadZone: React.FC<FileUploadZoneProps> = ({
   isLoading,
-  selectedResumeId,
+  isExtracting,
   error,
   showManual,
   manualSkills,
@@ -45,8 +46,24 @@ export const FileUploadZone: React.FC<FileUploadZoneProps> = ({
       </CardHeader>
       <CardContent className="space-y-6">
         <div
-          className={`border-2 border-dashed border-muted-foreground/25 rounded-xl p-12 flex flex-col items-center justify-center cursor-pointer transition-all ${isLoading ? 'opacity-50 pointer-events-none' : 'hover:bg-muted/50 hover:border-primary/50'}`}
+          role="button"
+          tabIndex={isLoading ? -1 : 0}
+          aria-disabled={isLoading}
+          className={cn(
+            'border-2 border-dashed border-muted-foreground/25 rounded-xl p-12 flex flex-col items-center justify-center cursor-pointer transition-all',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+            isLoading
+              ? 'opacity-50 pointer-events-none'
+              : 'hover:bg-muted/50 hover:border-primary/50'
+          )}
           onClick={onUploadClick}
+          onKeyDown={(e) => {
+            if (isLoading) return;
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              onUploadClick();
+            }
+          }}
           onDragOver={onDragOver}
           onDrop={onDrop}
         >
@@ -69,7 +86,7 @@ export const FileUploadZone: React.FC<FileUploadZoneProps> = ({
           />
         </div>
 
-        {isLoading && !selectedResumeId && (
+        {isExtracting && (
           <div className="flex flex-col items-center justify-center p-4 bg-muted/30 rounded-lg">
             <Loader2 className="w-6 h-6 animate-spin text-primary mb-2" />
             <p className="text-sm font-medium">Extracting skills...</p>

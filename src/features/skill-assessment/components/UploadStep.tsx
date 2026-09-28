@@ -12,15 +12,21 @@ import { ExtractionModeToggle } from './upload-step/ExtractionModeToggle';
 import { FileUploadZone } from './upload-step/FileUploadZone';
 import { SavedResumeSelector } from './upload-step/SavedResumeSelector';
 
-type ExtractionMode = 'auto' | 'ai' | 'regex';
-
 export const UploadStep: React.FC = () => {
-  const { setExtractedSkills, setStep, setIsLoading, setError, isLoading, error } =
-    useSkillAssessmentStore();
+  const {
+    setExtractedSkills,
+    setStep,
+    setIsLoading,
+    setError,
+    isLoading,
+    error,
+    extractionMode,
+    setExtractionMode,
+  } = useSkillAssessmentStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [manualSkills, setManualSkills] = useState('');
   const [showManual, setShowManual] = useState(false);
-  const [extractionMode, setExtractionMode] = useState<ExtractionMode>('auto');
+  const [isExtracting, setIsExtracting] = useState(false);
 
   const [savedResumes, setSavedResumes] = useState<Resume[]>([]);
   const [selectedResumeId, setSelectedResumeId] = useState<number>();
@@ -58,9 +64,12 @@ export const UploadStep: React.FC = () => {
     }
   };
 
-  const processResumeText = async (text: string) => {
+  /** Returns the extracted skills, or null when extraction failed. */
+  const processResumeText = async (text: string): Promise<string[] | null> => {
     try {
       setIsLoading(true);
+      setIsExtracting(true);
+      setError(null);
       setError(null);
 
       let skills: string[] = [];
@@ -119,18 +128,21 @@ export const UploadStep: React.FC = () => {
         }
       }
 
-      if (skills.length > 0) {
-        setExtractedSkills(skills);
-        setStep('select_skill');
-      } else {
+      if (skills.length === 0) {
         throw new Error('No skills could be extracted automatically');
       }
+
+      setExtractedSkills(skills);
+      setStep('select_skill');
+      return skills;
     } catch (err) {
       logger.error(err);
       setError(err instanceof Error ? err.message : 'Failed to extract skills');
       setShowManual(true);
+      return null;
     } finally {
       setIsLoading(false);
+      setIsExtracting(false);
     }
   };
 
@@ -140,19 +152,22 @@ export const UploadStep: React.FC = () => {
       return;
     }
 
-    const validTypes = [
-      'application/pdf',
-      'text/plain',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    ];
+    // Keep in sync with `parseResume` — the parser only handles PDF and plain text.
+    const validTypes = ['application/pdf', 'text/plain'];
     if (!validTypes.includes(file.type)) {
-      toast.error('Invalid file type. Please upload a PDF, TXT, or DOCX file.');
+      toast.error('Invalid file type. Please upload a PDF or TXT file.');
       return;
     }
 
     try {
       setIsLoading(true);
+      setIsExtracting(true);
       const text = await parseResume(file);
+
+      // Only persist once the resume is actually usable — a failed parse or an
+      // empty skill extraction would otherwise leave a dead row in Dexie.
+      const skills = await processResumeText(text);
+      if (!skills) return;
 
       const newResume: Resume = {
         createdAt: Date.now(),
@@ -168,14 +183,13 @@ export const UploadStep: React.FC = () => {
       } catch (dbErr) {
         logger.error('Failed to save resume to DB', dbErr);
       }
-
-      await processResumeText(text);
     } catch (err) {
       logger.error(err);
       setError(err instanceof Error ? err.message : 'Failed to process file');
       setShowManual(true);
       setIsLoading(false);
     } finally {
+      setIsExtracting(false);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
@@ -249,7 +263,7 @@ export const UploadStep: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 px-2">
         <FileUploadZone
           isLoading={isLoading}
-          selectedResumeId={selectedResumeId}
+          isExtracting={isExtracting}
           error={error}
           showManual={showManual}
           manualSkills={manualSkills}

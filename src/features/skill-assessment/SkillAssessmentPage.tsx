@@ -19,6 +19,7 @@ const STEPS = [
 const SkillAssessmentPage: React.FC = () => {
   const step = useSkillAssessmentStore((state) => state.step);
   const setStep = useSkillAssessmentStore((state) => state.setStep);
+  const clearQuiz = useSkillAssessmentStore((state) => state.clearQuiz);
   const currentIndex = STEPS.findIndex((s) => s.key === step);
 
   const handleStepClick = async (targetStep: AssessmentStep, targetIndex: number) => {
@@ -31,6 +32,9 @@ const SkillAssessmentPage: React.FC = () => {
       });
       if (!confirmed) return;
     }
+    // Leaving the quiz discards the run: stale answers would otherwise stay in
+    // the store and inflate progress of the next generated question set.
+    clearQuiz();
     setStep(targetStep);
   };
   return (
