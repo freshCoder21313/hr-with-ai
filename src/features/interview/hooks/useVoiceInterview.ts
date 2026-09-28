@@ -1,7 +1,10 @@
 import { useEffect, useCallback, useState, useRef } from 'react';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
-import { useVoiceInterviewStore } from '@/features/interview/stores/voiceInterviewStore';
+import {
+  DEFAULT_VOICE_SETTINGS,
+  useVoiceInterviewStore,
+} from '@/features/interview/stores/voiceInterviewStore';
 import { useSpeechToText } from './useSpeechToText';
 import { useTextToSpeech } from './useTextToSpeech';
 import { useAudioRecorder } from './useAudioRecorder';
@@ -9,9 +12,11 @@ import { useInterviewStore } from '@/features/interview/interviewStore';
 import { streamInterviewMessage } from '@/services/interview/interviewAIService';
 import { getStoredAIConfig } from '@/services/ai/aiConfigService';
 import { voiceInterviewService } from '@/services/voice/voiceInterviewService';
-import { Message } from '@/types';
+import { Message, VoiceSettings } from '@/types';
 import { getErrorMessage } from '@/lib/utils';
 import { isNonEmptyString } from '@/lib/validation';
+import { loadUserSettings } from '@/services/core/settingsService';
+import { speechToTextService } from '@/services/voice/speechToTextService';
 
 export const useVoiceInterview = () => {
   // Local state & Context
@@ -29,32 +34,67 @@ export const useVoiceInterview = () => {
     setAudioLevel,
   } = useVoiceInterviewStore();
 
-  // Default Fallback Settings
-  const defaultVoiceSettings = {
-    language: 'en-US',
-    sttProvider: 'web-speech',
-    ttsProvider: 'web-speech',
-    speechRate: 1.0,
-    pitch: 1.0,
-    volume: 1.0,
-    autoPlayResponse: true,
-    pushToTalk: false,
-    silenceTimeout: 2000,
-  };
-
   const { currentInterview, addMessage, updateLastMessage, setLoading } = useInterviewStore();
 
-  const voiceSettings = {
-    ...(storeVoiceSettings || defaultVoiceSettings),
+  // Seed the store from persisted sources: the user's saved defaults first, then
+  // this interview's own voice settings on top. Runs once per interview so a late
+  // async load can never clobber the interview's values, and re-renders never
+  // overwrite edits made from the settings dialog.
+  const interviewId = currentInterview?.id ?? null;
+  const hydratedInterviewIdRef = useRef<number | string | null>(null);
+  const didLoadUserDefaultsRef = useRef(false);
+  useEffect(() => {
+    const applyInterviewSettings = () => {
+      if (hydratedInterviewIdRef.current === interviewId) return;
+      hydratedInterviewIdRef.current = interviewId;
+
+      const interviewSettings = currentInterview?.voiceSettings;
+      if (interviewSettings) {
+        useVoiceInterviewStore.getState().setVoiceSettings(interviewSettings);
+        logger.info('Applied voice settings from interview', interviewId ?? 'unsaved');
+      }
+    };
+
+    const loadUserDefaults = async () => {
+      // One-shot: re-running this would overwrite edits made in the settings
+      // dialog with the user's saved defaults.
+      if (didLoadUserDefaultsRef.current) return;
+      didLoadUserDefaultsRef.current = true;
+
+      const stored = await loadUserSettings().catch((err: unknown) => {
+        logger.error('Failed to load default voice settings', err);
+        return undefined;
+      });
+      const defaults = stored?.defaultVoiceSettings;
+      if (!defaults) return;
+      useVoiceInterviewStore.getState().hydrateVoiceSettings(defaults);
+      logger.info('Applied default voice settings from user settings');
+      // Re-apply so interview-specific values win over the user defaults.
+      applyInterviewSettings();
+    };
+
+    if (interviewId !== null) {
+      applyInterviewSettings();
+    }
+
+    void loadUserDefaults();
+  }, [interviewId, currentInterview?.voiceSettings]);
+
+  const voiceSettings: VoiceSettings = {
+    ...DEFAULT_VOICE_SETTINGS,
+    ...storeVoiceSettings,
     // Override language with the specific interview's language if available
     language:
-      currentInterview?.language || storeVoiceSettings?.language || defaultVoiceSettings.language,
+      currentInterview?.language || storeVoiceSettings?.language || DEFAULT_VOICE_SETTINGS.language,
   };
 
   // Services Hooks
   const stt = useSpeechToText(voiceSettings);
   const tts = useTextToSpeech(voiceSettings);
   const [permissionError, setPermissionError] = useState<string | null>(null);
+  // M8: `useSpeechToText` only learns about silence-stops via this service
+  // callback, so this local flag — not `stt.isListening` — drives the mic UI.
+  const [isListening, setIsListening] = useState(false);
   const recorder = useAudioRecorder(); // For visualization mainly, and optional recording
 
   // Audio Visualization Connection
@@ -92,6 +132,7 @@ export const useVoiceInterview = () => {
   // Action: Start Listening
   const startListening = useCallback(async () => {
     setCurrentState('listening');
+    setIsListening(true);
     clearTranscript();
     stt.resetTranscript();
     setPermissionError(null);
@@ -114,6 +155,7 @@ export const useVoiceInterview = () => {
       }
       toast.error('Could not access microphone. Please check permissions.');
       setCurrentState('idle');
+      setIsListening(false);
       stt.stopListening();
     });
   }, [stt, recorder, setCurrentState, clearTranscript]);
@@ -127,6 +169,29 @@ export const useVoiceInterview = () => {
     cancelRecordingRef.current = recorder.cancelRecording;
   });
 
+  // M8: the recogniser kills itself after a silence window, which used to leave
+  // the mic button reading "Tap to Send" forever. Reflect the dead recogniser
+  // immediately and settle the state instead of stranding the turn.
+  useEffect(() => {
+    const onSilenceStop = () => {
+      setIsListening(false);
+      if (currentStateRef.current === 'idle') return;
+      setCurrentState('idle');
+      cancelRecordingRef.current();
+      toast.info('Stopped listening — no speech detected.');
+    };
+
+    speechToTextService.setOnSilenceCallback(onSilenceStop);
+    return () => speechToTextService.setOnSilenceCallback(null);
+  }, [setCurrentState]);
+
+  // `currentState` is read from a ref inside the silence callback, which is
+  // registered once; mirroring it keeps that callback from going stale.
+  const currentStateRef = useRef(currentState);
+  useEffect(() => {
+    currentStateRef.current = currentState;
+  }, [currentState]);
+
   // Unmount-only teardown. `stt`/`recorder` are fresh object literals on every
   // render, so depending on them would tear the mic down after each re-render.
   useEffect(() => {
@@ -135,6 +200,7 @@ export const useVoiceInterview = () => {
       voiceInterviewService.reset();
       stopListeningRef.current();
       cancelRecordingRef.current();
+      setIsListening(false);
     };
   }, []);
 
@@ -220,6 +286,7 @@ export const useVoiceInterview = () => {
 
   // Action: Stop Listening and Send
   const stopAndSend = useCallback(async () => {
+    setIsListening(false);
     stt.stopListening();
     recorder.cancelRecording(); // Stop visualizer
 
@@ -231,7 +298,12 @@ export const useVoiceInterview = () => {
     const textToSend = stt.transcript.trim() || stt.interimTranscript.trim(); // Fallback
 
     if (!isNonEmptyString(textToSend)) {
-      setCurrentState('idle'); // No input
+      // M9: dropping the turn silently read as "heard, thinking" for a full
+      // round-trip. Say so instead and hand the mic straight back.
+      setCurrentState('idle');
+      clearTranscript();
+      stt.resetTranscript();
+      toast.info("Didn't catch that — try again.");
       return;
     }
 
@@ -246,7 +318,7 @@ export const useVoiceInterview = () => {
 
     // Send to Gemini
     await processAIResponse(textToSend);
-  }, [stt, recorder, setCurrentState, addMessage, processAIResponse]);
+  }, [stt, recorder, setCurrentState, addMessage, processAIResponse, clearTranscript]);
 
   // Auto-restart listening when TTS ends (if continuous mode)
   useEffect(() => {
@@ -282,6 +354,7 @@ export const useVoiceInterview = () => {
 
   const endInterview = useCallback(() => {
     tts.stop();
+    setIsListening(false);
     stt.stopListening();
     recorder.cancelRecording();
     setCurrentState('idle');
@@ -295,7 +368,7 @@ export const useVoiceInterview = () => {
     speechError: stt.error,
     permissionError,
     speechSupported: stt.isSupported,
-    isListening: stt.isListening,
+    isListening,
     isSpeaking: tts.isSpeaking,
     audioLevel: useVoiceInterviewStore((s) => s.audioLevel),
     startListening,

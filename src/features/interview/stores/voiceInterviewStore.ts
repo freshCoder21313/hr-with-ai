@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { VoiceSettings } from '@/types';
+import { DEFAULT_SILENCE_TIMEOUT_MS } from '@/services/voice/speechToTextService';
 
 interface VoiceInterviewState {
   voiceSettings: VoiceSettings;
@@ -20,9 +21,14 @@ interface VoiceInterviewState {
   clearTTSQueue: () => void;
   setAudioLevel: (level: number) => void;
   resetState: () => void;
+  /**
+   * Seed the store from persisted sources (interview row, then user settings).
+   * Only fills gaps: values the user already changed in-session win.
+   */
+  hydrateVoiceSettings: (settings: Partial<VoiceSettings>) => void;
 }
 
-const DEFAULT_VOICE_SETTINGS: VoiceSettings = {
+export const DEFAULT_VOICE_SETTINGS: VoiceSettings = {
   language: 'vi-VN',
   sttProvider: 'web-speech',
   ttsProvider: 'web-speech',
@@ -31,7 +37,7 @@ const DEFAULT_VOICE_SETTINGS: VoiceSettings = {
   volume: 1.0,
   autoPlayResponse: true,
   pushToTalk: false,
-  silenceTimeout: 2000,
+  silenceTimeout: DEFAULT_SILENCE_TIMEOUT_MS,
 };
 
 export const useVoiceInterviewStore = create<VoiceInterviewState>((set) => ({
@@ -45,6 +51,11 @@ export const useVoiceInterviewStore = create<VoiceInterviewState>((set) => ({
   ttsQueue: [],
 
   setVoiceSettings: (settings) =>
+    set((state) => ({
+      voiceSettings: { ...state.voiceSettings, ...settings },
+    })),
+
+  hydrateVoiceSettings: (settings) =>
     set((state) => ({
       voiceSettings: { ...state.voiceSettings, ...settings },
     })),

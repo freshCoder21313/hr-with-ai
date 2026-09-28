@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useVoiceInterview } from '@/features/interview/hooks/useVoiceInterview';
+import { VoiceSettingsDialog } from './VoiceSettingsDialog';
 import { VoiceMicButton } from './VoiceMicButton';
 import { AudioVisualizer } from './AudioVisualizer';
 import { AIAvatarSpeaking } from './AIAvatarSpeaking';
@@ -10,6 +11,13 @@ import { Settings, PhoneMissed, MessageSquare, X, Send } from 'lucide-react';
 import { useInterviewStore } from '@/features/interview/interviewStore';
 import { ChatArea } from './ChatArea';
 import { Input } from '@/components/ui/input';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet';
 import MarkdownRenderer from '@/components/shared/MarkdownRenderer';
 import { isNonEmptyString } from '@/lib/validation';
 import { notificationService } from '@/services/core/notificationService';
@@ -25,6 +33,7 @@ export const VoiceInterviewRoom: React.FC<VoiceInterviewRoomProps> = ({
 }) => {
   const navigate = useNavigate();
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [textInput, setTextInput] = useState('');
 
   // Hook handles logic
@@ -121,6 +130,7 @@ export const VoiceInterviewRoom: React.FC<VoiceInterviewRoomProps> = ({
             size="icon"
             className="text-slate-400 hover:text-white h-8 w-8 sm:h-9 sm:w-9"
             aria-label="Voice interview settings"
+            onClick={() => setIsSettingsOpen(true)}
           >
             <Settings className="w-4 h-4 sm:w-5 sm:h-5" />
           </Button>
@@ -135,6 +145,8 @@ export const VoiceInterviewRoom: React.FC<VoiceInterviewRoomProps> = ({
           </Button>
         </div>
       </div>
+
+      <VoiceSettingsDialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen} />
 
       {showSpeechError && (
         <div
@@ -154,7 +166,7 @@ export const VoiceInterviewRoom: React.FC<VoiceInterviewRoomProps> = ({
       <div
         className={cn(
           'flex-1 flex flex-col items-center justify-center relative p-8 gap-8 transition-all duration-300',
-          isChatOpen ? 'mr-[400px]' : 'mr-0'
+          isChatOpen ? 'md:mr-[400px] mr-0' : 'mr-0'
         )}
       >
         {/* AI Avatar Area */}
@@ -194,7 +206,7 @@ export const VoiceInterviewRoom: React.FC<VoiceInterviewRoomProps> = ({
       <div
         className={cn(
           'h-24 bg-black/40 backdrop-blur-md border-t border-white/10 flex items-center justify-center gap-8 relative px-8 transition-all duration-300',
-          isChatOpen ? 'mr-[400px]' : 'mr-0'
+          isChatOpen ? 'md:mr-[400px] mr-0' : 'mr-0'
         )}
       >
         {/* Transcript Toggle (Left) */}
@@ -221,42 +233,46 @@ export const VoiceInterviewRoom: React.FC<VoiceInterviewRoomProps> = ({
       </div>
 
       {/* Chat Sidebar / Drawer */}
-      <div
-        className={cn(
-          'fixed inset-y-0 right-0 w-full md:w-[400px] bg-background border-l border-border shadow-2xl z-50 transform transition-transform duration-300 ease-in-out flex flex-col',
-          isChatOpen ? 'translate-x-0' : 'translate-x-full'
-        )}
-      >
-        <div className="h-16 border-b border-border flex items-center justify-between px-4 bg-muted/30">
-          <h3 className="font-semibold text-foreground">Live Chat</h3>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setIsChatOpen(false)}
-            aria-label="Close live chat"
-          >
-            <X className="w-5 h-5" />
-          </Button>
-        </div>
-
-        <div className="flex-1 overflow-hidden relative bg-background text-foreground">
-          <ChatArea messages={messages} />
-        </div>
-
-        <div className="p-4 border-t border-border bg-muted/30">
-          <form onSubmit={handleSendText} className="flex gap-2">
-            <Input
-              value={textInput}
-              onChange={(e) => setTextInput(e.target.value)}
-              placeholder="Type a message..."
-              className="flex-1 bg-background text-foreground"
-            />
-            <Button type="submit" size="icon" disabled={!isNonEmptyString(textInput)}>
-              <Send className="w-4 h-4" />
+      <Sheet open={isChatOpen} onOpenChange={setIsChatOpen}>
+        <SheetContent
+          side="right"
+          className="w-full sm:max-w-[400px] p-0 flex flex-col bg-background text-foreground"
+        >
+          <SheetHeader className="h-16 border-b border-border flex flex-row items-center justify-between px-4 py-0 bg-muted/30 space-y-0">
+            <SheetTitle className="font-semibold text-foreground">Live Chat</SheetTitle>
+            <SheetDescription className="sr-only">
+              Transcript of the voice interview and a text input to message the interviewer.
+            </SheetDescription>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsChatOpen(false)}
+              aria-label="Close live chat"
+              className="absolute right-12 top-4"
+            >
+              <X className="w-5 h-5" />
             </Button>
-          </form>
-        </div>
-      </div>
+          </SheetHeader>
+
+          <div className="flex-1 overflow-hidden relative bg-background text-foreground">
+            <ChatArea messages={messages} />
+          </div>
+
+          <div className="p-4 border-t border-border bg-muted/30">
+            <form onSubmit={handleSendText} className="flex gap-2">
+              <Input
+                value={textInput}
+                onChange={(e) => setTextInput(e.target.value)}
+                placeholder="Type a message..."
+                className="flex-1 bg-background text-foreground"
+              />
+              <Button type="submit" size="icon" disabled={!isNonEmptyString(textInput)}>
+                <Send className="w-4 h-4" />
+              </Button>
+            </form>
+          </div>
+        </SheetContent>
+      </Sheet>
 
       {/* Hidden ref for scrolling logic if we had a transcript panel */}
       <div ref={messagesEndRef} />

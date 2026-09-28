@@ -9,13 +9,26 @@ export interface STTResult {
 
 export type STTCallback = (result: STTResult) => void;
 export type STTErrorCallback = (error: string) => void;
+/** Fired when the recogniser auto-stops because the user went silent. */
+export type STTSilenceCallback = () => void;
+
+/**
+ * Fallback used when no silence timeout is configured. 4s is long enough to
+ * absorb the pauses between words/sentences without cutting the candidate off
+ * mid-thought.
+ */
+export const DEFAULT_SILENCE_TIMEOUT_MS = 4000;
+
+/** Timer handle for the silence window, valid in both DOM and Node typings. */
+type SilenceTimer = ReturnType<typeof setTimeout>;
 
 class SpeechToTextService {
   private recognition: SpeechRecognition | null = null;
   private isListening: boolean = false;
   private onResultCallback: STTCallback | null = null;
   private onErrorCallback: STTErrorCallback | null = null;
-  private silenceTimer: NodeJS.Timeout | null = null;
+  private silenceTimer: SilenceTimer | undefined;
+  private onSilenceCallback: STTSilenceCallback | null = null;
 
   // Configuration
   private config: VoiceSettings | null = null;
@@ -114,28 +127,37 @@ class SpeechToTextService {
 
     this.recognition.stop();
     this.isListening = false;
-    if (this.silenceTimer) clearTimeout(this.silenceTimer);
+    clearTimeout(this.silenceTimer);
+    this.silenceTimer = undefined;
   }
 
   public abort() {
     if (!this.recognition) return;
     this.recognition.abort();
     this.isListening = false;
-    if (this.silenceTimer) clearTimeout(this.silenceTimer);
+    clearTimeout(this.silenceTimer);
+    this.silenceTimer = undefined;
+  }
+
+  /**
+   * Register a callback fired when recognition stops itself after a silence
+   * window, so consumers can reflect the dead recogniser in their UI.
+   */
+  public setOnSilenceCallback(callback: STTSilenceCallback | null) {
+    this.onSilenceCallback = callback;
   }
 
   private resetSilenceTimer() {
-    if (this.silenceTimer) clearTimeout(this.silenceTimer);
+    clearTimeout(this.silenceTimer);
+    this.silenceTimer = undefined;
 
     if (this.config && this.config.silenceTimeout > 0) {
       this.silenceTimer = setTimeout(() => {
-        // Determine if we should stop.
-        // In a real generic service, we might emit a 'silence' event.
-        // For now, we assume this service controls the session flow?
-        // Better to just let the consumer handle the timeout logic based on results?
-        // Re-reading requirements: "Tự động phát hiện khi người dùng ngừng nói (silence detection) để kết thúc input"
-        // If we stop here, we should probably treat it as final.
+        this.silenceTimer = undefined;
+        if (!this.isListening) return;
+
         this.stop();
+        this.onSilenceCallback?.();
       }, this.config.silenceTimeout);
     }
   }

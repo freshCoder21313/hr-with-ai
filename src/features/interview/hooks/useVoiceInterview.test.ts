@@ -49,6 +49,8 @@ vi.mock('@/features/interview/stores/voiceInterviewStore', () => {
     ttsQueue: [],
     audioLevel: 0,
     setCurrentState: () => undefined,
+    setVoiceSettings: () => undefined,
+    hydrateVoiceSettings: () => undefined,
     updateTranscript: () => undefined,
     clearTranscript: () => undefined,
     addToTTSQueue: () => undefined,
@@ -57,7 +59,23 @@ vi.mock('@/features/interview/stores/voiceInterviewStore', () => {
   };
   const useStore = (selector?: (s: typeof store) => unknown) =>
     selector ? selector(store) : store;
-  return { useVoiceInterviewStore: Object.assign(useStore, { setState: () => undefined }) };
+  return {
+    DEFAULT_VOICE_SETTINGS: {
+      language: 'vi-VN',
+      sttProvider: 'web-speech',
+      ttsProvider: 'web-speech',
+      speechRate: 1.0,
+      pitch: 1.0,
+      volume: 1.0,
+      autoPlayResponse: true,
+      pushToTalk: false,
+      silenceTimeout: 4000,
+    },
+    useVoiceInterviewStore: Object.assign(useStore, {
+      getState: () => store,
+      setState: () => undefined,
+    }),
+  };
 });
 
 vi.mock('@/features/interview/interviewStore', () => ({
@@ -83,6 +101,15 @@ vi.mock('@/services/interview/interviewAIService', () => ({
 
 vi.mock('@/services/ai/aiConfigService', () => ({
   getStoredAIConfig: vi.fn(),
+}));
+
+vi.mock('@/services/core/settingsService', () => ({
+  loadUserSettings: () => Promise.resolve({}),
+}));
+
+vi.mock('@/services/voice/speechToTextService', () => ({
+  DEFAULT_SILENCE_TIMEOUT_MS: 4000,
+  speechToTextService: { setOnSilenceCallback: () => undefined },
 }));
 
 import { useVoiceInterview } from './useVoiceInterview';
