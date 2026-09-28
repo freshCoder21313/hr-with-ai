@@ -19,10 +19,16 @@ import { toast } from 'sonner';
 import { Settings2, Sparkles, RotateCcw } from 'lucide-react';
 
 import { openApiKeyModal } from '@/events/apiKeyEvents';
+import { emitSettingsChanged } from '@/events/settingsEvents';
 
 interface SettingsModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /**
+   * Optional per-instance callback fired after save. Independent of the global
+   * SETTINGS_CHANGED broadcast, which every instance emits so a running
+   * interview room re-reads settings live.
+   */
   onSettingsChanged?: (settings: UserSettings) => void;
 }
 
@@ -80,6 +86,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onOpenChange, onSet
         modelId: savedSettings.defaultModel || '',
       });
 
+      emitSettingsChanged(savedSettings);
       if (onSettingsChanged) onSettingsChanged(savedSettings);
       onOpenChange(false); // Close modal
     } catch (error) {
@@ -101,7 +108,9 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onOpenChange, onSet
       <DialogContent className="sm:max-w-[500px] max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Settings</DialogTitle>
-          <DialogDescription>Configure AI provider, voice, and preferences.</DialogDescription>
+          <DialogDescription>
+            Configure interview behavior, retry policy, and AI provider profiles.
+          </DialogDescription>
         </DialogHeader>
 
         {isLoading ? (

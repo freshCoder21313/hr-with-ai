@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { logger } from '@/lib/logger';
 import { db } from '@/lib/db';
 import { loadUserSettings } from '@/services/core/settingsService';
+import { subscribeToSettingsChanged } from '@/events/settingsEvents';
 import {
   Interview,
   Resume,
@@ -60,6 +61,10 @@ export function useInterviewRoomBootstrap(
       cancelled = true;
     };
   }, [showSettings, isSettingsLoaded]);
+
+  // Pick up settings saved from any modal (incl. the app-wide one) while the
+  // room is open, so behavior toggles/retry policy apply without a remount.
+  useEffect(() => subscribeToSettingsChanged(setUserSettings), []);
 
   useEffect(() => {
     let cancelled = false;

@@ -5,6 +5,7 @@ import { HelmetProvider } from 'react-helmet-async';
 import ApiKeyModal from '@/features/settings/ApiKeyModal';
 import { Loader2, AlertCircle, X } from 'lucide-react';
 import { ThemeProvider } from '@/components/shared/theme-provider';
+import SettingsModal from '@/components/shared/SettingsModal';
 import Header from '@/components/layout/Header';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { NotificationProvider } from '@/components/providers/NotificationProvider';
@@ -31,6 +32,8 @@ const PageLoader = () => (
 );
 
 const App: React.FC = () => {
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
   const [showConfigBanner, setShowConfigBanner] = useState(() => {
     const dismissed = localStorage.getItem('ai_setup_banner_dismissed') === 'true';
     return !dismissed && !hasActiveProfile();
@@ -73,7 +76,8 @@ const App: React.FC = () => {
               <ErrorBoundary>
                 <div className="min-h-[100dvh] flex flex-col bg-background text-foreground pt-[var(--safe-top)] pb-[var(--safe-bottom)] pl-[var(--safe-left)] pr-[var(--safe-right)] print:block print:bg-white print:min-h-0">
                   <ApiKeyModal />
-                  <Header />
+                  <SettingsModal open={isSettingsOpen} onOpenChange={setIsSettingsOpen} />
+                  <Header onOpenSettings={() => setIsSettingsOpen(true)} />
 
                   {showConfigBanner && (
                     <div className="container mx-auto px-4 pt-3 print:hidden">

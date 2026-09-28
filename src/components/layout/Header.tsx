@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
-import { Cloud, Menu, Key } from 'lucide-react';
-import { openApiKeyModal } from '@/events/apiKeyEvents';
+import { Cloud, Menu, Settings2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -42,12 +41,18 @@ const NavLinks = ({ mobile = false, closeMenu }: { mobile?: boolean; closeMenu?:
   );
 };
 
-const Header: React.FC = () => {
+interface HeaderProps {
+  /** Opens the app-wide Settings modal (interview preferences + AI provider profiles). */
+  onOpenSettings: () => void;
+}
+
+const Header: React.FC<HeaderProps> = ({ onOpenSettings }) => {
   const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleOpenSettings = () => {
-    openApiKeyModal();
+    setIsMobileMenuOpen(false);
+    onOpenSettings();
   };
 
   return (
@@ -95,15 +100,15 @@ const Header: React.FC = () => {
                   variant="ghost"
                   size="sm"
                   onClick={handleOpenSettings}
-                  aria-label="API Key Settings"
+                  aria-label="Settings"
                   className="hidden sm:flex gap-2 text-muted-foreground hover:text-primary"
                 >
-                  <Key className="w-4 h-4" />
-                  <span className="hidden lg:inline">API Key</span>
+                  <Settings2 className="w-4 h-4" />
+                  <span className="hidden lg:inline">Settings</span>
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>API Key Settings</p>
+                <p>Settings</p>
               </TooltipContent>
             </Tooltip>
 
@@ -141,7 +146,7 @@ const Header: React.FC = () => {
                         onClick={handleOpenSettings}
                         className="justify-start gap-2 text-muted-foreground hover:text-primary"
                       >
-                        <Key className="w-4 h-4" /> API Key Settings
+                        <Settings2 className="w-4 h-4" /> Settings
                       </Button>
                     </div>
                   </div>
