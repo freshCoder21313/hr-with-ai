@@ -66,10 +66,39 @@ class HRDatabase extends Dexie {
       jobs: '++id, company, jobTitle, createdAt, updatedAt',
     });
 
-    // Version 13: Compression for resumes
+    // Version 13: Compression for resumes (schema only — shipped without a
+    // backfill upgrade; see version 14).
     this.version(13).stores({
       resumes: '++id, createdAt, fileName, formatted, updatedAt, isMain',
     });
+
+    // Version 14: Backfill compression for resumes stored before compression
+    // existed. v13 already shipped, so an upgrade attached to v13 never runs
+    // for users already on v13; a new version is required to trigger it for
+    // them (and it still runs for users upgrading from <=v12). Same resumes
+    // schema as v13 — this version exists solely to carry the one-shot upgrade.
+    this.version(14)
+      .stores({
+        resumes: '++id, createdAt, fileName, formatted, updatedAt, isMain',
+      })
+      .upgrade(async (tx) => {
+        await tx
+          .table('resumes')
+          .toCollection()
+          .modify((r: Resume) => {
+            if (r.parsedData && !r.compressedData) {
+              const compressed = compressResumeData(r.parsedData);
+              if (compressed) {
+                r.compressedData = compressed;
+                delete r.parsedData;
+              } else {
+                // Dexie cannot roll back inside an upgrade transaction, so a
+                // failed compression must leave parsedData in place.
+                logger.error('Failed to compress parsedData during v14 upgrade for resume:', r.id);
+              }
+            }
+          });
+      });
 
     // Add hooks to auto-update updatedAt
     this.interviews.hook('creating', (_primKey, obj) => {
@@ -115,13 +144,17 @@ class HRDatabase extends Dexie {
           const compressed = compressResumeData(pd);
           if (compressed) {
             extraMods.compressedData = compressed;
+            // Only clear parsedData once the compressed payload is safely
+            // queued — Dexie treats `undefined` as a field deletion, so
+            // clearing it after a failed compression would lose the data.
+            (extraMods as Record<string, unknown>).parsedData = undefined;
           } else {
             logger.error('Failed to compress parsedData on update');
           }
         } else if (pd === null) {
           extraMods.compressedData = undefined;
+          (extraMods as Record<string, unknown>).parsedData = undefined;
         }
-        (extraMods as Record<string, unknown>).parsedData = undefined;
       }
       return extraMods;
     });

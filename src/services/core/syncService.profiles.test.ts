@@ -7,7 +7,9 @@ vi.mock('@/lib/db', () => ({
     interviews: { toArray: vi.fn(), add: vi.fn(), put: vi.fn() },
     userSettings: { toArray: vi.fn(), add: vi.fn(), put: vi.fn(), orderBy: vi.fn() },
     resumes: { toArray: vi.fn(), add: vi.fn(), put: vi.fn() },
-    transaction: vi.fn((_mode, _t1, _t2, _t3, fn) => fn()),
+    jobs: { toArray: vi.fn(), add: vi.fn(), put: vi.fn() },
+    job_recommendations: { toArray: vi.fn(), add: vi.fn(), put: vi.fn() },
+    transaction: vi.fn((...args: unknown[]) => (args[args.length - 1] as () => unknown)()),
   },
 }));
 

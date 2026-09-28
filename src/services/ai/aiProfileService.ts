@@ -164,7 +164,37 @@ export function toSafeSyncProfiles(
 }
 
 /**
- * Merges imported profiles, preserving local API keys for matching IDs.
+ * Settings fields that an untrusted import (backup JSON / cloud restore) is
+ * never allowed to set. This covers secrets AND endpoint-influencing fields:
+ * an imported `baseUrl` would redirect the user's real API key, resume text
+ * and interview transcripts to an attacker-controlled host.
+ */
+const IMPORT_PROTECTED_FIELDS = [
+  'apiKey',
+  'githubToken',
+  'googleCloudApiKey',
+  'elevenLabsApiKey',
+  'deepgramApiKey',
+  'baseUrl',
+] as const satisfies readonly (keyof UserSettings)[];
+
+/**
+ * Strips secrets and endpoint overrides from imported settings.
+ * Imported settings are treated as untrusted input (see docs/SECURITY.md).
+ */
+export function stripImportProtectedFields(settings: UserSettings): UserSettings {
+  const safe: UserSettings = { ...settings };
+  for (const field of IMPORT_PROTECTED_FIELDS) {
+    delete safe[field];
+  }
+  return safe;
+}
+
+/**
+ * Merges imported profiles. Imported profiles are untrusted: local API keys are
+ * preserved for matching IDs, and the endpoint (`baseUrl`) is never taken from
+ * an import — otherwise a crafted backup would exfiltrate the local key to an
+ * attacker host. Newly imported profiles stay disabled and keyless.
  */
 export function mergeImportedProfiles(
   localProfiles: AIProviderProfile[],
@@ -175,16 +205,18 @@ export function mergeImportedProfiles(
   for (const imported of importedProfiles) {
     const localIndex = merged.findIndex((p) => p.id === imported.id);
     if (localIndex > -1) {
-      // Preserve local apiKey
+      // Preserve local apiKey and baseUrl
       merged[localIndex] = {
         ...imported,
         apiKey: merged[localIndex].apiKey,
+        baseUrl: merged[localIndex].baseUrl,
       };
     } else {
       // New profile with no key becomes disabled
       merged.push({
         ...imported,
         apiKey: '',
+        baseUrl: undefined,
         enabled: false,
       });
     }

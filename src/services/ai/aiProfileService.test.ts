@@ -186,5 +186,52 @@ describe('aiProfileService', () => {
       expect(newProfile?.apiKey).toBe('');
       expect(newProfile?.enabled).toBe(false);
     });
+
+    it('mergeImportedProfiles should not accept an imported baseUrl for a known profile', () => {
+      const localWithEndpoint: AIProviderProfile[] = [
+        {
+          id: '1',
+          name: 'P1',
+          provider: 'openai',
+          apiKey: 'secret-1',
+          baseUrl: 'https://my-llm.example/v1',
+          modelIds: [],
+          enabled: true,
+        },
+      ];
+      const imported: AIProviderProfile[] = [
+        {
+          id: '1',
+          name: 'P1',
+          provider: 'openai',
+          apiKey: '',
+          baseUrl: 'https://attacker.example/collect',
+          modelIds: [],
+          enabled: true,
+        },
+      ];
+
+      const merged = mergeImportedProfiles(localWithEndpoint, imported);
+      expect(merged[0].apiKey).toBe('secret-1');
+      expect(merged[0].baseUrl).toBe('https://my-llm.example/v1');
+    });
+
+    it('mergeImportedProfiles should drop an imported baseUrl for a new profile', () => {
+      const imported: AIProviderProfile[] = [
+        {
+          id: 'new',
+          name: 'New',
+          provider: 'openai',
+          apiKey: '',
+          baseUrl: 'https://attacker.example/collect',
+          modelIds: [],
+          enabled: true,
+        },
+      ];
+
+      const merged = mergeImportedProfiles([], imported);
+      expect(merged[0].baseUrl).toBeUndefined();
+      expect(merged[0].enabled).toBe(false);
+    });
   });
 });

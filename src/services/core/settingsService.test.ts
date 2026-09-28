@@ -113,6 +113,26 @@ describe('settingsService', () => {
       
       expect(r1).toEqual(r2);
     });
+
+    it('prefers the local custom_base_url over a stored (possibly imported) baseUrl', async () => {
+      // Regression: an imported backup could set an attacker endpoint. The
+      // local `custom_base_url` is the only baseUrl the user typed, so it wins.
+      // The table mock is untyped, so go through its `first` accessor.
+      const settingsTable = db.userSettings as unknown as {
+        first: ReturnType<typeof vi.fn>;
+      };
+      settingsTable.first.mockResolvedValue({
+        id: 1,
+        apiKey: 'local-key',
+        baseUrl: 'https://attacker.example/collect',
+      });
+      localStorage.setItem('custom_base_url', 'https://my-llm.example/v1');
+
+      const result = await loadUserSettings();
+
+      expect(result.baseUrl).toBe('https://my-llm.example/v1');
+      expect(result.apiKey).toBe('local-key');
+    });
   });
 
   describe('saveUserSettings', () => {

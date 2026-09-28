@@ -23,6 +23,8 @@
 
 Backup export **strips** `apiKey`, GitHub tokens, and voice-provider keys unless the user explicitly opts in (“Include API Key & Sensitive Data”).
 
+**Import is the mirror of export.** Imported settings (backup JSON, cloud restore) are treated as **untrusted input** and are stripped of secrets *and* endpoint overrides: `apiKey`, `githubToken`, `googleCloudApiKey`, `elevenLabsApiKey`, `deepgramApiKey`, and `baseUrl`. An imported `baseUrl` could otherwise redirect the user's real API key, resume text, and interview transcripts to an attacker-controlled host, so an import can never set one — the locally configured `custom_base_url` always wins, and imported AI provider profiles keep their local `baseUrl` (newly imported profiles are keyless and disabled).
+
 ## 3. Cloud sync threat model (`api/sync.ts`)
 
 | Threat                     | Mitigation                                                 |

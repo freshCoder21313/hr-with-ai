@@ -51,7 +51,12 @@ export async function loadUserSettings(): Promise<UserSettings> {
         settings = {
           ...storedDB,
           apiKey: storedDB.apiKey || localApiKey,
-          baseUrl: storedDB.baseUrl || localBaseUrl,
+          // Endpoint precedence inverts the secret precedence on purpose: the
+          // local `custom_base_url` is the only baseUrl the user typed, while
+          // storedDB may originate from an untrusted import. Letting an imported
+          // baseUrl win would send the real apiKey + resume data to it
+          // (see docs/SECURITY.md).
+          baseUrl: localBaseUrl || storedDB.baseUrl,
           defaultModel: storedDB.defaultModel || localModelId,
           provider: storedDB.provider || localProvider,
         };

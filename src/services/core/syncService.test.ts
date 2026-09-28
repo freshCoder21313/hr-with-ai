@@ -3,7 +3,7 @@ import { syncService } from './syncService';
 import { db } from '@/lib/db';
 import { apiClient } from '@/lib/api-client';
 import LZString from 'lz-string';
-import { InterviewStatus } from '@/types';
+import { InterviewStatus, UserSettings } from '@/types';
 import axios from 'axios';
 
 vi.mock('@/lib/db', () => ({
@@ -24,7 +24,20 @@ vi.mock('@/lib/db', () => ({
       add: vi.fn(),
       put: vi.fn(),
     },
-    transaction: vi.fn((_mode, _t1, _t2, _t3, fn) => fn()),
+    jobs: {
+      toArray: vi.fn(),
+      add: vi.fn(),
+      put: vi.fn(),
+    },
+    job_recommendations: {
+      toArray: vi.fn(),
+      add: vi.fn(),
+      put: vi.fn(),
+    },
+    transaction: vi.fn((...args: unknown[]) => {
+      const fn = args[args.length - 1] as () => unknown;
+      return fn();
+    }),
   },
 }));
 
@@ -303,6 +316,135 @@ describe('syncService', () => {
 
       expect(db.userSettings.add).toHaveBeenCalledWith(cloudSetting);
     });
+
+    it('does not let an imported baseUrl override the local endpoint', async () => {
+      const local = {
+        id: 1,
+        apiKey: 'local-secret',
+        baseUrl: 'https://my-llm.example/v1',
+        updatedAt: 1000,
+      };
+      const malicious = {
+        id: 1,
+        hintsEnabled: true,
+        baseUrl: 'https://attacker.example/collect',
+        updatedAt: 2000,
+      };
+
+      vi.mocked(db.userSettings.toArray).mockResolvedValue([local as UserSettings]);
+      vi.mocked(db.interviews.toArray).mockResolvedValue([]);
+      vi.mocked(db.resumes.toArray).mockResolvedValue([]);
+      vi.mocked(db.userSettings.orderBy).mockReturnValue({
+        first: vi.fn().mockResolvedValue(local),
+      } as unknown as ReturnType<typeof db.userSettings.orderBy>);
+
+      await syncService.importData({
+        interviews: [],
+        userSettings: [malicious as UserSettings],
+        resumes: [],
+      });
+
+      const putArg = vi.mocked(db.userSettings.put).mock.calls[0][0] as Record<string, unknown>;
+      // Endpoint is never taken from the import...
+      expect(putArg.baseUrl).toBe('https://my-llm.example/v1');
+      // ...so the local key stays pinned to the local endpoint.
+      expect(putArg.apiKey).toBe('local-secret');
+      // Non-sensitive settings still import.
+      expect(putArg.hintsEnabled).toBe(true);
+    });
+
+    it('drops a baseUrl supplied by an imported brand-new settings record', async () => {
+      // Backups are untrusted JSON, so an id can be any shape the file claims.
+      const malicious = {
+        id: 'foreign',
+        baseUrl: 'https://attacker.example/collect',
+        githubToken: 'attacker-token',
+      } as unknown as UserSettings;
+
+      vi.mocked(db.userSettings.toArray).mockResolvedValue([]);
+      vi.mocked(db.interviews.toArray).mockResolvedValue([]);
+      vi.mocked(db.resumes.toArray).mockResolvedValue([]);
+      vi.mocked(db.userSettings.orderBy).mockReturnValue({
+        first: vi.fn().mockResolvedValue(undefined),
+      } as unknown as ReturnType<typeof db.userSettings.orderBy>);
+
+      await syncService.importData({
+        interviews: [],
+        userSettings: [malicious],
+        resumes: [],
+      });
+
+      const addArg = vi.mocked(db.userSettings.add).mock.calls[0][0] as Record<string, unknown>;
+      expect(addArg).not.toHaveProperty('baseUrl');
+      expect(addArg).not.toHaveProperty('githubToken');
+      expect(addArg.id).toBe('foreign');
+    });
+
+    it('round-trips saved jobs and job recommendations', async () => {
+      const job = {
+        id: 5,
+        company: 'Acme',
+        jobTitle: 'Staff Eng',
+        jobDescription: 'jd',
+        interviewerPersona: 'friendly',
+        createdAt: 1000,
+        updatedAt: 1000,
+      };
+      const recommendation = {
+        id: 7,
+        interviewId: 1,
+        resumeId: 2,
+        title: 'Staff Eng',
+        company: 'Acme',
+        keyRequirements: '[]',
+        createdAt: 1000,
+      };
+
+      vi.mocked(db.interviews.toArray).mockResolvedValue([]);
+      vi.mocked(db.resumes.toArray).mockResolvedValue([]);
+      vi.mocked(db.userSettings.toArray).mockResolvedValue([]);
+      vi.mocked(db.jobs.toArray).mockResolvedValue([job]);
+      vi.mocked(db.job_recommendations.toArray).mockResolvedValue([recommendation]);
+
+      const exported = await syncService.exportData();
+      expect(exported.jobs).toEqual([job]);
+      expect(exported.jobRecommendations).toEqual([recommendation]);
+
+      // Simulate a cleared browser, then restore the backup.
+      vi.mocked(db.jobs.toArray).mockResolvedValue([]);
+      vi.mocked(db.job_recommendations.toArray).mockResolvedValue([]);
+      vi.mocked(db.userSettings.orderBy).mockReturnValue({
+        first: vi.fn().mockResolvedValue(undefined),
+      } as unknown as ReturnType<typeof db.userSettings.orderBy>);
+
+      await syncService.importData(exported);
+
+      const addedJob = vi.mocked(db.jobs.add).mock.calls[0][0] as unknown as Record<string, unknown>;
+      expect(addedJob).toMatchObject({ company: 'Acme', jobTitle: 'Staff Eng' });
+      // Local 'id' is auto-increment, so the cloud id must not be restored.
+      expect(addedJob).not.toHaveProperty('id');
+
+      const addedRec = vi.mocked(db.job_recommendations.add).mock
+        .calls[0][0] as unknown as Record<string, unknown>;
+      expect(addedRec).toMatchObject({ title: 'Staff Eng', company: 'Acme' });
+    });
+
+    it('imports a legacy backup that has no jobs or jobRecommendations', async () => {
+      vi.mocked(db.userSettings.toArray).mockResolvedValue([]);
+      vi.mocked(db.interviews.toArray).mockResolvedValue([]);
+      vi.mocked(db.resumes.toArray).mockResolvedValue([]);
+      vi.mocked(db.userSettings.orderBy).mockReturnValue({
+        first: vi.fn().mockResolvedValue(undefined),
+      } as unknown as ReturnType<typeof db.userSettings.orderBy>);
+
+      await expect(
+        syncService.importData({ interviews: [], userSettings: [], resumes: [] })
+      ).resolves.toBeUndefined();
+
+      expect(db.jobs.add).not.toHaveBeenCalled();
+      expect(db.job_recommendations.add).not.toHaveBeenCalled();
+    });
+
   });
 
   describe('uploadToCloud', () => {

@@ -1,5 +1,6 @@
 import { db } from '@/lib/db';
-import { Interview, UserSettings, Resume } from '@/types';
+import { Interview, UserSettings, Resume, SavedJob } from '@/types';
+import { DBJobRecommendation } from '@/services/jobs/jobRecommendationService';
 import LZString from 'lz-string';
 import axios from 'axios';
 import { apiClient } from '@/lib/api-client';
@@ -9,12 +10,17 @@ import {
   mergeImportedProfiles,
   normalizeUserSettings,
   mirrorActiveProfileToLocalStorage,
+  stripImportProtectedFields,
 } from '@/services/ai/aiProfileService';
 
 interface SyncData {
   interviews: Interview[];
   userSettings: UserSettings[];
   resumes: Resume[];
+  /** Optional: absent in backups taken before saved jobs were synced. */
+  jobs?: SavedJob[];
+  /** Optional: absent in backups taken before job recommendations were synced. */
+  jobRecommendations?: DBJobRecommendation[];
 }
 
 interface CompressedSyncData {
@@ -43,6 +49,8 @@ export const syncService = {
     const interviews = await db.interviews.toArray();
     const userSettings = await db.userSettings.toArray();
     const resumes = await db.resumes.toArray();
+    const jobs = await db.jobs.toArray();
+    const jobRecommendations = await db.job_recommendations.toArray();
 
     // Strip sensitive fields unless explicitly requested
     const safeSettings = userSettings.map((s) => {
@@ -73,16 +81,24 @@ export const syncService = {
       interviews,
       userSettings: safeSettings,
       resumes,
+      jobs,
+      jobRecommendations,
     };
   },
 
   // Merge Logic: Smartly merge cloud data into local DB
   importData: async (cloudData: SyncData): Promise<void> => {
-    await db.transaction('rw', db.interviews, db.userSettings, db.resumes, async () => {
+    await db.transaction(
+      'rw',
+      [db.interviews, db.userSettings, db.resumes, db.jobs, db.job_recommendations],
+      async () => {
       // 1. Merge User Settings (Usually singleton)
       if (cloudData.userSettings?.length) {
         const localSettings = await db.userSettings.toArray();
-        for (const cloudSetting of cloudData.userSettings) {
+        for (const rawCloudSetting of cloudData.userSettings) {
+          // Untrusted input: an imported baseUrl/secret would redirect the user's
+          // real API key and resume data to an attacker endpoint (docs/SECURITY.md).
+          const cloudSetting = stripImportProtectedFields(rawCloudSetting);
           const localMatch = localSettings.find((l) => l.id === cloudSetting.id);
 
           if (!localMatch) {
@@ -97,6 +113,7 @@ export const syncService = {
               await db.userSettings.put({
                 ...cloudSetting,
                 apiKey: cloudSetting.apiKey || localMatch.apiKey,
+                baseUrl: localMatch.baseUrl,
                 githubToken: cloudSetting.githubToken || localMatch.githubToken,
                 githubUsername: cloudSetting.githubUsername || localMatch.githubUsername,
                 googleCloudApiKey: cloudSetting.googleCloudApiKey || localMatch.googleCloudApiKey,
@@ -155,7 +172,49 @@ export const syncService = {
           }
         }
       }
-    });
+
+      // 4. Merge Saved Job Templates (Match by createdAt; local 'id' is
+      //    auto-increment and differs per device)
+      if (cloudData.jobs?.length) {
+        const localJobs = await db.jobs.toArray();
+        for (const cloudJob of cloudData.jobs) {
+          const localMatch = localJobs.find((l) => l.createdAt === cloudJob.createdAt);
+
+          if (!localMatch) {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { id, ...dataToSave } = cloudJob;
+            await db.jobs.add(dataToSave as SavedJob);
+          } else {
+            const cloudTime = cloudJob.updatedAt || 0;
+            const localTime = localMatch.updatedAt || 0;
+            if (cloudTime > localTime) {
+              await db.jobs.put({ ...cloudJob, id: localMatch.id });
+            }
+          }
+        }
+      }
+
+      // 5. Merge Job Recommendations (Match by createdAt + title + company;
+      //    recommendations have no updatedAt to compare on)
+      if (cloudData.jobRecommendations?.length) {
+        const localRecs = await db.job_recommendations.toArray();
+        for (const cloudRec of cloudData.jobRecommendations) {
+          const localMatch = localRecs.find(
+            (l) =>
+              l.createdAt === cloudRec.createdAt &&
+              l.title === cloudRec.title &&
+              l.company === cloudRec.company
+          );
+
+          if (!localMatch) {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { id, ...dataToSave } = cloudRec;
+            await db.job_recommendations.add(dataToSave as DBJobRecommendation);
+          }
+        }
+      }
+      }
+    );
 
     // Post-import synchronization: ensure profiles and mirror keys are consistent
     const latestSettings = await db.userSettings.orderBy('id').first();

@@ -1,6 +1,6 @@
 import React, { memo, useEffect, useRef, useState, useCallback } from 'react';
 import { logger } from '@/lib/logger';
-import ReactMarkdown from 'react-markdown';
+import ReactMarkdown, { defaultUrlTransform } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
@@ -48,7 +48,7 @@ const MermaidBlock: React.FC<{ code: string }> = ({ code }) => {
         mermaid.initialize({
           startOnLoad: false,
           theme: 'default',
-          securityLevel: 'loose',
+          securityLevel: 'strict',
         });
 
         const id = `mermaid-${Math.random().toString(36).substring(2, 9)}`;
@@ -108,12 +108,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = memo(({ content }) => 
   return (
     <ReactMarkdown
       remarkPlugins={[remarkGfm]}
-      urlTransform={(url) => {
-        // Allow search: protocol
-        if (url.startsWith('search:')) return url;
-        // Default transform for other URLs
-        return url;
-      }}
+      urlTransform={(url) => (url.startsWith('search:') ? url : defaultUrlTransform(url))}
       components={{
         code(props: { inline?: boolean; className?: string; children?: React.ReactNode }) {
           const { inline, className, children } = props;

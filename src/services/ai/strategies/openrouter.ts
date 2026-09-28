@@ -112,24 +112,26 @@ export class OpenRouterStrategy implements AIProviderStrategy {
 
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
+    let buffer = '';
 
     try {
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
-        const chunk = decoder.decode(value, { stream: true });
-        const lines = chunk.split('\n');
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
 
         for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const data = line.slice(6);
-            if (data === '[DONE]') return;
+          if (line.trim() === '') continue;
+          if (line.includes('[DONE]')) continue;
 
+          if (line.startsWith('data: ')) {
             try {
-              const json = JSON.parse(data);
-              const delta = json.choices?.[0]?.delta?.content;
-              if (delta) yield delta;
+              const data = JSON.parse(line.slice(6));
+              const content = data.choices?.[0]?.delta?.content;
+              if (content) yield content;
             } catch {
               // Ignore non-JSON lines
             }

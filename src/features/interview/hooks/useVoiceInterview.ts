@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useState } from 'react';
+import { useEffect, useCallback, useState, useRef } from 'react';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
 import { useVoiceInterviewStore } from '@/features/interview/stores/voiceInterviewStore';
@@ -118,14 +118,25 @@ export const useVoiceInterview = () => {
     });
   }, [stt, recorder, setCurrentState, clearTranscript]);
 
+  // Keep teardown handlers pointing at the latest render's functions so the
+  // unmount-only cleanup below never closes over stale callbacks.
+  const stopListeningRef = useRef(stt.stopListening);
+  const cancelRecordingRef = useRef(recorder.cancelRecording);
+  useEffect(() => {
+    stopListeningRef.current = stt.stopListening;
+    cancelRecordingRef.current = recorder.cancelRecording;
+  });
+
+  // Unmount-only teardown. `stt`/`recorder` are fresh object literals on every
+  // render, so depending on them would tear the mic down after each re-render.
   useEffect(() => {
     return () => {
       voiceInterviewService.setOnSentenceCallback(null);
       voiceInterviewService.reset();
-      stt.stopListening();
-      recorder.cancelRecording();
+      stopListeningRef.current();
+      cancelRecordingRef.current();
     };
-  }, [stt, recorder]);
+  }, []);
 
   // Process AI Response
   const processAIResponse = useCallback(
