@@ -12,7 +12,7 @@ import { openApiKeyModal } from '@/events/apiKeyEvents';
 import { useDebounce } from '@/hooks/useDebounce';
 import { getErrorMessage } from '@/lib/utils';
 import { sanitizeResumeDataForSave } from '../SectionForms/entryIds';
-import { Capacitor } from '@capacitor/core';
+import { exportElementToPdf } from '@/services/resume/pdfExportService';
 
 const TOUR_STEPS: Step[] = [
   {
@@ -255,12 +255,15 @@ export const useResumeBuilder = () => {
     [id]
   );
 
-  const handlePrint = useCallback(() => {
-    if (Capacitor.isNativePlatform()) {
-      toast.info('PDF export requires opening the app in a browser.');
-      return;
+  const handleExportPdf = useCallback(async (element: HTMLElement | null, fileName: string) => {
+    if (!element) return;
+    try {
+      const result = await exportElementToPdf(element, fileName);
+      toast.success(result.method === 'download' ? 'PDF downloaded.' : 'PDF ready to share.');
+    } catch (error) {
+      logger.error('PDF export failed:', error);
+      toast.error('Could not export PDF. Please try again.');
     }
-    window.print();
   }, []);
 
   const updateSection = useCallback(
@@ -376,7 +379,7 @@ export const useResumeBuilder = () => {
       handleTranslate,
       handleThemeColorChange,
       handleFontChange,
-      handlePrint,
+      handleExportPdf,
       handleAddSection,
       handleDirectUpdate,
       handleViewMode,
@@ -398,7 +401,7 @@ export const useResumeBuilder = () => {
       handleTranslate,
       handleThemeColorChange,
       handleFontChange,
-      handlePrint,
+      handleExportPdf,
       handleAddSection,
       handleDirectUpdate,
       handleViewMode,

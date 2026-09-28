@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useRef } from 'react';
 import { Loader2 } from 'lucide-react';
 import Joyride from 'react-joyride';
 import SEO from '@/components/shared/SEO';
@@ -14,6 +14,7 @@ const ResumeBuilder: React.FC = () => {
   const { state, actions } = useResumeBuilder();
   const { data, template } = state;
   const { navigate, setShowReorderDialog } = actions;
+  const exportRef = useRef<HTMLDivElement>(null);
 
   const handleBack = useCallback(() => navigate('/setup'), [navigate]);
   const closeReorder = useCallback(() => setShowReorderDialog(false), [setShowReorderDialog]);
@@ -43,7 +44,14 @@ const ResumeBuilder: React.FC = () => {
         description="Build ATS-friendly resumes with AI assistance."
       />
 
-      <div className="hidden print:block">
+      {/* Off-screen, fully laid-out capture host for PDF export (display:none
+          cannot be rasterized). Fixed A4 width keeps output deterministic
+          across view modes; also serves browser print via print: overrides. */}
+      <div
+        ref={exportRef}
+        aria-hidden="true"
+        className="pointer-events-none fixed -left-[10000px] top-0 w-[794px] bg-white print:static print:left-0 print:w-auto"
+      >
         <ResumePreview data={data!} template={template} onUpdate={actions.handleDirectUpdate} />
       </div>
 
@@ -97,7 +105,7 @@ const ResumeBuilder: React.FC = () => {
               onThemeColorChange={actions.handleThemeColorChange}
               onFontChange={actions.handleFontChange}
               onTranslate={actions.handleTranslate}
-              onPrint={actions.handlePrint}
+              onPrint={() => actions.handleExportPdf(exportRef.current, resume?.fileName ?? 'resume')}
               onShowReorder={openReorder}
             />
           ) : (

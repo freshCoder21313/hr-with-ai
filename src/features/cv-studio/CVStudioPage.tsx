@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SEO from '@/components/shared/SEO';
 import { ResumePreview, SectionReorderDialog, GitHubImportModal } from '@/features/resume-builder';
@@ -9,13 +9,15 @@ import { CVPreviewPanel } from './components/CVPreviewPanel';
 import { useCVStudio } from './hooks/useCVStudio';
 import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Capacitor } from '@capacitor/core';
 import { toast } from 'sonner';
+import { exportElementToPdf } from '@/services/resume/pdfExportService';
+import { logger } from '@/lib/logger';
 
 const CVStudioPage: React.FC = () => {
   const navigate = useNavigate();
   const { state, ui, actions } = useCVStudio();
   const [mobileTab, setMobileTab] = useState<'jobs' | 'chat' | 'preview'>('chat');
+  const exportRef = useRef<HTMLDivElement>(null);
 
   const handleViewResult = useCallback(
     (id: number) => {
@@ -134,16 +136,39 @@ const CVStudioPage: React.FC = () => {
           onSetActiveTab={ui.setActiveTab}
           onManualUpdate={actions.handleManualUpdate}
           onOpenReorderDialog={() => ui.setShowReorderDialog(true)}
-          onPrint={() => {
-            if (Capacitor.isNativePlatform()) {
-              toast.info('PDF export requires opening the app in a browser.');
-              return;
+          onPrint={async () => {
+            if (!exportRef.current) return;
+            try {
+              const result = await exportElementToPdf(
+                exportRef.current,
+                state.mainCV?.fileName ?? 'CV'
+              );
+              toast.success(
+                result.method === 'download' ? 'PDF downloaded.' : 'PDF ready to share.'
+              );
+            } catch (error) {
+              logger.error('PDF export failed:', error);
+              toast.error('Could not export PDF. Please try again.');
             }
-            window.print();
           }}
         />
           </div>
         </div>
+
+        {/* Off-screen laid-out capture host for PDF export. */}
+        {state.previewData && (
+          <div
+            ref={exportRef}
+            aria-hidden="true"
+            className="pointer-events-none fixed -left-[10000px] top-0 w-[794px] bg-white"
+          >
+            <ResumePreview
+              data={state.previewData}
+              template={ui.template}
+              onUpdate={actions.handleManualUpdate}
+            />
+          </div>
+        )}
 
         <SectionReorderDialog
           isOpen={ui.showReorderDialog}
