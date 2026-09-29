@@ -9,6 +9,7 @@ import { Job } from '../stores/useJobStore';
 import { getStoredAIConfig } from '@/services/ai/aiConfigService';
 import { openApiKeyModal } from '@/events/apiKeyEvents';
 import { validateProposedChange } from '@/services/ai/schemas';
+import { nextMessageId } from '@/lib/utils';
 
 const ALLOWED_SECTIONS = [
   'basics',
@@ -48,7 +49,7 @@ export const useCVChat = ({ mainCV, setMainCV, resumes, jobs, chatResumeId }: Us
         content: isMain
           ? `Hello! I'm your CV assistant. Currently working on **${cv.fileName}**.\n\nSwitch to **Tailor mode** to auto-tailor this CV for specific jobs, or stay in **Chat mode** to edit it manually via AI chat.`
           : `Hello! Working on **${cv.fileName}**. How can I help you today?`,
-        timestamp: Date.now(),
+        timestamp: nextMessageId(),
       },
     ]);
   }, []);
@@ -59,13 +60,13 @@ export const useCVChat = ({ mainCV, setMainCV, resumes, jobs, chatResumeId }: Us
       {
         role: 'model',
         content: `Switched to **${cv.fileName}**. How would you like to update it?`,
-        timestamp: Date.now(),
+        timestamp: nextMessageId(),
       },
     ]);
   }, []);
 
   const appendSystemMessage = useCallback((content: string) => {
-    setMessages((prev) => [...prev, { role: 'model', content, timestamp: Date.now() }]);
+    setMessages((prev) => [...prev, { role: 'model', content, timestamp: nextMessageId() }]);
   }, []);
 
   const removePendingChange = useCallback((change: ProposedChange) => {
@@ -84,10 +85,10 @@ export const useCVChat = ({ mainCV, setMainCV, resumes, jobs, chatResumeId }: Us
         return;
       }
 
-      const userMsg: Message = { role: 'user', content: text, timestamp: Date.now(), image };
+      const userMsg: Message = { role: 'user', content: text, timestamp: nextMessageId(), image };
       setMessages((prev) => [...prev, userMsg]);
       setIsTyping(true);
-      const aiMsgId = Date.now() + 1;
+      const aiMsgId = nextMessageId();
       setMessages((prev) => [...prev, { role: 'model', content: '', timestamp: aiMsgId }]);
 
       try {

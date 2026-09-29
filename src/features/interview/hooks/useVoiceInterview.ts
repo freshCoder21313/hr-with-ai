@@ -13,7 +13,7 @@ import { streamInterviewMessage } from '@/services/interview/interviewAIService'
 import { getStoredAIConfig } from '@/services/ai/aiConfigService';
 import { voiceInterviewService } from '@/services/voice/voiceInterviewService';
 import { Message, VoiceSettings } from '@/types';
-import { getErrorMessage } from '@/lib/utils';
+import { getErrorMessage, nextMessageId } from '@/lib/utils';
 import { isNonEmptyString } from '@/lib/validation';
 import { loadUserSettings } from '@/services/core/settingsService';
 import { speechToTextService } from '@/services/voice/speechToTextService';
@@ -218,7 +218,7 @@ export const useVoiceInterview = () => {
       addMessage({
         role: 'model',
         content: '', // Streaming fills this
-        timestamp: Date.now() + 1,
+        timestamp: nextMessageId(),
       });
 
       // Setup TTS Buffering
@@ -273,7 +273,7 @@ export const useVoiceInterview = () => {
       const userMsg: Message = {
         role: 'user',
         content: text,
-        timestamp: Date.now(),
+        timestamp: nextMessageId(),
         isVoiceInput: false,
       };
       addMessage(userMsg);
@@ -311,7 +311,7 @@ export const useVoiceInterview = () => {
     const userMsg: Message = {
       role: 'user',
       content: textToSend,
-      timestamp: Date.now(),
+      timestamp: nextMessageId(),
       isVoiceInput: true,
     };
     addMessage(userMsg);

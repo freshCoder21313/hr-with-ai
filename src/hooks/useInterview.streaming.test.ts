@@ -4,15 +4,20 @@ import type { Collection } from 'dexie';
 import { useInterview } from './useInterview';
 import { useInterviewStore } from '@/features/interview/interviewStore';
 import { db } from '@/lib/db';
-import { streamInterviewMessage } from '@/services/interview/interviewAIService';
+import {
+  streamInterviewMessage,
+  generateInterviewFeedback,
+} from '@/services/interview/interviewAIService';
 import { getStoredAIConfig, type AIConfig } from '@/services/ai/aiConfigService';
 import { openApiKeyModal } from '@/events/apiKeyEvents';
 import { Interview, InterviewStatus, Message, UserSettings } from '@/types';
 
 vi.mock('@/lib/db');
 vi.mock('@/lib/logger');
+
+const navigateMock = vi.fn();
 vi.mock('react-router-dom', () => ({
-  useNavigate: () => vi.fn(),
+  useNavigate: () => navigateMock,
 }));
 vi.mock('@/services/interview/interviewAIService');
 vi.mock('@/services/ai/aiConfigService');
@@ -105,7 +110,11 @@ describe('useInterview streaming persistence and concurrency', () => {
       apiKey: 'test-key',
       provider: 'google',
     } as AIConfig);
-
+    vi.mocked(generateInterviewFeedback).mockResolvedValue({
+      overallScore: 8,
+      strengths: [],
+      improvements: [],
+    } as never);
     useInterviewStore.setState({
       currentInterview: null,
       isLoading: false,
@@ -115,8 +124,18 @@ describe('useInterview streaming persistence and concurrency', () => {
   });
 
   afterEach(() => {
+    // A test that throws before its own `useRealTimers()` would otherwise
+    // leak fake timers into every later test in the file.
+    vi.useRealTimers();
     useInterviewStore.setState({ activeGenerationId: null });
   });
+
+  /** `[[END_SESSION]]` is only honoured when the user enabled auto-finish. */
+  const enableAutoFinish = () => {
+    vi.mocked(db.userSettings.orderBy).mockReturnValue({
+      first: vi.fn().mockResolvedValue({ autoFinishEnabled: true, forceToolsEnabled: false }),
+    } as unknown as Collection<UserSettings, number>);
+  };
 
   const render = () => renderHook(() => useInterview());
 
@@ -490,5 +509,154 @@ describe('useInterview streaming persistence and concurrency', () => {
     });
     await Promise.resolve();
     expect(updateMock).not.toHaveBeenCalled();
+  });
+
+  it('fails a hung stream and returns the interview to idle', async () => {
+    // No provider in this codebase times the stream *body*: the 30s
+    // AbortController is cleared once headers arrive. A connection that opens
+    // and then stalls previously left the interview permanently processing.
+    vi.useFakeTimers();
+    const hung = {
+      [Symbol.asyncIterator]: () => ({ next: () => new Promise<IteratorResult<string>>(() => {}) }),
+    } as AsyncGenerator<string, void, unknown>;
+    vi.mocked(streamInterviewMessage).mockReturnValue(hung);
+    useInterviewStore.getState().setInterview(makeInterview());
+
+    const { result } = render();
+    let sendPromise: Promise<void>;
+    act(() => {
+      sendPromise = result.current.sendMessage('question');
+    });
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(60_000);
+    });
+    await act(async () => {
+      await sendPromise!;
+    });
+    vi.useRealTimers();
+
+    // The turn is marked failed, not left blank or stuck.
+    const failed = useInterviewStore.getState().currentInterview!.messages[1];
+    expect(failed.isError).toBe(true);
+    // Single-flight is released, so the user is not wedged.
+    expect(useInterviewStore.getState().activeGenerationId).toBeNull();
+    expect(useInterviewStore.getState().isLoading).toBe(false);
+  });
+
+  it('allows a retry after a timeout', async () => {
+    vi.mocked(streamInterviewMessage).mockReturnValue(
+      (async function* () {
+        yield 'recovered';
+      })()
+    );
+    useInterviewStore.getState().setInterview(makeInterview());
+
+    const { result } = render();
+    await act(async () => {
+      await result.current.sendMessage('question');
+    });
+
+    // A second send is accepted, proving the claim was released.
+    let second: Promise<void>;
+    act(() => {
+      second = result.current.sendMessage('again');
+    });
+    await act(async () => {
+      await second!;
+    });
+
+    expect(useInterviewStore.getState().currentInterview!.messages).toHaveLength(4);
+  });
+
+  it('persists the completed answer even if the component unmounted mid-stream', async () => {
+    const stream = deferredStream();
+    vi.mocked(streamInterviewMessage).mockReturnValue(stream.iterable);
+    useInterviewStore.getState().setInterview(makeInterview());
+
+    const { result, unmount } = render();
+    let sendPromise: Promise<void>;
+    act(() => {
+      sendPromise = result.current.sendMessage('question');
+    });
+    await stream.emit('partial');
+
+    // The store is not React-scoped, so an in-flight generation keeps its
+    // claim after unmount and must still land the answer rather than discard
+    // it. Discarding here would lose a completed response.
+    unmount();
+    updateMock.mockClear();
+    await stream.finish();
+    await act(async () => {
+      await sendPromise!;
+    });
+
+    expect(updateMock).toHaveBeenCalled();
+    const persisted = updateMock.mock.calls.at(-1)![1] as { messages: Message[] };
+    expect(persisted.messages[1].content).toBe('partial');
+    expect(useInterviewStore.getState().activeGenerationId).toBeNull();
+  });
+
+  it('does not auto-end a different interview when a stale timer fires', async () => {
+    vi.useFakeTimers();
+    enableAutoFinish();
+    vi.mocked(streamInterviewMessage).mockReturnValue(
+      (async function* () {
+        yield 'closing remarks[[END_SESSION]]';
+      })()
+    );
+    useInterviewStore.getState().setInterview(makeInterview());
+
+    const { result } = render();
+    let sendPromise: Promise<void>;
+    act(() => {
+      sendPromise = result.current.sendMessage('goodbye');
+    });
+    await act(async () => {
+      await sendPromise!;
+    });
+
+    // Before the grace period elapses, the user navigates to another interview.
+    act(() => {
+      useInterviewStore.getState().setInterview({ ...makeInterview(), id: 999 });
+    });
+    navigateMock.mockClear();
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(2000);
+    });
+    vi.useRealTimers();
+
+    // Feedback is never computed, and nothing navigates to a bogus route.
+    expect(generateInterviewFeedback).not.toHaveBeenCalled();
+    expect(navigateMock).not.toHaveBeenCalled();
+  });
+
+  it('auto-ends the same interview once the grace period elapses', async () => {
+    vi.useFakeTimers();
+    enableAutoFinish();
+    vi.mocked(streamInterviewMessage).mockReturnValue(
+      (async function* () {
+        yield 'closing remarks[[END_SESSION]]';
+      })()
+    );
+    useInterviewStore.getState().setInterview(makeInterview());
+
+    const { result } = render();
+    let sendPromise: Promise<void>;
+    act(() => {
+      sendPromise = result.current.sendMessage('goodbye');
+    });
+    await act(async () => {
+      await sendPromise!;
+    });
+    expect(generateInterviewFeedback).not.toHaveBeenCalled();
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(2000);
+    });
+    vi.useRealTimers();
+
+    expect(generateInterviewFeedback).toHaveBeenCalledTimes(1);
   });
 });

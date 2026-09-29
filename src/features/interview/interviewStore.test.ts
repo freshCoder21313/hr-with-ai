@@ -57,6 +57,25 @@ describe('useInterviewStore', () => {
     expect(useInterviewStore.getState().currentInterview?.messages[0].content).toBe('m1');
   });
 
+  it('rewrites every message sharing a timestamp (why ids must be unique)', () => {
+    // Documents the hazard `nextMessageId` removes: a duplicate timestamp
+    // makes `updateMessageByTimestamp` clobber the wrong message instead of
+    // targeting one, because the lookup is a `.map` over all messages.
+    useInterviewStore.getState().setInterview({
+      id: 1,
+      messages: [
+        { content: 'first', timestamp: 100, role: 'model' },
+        { content: 'second', timestamp: 100, role: 'model' },
+      ],
+    } as any);
+
+    useInterviewStore.getState().updateMessageByTimestamp(100, 'streamed');
+
+    const messages = useInterviewStore.getState().currentInterview!.messages;
+    expect(messages[0].content).toBe('streamed');
+    expect(messages[1].content).toBe('streamed');
+  });
+
   it('should mark message as error', () => {
     const mockInterview = { id: 1, messages: [{ timestamp: 100, role: 'model', content: 'wait' }] } as any;
     useInterviewStore.getState().setInterview(mockInterview);

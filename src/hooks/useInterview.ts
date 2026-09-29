@@ -13,6 +13,7 @@ import { InterviewStatus, SetupFormData, Interview, Message } from '@/types';
 import { getActiveScenario } from '@/features/interview/scenarios';
 import { openApiKeyModal } from '@/events/apiKeyEvents';
 import { isNonEmptyString, validateInterviewSetup } from '@/lib/validation';
+import { nextMessageId, withIdleTimeout } from '@/lib/utils';
 
 /**
  * Minimum gap between partial-stream persistence checkpoints. Bounds how much
@@ -20,6 +21,17 @@ import { isNonEmptyString, validateInterviewSetup } from '@/lib/validation';
  * WebView suspension without issuing an IndexedDB write per token.
  */
 const STREAM_CHECKPOINT_MS = 2000;
+
+/**
+ * Maximum gap between two streamed chunks before the generation is treated as
+ * failed. Providers only time the request that opens the stream, not the
+ * stream body, so without this a stalled connection leaves the interview
+ * permanently "processing" with no way back to an idle state.
+ */
+const STREAM_IDLE_TIMEOUT_MS = 60_000;
+
+/** Grace period so the user can read the closing message before the UI blocks. */
+const AUTO_END_DELAY_MS = 2000;
 
 export const useInterview = () => {
   const navigate = useNavigate();
@@ -104,7 +116,7 @@ export const useInterview = () => {
             {
               role: 'model',
               content: firstMessageContent,
-              timestamp: Date.now(),
+              timestamp: nextMessageId(),
             },
           ],
         };
@@ -225,13 +237,13 @@ export const useInterview = () => {
         const userMsg: Message = {
           role: 'user',
           content,
-          timestamp: Date.now(),
+          timestamp: nextMessageId(),
           image,
         };
         addMessage(userMsg);
 
         // 2. Prepare Placeholder for AI Message
-        streamId = Date.now() + 1;
+        streamId = nextMessageId();
         const aiMsgPlaceholder: Message = {
           role: 'model',
           content: '',
@@ -260,16 +272,24 @@ export const useInterview = () => {
           systemInjection = getActiveScenario(latestInterview.companyStatus, turnCount);
         }
 
-        const stream = streamInterviewMessage(
-          [...latestInterview.messages, userMsg], // Use latest history
-          content,
-          latestInterview,
-          config,
-          latestInterview.code,
-          image,
-          autoFinish,
-          forceTools,
-          systemInjection // Pass the hidden injection
+        // The provider opens the stream under a 30s AbortController but clears
+        // it once headers arrive, so a connection that opens and then stalls
+        // emits chunks forever. Bound the *consumption* gap instead: the
+        // timeout is per-chunk, so a slow but healthy stream still completes.
+        const stream = withIdleTimeout(
+          streamInterviewMessage(
+            [...latestInterview.messages, userMsg], // Use latest history
+            content,
+            latestInterview,
+            config,
+            latestInterview.code,
+            image,
+            autoFinish,
+            forceTools,
+            systemInjection // Pass the hidden injection
+          ),
+          STREAM_IDLE_TIMEOUT_MS,
+          'The AI provider stopped responding.'
         );
 
         let shouldAutoEnd = false;
@@ -349,10 +369,18 @@ export const useInterview = () => {
 
         // 5. Trigger Auto-End if detected
         if (shouldAutoEnd) {
-          // Small delay to let the user read the final message before blocking UI
+          // Small delay to let the user read the final message before blocking UI.
+          // `endSession` closes over a render-time `currentInterview`, so without
+          // this identity check a timer left over from a finished interview (or a
+          // route change to another one) would finalize the wrong transcript.
           setTimeout(() => {
+            const live = useInterviewStore.getState().currentInterview;
+            if (!live || live.id !== interviewId) {
+              logger.warn('Skipping auto-end: interview changed before the timer fired.');
+              return;
+            }
             endSession();
-          }, 2000);
+          }, AUTO_END_DELAY_MS);
         }
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : 'An unexpected error occurred.';
