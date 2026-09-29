@@ -659,4 +659,39 @@ describe('useInterview streaming persistence and concurrency', () => {
 
     expect(generateInterviewFeedback).toHaveBeenCalledTimes(1);
   });
+
+  it('gives two same-tick sends four distinct message ids', async () => {
+    // The clock is pinned so both sends resolve to the same wall-clock value.
+    // Under the old `Date.now() + 1` allocation, both the user messages and
+    // both placeholders collapse onto one id -- and because
+    // `updateMessageByTimestamp` maps over *every* message, a stream would
+    // then write its answer into the user's own turn as well.
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-01-01T00:00:00.000Z'));
+    // A fresh generator per call: `mockReturnValue` would hand back the same
+    // already-exhausted generator to the second send.
+    vi.mocked(streamInterviewMessage).mockImplementation(async function* () {
+      yield 'answer';
+    });
+    useInterviewStore.getState().setInterview(makeInterview());
+
+    const { result } = render();
+    await act(async () => {
+      await result.current.sendMessage('first');
+    });
+    await act(async () => {
+      await result.current.sendMessage('second');
+    });
+
+    const messages = useInterviewStore.getState().currentInterview!.messages;
+    expect(messages).toHaveLength(4);
+    const ids = messages.map((m) => m.timestamp);
+    expect(new Set(ids).size).toBe(4);
+
+    // Each answer landed in its own turn, not in the user's message.
+    expect(messages[0].content).toBe('first');
+    expect(messages[2].content).toBe('second');
+    expect(messages[1].content).toBe('answer');
+    expect(messages[3].content).toBe('answer');
+  });
 });
