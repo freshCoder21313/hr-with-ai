@@ -154,6 +154,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
                               variant="outline"
                               size="sm"
                               onClick={onRetry}
+                              disabled={isProcessing}
                               className="self-start mt-1 gap-2 border-destructive/30 hover:bg-destructive/10 text-destructive hover:text-destructive h-8"
                             >
                               <RefreshCw size={14} />

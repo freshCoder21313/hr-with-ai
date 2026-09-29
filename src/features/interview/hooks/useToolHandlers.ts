@@ -4,6 +4,7 @@ import type { Editor, TLShapeId } from 'tldraw';
 import { svgToPngBase64 } from '@/lib/svgUtils';
 import { Interview, JobRecommendation } from '@/types';
 import { db } from '@/lib/db';
+import { useInterviewStore } from '@/features/interview/interviewStore';
 
 interface UseToolHandlersReturn {
   isCodeOpen: boolean;
@@ -97,14 +98,25 @@ export const useToolHandlers = (
     ) => {
       if (!currentInterview) return;
 
+      // Do not write a whole-row snapshot taken from a render-time closure: a
+      // stream in flight would have its messages wiped by the older copy.
+      // Re-read live state and mutate only the job fields.
+      const live = useInterviewStore.getState().currentInterview;
+      if (!live || live.id !== interviewId) return;
+
       const updatedInterview: Interview = {
-        ...currentInterview,
+        ...live,
         jobTitle: job.title,
         company: job.company,
         jobDescription: job.jobDescription,
         tailoredResume: tailoredResumeText,
       };
-      await db.interviews.put(updatedInterview, interviewId);
+      await db.interviews.update(interviewId, {
+        jobTitle: updatedInterview.jobTitle,
+        company: updatedInterview.company,
+        jobDescription: updatedInterview.jobDescription,
+        tailoredResume: updatedInterview.tailoredResume,
+      });
       setInterview(updatedInterview);
     },
     [currentInterview]

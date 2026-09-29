@@ -6,7 +6,7 @@ import { logger } from '@/lib/logger';
 
 /**
  * IndexedDB via Dexie.
- * Schema versions 2→13 are cumulative — see docs/adr/002-dexie-migrations.md
+ * Schema versions 2→14 are cumulative — see docs/adr/002-dexie-migrations.md
  */
 
 class HRDatabase extends Dexie {

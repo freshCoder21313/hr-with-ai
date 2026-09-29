@@ -63,7 +63,7 @@
 | **P1-3** | Prompt monolith | `src/services/interview/promptSystem.ts` (~447 LOC) mixes interview + adjacent domains | Prompt edits risk unrelated flows |
 | **P1-4** | Domain type ambiguity | `Interview.mode` vs `Interview.type`; dual enums (`text/voice` vs coding modes) | Bugs and awkward conditionals |
 | **P1-5** | Empty feature shells | `src/features/company-intel/`, `interview-room/` | False structure; confuses navigation |
-| **P1-6** | Dexie migration ladder | versions **2 → 13** in `db.ts` without consolidation story for new installs | Cognitive load; migration bugs harder to reason about |
+| **P1-6** | Dexie migration ladder | versions **2 → 14** in `db.ts` without consolidation story for new installs | Cognitive load; migration bugs harder to reason about |
 | **P1-7** | State fragmentation | Zustand (interview, AI, jobs, skills, voice) + local mega-`useState` in rooms | No written rule for “store vs local” |
 
 ### P2 — Quality, testing, observability

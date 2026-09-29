@@ -37,16 +37,34 @@ Backup export **strips** `apiKey`, GitHub tokens, and voice-provider keys unless
 | Data exfiltration via logs | Errors logged without request body/password                |
 | CORS abuse                 | Single `ALLOWED_ORIGIN` (no wildcard in production)        |
 
-**Known limitations:**
+### Access model (exact)
 
-1. **In-memory rate limit** is per serverless instance — not global. Prefer Vercel/Redis rate limiting for production scale.
-2. **Download (GET) is unauthenticated** by design (ID secrecy). Anyone with the ID can restore; password only protects _overwrite_.
-3. Backups are stored as JSONB; treat the database as sensitive.
+Cloud sync uses a **bearer-capability** model, not authentication:
+
+- **`syncId` is the only secret for reading.** `GET /api/sync? id=<syncId>` returns the
+  full dataset with **no password check**. Anyone who obtains the 16-character ID can
+  download and decrypt-free read every resume, job, and interview transcript.
+- **`syncId` + password is required for writing.** `POST` verifies the bcrypt hash of
+  the password before overwriting, so knowing the ID alone cannot modify a backup.
+- The ID is generated with `crypto.getRandomValues` (62-char alphabet, 16 bytes) and is
+  only as private as wherever the user stores or shares it (clipboard, password manager,
+  manual copy). **There is no ID rotation and no revocation path.**
+- Rate limiting is keyed by IP only, in a per-instance in-memory `Map`. It provides no
+  protection against distributed guessing of IDs and no global protection at scale.
+
+### What is and is not protected
+
+| | Protected |
+| --- | --- |
+| **API keys, tokens, custom `baseUrl`** | Yes — stripped client-side before upload (`exportData`) and again on import (`stripImportProtectedFields`, `mergeImportedProfiles`). |
+| **Resume text, job descriptions, interview transcripts, code, whiteboard images** | **No.** Stored as LZ-String-compressed JSONB. Compression is not encryption; anyone with database read access can decompress and read it. |
+
+Backups are stored as JSONB — treat the database as sensitive.
 
 ## 4. Local data (Dexie)
 
 - Database name: `VietPhongDB`
-- Schema versions: **2 → 13** (see `docs/adr/002-dexie-migrations.md`)
+- Schema versions: **2 → 14** (see `docs/adr/002-dexie-migrations.md`)
 - Resume `parsedData` is compressed at rest in IndexedDB (`compressedData`)
 
 ## 5. Reporting

@@ -5,7 +5,7 @@
 
 ## Context
 
-`src/lib/db.ts` stacks Dexie versions **2 → 13**. New installs still run the chain; existing users upgrade incrementally.
+`src/lib/db.ts` stacks Dexie versions **2 → 14**. New installs still run the chain; existing users upgrade incrementally.
 
 ## Decision
 

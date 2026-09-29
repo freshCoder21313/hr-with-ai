@@ -26,7 +26,7 @@
 - **IndexedDB (Local)** - Primary storage for user data, resumes, and interviews.
   - Connection: Browser-native
   - Client: `Dexie.js` (`src/lib/db.ts`)
-- **Neon PostgreSQL (Cloud)** - Backend storage for encrypted backups.
+- **Neon PostgreSQL (Cloud)** - Backend storage for compressed (not encrypted) backups.
   - Connection: `DATABASE_URL` (Server-side)
   - Client: `@neondatabase/serverless`
 

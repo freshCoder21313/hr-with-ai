@@ -27,6 +27,28 @@ interface CompressedSyncData {
   compressed: string;
 }
 
+/**
+ * Pairs cloud records with local ones by `createdAt`, guaranteeing each local
+ * row is claimed at most once.
+ *
+ * `createdAt` is only a proxy for identity (local `id` is per-device), and two
+ * records can share a millisecond — a bulk import or a batch parse. A plain
+ * `.find()` lets every colliding cloud record resolve to the *same* first
+ * local row, so N cloud records collapse onto 1 and the rest are re-added as
+ * duplicates. Consuming the matched local row keeps the merge 1:1.
+ */
+function pairByCreatedAt<T extends { createdAt: number }>(
+  cloud: T[],
+  local: T[]
+): Array<{ cloud: T; local: T | undefined }> {
+  const unclaimed = new Set(local);
+  return cloud.map((cloudRecord) => {
+    const match = unclaimed.values().find((l) => l.createdAt === cloudRecord.createdAt);
+    if (match) unclaimed.delete(match);
+    return { cloud: cloudRecord, local: match };
+  });
+}
+
 export const syncService = {
   // Generate a random 16-char alphanumeric ID
   generateId: (): string => {
@@ -130,13 +152,14 @@ export const syncService = {
         }
       }
 
-      // 2. Merge Interviews (Match by createdAt as proxy for unique ID)
+      // 2. Merge Interviews (match by createdAt as proxy for unique ID, one
+      //    local row per cloud row)
       if (cloudData.interviews?.length) {
         const localInterviews = await db.interviews.toArray();
-        for (const cloudInterview of cloudData.interviews) {
-          // We use createdAt as a stable ID because local 'id' is auto-increment and changes per device
-          const localMatch = localInterviews.find((l) => l.createdAt === cloudInterview.createdAt);
-
+        for (const { cloud: cloudInterview, local: localMatch } of pairByCreatedAt(
+          cloudData.interviews,
+          localInterviews
+        )) {
           if (!localMatch) {
             // New item, delete local 'id' to let Dexie auto-increment
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -153,12 +176,13 @@ export const syncService = {
         }
       }
 
-      // 3. Merge Resumes (Match by createdAt)
+      // 3. Merge Resumes (match by createdAt, one local row per cloud row)
       if (cloudData.resumes?.length) {
         const localResumes = await db.resumes.toArray();
-        for (const cloudResume of cloudData.resumes) {
-          const localMatch = localResumes.find((l) => l.createdAt === cloudResume.createdAt);
-
+        for (const { cloud: cloudResume, local: localMatch } of pairByCreatedAt(
+          cloudData.resumes,
+          localResumes
+        )) {
           if (!localMatch) {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { id, ...dataToSave } = cloudResume;
@@ -173,13 +197,14 @@ export const syncService = {
         }
       }
 
-      // 4. Merge Saved Job Templates (Match by createdAt; local 'id' is
-      //    auto-increment and differs per device)
+      // 4. Merge Saved Job Templates (match by createdAt, one local row per
+      //    cloud row; local 'id' is auto-increment and differs per device)
       if (cloudData.jobs?.length) {
         const localJobs = await db.jobs.toArray();
-        for (const cloudJob of cloudData.jobs) {
-          const localMatch = localJobs.find((l) => l.createdAt === cloudJob.createdAt);
-
+        for (const { cloud: cloudJob, local: localMatch } of pairByCreatedAt(
+          cloudData.jobs,
+          localJobs
+        )) {
           if (!localMatch) {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { id, ...dataToSave } = cloudJob;

@@ -26,7 +26,7 @@ The product is **mature in features, early in platform maturity** — one-line d
 
 - **Primary user:** Job seeker / candidate preparing resumes and interviews on web or Android (Capacitor WebView via `file://`).
 - **Secondary:** Agents/automation (see `AGENTS.md`) operating the codebase — strict conventions, `HashRouter` for Capacitor, `feat → services → lib/types` dependency rule.
-- **Data sensitivity:** All personal data (resumes, interviews, API keys) lives in **IndexedDB (`VietPhongDB` via Dexie)** on-device; cloud backup is opt-in encrypted JSONB in Neon Postgres via Vercel `api/sync.ts`.
+- **Data sensitivity:** All personal data (resumes, interviews, API keys) lives in **IndexedDB (`VietPhongDB` via Dexie)** on-device; cloud backup is opt-in and stores LZ-String-compressed (NOT encrypted) JSONB in Neon Postgres via Vercel `api/sync.ts`. API keys and custom `baseUrl`s are stripped client-side before upload.
 
 ## 3. Stack (authoritative: `src/` analysis 2026-09-16)
 
@@ -34,7 +34,7 @@ The product is **mature in features, early in platform maturity** — one-line d
 |-------|--------|-------|
 | **UI** | React 18.3.1, React Router v7 (`HashRouter`), Radix UI, Tailwind v4, lucide-react, Recharts/Mermaid | `src/features/*` feature isolation; `src/components/ui` primitives |
 | **State** | Zustand 5 (domain), React Context (Theme/Auth), local `useState` (ephemeral) | Policy: ADR 001 |
-| **Persistence** | Dexie 4.3 (IndexedDB) + LZ-String compression | DB `VietPhongDB`, versions 2→13; ADR 002 |
+| **Persistence** | Dexie 4.3 (IndexedDB) + LZ-String compression | DB `VietPhongDB`, versions 2→14; ADR 002 |
 | **AI** | `src/services/ai/` — AIService + strategies (google-gemini, openai-custom, anthropic, openrouter), Zod schemas, fallback | Keys in IndexedDB, never `VITE_` secrets |
 | **Build** | Vite 6.4, TypeScript 5.9 (strict, `no any`), ESLint 8, Prettier 3, Vitest 4 + Playwright 1.61 | `tsc --noEmit` / `lint` / `format:check` gates |
 | **Mobile** | Capacitor 8.2 | `npm run android` → `npx cap sync` |
@@ -59,7 +59,7 @@ features (UI) → services → lib / types          (ADR 000, locked)
 |-----|----------|--------|
 | **ADR 000** `docs/adr/000-dependency-direction.md` | `features → services → lib/types`; `services` must not import `features`; AI core under `services/ai`, prompts under `services/prompts` | **Accepted, locked** |
 | **ADR 001** `docs/adr/001-state-management.md` | Zustand for cross-route domain; `useState` for ephemeral UI; Dexie for persistence; Context for app-shell only | **Accepted, locked** |
-| **ADR 002** `docs/adr/002-dexie-migrations.md` | Never remove/renumber Dexie versions 2→13; LZ-String compress resumes; hooks for transforms | **Accepted, locked** |
+| **ADR 002** `docs/adr/002-dexie-migrations.md` | Never remove/renumber Dexie versions 2→14; LZ-String compress resumes; hooks for transforms | **Accepted, locked** |
 
 Any conflict between docs is resolved by **ADR > SPEC > PRD > DOC**; locked ADRs win over all. `TECHNICAL_DEBT_REPORT.md` is explicitly superseded — `IMPROVEMENT_ROADMAP.md` is the living debt truth.
 

@@ -273,6 +273,60 @@ describe('syncService', () => {
       );
     });
 
+    it('does not collapse cloud resumes that share a createdAt millisecond', async () => {
+      // Two CVs imported in the same tick share `createdAt`. A plain
+      // `.find()` pairs both with the first local row, re-adding the second
+      // as a duplicate.
+      const localA = { id: 5, createdAt: 3000, updatedAt: 3000, title: 'Local A' };
+      const localB = { id: 6, createdAt: 3000, updatedAt: 3000, title: 'Local B' };
+      const cloudA = { id: 900, createdAt: 3000, updatedAt: 4000, title: 'Cloud A' };
+      const cloudB = { id: 901, createdAt: 3000, updatedAt: 4000, title: 'Cloud B' };
+
+      vi.mocked(db.userSettings.toArray).mockResolvedValue([]);
+      vi.mocked(db.interviews.toArray).mockResolvedValue([]);
+      vi.mocked(db.resumes.toArray).mockResolvedValue([localA, localB] as any);
+      vi.mocked(db.userSettings.orderBy).mockReturnValue({
+        first: vi.fn().mockResolvedValue(undefined),
+      } as any);
+
+      await syncService.importData({
+        interviews: [],
+        userSettings: [],
+        resumes: [cloudA, cloudB] as any,
+      });
+
+      // Each local row is updated exactly once — no re-adds, no duplicates.
+      expect(db.resumes.put).toHaveBeenCalledTimes(2);
+      expect(db.resumes.add).not.toHaveBeenCalled();
+      expect(vi.mocked(db.resumes.put).mock.calls.map((c) => (c[0] as any).id).sort()).toEqual([
+        5, 6,
+      ]);
+    });
+
+    it('pairs a same-millisecond resume with a distinct local row', async () => {
+      const localA = { id: 5, createdAt: 3000, updatedAt: 3000, title: 'Local A' };
+      const localB = { id: 6, createdAt: 3000, updatedAt: 3000, title: 'Local B' };
+      const cloudA = { id: 900, createdAt: 3000, updatedAt: 4000, title: 'Cloud A' };
+
+      vi.mocked(db.userSettings.toArray).mockResolvedValue([]);
+      vi.mocked(db.interviews.toArray).mockResolvedValue([]);
+      vi.mocked(db.resumes.toArray).mockResolvedValue([localA, localB] as any);
+      vi.mocked(db.userSettings.orderBy).mockReturnValue({
+        first: vi.fn().mockResolvedValue(undefined),
+      } as any);
+
+      await syncService.importData({
+        interviews: [],
+        userSettings: [],
+        resumes: [cloudA] as any,
+      });
+
+      expect(db.resumes.put).toHaveBeenCalledTimes(1);
+      expect(db.resumes.put).toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'Cloud A', id: 5 })
+      );
+    });
+
     it('adds new interviews when no match is found', async () => {
       const cloudInterview = {
         createdAt: 5000,

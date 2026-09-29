@@ -14,6 +14,13 @@ import { getActiveScenario } from '@/features/interview/scenarios';
 import { openApiKeyModal } from '@/events/apiKeyEvents';
 import { isNonEmptyString, validateInterviewSetup } from '@/lib/validation';
 
+/**
+ * Minimum gap between partial-stream persistence checkpoints. Bounds how much
+ * of an in-flight answer is lost to an abrupt tab close, process kill, or
+ * WebView suspension without issuing an IndexedDB write per token.
+ */
+const STREAM_CHECKPOINT_MS = 2000;
+
 export const useInterview = () => {
   const navigate = useNavigate();
   const {
@@ -27,6 +34,9 @@ export const useInterview = () => {
     updateStatus,
     setLoading,
     setError,
+    beginGeneration,
+    isGenerationCurrent,
+    endGeneration,
   } = useInterviewStore();
 
   const startNewInterview = useCallback(
@@ -153,6 +163,53 @@ export const useInterview = () => {
       if (!latestInterview) return;
 
       let streamId = 0;
+      // Claim write ownership for this generation. Any older in-flight
+      // generation is invalidated and its later writes become no-ops.
+      const generationId = beginGeneration();
+      const interviewId = latestInterview.id;
+      // Seeded to "now" so a short response is never checkpointed mid-stream:
+      // the final persist already covers it.
+      let lastCheckpointAt = Date.now();
+      let inFlightCheckpoint: Promise<unknown> = Promise.resolve();
+
+      /**
+       * Persists the *live* store snapshot for this interview.
+       *
+       * Reads through `getState()` rather than a captured snapshot so any
+       * mutation that happened during the stream (code editor, whiteboard,
+       * extra messages) is included. Skips the write entirely when the
+       * generation no longer owns write access or the store has moved to a
+       * different interview, so a stale writer can never clobber newer state.
+       */
+      const persistLiveState = async (): Promise<boolean> => {
+        if (!isGenerationCurrent(generationId)) return false;
+
+        const live = useInterviewStore.getState().currentInterview;
+        if (!live) return false;
+        if (live.id !== undefined && live.id !== interviewId) return false;
+        if (interviewId === undefined) return false;
+
+        await db.interviews.update(interviewId, {
+          messages: live.messages,
+          // Explicit undefined check, not `||`: a user who clears the editor
+          // mid-stream must persist that clear, not resurrect the old value.
+          code: live.code !== undefined ? live.code : latestInterview.code,
+          whiteboard: live.whiteboard !== undefined ? live.whiteboard : latestInterview.whiteboard,
+        });
+        return true;
+      };
+
+      // Lifecycle flush. An IndexedDB write started during `pagehide` is
+      // best-effort: this narrows the loss window but cannot make arbitrary
+      // OS-level termination durable. `pagehide` means the document is going
+      // away and always flushes; `visibilitychange` also fires for ordinary
+      // tab switches, so it only flushes when actually backgrounded.
+      const flushOnLifecycle = (event: Event) => {
+        if (event.type !== 'pagehide' && document.visibilityState !== 'hidden') return;
+        void persistLiveState().catch((err: unknown) => {
+          logger.error('Failed to flush interview state on lifecycle event:', err);
+        });
+      };
 
       try {
         setLoading(true); // Start loading
@@ -217,6 +274,9 @@ export const useInterview = () => {
 
         let shouldAutoEnd = false;
 
+        window.addEventListener('pagehide', flushOnLifecycle);
+        document.addEventListener('visibilitychange', flushOnLifecycle);
+
         for await (const chunk of stream) {
           fullResponse += chunk;
 
@@ -240,31 +300,51 @@ export const useInterview = () => {
             }
           }
 
+          // A superseded generation must not write into the transcript.
+          if (!isGenerationCurrent(generationId)) {
+            logger.warn('Discarding streamed chunk from a superseded generation:', generationId);
+            return;
+          }
           updateMessageByTimestamp(streamId, fullResponse);
+
+          // Throttled checkpoint: persist partial output so an abrupt tab close
+          // or crash loses at most STREAM_CHECKPOINT_MS of the answer, without
+          // paying an IndexedDB write per token.
+          const now = Date.now();
+          if (now - lastCheckpointAt >= STREAM_CHECKPOINT_MS) {
+            lastCheckpointAt = now;
+            inFlightCheckpoint = persistLiveState().catch((err: unknown) => {
+              logger.error('Failed to checkpoint interview during streaming:', err);
+            });
+          }
         }
+
+        // Let any in-flight checkpoint land before the authoritative write.
+        await inFlightCheckpoint;
 
         // Check if response was empty (silent failure)
         if (!isNonEmptyString(fullResponse)) {
           throw new Error('Received empty response from AI provider.');
         }
 
-        // 4. Update DB (Background)
-        if (latestInterview.id) {
-          // IMPORTANT: Fetch the absolute latest state from the store again
-          // to include any code/whiteboard changes that happened DURING streaming.
-          const currentStoreState = useInterviewStore.getState().currentInterview;
-
-          const updatedMessages = [
-            ...latestInterview.messages,
-            userMsg,
-            { ...aiMsgPlaceholder, content: fullResponse },
-          ];
-
-          await db.interviews.update(latestInterview.id, {
-            messages: updatedMessages,
-            code: currentStoreState?.code || latestInterview.code,
-            whiteboard: currentStoreState?.whiteboard || latestInterview.whiteboard,
-          });
+        // 4. Persist final state. This reads the live store rather than
+        // rebuilding the message list from the pre-stream snapshot, which is
+        // what previously erased anything added during the stream.
+        if (!isGenerationCurrent(generationId)) {
+          logger.warn('Skipping final persist for a superseded generation:', generationId);
+          return;
+        }
+        // A storage failure is not an AI failure: the answer already exists in
+        // the store, so it must not be replaced with an error message.
+        try {
+          await persistLiveState();
+        } catch (persistErr: unknown) {
+          logger.error('Failed to persist final interview state:', persistErr);
+          setError(
+            persistErr instanceof Error
+              ? `Answer received but could not be saved: ${persistErr.message}`
+              : 'Answer received but could not be saved.'
+          );
         }
 
         // 5. Trigger Auto-End if detected
@@ -277,14 +357,32 @@ export const useInterview = () => {
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : 'An unexpected error occurred.';
         logger.error('Error sending message:', err);
-        // Mark the last message (the placeholder) as error
-        if (streamId) {
-          markMessageAsError(streamId, msg);
-        } else {
-          markLastMessageAsError(msg);
+
+        // Mark the placeholder failed in the store *before* persisting, so
+        // the failure flag reaches Dexie rather than only living in memory.
+        if (isGenerationCurrent(generationId)) {
+          if (streamId) {
+            markMessageAsError(streamId, msg);
+          } else {
+            markLastMessageAsError(msg);
+          }
+          // Persist whatever was produced before the failure so the partial
+          // turn is not lost.
+          try {
+            await persistLiveState();
+          } catch (persistErr: unknown) {
+            logger.error('Failed to persist partial interview state:', persistErr);
+          }
         }
       } finally {
-        setLoading(false); // Stop loading
+        window.removeEventListener('pagehide', flushOnLifecycle);
+        document.removeEventListener('visibilitychange', flushOnLifecycle);
+        // Only the owning generation releases ownership and clears the loading
+        // flag, so a superseded writer cannot clobber the newer generation.
+        if (isGenerationCurrent(generationId)) {
+          endGeneration(generationId);
+          setLoading(false); // Stop loading
+        }
       }
     },
     [
@@ -293,12 +391,19 @@ export const useInterview = () => {
       markMessageAsError,
       markLastMessageAsError,
       setLoading,
+      setError,
       endSession,
+      beginGeneration,
+      isGenerationCurrent,
+      endGeneration,
     ]
   );
 
   const retryLastMessage = useCallback(async () => {
     const latestInterview = useInterviewStore.getState().currentInterview;
+    // A generation already owns write access; retrying now would interleave
+    // two writers against the same transcript.
+    if (useInterviewStore.getState().activeGenerationId !== null) return;
     if (!latestInterview || latestInterview.messages.length === 0) return;
 
     const messages = latestInterview.messages;
@@ -328,6 +433,7 @@ export const useInterview = () => {
 
   const regenerateLastResponse = useCallback(async () => {
     const latestInterview = useInterviewStore.getState().currentInterview;
+    if (useInterviewStore.getState().activeGenerationId !== null) return;
     if (!latestInterview || latestInterview.messages.length < 2) return;
 
     const messages = latestInterview.messages;

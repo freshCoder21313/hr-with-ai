@@ -2,11 +2,22 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { Interview, Message, InterviewStatus } from '@/types';
 
+/**
+ * Monotonic id for AI generations. Module-scoped so ids stay unique across
+ * store resets within a session (a stale writer must never be mistaken for
+ * the current one).
+ */
+let generationCounter = 0;
+
 interface InterviewState {
   currentInterview: Interview | null;
   isLoading: boolean;
   error: string | null;
-
+  /**
+   * Identity of the AI generation currently allowed to mutate this interview.
+   * `null` = idle. See `beginGeneration` for the single-flight contract.
+ */
+  activeGenerationId: number | null;
   // Actions
   setInterview: (interview: Interview) => void;
   addMessage: (message: Message) => void;
@@ -21,14 +32,24 @@ interface InterviewState {
   clearInterview: () => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
+  /**
+   * Claims write ownership for a new AI generation and returns its id.
+   * Single-flight: a new claim invalidates any in-flight generation, whose
+   * later store/DB writes are then rejected by `isGenerationCurrent`.
+   */
+  beginGeneration: () => number;
+  isGenerationCurrent: (generationId: number) => boolean;
+  /** Releases ownership, but only if the caller still holds it. */
+  endGeneration: (generationId: number) => void;
 }
 
 export const useInterviewStore = create<InterviewState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       currentInterview: null,
       isLoading: false,
       error: null,
+      activeGenerationId: null,
 
       setInterview: (interview) => set({ currentInterview: interview }),
 
@@ -148,6 +169,20 @@ export const useInterviewStore = create<InterviewState>()(
 
       setLoading: (loading) => set({ isLoading: loading }),
       setError: (error) => set({ error }),
+
+      beginGeneration: () => {
+        generationCounter += 1;
+        const generationId = generationCounter;
+        set({ activeGenerationId: generationId });
+        return generationId;
+      },
+
+      isGenerationCurrent: (generationId) => get().activeGenerationId === generationId,
+
+      endGeneration: (generationId) => {
+        if (get().activeGenerationId !== generationId) return;
+        set({ activeGenerationId: null });
+      },
     }),
     {
       name: 'interview-storage',

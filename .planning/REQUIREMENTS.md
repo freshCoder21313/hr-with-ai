@@ -79,7 +79,7 @@
 - **Status:** Implemented; core moved to `services/ai` per ADR 000 (Phase 1 done); shims under `features/ai-provider` temporary.
 
 ### FR-09 — Cloud Sync & Backup
-- **Description:** Optional encrypted backup/restore of IndexedDB (interviews, resumes, settings sans secrets) to Neon Postgres via Vercel `api/sync.ts`.
+- **Description:** Optional compressed (not encrypted) backup/restore of IndexedDB (interviews, resumes, settings sans secrets) to Neon Postgres via Vercel `api/sync.ts`.
 - **Sources:** `api/sync.ts`; `src/services/core/syncService.ts` (+ tests 72% lines); `docs/SECURITY.md` threat model; INTEGRATIONS.md.
 - **Acceptance:**
   - Client: `x-sync-id` + `bcryptjs` password; export strips `githubToken`, `googleCloudApiKey`, `elevenLabsApiKey`, etc. (manual blacklist → future `Secret` type); preserves local keys on import; syncs `localStorage`.
@@ -123,7 +123,7 @@
 - **Status:** ✅ Documented & applied (InterviewRoom/SetupRoom keep local UI; stores for session/AI/jobs).
 
 ### NFR-03 — Data Persistence & Migrations
-- **Requirement:** Dexie `VietPhongDB` versions 2→13 preserved; additive only; LZ-String compression for resumes; pure helpers testable; no history rewrite.
+- **Requirement:** Dexie `VietPhongDB` versions 2→14 preserved; additive only; LZ-String compression for resumes; pure helpers testable; no history rewrite.
 - **Source:** ADR 002 (locked).
 - **Verification:** `resumeCompression` unit tests; upgrade hook tests.
 - **Status:** ✅ Done (Phase 4 checklist: ADR 002 + compression tests).
