@@ -1,3 +1,4 @@
+import type { UpdateSpec } from 'dexie';
 import { db } from '@/lib/db';
 import { UserSettings, AIModelProvider } from '@/types';
 import {
@@ -139,8 +140,12 @@ async function persistSettings(settings: UserSettings): Promise<UserSettings> {
 
   const existingSettings = await db.userSettings.orderBy('id').first();
   if (existingSettings?.id) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await db.userSettings.update(existingSettings.id, dbRecord as any);
+    // Dexie's UpdateSpec maps every key path of the row type, including
+    // nested arrays such as `aiProfiles.${number}`, which a plain
+    // `UserSettings` object cannot satisfy. Spreading drops `id`, which is
+    // never part of an update anyway.
+    const changes = { ...dbRecord } as UpdateSpec<UserSettings>;
+    await db.userSettings.update(existingSettings.id, changes);
     return { ...dbRecord, id: existingSettings.id };
   } else {
     const id = await db.userSettings.add(dbRecord);

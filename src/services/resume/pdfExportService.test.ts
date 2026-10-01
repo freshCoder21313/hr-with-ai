@@ -73,9 +73,7 @@ describe('pdfExportService', () => {
     expect(writeFile).toHaveBeenCalledWith(
       expect.objectContaining({ path: 'My_CV.pdf', data: 'QUJD', directory: 'CACHE' })
     );
-    expect(share).toHaveBeenCalledWith(
-      expect.objectContaining({ url: 'file:///cache/My_CV.pdf' })
-    );
+    expect(share).toHaveBeenCalledWith(expect.objectContaining({ url: 'file:///cache/My_CV.pdf' }));
     expect(save).not.toHaveBeenCalled();
   });
 });

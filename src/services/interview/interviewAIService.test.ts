@@ -51,12 +51,10 @@ describe('interviewAIService', () => {
       expect(mockAIServiceInstance.generateText).toHaveBeenCalled();
     });
 
-    it('should return a fallback greeting on failure', async () => {
+    it('should throw on failure instead of returning an error string as a greeting', async () => {
       vi.mocked(mockAIServiceInstance.generateText).mockRejectedValue(new Error('AI Error'));
 
-      const greeting = await startInterviewSession(mockInterview, 'test-key');
-
-      expect(greeting).toContain('System error');
+      await expect(startInterviewSession(mockInterview, 'test-key')).rejects.toThrow('AI Error');
     });
   });
 
@@ -109,10 +107,7 @@ describe('interviewAIService', () => {
 
       expect(results).toEqual(['Open', 'AI']);
       expect(mockAIServiceInstance.streamText).toHaveBeenCalledWith(
-        expect.arrayContaining([
-          expect.objectContaining({ role: 'user', content: 'Hi' }),
-          expect.objectContaining({ role: 'user', content: 'How are you?' }),
-        ]),
+        [expect.objectContaining({ role: 'user', content: 'Hi\n\nHow are you?' })],
         expect.objectContaining({ systemInstruction: expect.any(String) })
       );
     });
@@ -181,6 +176,87 @@ describe('interviewAIService', () => {
 
       expect(hints).toEqual(mockHints);
       expect(mockAIServiceInstance.generateStructured).toHaveBeenCalled();
+    });
+  });
+  describe('history normalization', () => {
+    const errored = (content: string): Message => ({
+      role: 'model',
+      content,
+      timestamp: Date.now(),
+      isError: true,
+    });
+
+    it('drops errored turns and merges adjacent same-role turns in the OpenAI payload', async () => {
+      vi.mocked(resolveConfig).mockReturnValue({
+        apiKey: 'test-key',
+        provider: 'openai',
+        baseUrl: 'https://api.openai.com',
+      });
+      vi.mocked(mockAIServiceInstance.streamText).mockReturnValue(
+        (async function* () {
+          yield 'ok';
+        })() as any
+      );
+
+      const history: Message[] = [
+        { role: 'user', content: 'first question', timestamp: 1 },
+        errored('The AI provider stopped responding.'),
+        { role: 'user', content: 'second question', timestamp: 2 },
+      ];
+
+      for await (const _ of streamInterviewMessage(history, 'answer', mockInterview, 'test-key')) {
+        void _;
+      }
+
+      const payload = vi.mocked(mockAIServiceInstance.streamText).mock.calls[0][0];
+      expect(payload).toEqual([
+        { role: 'user', content: 'first question\n\nsecond question\n\nanswer' },
+      ]);
+      expect(JSON.stringify(payload)).not.toContain('stopped responding');
+    });
+
+    it('omits errored turns from the Gemini prompt', async () => {
+      vi.mocked(resolveConfig).mockReturnValue({ apiKey: 'test-key', provider: 'google' });
+      vi.mocked(mockAIServiceInstance.streamText).mockReturnValue(
+        (async function* () {
+          yield 'ok';
+        })() as any
+      );
+
+      const history: Message[] = [
+        { role: 'user', content: 'first question', timestamp: 1 },
+        errored('The AI provider stopped responding.'),
+      ];
+
+      for await (const _ of streamInterviewMessage(history, 'answer', mockInterview, 'test-key')) {
+        void _;
+      }
+
+      const payload = vi.mocked(mockAIServiceInstance.streamText).mock.calls[0][0];
+      expect(payload[0].content).toContain('first question');
+      expect(payload[0].content).not.toContain('stopped responding');
+    });
+
+    it('omits errored turns from the feedback prompt', async () => {
+      vi.mocked(mockAIServiceInstance.generateStructured).mockResolvedValue({
+        score: 90,
+        summary: 'ok',
+      });
+
+      const interview: Interview = {
+        ...mockInterview,
+        messages: [
+          { role: 'user', content: 'a question', timestamp: 1 },
+          errored('The AI provider stopped responding.'),
+        ],
+      };
+
+      await generateInterviewFeedback(interview, 'test-key');
+
+      const prompt = vi.mocked(mockAIServiceInstance.generateStructured).mock.calls[0][0][0]
+        .content;
+      expect(prompt).toContain('a question');
+      expect(prompt).not.toContain('stopped responding');
     });
   });
 });

@@ -1,3 +1,21 @@
+// Database row shape for persisted job recommendations.
+export interface DBJobRecommendation {
+  id?: number;
+  interviewId: number;
+  resumeId: number;
+  title: string;
+  company: string;
+  industry?: string;
+  location?: string;
+  salaryRange?: string;
+  keyRequirements: string; // JSON string
+  whyItFits?: string;
+  matchScore?: number;
+  jobDescription?: string;
+  tailoredResumeId?: number;
+  createdAt: number;
+}
+
 export interface JobRecommendation {
   id: string;
   title: string;

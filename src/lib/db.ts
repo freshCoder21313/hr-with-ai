@@ -1,6 +1,6 @@
 import Dexie, { Table } from 'dexie';
 import { Interview, UserSettings, Resume, SavedJob } from '@/types';
-import { DBJobRecommendation } from '@/services/jobs/jobRecommendationService';
+import { DBJobRecommendation } from '@/types';
 import { compressResumeData, decompressResumeData } from '@/lib/resumeCompression';
 import { logger } from '@/lib/logger';
 

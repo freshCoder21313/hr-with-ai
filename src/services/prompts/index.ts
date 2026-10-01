@@ -6,5 +6,9 @@ export {
   getAnalyzeSectionPrompt,
   getTailoredResumePrompt,
 } from './resume';
-export { getExtractJDInfoPrompt } from './jobs';
+export {
+  getExtractJDInfoPrompt,
+  getJobRecommendationsPrompt,
+  getJobTailoredResumePrompt,
+} from './jobs';
 export { getCompanyIntelPrompt } from './company';

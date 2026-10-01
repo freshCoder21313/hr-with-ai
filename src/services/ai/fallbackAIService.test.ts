@@ -25,8 +25,8 @@ describe('Fallback AI Service', () => {
       generateText: vi.fn().mockResolvedValue({ text: 'success' }),
     };
     // Use prototype-style mock for constructor
-    vi.mocked(AIService).mockImplementation(function() {
-        return mockService as any;
+    vi.mocked(AIService).mockImplementation(function () {
+      return mockService as any;
     } as any);
 
     const fallbackService = new FallbackAIService(mockConfig);
@@ -43,7 +43,7 @@ describe('Fallback AI Service', () => {
     const service2 = { generateText: vi.fn().mockResolvedValue({ text: 'fallback success' }) };
 
     let callCount = 0;
-    vi.mocked(AIService).mockImplementation(function() {
+    vi.mocked(AIService).mockImplementation(function () {
       callCount++;
       return (callCount === 1 ? service1 : service2) as any;
     } as any);
@@ -60,8 +60,8 @@ describe('Fallback AI Service', () => {
     const authError = new AIProviderError('auth fail', 'auth', 'google', 401, false, false);
     const service1 = { generateText: vi.fn().mockRejectedValue(authError) };
 
-    vi.mocked(AIService).mockImplementation(function() {
-        return service1 as any;
+    vi.mocked(AIService).mockImplementation(function () {
+      return service1 as any;
     } as any);
 
     const fallbackService = new FallbackAIService(mockConfig);
@@ -72,8 +72,8 @@ describe('Fallback AI Service', () => {
     const parseError = new AIStructuredOutputError('parse fail');
     const service1 = { generateStructured: vi.fn().mockRejectedValue(parseError) };
 
-    vi.mocked(AIService).mockImplementation(function() {
-        return service1 as any;
+    vi.mocked(AIService).mockImplementation(function () {
+      return service1 as any;
     } as any);
 
     const fallbackService = new FallbackAIService(mockConfig);
@@ -82,10 +82,10 @@ describe('Fallback AI Service', () => {
 
   it('throws secret-safe aggregate error when all fail', async () => {
     const error = new AIProviderError('fail', 'network', 'google', undefined, true, true);
-    vi.mocked(AIService).mockImplementation(function() {
-        return {
-            generateText: vi.fn().mockRejectedValue(error),
-        } as any;
+    vi.mocked(AIService).mockImplementation(function () {
+      return {
+        generateText: vi.fn().mockRejectedValue(error),
+      } as any;
     } as any);
 
     const fallbackService = new FallbackAIService(mockConfig);
@@ -94,10 +94,12 @@ describe('Fallback AI Service', () => {
 
   describe('streamText', () => {
     it('yields from first candidate success', async () => {
-      const mockStream = (async function* () { yield 'ok'; })();
+      const mockStream = (async function* () {
+        yield 'ok';
+      })();
       const mockService = { streamText: vi.fn().mockReturnValue(mockStream) };
-      vi.mocked(AIService).mockImplementation(function() {
-          return mockService as any;
+      vi.mocked(AIService).mockImplementation(function () {
+        return mockService as any;
       } as any);
 
       const fallbackService = new FallbackAIService(mockConfig);
@@ -111,11 +113,21 @@ describe('Fallback AI Service', () => {
 
     it('falls back before first yield', async () => {
       const error = new AIProviderError('fail', 'network', 'google', undefined, true, true);
-      const service1 = { streamText: vi.fn().mockImplementation(() => { throw error; }) };
-      const service2 = { streamText: vi.fn().mockReturnValue((async function* () { yield 'fallback'; })()) };
+      const service1 = {
+        streamText: vi.fn().mockImplementation(() => {
+          throw error;
+        }),
+      };
+      const service2 = {
+        streamText: vi.fn().mockReturnValue(
+          (async function* () {
+            yield 'fallback';
+          })()
+        ),
+      };
 
       let callCount = 0;
-      vi.mocked(AIService).mockImplementation(function() {
+      vi.mocked(AIService).mockImplementation(function () {
         callCount++;
         return (callCount === 1 ? service1 : service2) as any;
       } as any);
@@ -130,49 +142,53 @@ describe('Fallback AI Service', () => {
     });
 
     it('does not fallback after first yield', async () => {
-      const mockStream = (async function* () { 
-        yield 'partial'; 
+      const mockStream = (async function* () {
+        yield 'partial';
         throw new Error('Mid-stream fail');
       })();
       const service1 = { streamText: vi.fn().mockReturnValue(mockStream) };
-      vi.mocked(AIService).mockImplementation(function() {
-          return service1 as any;
+      vi.mocked(AIService).mockImplementation(function () {
+        return service1 as any;
       } as any);
 
       const fallbackService = new FallbackAIService(mockConfig);
       const generator = fallbackService.streamText([]);
-      
+
+      const chunks: string[] = [];
       await expect(async () => {
-        for await (const _ of generator) {
-            // consume
+        for await (const chunk of generator) {
+          chunks.push(chunk);
         }
       }).rejects.toThrow('Mid-stream fail');
+      expect(chunks).toEqual(['partial']);
     });
 
     it('throws aggregate error if all streams fail before yield', async () => {
-        const error = new AIProviderError('fail', 'network', 'google', undefined, true, true);
-        vi.mocked(AIService).mockImplementation(function() {
-            return {
-                streamText: vi.fn().mockImplementation(() => { throw error; })
-            } as any;
-        } as any);
-        const fallbackService = new FallbackAIService(mockConfig);
-        const generator = fallbackService.streamText([]);
-        await expect(async () => {
-            for await (const _ of generator) {
-                // consume
-            }
-        }).rejects.toThrow(/exhausted all candidates \(stream\)/);
+      const error = new AIProviderError('fail', 'network', 'google', undefined, true, true);
+      vi.mocked(AIService).mockImplementation(function () {
+        return {
+          streamText: vi.fn().mockImplementation(() => {
+            throw error;
+          }),
+        } as any;
+      } as any);
+      const fallbackService = new FallbackAIService(mockConfig);
+      const generator = fallbackService.streamText([]);
+      await expect(async () => {
+        for await (const chunk of generator) {
+          void chunk;
+        }
+      }).rejects.toThrow(/exhausted all candidates \(stream\)/);
     });
   });
 
   describe('ask', () => {
     it('calls generateText with wrapped message', async () => {
-        const fallbackService = new FallbackAIService(mockConfig);
-        const spy = vi.spyOn(fallbackService, 'generateText').mockResolvedValue({ text: 'ans' });
-        const result = await fallbackService.ask('question');
-        expect(result.text).toBe('ans');
-        expect(spy).toHaveBeenCalledWith([{ role: 'user', content: 'question' }], undefined);
+      const fallbackService = new FallbackAIService(mockConfig);
+      const spy = vi.spyOn(fallbackService, 'generateText').mockResolvedValue({ text: 'ans' });
+      const result = await fallbackService.ask('question');
+      expect(result.text).toBe('ans');
+      expect(spy).toHaveBeenCalledWith([{ role: 'user', content: 'question' }], undefined);
     });
   });
 });

@@ -1,6 +1,6 @@
 import { db } from '@/lib/db';
 import { Interview, UserSettings, Resume, SavedJob } from '@/types';
-import { DBJobRecommendation } from '@/services/jobs/jobRecommendationService';
+import { DBJobRecommendation } from '@/types';
 import LZString from 'lz-string';
 import axios from 'axios';
 import { apiClient } from '@/lib/api-client';
@@ -12,6 +12,12 @@ import {
   mirrorActiveProfileToLocalStorage,
   stripImportProtectedFields,
 } from '@/services/ai/aiProfileService';
+
+/**
+ * Drop the autoincrement `id` so Dexie assigns a fresh one on insert.
+ * Object rest avoids the `no-unused-vars` disable the destructuring used to need.
+ */
+const omitId = <T extends { id?: number }>({ id: _id, ...rest }: T): Omit<T, 'id'> => rest;
 
 interface SyncData {
   interviews: Interview[];
@@ -114,130 +120,122 @@ export const syncService = {
       'rw',
       [db.interviews, db.userSettings, db.resumes, db.jobs, db.job_recommendations],
       async () => {
-      // 1. Merge User Settings (Usually singleton)
-      if (cloudData.userSettings?.length) {
-        const localSettings = await db.userSettings.toArray();
-        for (const rawCloudSetting of cloudData.userSettings) {
-          // Untrusted input: an imported baseUrl/secret would redirect the user's
-          // real API key and resume data to an attacker endpoint (docs/SECURITY.md).
-          const cloudSetting = stripImportProtectedFields(rawCloudSetting);
-          const localMatch = localSettings.find((l) => l.id === cloudSetting.id);
+        // 1. Merge User Settings (Usually singleton)
+        if (cloudData.userSettings?.length) {
+          const localSettings = await db.userSettings.toArray();
+          for (const rawCloudSetting of cloudData.userSettings) {
+            // Untrusted input: an imported baseUrl/secret would redirect the user's
+            // real API key and resume data to an attacker endpoint (docs/SECURITY.md).
+            const cloudSetting = stripImportProtectedFields(rawCloudSetting);
+            const localMatch = localSettings.find((l) => l.id === cloudSetting.id);
 
-          if (!localMatch) {
-            await db.userSettings.add(cloudSetting);
-          } else {
-            // Compare timestamps
-            const cloudTime = cloudSetting.updatedAt || 0;
-            const localTime = localMatch.updatedAt || 0;
-            if (cloudTime > localTime) {
-              // Overwrite with newer cloud version, but PRESERVE local keys
-              // if cloud version is from a 'safe' export (stripped keys)
-              await db.userSettings.put({
-                ...cloudSetting,
-                apiKey: cloudSetting.apiKey || localMatch.apiKey,
-                baseUrl: localMatch.baseUrl,
-                githubToken: cloudSetting.githubToken || localMatch.githubToken,
-                githubUsername: cloudSetting.githubUsername || localMatch.githubUsername,
-                googleCloudApiKey: cloudSetting.googleCloudApiKey || localMatch.googleCloudApiKey,
-                elevenLabsApiKey: cloudSetting.elevenLabsApiKey || localMatch.elevenLabsApiKey,
-                deepgramApiKey: cloudSetting.deepgramApiKey || localMatch.deepgramApiKey,
-                // Merge AI profiles safely
-                aiProfiles: mergeImportedProfiles(
-                  localMatch.aiProfiles || [],
-                  cloudSetting.aiProfiles || []
-                ),
-              });
+            if (!localMatch) {
+              await db.userSettings.add(cloudSetting);
+            } else {
+              // Compare timestamps
+              const cloudTime = cloudSetting.updatedAt || 0;
+              const localTime = localMatch.updatedAt || 0;
+              if (cloudTime > localTime) {
+                // Overwrite with newer cloud version, but PRESERVE local keys
+                // if cloud version is from a 'safe' export (stripped keys)
+                await db.userSettings.put({
+                  ...cloudSetting,
+                  apiKey: cloudSetting.apiKey || localMatch.apiKey,
+                  baseUrl: localMatch.baseUrl,
+                  githubToken: cloudSetting.githubToken || localMatch.githubToken,
+                  githubUsername: cloudSetting.githubUsername || localMatch.githubUsername,
+                  googleCloudApiKey: cloudSetting.googleCloudApiKey || localMatch.googleCloudApiKey,
+                  elevenLabsApiKey: cloudSetting.elevenLabsApiKey || localMatch.elevenLabsApiKey,
+                  deepgramApiKey: cloudSetting.deepgramApiKey || localMatch.deepgramApiKey,
+                  // Merge AI profiles safely
+                  aiProfiles: mergeImportedProfiles(
+                    localMatch.aiProfiles || [],
+                    cloudSetting.aiProfiles || []
+                  ),
+                });
+              }
             }
           }
         }
-      }
 
-      // 2. Merge Interviews (match by createdAt as proxy for unique ID, one
-      //    local row per cloud row)
-      if (cloudData.interviews?.length) {
-        const localInterviews = await db.interviews.toArray();
-        for (const { cloud: cloudInterview, local: localMatch } of pairByCreatedAt(
-          cloudData.interviews,
-          localInterviews
-        )) {
-          if (!localMatch) {
-            // New item, delete local 'id' to let Dexie auto-increment
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const { id, ...dataToSave } = cloudInterview;
-            await db.interviews.add(dataToSave as Interview);
-          } else {
-            const cloudTime = cloudInterview.updatedAt || 0;
-            const localTime = localMatch.updatedAt || 0;
-            if (cloudTime > localTime) {
-              // Update existing record, preserving the LOCAL id
-              await db.interviews.put({ ...cloudInterview, id: localMatch.id });
+        // 2. Merge Interviews (match by createdAt as proxy for unique ID, one
+        //    local row per cloud row)
+        if (cloudData.interviews?.length) {
+          const localInterviews = await db.interviews.toArray();
+          for (const { cloud: cloudInterview, local: localMatch } of pairByCreatedAt(
+            cloudData.interviews,
+            localInterviews
+          )) {
+            if (!localMatch) {
+              // New item, delete local 'id' to let Dexie auto-increment
+              await db.interviews.add(omitId(cloudInterview));
+            } else {
+              const cloudTime = cloudInterview.updatedAt || 0;
+              const localTime = localMatch.updatedAt || 0;
+              if (cloudTime > localTime) {
+                // Update existing record, preserving the LOCAL id
+                await db.interviews.put({ ...cloudInterview, id: localMatch.id });
+              }
             }
           }
         }
-      }
 
-      // 3. Merge Resumes (match by createdAt, one local row per cloud row)
-      if (cloudData.resumes?.length) {
-        const localResumes = await db.resumes.toArray();
-        for (const { cloud: cloudResume, local: localMatch } of pairByCreatedAt(
-          cloudData.resumes,
-          localResumes
-        )) {
-          if (!localMatch) {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const { id, ...dataToSave } = cloudResume;
-            await db.resumes.add(dataToSave as Resume);
-          } else {
-            const cloudTime = cloudResume.updatedAt || 0;
-            const localTime = localMatch.updatedAt || 0;
-            if (cloudTime > localTime) {
-              await db.resumes.put({ ...cloudResume, id: localMatch.id });
+        // 3. Merge Resumes (match by createdAt, one local row per cloud row)
+        if (cloudData.resumes?.length) {
+          const localResumes = await db.resumes.toArray();
+          for (const { cloud: cloudResume, local: localMatch } of pairByCreatedAt(
+            cloudData.resumes,
+            localResumes
+          )) {
+            if (!localMatch) {
+              await db.resumes.add(omitId(cloudResume));
+            } else {
+              const cloudTime = cloudResume.updatedAt || 0;
+              const localTime = localMatch.updatedAt || 0;
+              if (cloudTime > localTime) {
+                await db.resumes.put({ ...cloudResume, id: localMatch.id });
+              }
             }
           }
         }
-      }
 
-      // 4. Merge Saved Job Templates (match by createdAt, one local row per
-      //    cloud row; local 'id' is auto-increment and differs per device)
-      if (cloudData.jobs?.length) {
-        const localJobs = await db.jobs.toArray();
-        for (const { cloud: cloudJob, local: localMatch } of pairByCreatedAt(
-          cloudData.jobs,
-          localJobs
-        )) {
-          if (!localMatch) {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const { id, ...dataToSave } = cloudJob;
-            await db.jobs.add(dataToSave as SavedJob);
-          } else {
-            const cloudTime = cloudJob.updatedAt || 0;
-            const localTime = localMatch.updatedAt || 0;
-            if (cloudTime > localTime) {
-              await db.jobs.put({ ...cloudJob, id: localMatch.id });
+        // 4. Merge Saved Job Templates (match by createdAt, one local row per
+        //    cloud row; local 'id' is auto-increment and differs per device)
+        if (cloudData.jobs?.length) {
+          const localJobs = await db.jobs.toArray();
+          for (const { cloud: cloudJob, local: localMatch } of pairByCreatedAt(
+            cloudData.jobs,
+            localJobs
+          )) {
+            if (!localMatch) {
+              await db.jobs.add(omitId(cloudJob));
+            } else {
+              const cloudTime = cloudJob.updatedAt || 0;
+              const localTime = localMatch.updatedAt || 0;
+              if (cloudTime > localTime) {
+                await db.jobs.put({ ...cloudJob, id: localMatch.id });
+              }
             }
           }
         }
-      }
 
-      // 5. Merge Job Recommendations (Match by createdAt + title + company;
-      //    recommendations have no updatedAt to compare on)
-      if (cloudData.jobRecommendations?.length) {
-        const localRecs = await db.job_recommendations.toArray();
-        for (const cloudRec of cloudData.jobRecommendations) {
-          const localMatch = localRecs.find(
-            (l) =>
-              l.createdAt === cloudRec.createdAt &&
-              l.title === cloudRec.title &&
-              l.company === cloudRec.company
-          );
+        // 5. Merge Job Recommendations (Match by createdAt + title + company;
+        //    recommendations have no updatedAt to compare on)
+        if (cloudData.jobRecommendations?.length) {
+          const localRecs = await db.job_recommendations.toArray();
+          for (const cloudRec of cloudData.jobRecommendations) {
+            const localMatch = localRecs.find(
+              (l) =>
+                l.createdAt === cloudRec.createdAt &&
+                l.title === cloudRec.title &&
+                l.company === cloudRec.company
+            );
 
-          if (!localMatch) {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const { id, ...dataToSave } = cloudRec;
-            await db.job_recommendations.add(dataToSave as DBJobRecommendation);
+            if (!localMatch) {
+              await db.job_recommendations.add(omitId(cloudRec));
+            }
           }
         }
-      }
       }
     );
 

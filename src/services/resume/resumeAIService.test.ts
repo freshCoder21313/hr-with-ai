@@ -99,7 +99,11 @@ describe('resumeAIService', () => {
 
   describe('analyzeResumeSection', () => {
     it('should analyze a specific section', async () => {
-      const mockSectionResult = { critique: 'Good', suggestions: ['Add detail'], rewrittenExample: 'Ex' };
+      const mockSectionResult = {
+        critique: 'Good',
+        suggestions: ['Add detail'],
+        rewrittenExample: 'Ex',
+      };
       vi.mocked(mockAIServiceInstance.generateStructured).mockResolvedValue(mockSectionResult);
 
       const result = await analyzeResumeSection('Work', { company: 'X' }, 'test-key');

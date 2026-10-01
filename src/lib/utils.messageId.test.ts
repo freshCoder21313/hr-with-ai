@@ -45,12 +45,7 @@ describe('nextMessageId', () => {
     vi.setSystemTime(FROZEN);
 
     // Under `Date.now() + 1` all four of these ids were identical.
-    const ids = [
-      nextMessageId(),
-      nextMessageId(),
-      nextMessageId(),
-      nextMessageId(),
-    ];
+    const ids = [nextMessageId(), nextMessageId(), nextMessageId(), nextMessageId()];
 
     expect(new Set(ids).size).toBe(4);
   });

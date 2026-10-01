@@ -23,8 +23,47 @@ export const startInterviewSession = async (
     return response.text || "Hello, let's start the interview. Can you introduce yourself?";
   } catch (error) {
     logger.error('Error starting interview:', error);
-    return 'System error: Unable to start AI session. Please check your connection or API key.';
+    throw error;
   }
+};
+
+/**
+ * AI history must never contain errored turns (their `content` is a synthetic
+ * error string, not real conversation), and must alternate roles strictly:
+ * merging an errored model turn out of `user, errored, user` would otherwise
+ * leave two adjacent user turns, which several providers reject.
+ */
+const normalizeAIHistory = (history: Message[]): Message[] => {
+  const merged: Message[] = [];
+  for (const message of history) {
+    if (message.isError) continue;
+    const previous = merged[merged.length - 1];
+    if (previous && previous.role === message.role) {
+      previous.content = `${previous.content}\n\n${message.content}`;
+      previous.image = previous.image || message.image;
+    } else {
+      merged.push({ ...message });
+    }
+  }
+  return merged;
+};
+
+/**
+ * Providers (Anthropic in particular) reject a conversation that opens with an
+ * assistant turn. The interview always starts with the model's greeting, so
+ * hoist that opening line into the system instruction instead.
+ */
+const buildChatPayload = (
+  history: Message[],
+  newMessage: string
+): { turns: ChatMessage[]; openingLine: string | null } => {
+  const pending: Message = { role: 'user', content: newMessage, timestamp: 0 };
+  const turns = normalizeAIHistory([...history, pending]);
+  let openingLine: string | null = null;
+  if (turns.length > 0 && turns[0].role === 'model') {
+    openingLine = turns.shift()!.content;
+  }
+  return { turns, openingLine };
 };
 
 export async function* streamInterviewMessage(
@@ -70,12 +109,15 @@ export async function* streamInterviewMessage(
 
     if (config.baseUrl) {
       // --- Custom/OpenAI Logic ---
-      const messages: ChatMessage[] = history.map((m) => ({
+      const { turns, openingLine } = buildChatPayload(history, newMessage);
+      if (openingLine) {
+        systemPrompt += `\n\nThe interviewer already greeted the candidate with: "${openingLine}"\n\n`;
+      }
+
+      const payload: ChatMessage[] = turns.map((m) => ({
         role: m.role === 'model' ? 'assistant' : 'user',
         content: m.content,
       }));
-
-      const payload: ChatMessage[] = [...messages, { role: 'user', content: newMessage }];
 
       const stream = service.streamText(payload, { systemInstruction: systemPrompt });
 
@@ -84,7 +126,7 @@ export async function* streamInterviewMessage(
       }
     } else {
       // --- Gemini Logic (Preserving the specific prompting style) ---
-      const conversationHistory = history
+      const conversationHistory = normalizeAIHistory(history)
         .map((m) => {
           const role = m.role === 'user' ? 'Candidate' : 'Interviewer';
           const imgTag = m.image ? '[Candidate sent a whiteboard drawing]' : '';
@@ -127,7 +169,7 @@ export const generateInterviewFeedback = async (
 ): Promise<InterviewFeedback> => {
   const service = await getService(configInput);
 
-  const conversationHistory = interview.messages
+  const conversationHistory = normalizeAIHistory(interview.messages)
     .map((m) => `${m.role === 'user' ? 'Candidate' : 'Interviewer'}: ${m.content}`)
     .join('\n');
 

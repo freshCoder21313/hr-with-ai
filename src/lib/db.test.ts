@@ -15,7 +15,11 @@ vi.mock('@/lib/logger', () => ({
 
 type Mods = Record<string, unknown>;
 type HookEvent = {
-  fire: (mods: Mods, primKey: number, obj: unknown, trans: unknown) => Mods | void;
+  fire: (mods: Mods, primKey: number, obj: unknown, trans: unknown, extra: unknown) => Mods | void;
+};
+
+type CreateHookEvent = {
+  fire: (primKey: number | undefined, obj: unknown, trans: unknown) => unknown;
 };
 
 /**
@@ -40,7 +44,7 @@ function getResumesUpdatingHook(): HookEvent {
  * Undefined-valued keys are exactly what Dexie turns into field deletions.
  */
 function runUpdate(mods: Mods): Mods {
-  const fired = getResumesUpdatingHook().fire.call({ ...mods }, mods, 1, {}, null);
+  const fired = getResumesUpdatingHook().fire.call({ ...mods }, mods, 1, {}, null, undefined);
   return { ...mods, ...(fired ?? {}) };
 }
 
@@ -164,5 +168,52 @@ describe('db v14 compression upgrade', () => {
     expect(compressResumeData).not.toHaveBeenCalled();
     expect(rows[0].compressedData).toBe('already');
     expect('parsedData' in rows[1]).toBe(false);
+  });
+});
+
+/**
+ * Dexie's `creating` hook receives the caller's own object: `Table.add` only
+ * clones when the primary key is an undefined `keyPath` member, and
+ * hooksMiddleware copies `req.values` without deep-cloning
+ * (dexie.mjs `addPutOrDelete`). So the hook mutates the object the caller
+ * still holds. Simulate the same `fire(ctx, key, obj)` call to pin that.
+ */
+function getResumesCreatingHook(): CreateHookEvent {
+  const table = db.resumes as unknown as { hook?: { creating?: unknown } };
+  const event = table.hook?.creating;
+  if (typeof event !== 'object' || event === null || !('fire' in event)) {
+    throw new Error('resumes creating hook is not a Dexie hook event');
+  }
+  return event as CreateHookEvent;
+}
+
+describe('db resumes creating hook', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    compressResumeData.mockReturnValue('compressed-payload');
+  });
+
+  it('strips parsedData from the caller object and sets compressedData on it', () => {
+    const callerObject = {
+      fileName: 'cv.pdf',
+      parsedData: { basics: { name: 'Ada' } },
+    };
+
+    getResumesCreatingHook().fire.call({}, undefined, callerObject, {});
+
+    expect(compressResumeData).toHaveBeenCalledWith({ basics: { name: 'Ada' } });
+    expect('parsedData' in callerObject).toBe(false);
+    expect((callerObject as { compressedData?: string }).compressedData).toBe('compressed-payload');
+  });
+
+  it('leaves parsedData on the caller object when compression fails', () => {
+    compressResumeData.mockReturnValue(undefined);
+    const parsedData = { basics: { name: 'Ada' } };
+    const callerObject = { fileName: 'cv.pdf', parsedData };
+
+    getResumesCreatingHook().fire.call({}, undefined, callerObject, {});
+
+    expect(callerObject.parsedData).toBe(parsedData);
+    expect('compressedData' in callerObject).toBe(false);
   });
 });

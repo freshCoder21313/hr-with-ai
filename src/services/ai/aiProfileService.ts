@@ -159,8 +159,7 @@ export function mirrorActiveProfileToLocalStorage(settings: UserSettings): void 
 export function toSafeSyncProfiles(
   profiles: AIProviderProfile[]
 ): Omit<AIProviderProfile, 'apiKey'>[] {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  return profiles.map(({ apiKey, ...rest }) => rest);
+  return profiles.map(({ apiKey: _apiKey, ...rest }) => rest);
 }
 
 /**

@@ -1,10 +1,12 @@
-import { UserSettings, JobRecommendation } from '@/types';
+import { UserSettings, JobRecommendation, DBJobRecommendation } from '@/types';
 import { logger } from '@/lib/logger';
 import { db } from '@/lib/db';
-import { getExtractJDInfoPrompt } from '@/services/prompts';
-import { generateJobRecommendationsPrompt, generateTailoredResumePrompt } from './jobPromptSystem';
+import {
+  getExtractJDInfoPrompt,
+  getJobRecommendationsPrompt,
+  getJobTailoredResumePrompt,
+} from '@/services/prompts';
 import { ResumeData } from '@/types/resume';
-import { DBJobRecommendation } from './jobRecommendationService';
 import { getService, AIConfigInput, getStoredAIConfig } from '@/services/ai/aiConfigService';
 import { jdExtractSchema, jobRecommendationsSchema, resumeDataSchema } from '@/services/ai/schemas';
 
@@ -63,7 +65,7 @@ export const generateJobRecommendations = async (
     }
   }
 
-  const prompt = generateJobRecommendationsPrompt(resumeData, language);
+  const prompt = getJobRecommendationsPrompt(resumeData, language);
 
   try {
     const recommendations = await service.generateStructured(
@@ -122,7 +124,7 @@ export const generateTailoredResumeForJob = async (
 ): Promise<ResumeData> => {
   const aiConfig = getStoredAIConfig();
   const service = await getService(aiConfig);
-  const prompt = generateTailoredResumePrompt(originalResumeData, jobDescription);
+  const prompt = getJobTailoredResumePrompt(originalResumeData, jobDescription);
 
   try {
     return (await service.generateStructured(

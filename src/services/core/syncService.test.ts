@@ -239,9 +239,7 @@ describe('syncService', () => {
         resumes: [cloudResume as any],
       });
 
-      expect(db.resumes.add).toHaveBeenCalledWith(
-        expect.objectContaining({ title: 'New Resume' })
-      );
+      expect(db.resumes.add).toHaveBeenCalledWith(expect.objectContaining({ title: 'New Resume' }));
     });
 
     it('updates existing resumes if cloud is newer', async () => {
@@ -268,9 +266,7 @@ describe('syncService', () => {
         resumes: [newerCloud as any],
       });
 
-      expect(db.resumes.put).toHaveBeenCalledWith(
-        expect.objectContaining({ title: 'New', id: 5 })
-      );
+      expect(db.resumes.put).toHaveBeenCalledWith(expect.objectContaining({ title: 'New', id: 5 }));
     });
 
     it('does not collapse cloud resumes that share a createdAt millisecond', async () => {
@@ -298,9 +294,12 @@ describe('syncService', () => {
       // Each local row is updated exactly once — no re-adds, no duplicates.
       expect(db.resumes.put).toHaveBeenCalledTimes(2);
       expect(db.resumes.add).not.toHaveBeenCalled();
-      expect(vi.mocked(db.resumes.put).mock.calls.map((c) => (c[0] as any).id).sort()).toEqual([
-        5, 6,
-      ]);
+      expect(
+        vi
+          .mocked(db.resumes.put)
+          .mock.calls.map((c) => (c[0] as any).id)
+          .sort()
+      ).toEqual([5, 6]);
     });
 
     it('pairs a same-millisecond resume with a distinct local row', async () => {
@@ -473,13 +472,18 @@ describe('syncService', () => {
 
       await syncService.importData(exported);
 
-      const addedJob = vi.mocked(db.jobs.add).mock.calls[0][0] as unknown as Record<string, unknown>;
+      const addedJob = vi.mocked(db.jobs.add).mock.calls[0][0] as unknown as Record<
+        string,
+        unknown
+      >;
       expect(addedJob).toMatchObject({ company: 'Acme', jobTitle: 'Staff Eng' });
       // Local 'id' is auto-increment, so the cloud id must not be restored.
       expect(addedJob).not.toHaveProperty('id');
 
-      const addedRec = vi.mocked(db.job_recommendations.add).mock
-        .calls[0][0] as unknown as Record<string, unknown>;
+      const addedRec = vi.mocked(db.job_recommendations.add).mock.calls[0][0] as unknown as Record<
+        string,
+        unknown
+      >;
       expect(addedRec).toMatchObject({ title: 'Staff Eng', company: 'Acme' });
     });
 
@@ -498,7 +502,6 @@ describe('syncService', () => {
       expect(db.jobs.add).not.toHaveBeenCalled();
       expect(db.job_recommendations.add).not.toHaveBeenCalled();
     });
-
   });
 
   describe('uploadToCloud', () => {
