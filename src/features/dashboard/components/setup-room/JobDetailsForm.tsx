@@ -187,7 +187,7 @@ export const JobDetailsForm: React.FC<JobDetailsFormProps> = ({
             aria-controls="raw-jd-autofill-section"
           >
             <Sparkles className="w-4 h-4 text-primary shrink-0" />
-            <span>✨ Quick Auto-fill from Raw JD</span>
+            <span>Quick Auto-fill from Raw JD</span>
             <ChevronDown
               className={`w-4 h-4 transition-transform duration-200 ${
                 isAutoFillOpen ? 'rotate-180' : ''
@@ -311,23 +311,10 @@ export const JobDetailsForm: React.FC<JobDetailsFormProps> = ({
 
       {/* Job URL / Link */}
       <div className="space-y-2 md:space-y-3">
-        <div className="flex items-center justify-between">
-          <Label htmlFor="jobUrl" className="flex items-center gap-1.5">
-            <Link2 className="w-3.5 h-3.5 text-muted-foreground" />
-            <span>Job URL / Link (optional)</span>
-          </Label>
-          {formData.jobUrl && (
-            <a
-              href={formData.jobUrl.startsWith('http') ? formData.jobUrl : `https://${formData.jobUrl}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
-            >
-              <span>Open Job Link</span>
-              <ExternalLink className="w-3 h-3" />
-            </a>
-          )}
-        </div>
+        <Label htmlFor="jobUrl" className="flex items-center gap-1.5">
+          <Link2 className="w-3.5 h-3.5 text-muted-foreground" />
+          <span>Job URL / Link (optional)</span>
+        </Label>
         <div className="flex items-center gap-2">
           <Input
             id="jobUrl"
@@ -343,7 +330,7 @@ export const JobDetailsForm: React.FC<JobDetailsFormProps> = ({
               type="button"
               variant="outline"
               size="sm"
-              className="h-11 gap-1 text-xs shrink-0"
+              className="h-11 gap-1.5 text-xs shrink-0"
               onClick={() => {
                 const targetUrl = formData.jobUrl?.startsWith('http')
                   ? formData.jobUrl
@@ -353,7 +340,7 @@ export const JobDetailsForm: React.FC<JobDetailsFormProps> = ({
               title="Open original job posting"
             >
               <ExternalLink className="w-3.5 h-3.5" />
-              <span>Open Job Link ↗</span>
+              <span>Open Job Link</span>
             </Button>
           )}
         </div>

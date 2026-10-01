@@ -219,7 +219,7 @@ export const CVJobPanel: React.FC<CVJobPanelProps> = ({
                   <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>✨ Auto-Fill JD</TooltipContent>
+              <TooltipContent>Auto-Fill JD</TooltipContent>
             </Tooltip>
             <Tooltip delayDuration={0}>
               <TooltipTrigger asChild>
@@ -351,7 +351,7 @@ export const CVJobPanel: React.FC<CVJobPanelProps> = ({
                 <Sparkles className="w-4 h-4" aria-hidden="true" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent side="right">✨ Auto-Fill JD</TooltipContent>
+            <TooltipContent side="right">Auto-Fill JD</TooltipContent>
           </Tooltip>
 
           <div className="flex flex-col gap-1.5 items-center mt-1">

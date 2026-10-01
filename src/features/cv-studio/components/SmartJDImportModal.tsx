@@ -101,7 +101,7 @@ export const SmartJDImportModal: React.FC<SmartJDImportModalProps> = ({
               <Sparkles className="w-5 h-5" />
             </div>
             <div>
-              <DialogTitle className="text-xl font-bold">✨ Auto-fill from Raw JD</DialogTitle>
+              <DialogTitle className="text-xl font-bold">Auto-fill from Raw JD</DialogTitle>
               <DialogDescription className="text-xs text-muted-foreground mt-0.5">
                 Paste raw Job Description text to automatically extract company, title, requirements, and custom tailoring prompt.
               </DialogDescription>
@@ -145,7 +145,7 @@ export const SmartJDImportModal: React.FC<SmartJDImportModalProps> = ({
                 className="gap-2"
               >
                 <Sparkles className="w-4 h-4" />
-                ✨ Parse &amp; Extract
+                Parse &amp; Extract
               </Button>
             </div>
           </div>
