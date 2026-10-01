@@ -15,6 +15,15 @@ export interface ValidatedExtraction {
   invalidCount: number;
 }
 
+const buildUniqueId = (preferred: string | undefined, existing: ProposedChange[]): string => {
+  const base =
+    preferred && preferred.trim() ? preferred : `change-${Date.now()}-${existing.length}`;
+  if (!existing.some((change) => change.id === base)) return base;
+  let suffix = 1;
+  while (existing.some((change) => change.id === `${base}-${suffix}`)) suffix++;
+  return `${base}-${suffix}`;
+};
+
 export const extractValidatedProposedChanges = (text: string): ValidatedExtraction => {
   const jsonBlockRegex = /```(?:json)?\s*([\s\S]*?)(?:```|$)/gi;
   let match;
@@ -55,7 +64,7 @@ export const extractValidatedProposedChanges = (text: string): ValidatedExtracti
             // Assign stable IDs only after validation passes
             const validated = result.data as ProposedChangeAIResponse;
             allChanges.push({
-              id: validated.id ?? `change-${Date.now()}-${allChanges.length}`,
+              id: buildUniqueId(validated.id, allChanges),
               section: validated.section as keyof ResumeData,
               action: validated.action as 'update' | 'add' | 'delete' | 'rewrite',
               newData: validated.newData,

@@ -48,10 +48,27 @@ export const useCVResumes = () => {
     }
   }, []);
 
+  // Single write contract: `resumes[]` and `mainCV` are two views of the same
+  // row, so every persisted edit must go through here. Writing one without the
+  // other lets `handleChatCVChange` resurrect stale content on the next switch.
+  const syncParsedDataInState = useCallback((id: number, parsedData: ResumeData) => {
+    setResumes((prev) => prev.map((r) => (r.id === id ? { ...r, parsedData } : r)));
+    setMainCV((prev) => (prev && prev.id === id ? { ...prev, parsedData } : prev));
+  }, []);
+
+  const updateResumeParsedData = useCallback(
+    async (id: number, parsedData: ResumeData) => {
+      await db.resumes.update(id, { parsedData });
+      syncParsedDataInState(id, parsedData);
+    },
+    [syncParsedDataInState]
+  );
+
   const handleManualUpdate = useCallback(
     async (newData: ResumeData) => {
       if (!mainCV?.id) return;
-      setMainCV((prev) => (prev ? { ...prev, parsedData: newData } : null));
+      // Optimistic: keep the editor responsive, and keep both views in step.
+      syncParsedDataInState(mainCV.id, newData);
       try {
         await db.resumes.update(mainCV.id, { parsedData: newData });
       } catch (err) {
@@ -61,7 +78,7 @@ export const useCVResumes = () => {
         });
       }
     },
-    [mainCV]
+    [mainCV, syncParsedDataInState]
   );
 
   const handleRenameCV = useCallback(
@@ -183,5 +200,6 @@ export const useCVResumes = () => {
     handleGitHubImportComplete,
     handleCreateNewCV,
     handleDeleteCurrentCV,
+    updateResumeParsedData,
   };
 };

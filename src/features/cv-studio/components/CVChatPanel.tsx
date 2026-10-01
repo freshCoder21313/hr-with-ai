@@ -36,6 +36,7 @@ interface CVChatPanelProps {
   mainCV: Resume | null;
   chatResumeId: number | undefined;
   pendingChanges: ProposedChange[] | null;
+  pendingChangeId: string | null;
   resumes: Resume[];
   contextResumeId: number | undefined;
   contextJobId: string | undefined;
@@ -58,6 +59,7 @@ export const CVChatPanel: React.FC<CVChatPanelProps> = ({
   mainCV,
   chatResumeId,
   pendingChanges,
+  pendingChangeId,
   resumes,
   contextResumeId,
   contextJobId,
@@ -253,6 +255,8 @@ export const CVChatPanel: React.FC<CVChatPanelProps> = ({
                 change={changeWithOldData}
                 onAccept={() => onAcceptChange(change)}
                 onReject={() => onRejectChange(change)}
+                isPending={pendingChangeId === change.id}
+                isLocked={pendingChangeId !== null}
               />
             );
           })}

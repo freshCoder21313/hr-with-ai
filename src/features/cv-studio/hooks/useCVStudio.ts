@@ -24,7 +24,7 @@ export const useCVStudio = () => {
   const resumeState = useCVResumes();
   const chatState = useCVChat({
     mainCV: resumeState.mainCV,
-    setMainCV: resumeState.setMainCV,
+    applyResumeParsedData: resumeState.updateResumeParsedData,
     resumes: resumeState.resumes,
     jobs,
     chatResumeId: resumeState.chatResumeId,
@@ -140,6 +140,7 @@ export const useCVStudio = () => {
       contextJobId: chatState.contextJobId,
       jobs,
       globalPrompt,
+      pendingChangeId: chatState.pendingChangeId,
       selectedResumeId: tailoring.selectedResumeId,
       selectedJobs: tailoring.selectedJobs,
       processingStatus: tailoring.processingStatus,
@@ -173,6 +174,7 @@ export const useCVStudio = () => {
       handleRejectChange: chatState.handleRejectChange,
       handleManualUpdate: resumeState.handleManualUpdate,
       handleRenameCV: resumeState.handleRenameCV,
+      handleReTailorJob: tailoring.handleReTailorJob,
       handleChatCVChange,
       handleGitHubImportComplete,
       handleAddJob,

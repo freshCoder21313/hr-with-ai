@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useCVChat } from './useCVChat';
 import { db } from '@/lib/db';
@@ -45,7 +45,7 @@ describe('useCVChat Task 4', () => {
     isMain: true,
   } as any;
 
-  const setMainCV = vi.fn();
+  const applyResumeParsedData = vi.fn().mockImplementation(async () => {});
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -94,7 +94,7 @@ describe('useCVChat Task 4', () => {
     const { result } = renderHook(() =>
       useCVChat({
         mainCV: mockMainCV,
-        setMainCV,
+        applyResumeParsedData,
         resumes: [mockMainCV],
         jobs: [],
         chatResumeId: 1,
@@ -117,7 +117,7 @@ describe('useCVChat Task 4', () => {
     const { result } = renderHook(() =>
       useCVChat({
         mainCV: mockMainCV,
-        setMainCV,
+        applyResumeParsedData,
         resumes: [mockMainCV],
         jobs: [],
         chatResumeId: 1,
@@ -137,15 +137,15 @@ describe('useCVChat Task 4', () => {
     });
 
     expect(db.resumes.update).not.toHaveBeenCalled();
-    expect(setMainCV).not.toHaveBeenCalled();
+    expect(applyResumeParsedData).not.toHaveBeenCalled();
     expect(toast.error).toHaveBeenCalled();
   });
 
-  it('Test C (positive): valid change updates DB + mainCV', async () => {
+  it('accepts a valid change through the shared resume update contract', async () => {
     const { result } = renderHook(() =>
       useCVChat({
         mainCV: mockMainCV,
-        setMainCV,
+        applyResumeParsedData,
         resumes: [mockMainCV],
         jobs: [],
         chatResumeId: 1,
@@ -160,53 +160,151 @@ describe('useCVChat Task 4', () => {
       explanation: 'Legit update',
     } as any;
 
-    // Set it as pending first to test removal
-    act(() => {
-      // Accessing internal state is hard, so we just check side effects of handleAcceptChange
-      // Actually, we can just call it directly as per requirements.
-    });
-
     await act(async () => {
       await result.current.handleAcceptChange(validChange);
     });
 
-    expect(db.resumes.update).toHaveBeenCalledWith(
+    expect(applyResumeParsedData).toHaveBeenCalledTimes(1);
+    expect(applyResumeParsedData).toHaveBeenCalledWith(
       1,
-      expect.objectContaining({
-        parsedData: expect.objectContaining({
-          basics: { name: 'Accepted Name' },
-        }),
-      })
+      expect.objectContaining({ basics: { name: 'Accepted Name' } })
     );
-    expect(setMainCV).toHaveBeenCalled();
+    expect(toast.error).not.toHaveBeenCalled();
   });
 
-  it('Test D (DB failure): handles db.resumes.update failure', async () => {
-    (db.resumes.update as any).mockRejectedValue(new Error('DB Error'));
+  it('reports a failed persist and leaves the change pending', async () => {
+    applyResumeParsedData.mockRejectedValueOnce(new Error('DB Error'));
 
     const { result } = renderHook(() =>
       useCVChat({
         mainCV: mockMainCV,
-        setMainCV,
+        applyResumeParsedData,
         resumes: [mockMainCV],
         jobs: [],
         chatResumeId: 1,
       })
     );
 
-    const validChange = {
+    await act(async () => {
+      await result.current.handleSendMessage;
+    });
+
+    await act(async () => {
+      await result.current.handleAcceptChange({
+        id: 'c1',
+        section: 'basics',
+        action: 'update',
+        newData: { name: 'Failed Name' },
+        explanation: 'Legit update',
+      } as any);
+    });
+
+    expect(toast.error).toHaveBeenCalledWith('Failed to apply change. Please try again.');
+    expect(result.current.pendingChangeId).toBeNull();
+  });
+
+  it('performs one mutation when accept is double-clicked', async () => {
+    let release: () => void = () => {};
+    applyResumeParsedData.mockImplementationOnce(
+      () =>
+        new Promise<void>((resolve) => {
+          release = resolve;
+        })
+    );
+
+    const { result } = renderHook(() =>
+      useCVChat({
+        mainCV: mockMainCV,
+        applyResumeParsedData,
+        resumes: [mockMainCV],
+        jobs: [],
+        chatResumeId: 1,
+      })
+    );
+
+    const change = {
       id: 'c1',
       section: 'basics',
       action: 'update',
-      newData: { name: 'Failed Name' },
+      newData: { name: 'Once' },
       explanation: 'Legit update',
     } as any;
 
+    let first: Promise<void>;
+    act(() => {
+      first = result.current.handleAcceptChange(change);
+    });
+    expect(result.current.pendingChangeId).toBe('c1');
+
     await act(async () => {
-      await result.current.handleAcceptChange(validChange);
+      result.current.handleAcceptChange(change);
+      release();
+      await first!;
     });
 
-    expect(setMainCV).not.toHaveBeenCalled();
-    expect(toast.error).toHaveBeenCalled();
+    expect(applyResumeParsedData).toHaveBeenCalledTimes(1);
+    expect(result.current.pendingChangeId).toBeNull();
+  });
+
+  it('keeps a change pending when reject races an in-flight accept', async () => {
+    const cannedText = `\`\`\`json\n${JSON.stringify({
+      proposedChanges: [
+        {
+          id: 'c1',
+          section: 'basics',
+          action: 'update',
+          newData: { name: 'Once' },
+          explanation: 'x',
+        },
+      ],
+    })}\n\`\`\``;
+    (streamCVChatMessage as Mock).mockReturnValue(
+      (async function* () {
+        yield cannedText;
+      })()
+    );
+
+    let release: () => void = () => {};
+    applyResumeParsedData.mockImplementationOnce(
+      () =>
+        new Promise<void>((resolve) => {
+          release = resolve;
+        })
+    );
+
+    const { result } = renderHook(() =>
+      useCVChat({
+        mainCV: mockMainCV,
+        applyResumeParsedData,
+        resumes: [mockMainCV],
+        jobs: [],
+        chatResumeId: 1,
+      })
+    );
+
+    await act(async () => {
+      await result.current.handleSendMessage('rename me');
+    });
+    const change = result.current.pendingChanges![0];
+    expect(change.id).toBe('c1');
+
+    let accepting: Promise<void>;
+    act(() => {
+      accepting = result.current.handleAcceptChange(change);
+    });
+    expect(result.current.pendingChangeId).toBe('c1');
+
+    act(() => {
+      result.current.handleRejectChange(change);
+    });
+
+    // The card is mid-flight: rejecting must not yank the row out from under it.
+    expect(result.current.pendingChanges?.map((c) => c.id)).toEqual(['c1']);
+
+    await act(async () => {
+      release();
+      await accepting!;
+    });
+    expect(result.current.pendingChanges).toBeNull();
   });
 });

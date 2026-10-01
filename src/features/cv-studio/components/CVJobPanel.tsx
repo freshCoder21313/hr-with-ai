@@ -53,6 +53,7 @@ interface CVJobPanelProps {
   onTogglePanel: () => void;
   onOpenPromptModal: () => void;
   onViewResult: (id: number) => void;
+  onReTailorJob: (id: string) => void;
 }
 
 export const CVJobPanel: React.FC<CVJobPanelProps> = ({
@@ -76,6 +77,7 @@ export const CVJobPanel: React.FC<CVJobPanelProps> = ({
   onTogglePanel,
   onOpenPromptModal,
   onViewResult,
+  onReTailorJob,
 }) => {
   const selectedResumeName = resumes.find((r) => r.id === selectedResumeId)?.fileName;
   const [renameOpen, setRenameOpen] = useState(false);
@@ -260,6 +262,7 @@ export const CVJobPanel: React.FC<CVJobPanelProps> = ({
                   onRemove={() => onRemoveJob(job.id)}
                   onChange={(field, value) => onUpdateJob(job.id, field, value)}
                   onViewResult={onViewResult}
+                  onReTailor={() => onReTailorJob(job.id)}
                 />
               ))
             )}

@@ -43,6 +43,17 @@ export const useCVTailoring = ({ jobs, globalPrompt, onResumesUpdated }: UseCVTa
       return next;
     });
   }, []);
+  // Re-tailoring is a state transition, not a reset: the previously generated
+  // resume row is left in place and only this job's card returns to idle.
+  const handleReTailorJob = useCallback((jobId: string) => {
+    setProcessingStatus((prev) => {
+      if (!prev[jobId]) return prev;
+      const next = { ...prev };
+      delete next[jobId];
+      return next;
+    });
+    setSelectedJobs((prev) => (prev.has(jobId) ? prev : new Set(prev).add(jobId)));
+  }, []);
 
   const refreshResumes = useCallback(async () => {
     try {
@@ -147,5 +158,6 @@ export const useCVTailoring = ({ jobs, globalPrompt, onResumesUpdated }: UseCVTa
     progress,
     handleToggleJobSelection,
     handleStartTailoring,
+    handleReTailorJob,
   };
 };

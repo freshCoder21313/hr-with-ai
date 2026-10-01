@@ -1,8 +1,8 @@
 import { useState, useCallback } from 'react';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
-import { db } from '@/lib/db';
 import { Resume, Message } from '@/types';
+import type { ResumeData } from '@/types/resume';
 import { streamCVChatMessage } from '@/services/resume/cvChatService';
 import { extractValidatedProposedChanges, ProposedChange } from '../utils/cvChatUtils';
 import { Job } from '../stores/useJobStore';
@@ -28,17 +28,28 @@ const ALLOWED_SECTIONS = [
 
 interface UseCVChatOptions {
   mainCV: Resume | null;
-  setMainCV: React.Dispatch<React.SetStateAction<Resume | null>>;
+  // The only way chat may persist CV content: it keeps `mainCV` and `resumes[]`
+  // in step, so an accepted change survives switching CVs and later saves.
+  applyResumeParsedData: (id: number, parsedData: ResumeData) => Promise<void>;
   resumes: Resume[];
   jobs: Job[];
   chatResumeId: number | undefined;
 }
 
-export const useCVChat = ({ mainCV, setMainCV, resumes, jobs, chatResumeId }: UseCVChatOptions) => {
+export const useCVChat = ({
+  mainCV,
+  applyResumeParsedData,
+  resumes,
+  jobs,
+  chatResumeId,
+}: UseCVChatOptions) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const [pendingChanges, setPendingChanges] = useState<ProposedChange[] | null>(null);
   const [contextResumeId, setContextResumeId] = useState<number | undefined>();
+  // Id of the change whose persistence is in flight, so a double click can only
+  // ever start one mutation and the card can disable its own actions.
+  const [pendingChangeId, setPendingChangeId] = useState<string | null>(null);
   const [contextJobId, setContextJobId] = useState<string | undefined>();
 
   const initializeChat = useCallback((cv: Resume) => {
@@ -177,8 +188,10 @@ export const useCVChat = ({ mainCV, setMainCV, resumes, jobs, chatResumeId }: Us
 
   const handleAcceptChange = useCallback(
     async (change: ProposedChange) => {
-      if (!mainCV?.parsedData) return;
+      if (!mainCV?.parsedData || !mainCV.id) return;
+      if (pendingChangeId) return;
 
+      setPendingChangeId(change.id);
       try {
         validateProposedChange(change);
 
@@ -191,22 +204,25 @@ export const useCVChat = ({ mainCV, setMainCV, resumes, jobs, chatResumeId }: Us
           [change.section]: change.newData,
         };
 
-        await db.resumes.update(mainCV.id!, { parsedData: updated });
-        setMainCV({ ...mainCV, parsedData: updated });
+        await applyResumeParsedData(mainCV.id, updated);
         removePendingChange(change);
       } catch (error) {
         logger.error('Failed to accept change:', error);
         toast.error('Failed to apply change. Please try again.');
+      } finally {
+        setPendingChangeId(null);
       }
     },
-    [mainCV, setMainCV, removePendingChange]
+    [mainCV, applyResumeParsedData, pendingChangeId, removePendingChange]
   );
 
   const handleRejectChange = useCallback(
     (change: ProposedChange) => {
+      // Rejecting while an accept is still persisting would race the write.
+      if (pendingChangeId) return;
       removePendingChange(change);
     },
-    [removePendingChange]
+    [pendingChangeId, removePendingChange]
   );
 
   return {
@@ -214,6 +230,7 @@ export const useCVChat = ({ mainCV, setMainCV, resumes, jobs, chatResumeId }: Us
     isTyping,
     pendingChanges,
     contextResumeId,
+    pendingChangeId,
     contextJobId,
     setContextResumeId,
     setContextJobId,

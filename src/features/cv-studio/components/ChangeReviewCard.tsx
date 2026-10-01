@@ -44,14 +44,19 @@ interface ChangeReviewCardProps {
   change: ProposedChange;
   onAccept: () => void;
   onReject: () => void;
+  isPending?: boolean;
+  isLocked?: boolean;
 }
 
 export const ChangeReviewCard: React.FC<ChangeReviewCardProps> = ({
   change,
   onAccept,
   onReject,
+  isPending = false,
+  isLocked = false,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const busy = isPending || isLocked;
 
   const getActionInfo = () => {
     switch (change.action) {
@@ -319,6 +324,7 @@ export const ChangeReviewCard: React.FC<ChangeReviewCardProps> = ({
   return (
     <Card
       className={`w-full shadow-sm border-l-4 ${actionInfo.accent} overflow-hidden transition-all hover:shadow-md`}
+      aria-busy={isPending}
     >
       <CardHeader className="p-3 pb-2 flex flex-row items-center justify-between space-y-0 gap-3">
         <div className="flex items-center gap-2.5 min-w-0">
@@ -349,12 +355,18 @@ export const ChangeReviewCard: React.FC<ChangeReviewCardProps> = ({
           variant="ghost"
           size="sm"
           onClick={onReject}
+          disabled={busy}
           className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
         >
           <X size={12} className="mr-1" aria-hidden="true" /> Reject
         </Button>
-        <Button size="sm" onClick={onAccept} className="shadow-sm">
-          <Check size={12} className="mr-1" aria-hidden="true" /> Accept
+        <Button size="sm" onClick={onAccept} disabled={busy} className="shadow-sm">
+          {isPending ? (
+            <RefreshCw size={12} className="mr-1 animate-spin" aria-hidden="true" />
+          ) : (
+            <Check size={12} className="mr-1" aria-hidden="true" />
+          )}{' '}
+          {isPending ? 'Saving…' : 'Accept'}
         </Button>
       </CardFooter>
     </Card>

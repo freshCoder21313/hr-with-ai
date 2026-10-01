@@ -100,4 +100,47 @@ describe('cvChatUtils', () => {
       expect(result.invalidCount).toBe(2);
     });
   });
+
+  describe('change id assignment', () => {
+    const basics = (id?: string) =>
+      `{"section":"basics","action":"update","newData":{"name":"John Doe"},"explanation":"ok"${
+        id === undefined ? '' : `,"id":${JSON.stringify(id)}`
+      }}`;
+    const meta = (id?: string) =>
+      `{"section":"meta","action":"update","newData":{},"explanation":"ok"${
+        id === undefined ? '' : `,"id":${JSON.stringify(id)}`
+      }}`;
+    const wrap = (entries: string) => `\`\`\`json\n{"proposedChanges":[${entries}]}\n\`\`\``;
+
+    it('replaces an empty or missing id with a non-empty generated one', () => {
+      const { changes, invalidCount } = extractValidatedProposedChanges(
+        wrap(`${basics('')},${meta()}`)
+      );
+
+      expect(invalidCount).toBe(0);
+      expect(changes).toHaveLength(2);
+      expect(changes[0].id).not.toBe('');
+      expect(changes[1].id).not.toBe('');
+    });
+
+    it('keeps generated ids unique within a batch', () => {
+      const { changes } = extractValidatedProposedChanges(
+        wrap(`${basics('')},${meta('')},${basics('')}`)
+      );
+
+      expect(changes).toHaveLength(3);
+      const seen = new Set<string>();
+      for (const change of changes) seen.add(change.id);
+      expect(seen.size).toBe(changes.length);
+    });
+
+    it('does not collide with an AI-supplied id equal to the generated one', () => {
+      const { changes } = extractValidatedProposedChanges(
+        wrap(`${basics('')},${meta(`change-${Date.now()}-1`)}`)
+      );
+
+      expect(changes).toHaveLength(2);
+      expect(changes[0].id).not.toBe(changes[1].id);
+    });
+  });
 });

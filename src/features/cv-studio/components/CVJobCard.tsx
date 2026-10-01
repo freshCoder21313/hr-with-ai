@@ -5,7 +5,15 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, ChevronDown, ChevronUp, CheckCircle2, AlertCircle, Trash2 } from 'lucide-react';
+import {
+  Loader2,
+  ChevronDown,
+  ChevronUp,
+  CheckCircle2,
+  AlertCircle,
+  Trash2,
+  RefreshCw,
+} from 'lucide-react';
 import { Job } from '../stores/useJobStore';
 import { JobWithStatus } from '../hooks/useCVTailoring';
 
@@ -18,6 +26,7 @@ interface CVJobCardProps {
   onRemove: () => void;
   onChange: (field: keyof Job, value: string) => void;
   onViewResult: (id: number) => void;
+  onReTailor: () => void;
 }
 
 export const CVJobCard: React.FC<CVJobCardProps> = ({
@@ -28,6 +37,7 @@ export const CVJobCard: React.FC<CVJobCardProps> = ({
   onSelect,
   onRemove,
   onChange,
+  onReTailor,
   onViewResult,
 }) => {
   const [expanded, setExpanded] = useState(false);
@@ -44,13 +54,13 @@ export const CVJobCard: React.FC<CVJobCardProps> = ({
     <div
       className={`rounded-lg border bg-card transition-all ${
         isRunning ? 'border-primary ring-1 ring-primary/20' : 'border-border'
-      } ${isDone ? 'opacity-80' : ''}`}
+      } ${isDone && !expanded ? 'opacity-80' : ''}`}
     >
       <div className="flex items-center gap-2 px-3 py-2">
         <Checkbox
           checked={isSelected}
           onCheckedChange={(c) => onSelect(!!c)}
-          disabled={isDone || isProcessing}
+          disabled={isProcessing}
           className="shrink-0"
           aria-label={`Select ${jobLabel} for tailoring`}
         />
@@ -117,7 +127,7 @@ export const CVJobCard: React.FC<CVJobCardProps> = ({
                 placeholder="Google"
                 value={job.company}
                 onChange={(e) => onChange('company', e.target.value)}
-                disabled={isDone || isProcessing}
+                disabled={isProcessing}
               />
             </div>
             <div>
@@ -130,7 +140,7 @@ export const CVJobCard: React.FC<CVJobCardProps> = ({
                 placeholder="SWE"
                 value={job.title}
                 onChange={(e) => onChange('title', e.target.value)}
-                disabled={isDone || isProcessing}
+                disabled={isProcessing}
               />
             </div>
           </div>
@@ -144,7 +154,7 @@ export const CVJobCard: React.FC<CVJobCardProps> = ({
               placeholder="Paste JD here..."
               value={job.description}
               onChange={(e) => onChange('description', e.target.value)}
-              disabled={isDone || isProcessing}
+              disabled={isProcessing}
             />
           </div>
           <div>
@@ -157,9 +167,20 @@ export const CVJobCard: React.FC<CVJobCardProps> = ({
               placeholder="Emphasize React experience..."
               value={job.customPrompt}
               onChange={(e) => onChange('customPrompt', e.target.value)}
-              disabled={isDone || isProcessing}
+              disabled={isProcessing}
             />
           </div>
+          {isDone && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="w-full text-xs"
+              onClick={onReTailor}
+              disabled={isProcessing}
+            >
+              <RefreshCw className="w-3 h-3 mr-1" aria-hidden="true" /> Re-tailor with corrected JD
+            </Button>
+          )}
           {isDone && status.resultId && (
             <Button
               size="sm"

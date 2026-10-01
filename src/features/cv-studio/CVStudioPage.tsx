@@ -104,6 +104,7 @@ const CVStudioPage: React.FC = () => {
               onTogglePanel={() => ui.setIsJobPanelOpen(!ui.isJobPanelOpen)}
               onOpenPromptModal={() => ui.setIsPromptModalOpen(true)}
               onViewResult={handleViewResult}
+              onReTailorJob={actions.handleReTailorJob}
             />
           </div>
           <div
@@ -115,6 +116,7 @@ const CVStudioPage: React.FC = () => {
               mainCV={state.mainCV}
               chatResumeId={state.chatResumeId}
               pendingChanges={state.pendingChanges}
+              pendingChangeId={state.pendingChangeId}
               resumes={state.resumes}
               contextResumeId={state.contextResumeId}
               contextJobId={state.contextJobId}
