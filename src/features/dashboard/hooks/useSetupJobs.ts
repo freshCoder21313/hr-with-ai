@@ -33,16 +33,15 @@ export function useSetupJobs(
       };
       if (selectedJobId !== 'new') {
         await db.jobs.update(parseInt(selectedJobId, 10), baseJobData);
+        await loadData();
         toast.success('Job updated successfully!');
       } else {
         const newJob: SavedJob = { ...baseJobData, createdAt: timestamp };
         const newId = await db.jobs.add(newJob);
-        toast.success('Job saved successfully!');
         await loadData();
         setSelectedJobId(newId.toString());
-        return;
+        toast.success('Job saved successfully!');
       }
-      loadData();
     } catch (error) {
       logger.error('Failed to save job:', error);
       toast.error('Failed to save job');
@@ -62,7 +61,7 @@ export function useSetupJobs(
       try {
         await db.jobs.delete(id);
         if (selectedJobId === id.toString()) setSelectedJobId('new');
-        loadData();
+        await loadData();
         toast.success('Job deleted successfully');
       } catch (error) {
         logger.error('Failed to delete job:', error);

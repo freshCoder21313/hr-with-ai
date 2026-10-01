@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { logger } from '@/lib/logger';
+import { getErrorMessage } from '@/lib/utils';
+import { toast } from 'sonner';
 import {
   Dialog,
   DialogContent,
@@ -51,7 +53,9 @@ export const TailorResumeModal: React.FC<TailorResumeModalProps> = ({
       setJobDescription('');
       onClose();
     } catch (error) {
+      // Keep the modal open with the JD intact so the user can retry.
       logger.error('Failed to tailor resume:', error);
+      toast.error('Failed to tailor resume: ' + getErrorMessage(error));
     } finally {
       setIsProcessing(false);
     }
@@ -85,15 +89,16 @@ export const TailorResumeModal: React.FC<TailorResumeModalProps> = ({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose} disabled={isProcessing}>
+          <Button type="button" variant="outline" onClick={onClose} disabled={isProcessing}>
             Cancel
           </Button>
           <LoadingButton
+            type="button"
             onClick={handleGenerate}
             disabled={!isNonEmptyString(jobDescription)}
             isLoading={isProcessing}
             loadingText="Tailoring..."
-            className="bg-purple-600 hover:bg-purple-700"
+            className="bg-purple-600 text-white hover:bg-purple-700"
             leftIcon={<Wand2 className="h-4 w-4" />}
           >
             Generate New CV

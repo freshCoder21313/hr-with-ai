@@ -17,7 +17,11 @@ import { Resume, ResumeData } from '@/types';
 interface SetupModalsProps {
   isJobModalOpen: boolean;
   onJobModalClose: () => void;
-  onSelectJob: (job: JobRecommendation, tailoredResumeText: string, tailoredResumeData?: ResumeData) => Promise<void>;
+  onSelectJob: (
+    job: JobRecommendation,
+    tailoredResumeText: string,
+    tailoredResumeData?: ResumeData
+  ) => Promise<void>;
   selectedResumeId?: number;
   savedResumes: Resume[];
   showMainCVCloneDialog: boolean;
@@ -66,11 +70,7 @@ export const SetupModals: React.FC<SetupModalsProps> = ({
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2 sm:gap-0">
-            <Button
-              variant="outline"
-              onClick={() => onConfirmClone(false)}
-              disabled={isCloning}
-            >
+            <Button variant="outline" onClick={() => onConfirmClone(false)} disabled={isCloning}>
               Use Original
             </Button>
             <LoadingButton

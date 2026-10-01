@@ -26,7 +26,7 @@ const ApiKeyModal: React.FC = () => {
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="w-full max-w-2xl max-h-[90vh] flex flex-col">
+      <DialogContent className="w-full max-w-2xl max-h-[90dvh] flex flex-col">
         <DialogHeader>
           <DialogTitle>AI Provider Profiles</DialogTitle>
           <DialogDescription>

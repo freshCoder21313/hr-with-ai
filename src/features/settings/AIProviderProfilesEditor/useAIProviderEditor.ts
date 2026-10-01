@@ -1,6 +1,7 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
+import { notificationService } from '@/services/core/notificationService';
 import { AIProviderProfile, UserSettings } from '@/types';
 import { loadUserSettings, saveUserSettings } from '@/services/core/settingsService';
 import { normalizeUserSettings } from '@/services/ai/aiProfileService';
@@ -14,19 +15,43 @@ export function useAIProviderEditor(onSave?: (settings: UserSettings) => void) {
   const [fetchedModels, setFetchedModels] = useState<Record<string, string[]>>({});
   const [isSaving, setIsSaving] = useState(false);
 
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [loadAttempt, setLoadAttempt] = useState(0);
+  const retryLoad = useCallback(() => setLoadAttempt((n) => n + 1), []);
+
+  // Keeps the async delete path from reading a stale activeId after the await.
+  const settingsRef = useRef(settings);
   useEffect(() => {
+    settingsRef.current = settings;
+  }, [settings]);
+
+  useEffect(() => {
+    let cancelled = false;
     const init = async () => {
-      const stored = await loadUserSettings();
-      const normalized = normalizeUserSettings(stored);
-      setSettings(normalized);
-      if (normalized.activeAIProfileId) {
-        setEditingProfileId(normalized.activeAIProfileId);
-      } else if (normalized.aiProfiles && normalized.aiProfiles.length > 0) {
-        setEditingProfileId(normalized.aiProfiles[0].id);
+      try {
+        const stored = await loadUserSettings();
+        const normalized = normalizeUserSettings(stored);
+        if (cancelled) return;
+        setLoadError(null);
+        setSettings(normalized);
+        if (normalized.activeAIProfileId) {
+          setEditingProfileId(normalized.activeAIProfileId);
+        } else if (normalized.aiProfiles && normalized.aiProfiles.length > 0) {
+          setEditingProfileId(normalized.aiProfiles[0].id);
+        }
+      } catch (error) {
+        if (cancelled) return;
+        logger.error('Failed to load AI provider profiles:', error);
+        setLoadError(
+          error instanceof Error ? error.message : 'Failed to load AI provider profiles.'
+        );
       }
     };
     init();
-  }, []);
+    return () => {
+      cancelled = true;
+    };
+  }, [loadAttempt]);
 
   const profiles = useMemo(() => settings?.aiProfiles || [], [settings?.aiProfiles]);
   const activeId = settings?.activeAIProfileId;
@@ -90,11 +115,22 @@ export function useAIProviderEditor(onSave?: (settings: UserSettings) => void) {
     setEditingProfileId(newProfile.id);
   };
 
-  const handleDeleteProfile = (id: string) => {
-    if (id === activeId) {
+  const handleDeleteProfile = async (id: string) => {
+    const current = settingsRef.current;
+    const currentActiveId = current?.activeAIProfileId;
+    if (id === currentActiveId) {
       toast.error('Cannot delete the active profile. Please set another profile as active first.');
       return;
     }
+
+    const profileName = current?.aiProfiles?.find((p) => p.id === id)?.name || 'this profile';
+    const confirmed = await notificationService.confirm({
+      title: 'Delete Profile',
+      message: `Are you sure you want to delete "${profileName}"? This cannot be undone.`,
+      confirmLabel: 'Delete',
+      variant: 'destructive',
+    });
+    if (!confirmed) return;
 
     setSettings((prev) => {
       if (!prev) return null;
@@ -106,7 +142,7 @@ export function useAIProviderEditor(onSave?: (settings: UserSettings) => void) {
     });
 
     if (editingProfileId === id) {
-      setEditingProfileId(activeId || null);
+      setEditingProfileId(currentActiveId || null);
     }
   };
 
@@ -335,6 +371,8 @@ export function useAIProviderEditor(onSave?: (settings: UserSettings) => void) {
     fetchingModels,
     fetchedModels,
     isSaving,
+    loadError,
+    retryLoad,
     profiles,
     activeId,
     fallbackIds,

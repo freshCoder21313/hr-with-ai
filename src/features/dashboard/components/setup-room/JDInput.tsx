@@ -12,12 +12,7 @@ interface JDInputProps {
   onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
 }
 
-export const JDInput: React.FC<JDInputProps> = ({
-  value,
-  isExtracting,
-  onAutoFill,
-  onChange,
-}) => {
+export const JDInput: React.FC<JDInputProps> = ({ value, isExtracting, onAutoFill, onChange }) => {
   return (
     <div className="space-y-2 md:space-y-3">
       <div className="flex justify-between items-center">

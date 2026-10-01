@@ -1,12 +1,5 @@
 import React from 'react';
-import {
-  CheckCircle2,
-  ExternalLink,
-  RefreshCw,
-  Plus,
-  Play,
-  AlertCircle,
-} from 'lucide-react';
+import { CheckCircle2, ExternalLink, RefreshCw, Plus, Play, AlertCircle } from 'lucide-react';
 import { AIProviderProfile, AIModelProvider } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -58,14 +51,14 @@ export const ProfileEditor: React.FC<ProfileEditorProps> = ({
         <h3 className="text-lg font-bold">Edit Profile</h3>
         <div className="flex items-center gap-2">
           <Button
-            variant={activeId === profile.id ? 'secondary' : 'outline'}
+            type="button"
             size="sm"
             onClick={() => onSetActive(profile.id)}
             disabled={activeId === profile.id || !profile.enabled}
           >
             {activeId === profile.id ? (
               <>
-                <CheckCircle2 className="w-3 h-3 mr-1 text-green-500" /> Active
+                <CheckCircle2 className="w-3 h-3 mr-1 text-success" /> Active
               </>
             ) : (
               'Set as Active'
@@ -163,7 +156,7 @@ export const ProfileEditor: React.FC<ProfileEditorProps> = ({
             }
           />
           {profile.baseUrl && (
-            <p className="text-[10px] text-orange-500 flex items-center gap-1">
+            <p className="text-[10px] text-warning flex items-center gap-1">
               <AlertCircle className="w-3 h-3" /> Security: Only use URLs you trust.
             </p>
           )}
@@ -172,8 +165,11 @@ export const ProfileEditor: React.FC<ProfileEditorProps> = ({
 
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <Label htmlFor={`profile-modelIds-${profile.id}`}>Model IDs (One per line, first is primary)</Label>
+          <Label htmlFor={`profile-modelIds-${profile.id}`}>
+            Model IDs (One per line, first is primary)
+          </Label>
           <Button
+            type="button"
             variant="ghost"
             size="sm"
             className="h-7 text-[10px] gap-1 px-2"
@@ -192,9 +188,10 @@ export const ProfileEditor: React.FC<ProfileEditorProps> = ({
                 Available Models
               </span>
               <Button
+                type="button"
                 variant="link"
                 size="sm"
-                className="h-auto p-0 text-[10px]"
+                className="min-h-6 text-[10px] px-0"
                 onClick={() => onAddModels(profile.id, fetchedModels)}
               >
                 Add All
@@ -203,19 +200,29 @@ export const ProfileEditor: React.FC<ProfileEditorProps> = ({
             <div className="flex flex-wrap gap-1">
               {fetchedModels.map((mid) => {
                 const isAdded = profile.modelIds.includes(mid);
+                if (isAdded) {
+                  return (
+                    <Badge key={mid} variant="secondary" className="text-[9px] py-0 opacity-60">
+                      {mid}
+                    </Badge>
+                  );
+                }
                 return (
-                  <Badge
+                  <button
                     key={mid}
-                    variant={isAdded ? 'secondary' : 'outline'}
-                    className={cn(
-                      'text-[9px] py-0 cursor-pointer hover:bg-primary/20 transition-colors',
-                      isAdded && 'opacity-60 cursor-default'
-                    )}
-                    onClick={() => !isAdded && onAddModels(profile.id, [mid])}
+                    type="button"
+                    onClick={() => onAddModels(profile.id, [mid])}
+                    aria-label={`Add model ${mid}`}
+                    className="rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                   >
-                    {mid}
-                    {!isAdded && <Plus className="w-2 h-2 ml-1" />}
-                  </Badge>
+                    <Badge
+                      variant="outline"
+                      className="text-[9px] py-0 hover:bg-primary/20 transition-colors"
+                    >
+                      {mid}
+                      <Plus className="w-2 h-2 ml-1" />
+                    </Badge>
+                  </button>
                 );
               })}
             </div>
@@ -252,6 +259,7 @@ export const ProfileEditor: React.FC<ProfileEditorProps> = ({
             </span>
           </div>
           <Button
+            type="button"
             size="sm"
             variant="outline"
             onClick={() => onTestConnection(profile)}
@@ -269,12 +277,15 @@ export const ProfileEditor: React.FC<ProfileEditorProps> = ({
         {activeId !== profile.id && (
           <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
             <div className="flex flex-col">
-              <span className="text-xs font-medium">Use as Fallback</span>
+              <span className="text-xs font-medium" id={`fallback-label-${profile.id}`}>
+                Use as Fallback
+              </span>
               <span className="text-[10px] text-muted-foreground">
                 Add to fallback chain if active profile fails.
               </span>
             </div>
             <Switch
+              aria-labelledby={`fallback-label-${profile.id}`}
               checked={fallbackIds.includes(profile.id)}
               onCheckedChange={() => onToggleFallback(profile.id)}
               disabled={!profile.enabled}

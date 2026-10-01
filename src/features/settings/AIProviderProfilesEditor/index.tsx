@@ -1,5 +1,5 @@
 import React from 'react';
-import { RefreshCw, ShieldCheck } from 'lucide-react';
+import { RefreshCw, ShieldCheck, AlertTriangle } from 'lucide-react';
 import { UserSettings } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -29,6 +29,8 @@ export const AIProviderProfilesEditor: React.FC<AIProviderProfilesEditorProps> =
     activeId,
     fallbackIds,
     editingProfile,
+    loadError,
+    retryLoad,
     handleAddProfile,
     handleDuplicateProfile,
     handleDeleteProfile,
@@ -42,7 +44,26 @@ export const AIProviderProfilesEditor: React.FC<AIProviderProfilesEditorProps> =
     handleSave,
   } = useAIProviderEditor(onSave);
 
-  if (!settings) return <div className="p-8 text-center">Loading profiles...</div>;
+  if (loadError) {
+    return (
+      <Alert variant="destructive" className="m-4">
+        <AlertTriangle className="h-4 w-4" />
+        <AlertDescription className="flex flex-1 flex-wrap items-center justify-between gap-3">
+          <span>Could not load AI provider profiles: {loadError}</span>
+          <Button type="button" variant="outline" size="sm" onClick={retryLoad}>
+            <RefreshCw className="h-3 w-3 mr-2" /> Retry
+          </Button>
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
+  if (!settings)
+    return (
+      <div className="p-8 text-center" role="status">
+        Loading profiles...
+      </div>
+    );
 
   return (
     <div className={cn('flex flex-col h-full space-y-4', className)}>
@@ -94,8 +115,14 @@ export const AIProviderProfilesEditor: React.FC<AIProviderProfilesEditorProps> =
             URLs.
           </AlertDescription>
         </Alert>
-        <Button onClick={handleSave} disabled={isSaving} className="min-w-[100px]">
-          {isSaving ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : 'Save All'}
+        <Button type="button" onClick={handleSave} disabled={isSaving} className="min-w-[100px]">
+          {isSaving ? (
+            <>
+              <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> Saving...
+            </>
+          ) : (
+            'Save All'
+          )}
         </Button>
       </div>
     </div>

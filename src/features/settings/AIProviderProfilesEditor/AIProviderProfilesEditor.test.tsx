@@ -3,6 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { AIProviderProfilesEditor } from './index';
 import * as settingsService from '@/services/core/settingsService';
 import * as aiConfigService from '@/services/ai/aiConfigService';
+import * as notificationService from '@/services/core/notificationService';
 import { UserSettings } from '@/types';
 
 vi.mock('@/services/core/settingsService', () => ({
@@ -13,6 +14,12 @@ vi.mock('@/services/core/settingsService', () => ({
 vi.mock('@/services/ai/aiConfigService', () => ({
   testAIConnection: vi.fn(),
   getServiceWithOptions: vi.fn(),
+}));
+
+vi.mock('@/services/core/notificationService', () => ({
+  notificationService: {
+    confirm: vi.fn(),
+  },
 }));
 
 // Mock sonner toast
@@ -125,5 +132,51 @@ describe('AIProviderProfilesEditor', () => {
         source: 'explicit',
       })
     );
+  });
+
+  it('keeps the profile when delete confirmation is declined', async () => {
+    vi.mocked(notificationService.notificationService.confirm).mockResolvedValue(false);
+    render(<AIProviderProfilesEditor />);
+    await waitFor(() => screen.getByText('Default Profile'));
+
+    fireEvent.click(screen.getAllByTitle('Delete')[1]);
+
+    await waitFor(() => {
+      expect(notificationService.notificationService.confirm).toHaveBeenCalled();
+    });
+    expect(screen.getAllByText('Fallback Profile').length).toBeGreaterThan(0);
+  });
+
+  it('removes the profile and its fallback entry once confirmed', async () => {
+    vi.mocked(notificationService.notificationService.confirm).mockResolvedValue(true);
+    render(<AIProviderProfilesEditor />);
+    await waitFor(() => screen.getByText('Default Profile'));
+
+    fireEvent.click(screen.getAllByTitle('Delete')[1]);
+
+    await waitFor(() => {
+      expect(screen.queryByDisplayValue('Fallback Profile')).toBeNull();
+    });
+    expect(screen.queryByLabelText('Remove Fallback Profile from the fallback chain')).toBeNull();
+  });
+
+  it('surfaces a load failure with a retry that recovers', async () => {
+    vi.mocked(settingsService.loadUserSettings)
+      .mockRejectedValueOnce(new Error('Database unavailable'))
+      .mockResolvedValue(mockSettings);
+
+    render(<AIProviderProfilesEditor />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Database unavailable/)).toBeDefined();
+    });
+    expect(screen.queryByText('Loading profiles...')).toBeNull();
+
+    fireEvent.click(screen.getByText('Retry'));
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue('Default Profile')).toBeDefined();
+    });
+    expect(screen.queryByText(/Database unavailable/)).toBeNull();
   });
 });

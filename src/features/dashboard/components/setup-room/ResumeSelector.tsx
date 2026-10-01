@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Upload, Sparkles, Briefcase } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -45,11 +45,13 @@ export const ResumeSelector: React.FC<ResumeSelectorProps> = ({
   onAnalyzeResume,
   onFindJobClick,
 }) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   return (
     <div className="space-y-2 md:space-y-3">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap justify-between items-center gap-2">
         <Label htmlFor="resumeText">Resume / CV Content</Label>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button
             type="button"
             variant="outline"
@@ -60,22 +62,25 @@ export const ResumeSelector: React.FC<ResumeSelectorProps> = ({
             <Briefcase className="mr-2 h-4 w-4" /> Find Job with CV
           </Button>
           <LoadingButton
+            type="button"
             variant="outline"
             size="sm"
             isLoading={isParsing}
             loadingText="Reading PDF..."
             disabled={isParsing}
-            className="relative"
+            onClick={() => fileInputRef.current?.click()}
           >
             <Upload className="mr-2 h-4 w-4" /> Upload PDF/TXT
-            <input
-              type="file"
-              accept=".pdf,.txt"
-              className="absolute inset-0 opacity-0 cursor-pointer"
-              onChange={onFileUpload}
-              disabled={isParsing}
-            />
           </LoadingButton>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".pdf,.txt"
+            className="sr-only"
+            aria-label="Upload PDF or TXT resume"
+            onChange={onFileUpload}
+            disabled={isParsing}
+          />
         </div>
       </div>
 

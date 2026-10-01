@@ -58,7 +58,8 @@ export function useSetupResumes(
             updatedAt: Date.now(),
             isMain: false,
           };
-          const newId = await db.resumes.add(newResume);
+          // Dexie's `creating` hook mutates the passed object, so hand it a copy.
+          const newId = await db.resumes.add({ ...newResume });
           const savedResume = { ...newResume, id: newId };
           setSavedResumes((prev) => [savedResume, ...prev]);
           setSelectedResumeId(newId);
@@ -131,7 +132,7 @@ export function useSetupResumes(
       const config = getStoredAIConfig();
       if (!config.apiKey) {
         toast.error('Please set your API Key first.');
-        return;
+        throw new Error('Missing AI API key');
       }
       try {
         let sourceData = resumeToTailor.parsedData;
@@ -152,6 +153,8 @@ export function useSetupResumes(
       } catch (error) {
         logger.error(error);
         toast.error('Failed to tailor resume: ' + getErrorMessage(error));
+        // Propagate so TailorResumeModal keeps the dialog open with the JD intact.
+        throw error;
       }
     },
     [resumeToTailor, navigate]
@@ -199,7 +202,7 @@ export function useSetupResumes(
             formatted: true,
             isMain: false,
           };
-          const newId = await db.resumes.add(newResume);
+          const newId = await db.resumes.add({ ...newResume });
           setSavedResumes((prev) => [{ ...newResume, id: newId }, ...prev]);
           setSelectedResumeId(newId);
         } catch (e) {

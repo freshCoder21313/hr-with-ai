@@ -5,9 +5,27 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { LoadingButton } from '@/components/ui/loading-button';
+import { Switch } from '@/components/ui/switch';
 import { isNonEmptyString } from '@/lib/validation';
 import { SavedJob } from '@/types/jobs';
 import { SetupFormData } from '@/types';
+
+const NATIVE_SELECT_CLASS =
+  'flex h-11 w-full items-center rounded-md border border-input bg-background px-3 py-2 pr-10 text-sm text-foreground ring-offset-background transition-colors appearance-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50';
+
+/** A native `<select>` with a chevron overlay that never eats clicks. */
+const NativeSelect: React.FC<React.SelectHTMLAttributes<HTMLSelectElement>> = ({
+  className,
+  children,
+  ...props
+}) => (
+  <div className="relative">
+    <select {...props} className={`${NATIVE_SELECT_CLASS}${className ? ` ${className}` : ''}`}>
+      {children}
+    </select>
+    <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 opacity-50" />
+  </div>
+);
 
 interface JobDetailsFormProps {
   formData: SetupFormData;
@@ -19,7 +37,9 @@ interface JobDetailsFormProps {
   onDeleteJob: (e: React.MouseEvent, id: number) => void;
   onResearchCompany: () => void;
   onTogglePanel: () => void;
-  onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
+  onChange: (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => void;
 }
 
 export const JobDetailsForm: React.FC<JobDetailsFormProps> = ({
@@ -39,22 +59,22 @@ export const JobDetailsForm: React.FC<JobDetailsFormProps> = ({
       {/* Saved Jobs Selector */}
       <div className="flex items-center gap-4 bg-muted/30 p-4 rounded-lg border border-border">
         <div className="flex-1">
-          <Label className="mb-2 block">Load Saved Job</Label>
-          <div className="relative">
-            <select
-              value={selectedJobId}
-              onChange={onSelectSavedJob}
-              className="flex h-11 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 appearance-none"
-            >
-              <option value="new">+ New / Custom Job</option>
-              {savedJobs.map((job) => (
-                <option key={job.id} value={job.id?.toString()}>
-                  {job.jobTitle} @ {job.company}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="absolute right-3 top-3 h-4 w-4 opacity-50" />
-          </div>
+          <Label htmlFor="savedJob" className="mb-2 block">
+            Load Saved Job
+          </Label>
+          <NativeSelect
+            id="savedJob"
+            name="savedJob"
+            value={selectedJobId}
+            onChange={onSelectSavedJob}
+          >
+            <option value="new">+ New / Custom Job</option>
+            {savedJobs.map((job) => (
+              <option key={job.id} value={job.id?.toString()}>
+                {job.jobTitle} @ {job.company}
+              </option>
+            ))}
+          </NativeSelect>
         </div>
         <div className="flex items-end h-[62px] pb-[2px]">
           <Button
@@ -73,7 +93,8 @@ export const JobDetailsForm: React.FC<JobDetailsFormProps> = ({
               type="button"
               variant="destructive"
               size="icon"
-              onClick={(e) => onDeleteJob(e, parseInt(selectedJobId))}
+              aria-label="Delete this saved job"
+              onClick={(e) => onDeleteJob(e, parseInt(selectedJobId, 10))}
               title="Delete this saved job"
             >
               <Trash2 className="w-4 h-4" />
@@ -99,12 +120,12 @@ export const JobDetailsForm: React.FC<JobDetailsFormProps> = ({
             <LoadingButton
               type="button"
               variant="ghost"
-              size="sm"
+              size="xs"
               onClick={onResearchCompany}
               disabled={isResearching || !isNonEmptyString(formData.company)}
               isLoading={isResearching}
               loadingText="Researching..."
-              className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 p-0 h-auto"
+              className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 px-0"
               leftIcon={<Search className="w-3 h-3" />}
             >
               Auto-Research Company
@@ -142,73 +163,44 @@ export const JobDetailsForm: React.FC<JobDetailsFormProps> = ({
         </div>
         <div className="space-y-2 md:space-y-3">
           <Label htmlFor="language">Language</Label>
-          <select
-            id="language"
-            name="language"
-            value={formData.language}
-            onChange={onChange}
-            className="flex h-11 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-          >
+          <NativeSelect id="language" name="language" value={formData.language} onChange={onChange}>
             <option value="en-US">English (US)</option>
             <option value="vi-VN">Tiếng Việt</option>
-          </select>
+          </NativeSelect>
         </div>
         <div className="space-y-2 md:space-y-3">
           <Label htmlFor="type">Interview Type</Label>
-          <select
-            id="type"
-            name="type"
-            value={formData.type}
-            onChange={onChange}
-            className="flex h-11 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-          >
+          <NativeSelect id="type" name="type" value={formData.type} onChange={onChange}>
             <option value="standard">Standard</option>
             <option value="coding">Coding (Technical)</option>
             <option value="system_design">System Design</option>
             <option value="behavioral">Behavioral (STAR)</option>
-          </select>
+          </NativeSelect>
         </div>
         <div className="space-y-2 md:space-y-3">
           <Label htmlFor="mode">Interaction Mode</Label>
-          <select
-            id="mode"
-            name="mode"
-            value={formData.mode}
-            onChange={onChange}
-            className="flex h-11 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-          >
+          <NativeSelect id="mode" name="mode" value={formData.mode} onChange={onChange}>
             <option value="text">Text Chat</option>
             <option value="voice">Voice Interview</option>
             <option value="hybrid">Hybrid (Text + Voice)</option>
-          </select>
+          </NativeSelect>
         </div>
         <div className="space-y-2 md:space-y-3">
           <Label htmlFor="isPanel" className="flex items-center gap-2 cursor-pointer">
             <Users className="w-4 h-4 text-primary" /> Panel Interview
           </Label>
-          <button
-            type="button"
-            role="switch"
-            aria-checked={formData.isPanel}
-            className={`flex w-full text-left items-center gap-3 p-3 rounded-md border transition-all cursor-pointer ${
-              formData.isPanel
-                ? 'bg-primary/5 border-primary/30 ring-1 ring-primary/20'
-                : 'bg-background border-input hover:bg-accent/50'
-            }`}
-            onClick={onTogglePanel}
-          >
-            <div
-              className={`w-10 h-5 rounded-full relative transition-colors ${formData.isPanel ? 'bg-primary' : 'bg-muted'}`}
-            >
-              <div
-                className={`absolute top-1 left-1 w-3 h-3 rounded-full bg-white transition-transform ${formData.isPanel ? 'translate-x-5' : ''}`}
-              />
-            </div>
-            <span className="text-sm font-medium">
+          <div className="flex items-center gap-3 p-3 rounded-md border border-input">
+            <Switch
+              id="isPanel"
+              checked={formData.isPanel}
+              onCheckedChange={onTogglePanel}
+              aria-describedby="isPanel-description"
+            />
+            <span className="text-sm font-medium" id="isPanel-status">
               {formData.isPanel ? 'Enabled' : 'Disabled'}
             </span>
-          </button>
-          <p className="text-[10px] text-muted-foreground italic">
+          </div>
+          <p id="isPanel-description" className="text-[10px] text-muted-foreground italic">
             AI will simulate multiple interviewers.
           </p>
         </div>
@@ -218,18 +210,17 @@ export const JobDetailsForm: React.FC<JobDetailsFormProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
         <div className="space-y-2 md:space-y-3">
           <Label htmlFor="difficulty">Difficulty Level</Label>
-          <select
+          <NativeSelect
             id="difficulty"
             name="difficulty"
             value={formData.difficulty}
             onChange={onChange}
-            className="flex h-11 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <option value="easy">Easy (Friendly)</option>
             <option value="medium">Medium (Standard)</option>
             <option value="hard">Hard (Strict)</option>
             <option value="hardcore">Hardcore (Pressure)</option>
-          </select>
+          </NativeSelect>
         </div>
         <div className="space-y-2 md:space-y-3">
           <Label htmlFor="companyStatus">Company Status</Label>
