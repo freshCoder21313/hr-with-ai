@@ -1,4 +1,4 @@
-import React, { useId, useState } from 'react';
+import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { useSkillAssessmentStore } from '@/features/skill-assessment/stores/useSkillAssessmentStore';
 import { Button } from '@/components/ui/button';
 import {
@@ -10,8 +10,18 @@ import {
   CardFooter,
 } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { ChevronLeft, ChevronRight, Play, Lightbulb, ArrowLeft, Loader2 } from 'lucide-react';
+import {
+  ChevronLeft,
+  ChevronRight,
+  Play,
+  Lightbulb,
+  ArrowLeft,
+  Loader2,
+  AlertCircle,
+  RefreshCw,
+} from 'lucide-react';
 import { notificationService } from '@/services/core/notificationService';
+import { useGenerateQuiz } from '@/features/skill-assessment/hooks/useGenerateQuiz';
 
 export const QuizStep: React.FC = () => {
   const {
@@ -20,11 +30,27 @@ export const QuizStep: React.FC = () => {
     answerQuestion,
     calculateScore,
     selectedSkill,
-    setStep,
     clearQuiz,
+    setStep,
+    isLoading,
+    error,
+    setError,
   } = useSkillAssessmentStore();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [justSelectedOption, setJustSelectedOption] = useState<string | null>(null);
+  // The 900ms auto-advance is owned here so manual navigation and unmount can
+  // cancel it; otherwise it fires later and skips a question nobody chose.
+  const advanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { generate } = useGenerateQuiz();
+
+  const clearAdvanceTimer = useCallback(() => {
+    if (advanceTimer.current !== null) {
+      clearTimeout(advanceTimer.current);
+      advanceTimer.current = null;
+    }
+  }, []);
+
+  useEffect(() => clearAdvanceTimer, [clearAdvanceTimer]);
   // A Radix Tooltip is hover-only, so the hint is unreachable by touch. An
   // inline disclosure is operable by mouse, keyboard and screen reader alike.
   const [hintOpen, setHintOpen] = useState(false);
@@ -34,36 +60,53 @@ export const QuizStep: React.FC = () => {
   const isLastQuestion = currentIndex === quizQuestions.length - 1;
   const isFirstQuestion = currentIndex === 0;
 
+  const goToQuestion = useCallback(
+    (index: number) => {
+      clearAdvanceTimer();
+      setJustSelectedOption(null);
+      setCurrentIndex(index);
+    },
+    [clearAdvanceTimer]
+  );
+
   const handleNext = () => {
-    if (!isLastQuestion) setCurrentIndex((prev) => prev + 1);
+    if (!isLastQuestion) goToQuestion(currentIndex + 1);
   };
 
   const handlePrev = () => {
-    if (!isFirstQuestion) setCurrentIndex((prev) => prev - 1);
+    if (!isFirstQuestion) goToQuestion(currentIndex - 1);
   };
 
   const handleAnswer = (option: string) => {
+    clearAdvanceTimer();
     // Only auto-advance if the question was previously unanswered
     const isNewAnswer = !userAnswers[question.id];
     setJustSelectedOption(option);
     answerQuestion(question.id, option);
 
     if (!isLastQuestion && isNewAnswer) {
-      setTimeout(() => {
-        setJustSelectedOption(null);
-        handleNext();
+      advanceTimer.current = setTimeout(() => {
+        advanceTimer.current = null;
+        goToQuestion(currentIndex + 1);
       }, 900);
     } else {
-      setTimeout(() => setJustSelectedOption(null), 900);
+      advanceTimer.current = setTimeout(() => {
+        advanceTimer.current = null;
+        setJustSelectedOption(null);
+      }, 900);
     }
   };
 
   const handleBackToSkills = async () => {
-    const confirmed = await notificationService.confirm({
-      title: 'Leave quiz?',
-      message: 'Progress will be lost.',
-      variant: 'destructive',
-    });
+    // With no questions on screen there is no progress to lose, so an escape
+    // hatch must not sit behind a confirmation the user has to reason about.
+    const confirmed =
+      quizQuestions.length === 0 ||
+      (await notificationService.confirm({
+        title: 'Leave quiz?',
+        message: 'Progress will be lost.',
+        variant: 'destructive',
+      }));
     if (confirmed) {
       clearQuiz();
       setStep('select_skill');
@@ -74,18 +117,52 @@ export const QuizStep: React.FC = () => {
     calculateScore();
   };
 
+  // No question is a legitimate outcome (generation failed or came back empty),
+  // so it needs a way out instead of an endless busy spinner.
   if (!question) {
+    if (isLoading) {
+      return (
+        <div
+          role="status"
+          aria-busy="true"
+          className="flex flex-col items-center justify-center gap-3 max-w-6xl mx-auto mt-4 md:mt-8 px-4 min-h-[40dvh]"
+        >
+          <Loader2 className="w-8 h-8 animate-spin text-primary" aria-hidden="true" />
+          <span className="sr-only">Loading questions…</span>
+          <span aria-hidden="true" className="text-sm text-muted-foreground">
+            Loading questions…
+          </span>
+        </div>
+      );
+    }
+
     return (
       <div
-        role="status"
-        aria-busy="true"
-        className="flex flex-col items-center justify-center gap-3 max-w-6xl mx-auto mt-4 md:mt-8 px-4 min-h-[40dvh]"
+        role="alert"
+        className="flex flex-col items-center justify-center gap-4 max-w-6xl mx-auto mt-4 md:mt-8 px-4 min-h-[40dvh] text-center"
       >
-        <Loader2 className="w-8 h-8 animate-spin text-primary" aria-hidden="true" />
-        <span className="sr-only">Loading questions…</span>
-        <span aria-hidden="true" className="text-sm text-muted-foreground">
-          Loading questions…
-        </span>
+        <AlertCircle className="w-8 h-8 text-destructive" aria-hidden="true" />
+        <div className="space-y-1">
+          <p className="font-medium text-foreground">No questions are available</p>
+          <p className="text-sm text-muted-foreground">
+            {error ?? 'The AI returned an empty question set for this skill.'}
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={handleBackToSkills} className="gap-2">
+            <ArrowLeft className="w-4 h-4" /> Back to Skills
+          </Button>
+          <Button
+            onClick={() => {
+              setError(null);
+              if (selectedSkill) void generate(selectedSkill);
+            }}
+            disabled={isLoading || !selectedSkill}
+            className="gap-2"
+          >
+            <RefreshCw className="w-4 h-4" /> Retry
+          </Button>
+        </div>
       </div>
     );
   }
@@ -286,7 +363,7 @@ export const QuizStep: React.FC = () => {
                       key={q.id}
                       variant="outline"
                       className={btnClass}
-                      onClick={() => setCurrentIndex(idx)}
+                      onClick={() => goToQuestion(idx)}
                       title={`Question ${idx + 1}`}
                     >
                       {idx + 1}

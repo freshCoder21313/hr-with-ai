@@ -38,7 +38,7 @@ const SkillAssessmentPage: React.FC = () => {
     setStep(targetStep);
   };
   return (
-    <div className="container py-6">
+    <div className="container mx-auto py-6">
       <h1 className="text-3xl font-bold mb-8 text-center tracking-tight text-foreground">
         Skill Assessment
       </h1>

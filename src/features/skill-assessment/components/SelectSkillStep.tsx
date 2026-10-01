@@ -1,11 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
 import { useSkillAssessmentStore } from '@/features/skill-assessment/stores/useSkillAssessmentStore';
-import {
-  generateSubSkills,
-  generateQuiz,
-} from '@/features/skill-assessment/services/skillAssessmentAiService';
+import { useGenerateQuiz } from '@/features/skill-assessment/hooks/useGenerateQuiz';
 import { getStoredAIConfig } from '@/services/ai/aiConfigService';
 import { isNonEmptyString } from '@/lib/validation';
 import { Button } from '@/components/ui/button';
@@ -30,16 +26,12 @@ export const SelectSkillStep: React.FC = () => {
     setSelectedSkill,
     quizQuestionCount,
     setQuizQuestionCount,
-    setSubSkills,
-    setQuizQuestions,
-    setStep,
-    setIsLoading,
-    setError,
     isLoading,
     error,
     setExtractedSkills,
   } = useSkillAssessmentStore();
 
+  const { generate } = useGenerateQuiz();
   const [manualSkill, setManualSkill] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [hasApiKey, setHasApiKey] = useState(() => !!getStoredAIConfig().apiKey);
@@ -59,36 +51,11 @@ export const SelectSkillStep: React.FC = () => {
       return;
     }
 
-    const config = getStoredAIConfig();
+    const outcome = await generate(selectedSkill);
 
-    if (!config.apiKey) {
+    if (outcome === 'missing-api-key') {
       openApiKeyModal();
       toast.error('Please configure an AI API key to start a real assessment.');
-      // The quiz is scored against a real answer key, so there is nothing to
-      // fall back to: block instead of faking a score the user would believe.
-      setError('An AI API key is required to generate a real assessment. Add one to continue.');
-      return;
-    }
-
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      const subSkills = await generateSubSkills(selectedSkill, config);
-      setSubSkills(subSkills);
-
-      const questions = await generateQuiz(selectedSkill, subSkills, quizQuestionCount, config);
-      if (!questions || questions.length === 0) {
-        throw new Error('Failed to generate quiz questions');
-      }
-
-      setQuizQuestions(questions);
-      setStep('quiz');
-    } catch (err) {
-      logger.error(err);
-      setError(err instanceof Error ? err.message : 'Failed to initialize assessment');
-    } finally {
-      setIsLoading(false);
     }
   };
 

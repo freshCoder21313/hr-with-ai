@@ -26,7 +26,7 @@ export const ExtractionModeToggle: React.FC<ExtractionModeToggleProps> = ({
   onValueChange,
 }) => {
   return (
-    <div className="flex flex-col sm:flex-row items-start gap-3 bg-muted/30 p-3 rounded-lg inline-flex w-full sm:w-auto">
+    <div className="flex w-full flex-col items-stretch gap-3 rounded-lg bg-muted/30 p-3 sm:w-fit sm:flex-row sm:items-center">
       <Label htmlFor="extraction-mode" className="whitespace-nowrap font-medium text-sm">
         Extraction Method:
       </Label>
@@ -42,7 +42,7 @@ export const ExtractionModeToggle: React.FC<ExtractionModeToggleProps> = ({
           </SelectContent>
         </Select>
       </div>
-      <p aria-live="polite" className="text-xs text-muted-foreground sm:max-w-xs">
+      <p aria-live="polite" className="text-xs text-muted-foreground sm:w-64">
         {MODE_DESCRIPTIONS[value]}
       </p>
     </div>
