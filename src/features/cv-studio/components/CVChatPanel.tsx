@@ -1,9 +1,15 @@
 import { Resume, Message } from '@/types';
 import { ProposedChange } from '../utils/cvChatUtils';
+import { InteractiveQuestion, InteractiveQuestionGroup } from '@/services/ai/schemas';
 import { Job } from '../stores/useJobStore';
 import { ChatArea } from '@/features/interview/components/ChatArea';
 import { SimpleInputArea } from '@/components/shared/SimpleInputArea';
 import { ChangeReviewCard } from './ChangeReviewCard';
+import {
+  InteractiveQuestionCard,
+  InteractiveQuestionAnswer,
+  InteractiveQuestionAnswers,
+} from './InteractiveQuestionCard';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Label } from '@/components/ui/label';
@@ -33,15 +39,25 @@ import {
 interface CVChatPanelProps {
   messages: Message[];
   isTyping: boolean;
+  canRetry?: boolean;
   mainCV: Resume | null;
   chatResumeId: number | undefined;
   pendingChanges: ProposedChange[] | null;
   pendingChangeId: string | null;
+  activeQuestionGroup?: InteractiveQuestionGroup | null;
+  activeQuestion?: InteractiveQuestion | null;
   resumes: Resume[];
   contextResumeId: number | undefined;
   contextJobId: string | undefined;
   jobs: Job[];
   onSendMessage: (text: string, image?: string) => void;
+  onRetryLastResponse?: () => void;
+  onAnswerQuestionGroup?: (
+    group: InteractiveQuestionGroup,
+    answers: InteractiveQuestionAnswers
+  ) => void;
+  onAnswerQuestion?: (question: InteractiveQuestion, answer: InteractiveQuestionAnswer) => void;
+  onSkipQuestion?: () => void;
   onAcceptChange: (change: ProposedChange) => Promise<void>;
   onRejectChange: (change: ProposedChange) => void;
   onChatCVChange: (id: number) => void;
@@ -56,15 +72,22 @@ interface CVChatPanelProps {
 export const CVChatPanel: React.FC<CVChatPanelProps> = ({
   messages,
   isTyping,
+  canRetry,
   mainCV,
   chatResumeId,
   pendingChanges,
   pendingChangeId,
+  activeQuestionGroup,
+  activeQuestion,
   resumes,
   contextResumeId,
   contextJobId,
   jobs,
   onSendMessage,
+  onRetryLastResponse,
+  onAnswerQuestionGroup,
+  onAnswerQuestion,
+  onSkipQuestion,
   onAcceptChange,
   onRejectChange,
   onChatCVChange,
@@ -85,6 +108,16 @@ export const CVChatPanel: React.FC<CVChatPanelProps> = ({
     }
     setRenameOpen(false);
   };
+
+  const currentGroup = activeQuestionGroup
+    ? activeQuestionGroup
+    : activeQuestion
+      ? {
+          id: activeQuestion.id,
+          questions: [activeQuestion],
+          submitLabel: activeQuestion.submitLabel,
+        }
+      : null;
 
   return (
     <div className="flex flex-col border-r border-border bg-background overflow-hidden w-full md:w-[38%] md:min-w-[280px]">
@@ -235,13 +268,18 @@ export const CVChatPanel: React.FC<CVChatPanelProps> = ({
         </div>
       </div>
 
-      <ChatArea messages={messages} isProcessing={isTyping} />
+      <ChatArea
+        messages={messages}
+        isProcessing={isTyping}
+        onRetry={canRetry ? onRetryLastResponse : undefined}
+        onRegenerate={canRetry ? onRetryLastResponse : undefined}
+      />
 
       {pendingChanges && pendingChanges.length > 0 && (
         <div className="border-t border-border bg-amber-500/5 p-3 space-y-2 max-h-48 overflow-y-auto shrink-0">
           <div className="flex items-center gap-1.5 text-xs text-amber-700 dark:text-amber-400 font-medium">
             <AlertCircle size={13} />
-            <span>Proposed Changes \u2014 review before accepting</span>
+            <span>Proposed Changes — review before accepting</span>
           </div>
           {pendingChanges.map((change, idx) => {
             const sectionOldData = mainCV?.parsedData
@@ -260,6 +298,24 @@ export const CVChatPanel: React.FC<CVChatPanelProps> = ({
               />
             );
           })}
+        </div>
+      )}
+
+      {currentGroup && !isTyping && (
+        <div className="border-t border-border bg-primary/5 p-3 shrink-0 animate-in fade-in slide-in-from-bottom-2 duration-200">
+          <InteractiveQuestionCard
+            questionGroup={currentGroup}
+            onSubmit={(answers) => {
+              if (onAnswerQuestionGroup) {
+                onAnswerQuestionGroup(currentGroup, answers);
+              } else if (onAnswerQuestion && currentGroup.questions[0]) {
+                const firstQ = currentGroup.questions[0];
+                onAnswerQuestion(firstQ, answers[firstQ.id] || { selectedOptions: [] });
+              }
+            }}
+            onSkip={onSkipQuestion}
+            disabled={isTyping}
+          />
         </div>
       )}
 

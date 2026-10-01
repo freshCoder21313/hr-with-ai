@@ -113,15 +113,22 @@ const CVStudioPage: React.FC = () => {
             <CVChatPanel
               messages={state.messages}
               isTyping={state.isTyping}
+              canRetry={state.canRetry}
               mainCV={state.mainCV}
               chatResumeId={state.chatResumeId}
               pendingChanges={state.pendingChanges}
               pendingChangeId={state.pendingChangeId}
+              activeQuestionGroup={state.activeQuestionGroup}
+              activeQuestion={state.activeQuestion}
               resumes={state.resumes}
               contextResumeId={state.contextResumeId}
               contextJobId={state.contextJobId}
               jobs={state.jobs}
               onSendMessage={actions.handleSendMessage}
+              onRetryLastResponse={actions.handleRetryLastResponse}
+              onAnswerQuestionGroup={actions.handleAnswerQuestionGroup}
+              onAnswerQuestion={actions.handleAnswerQuestion}
+              onSkipQuestion={actions.handleSkipQuestion}
               onAcceptChange={actions.handleAcceptChange}
               onRejectChange={actions.handleRejectChange}
               onChatCVChange={actions.handleChatCVChange}

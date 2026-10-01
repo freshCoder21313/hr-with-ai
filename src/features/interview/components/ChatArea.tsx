@@ -166,6 +166,8 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
                               size="xs"
                               onClick={onRetry}
                               disabled={isProcessing}
+                              aria-label="Retry"
+                              title="Thử lại phản hồi"
                               className="self-start mt-1 gap-2 border-destructive/30 hover:bg-destructive/10 text-destructive hover:text-destructive"
                             >
                               <RefreshCw size={14} />
@@ -193,6 +195,8 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
                               size="xs"
                               onClick={onRegenerate}
                               disabled={isProcessing}
+                              aria-label="Regenerate"
+                              title="Tạo lại câu trả lời"
                               className="self-start mt-1 gap-2"
                             >
                               <RefreshCw size={14} />

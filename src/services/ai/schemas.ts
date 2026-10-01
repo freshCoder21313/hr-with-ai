@@ -311,3 +311,36 @@ export const interviewFeedbackSchemaExtended = interviewFeedbackSchema.extend({
   cultureFitScore: z.number().min(0).max(10).optional(),
   badges: z.array(z.string()).optional(),
 });
+
+export const interactiveQuestionOptionSchema = z.object({
+  id: z.string(),
+  label: z.string(),
+  description: z.string().optional(),
+});
+
+export type InteractiveQuestionOption = z.infer<typeof interactiveQuestionOptionSchema>;
+
+export const interactiveQuestionSchema = z.object({
+  id: z.string(),
+  type: z.enum(['radio', 'checkbox', 'input', 'combo']),
+  question: z.string(),
+  description: z.string().optional(),
+  options: z.array(interactiveQuestionOptionSchema).optional(),
+  allowCustomInput: z.boolean().optional(),
+  inputPlaceholder: z.string().optional(),
+  minSelect: z.number().optional(),
+  maxSelect: z.number().optional(),
+  submitLabel: z.string().optional(),
+});
+
+export type InteractiveQuestion = z.infer<typeof interactiveQuestionSchema>;
+
+export const interactiveQuestionGroupSchema = z.object({
+  id: z.string(),
+  title: z.string().optional(),
+  description: z.string().optional(),
+  questions: z.array(interactiveQuestionSchema).min(1),
+  submitLabel: z.string().optional(),
+});
+
+export type InteractiveQuestionGroup = z.infer<typeof interactiveQuestionGroupSchema>;
