@@ -6,20 +6,34 @@ import { VercelRequest, VercelResponse } from '@vercel/node';
 import { neon } from '@neondatabase/serverless';
 import bcrypt from 'bcryptjs';
 
-const sql = neon(process.env.DATABASE_URL!);
+// neon() throws synchronously without a connection string; create the client only when configured
+// so the handler can answer 503 instead of the whole function crashing at import.
+const sql = process.env.DATABASE_URL ? neon(process.env.DATABASE_URL) : null;
 
 // In-memory rate limiter (per-instance). Prefer edge/Redis limits at scale.
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
-const RATE_LIMIT = parseInt(process.env.RATE_LIMIT || '20', 10);
+/**
+ * Strict positive-integer env parsing. A typo must never silently disable a
+ * protection: parseInt('abc') and parseInt('2MB') both yield a number that
+ * makes every comparison false (NaN) or absurdly small (2). Anything that is
+ * not a positive integer falls back to the default and logs one warning.
+ */
+function readPositiveInt(name: string, fallback: number): number {
+  const raw = process.env[name];
+  if (raw === undefined || raw.trim() === '') return fallback;
+  const parsed = Number(raw.trim());
+  if (Number.isInteger(parsed) && parsed > 0) return parsed;
+  console.warn(`[sync] ignoring invalid ${name}=${JSON.stringify(raw)}; using ${fallback}`);
+  return fallback;
+}
+
+const RATE_LIMIT = readPositiveInt('RATE_LIMIT', 20);
 const RATE_WINDOW_MS = 60 * 1000;
 const MAX_RATE_MAP_SIZE = 10_000;
 
 /** Max serialized backup payload (~2 MiB) */
-const MAX_PAYLOAD_BYTES = parseInt(
-  process.env.MAX_SYNC_PAYLOAD_BYTES || String(2 * 1024 * 1024),
-  10
-);
-const MIN_PASSWORD_LENGTH = parseInt(process.env.MIN_SYNC_PASSWORD_LENGTH || '8', 10);
+const MAX_PAYLOAD_BYTES = readPositiveInt('MAX_SYNC_PAYLOAD_BYTES', 2 * 1024 * 1024);
+const MIN_PASSWORD_LENGTH = readPositiveInt('MIN_SYNC_PASSWORD_LENGTH', 8);
 const SYNC_ID_RE = /^[a-zA-Z0-9]{16}$/;
 
 function checkRateLimit(ip: string): boolean {
@@ -97,7 +111,7 @@ const allowCors =
   };
 
 const handler = async (req: VercelRequest, res: VercelResponse): Promise<void> => {
-  if (!process.env.DATABASE_URL) {
+  if (!sql) {
     res.status(503).json({ error: 'Sync service unavailable' });
     return;
   }
@@ -202,6 +216,7 @@ const handler = async (req: VercelRequest, res: VercelResponse): Promise<void> =
     }
   }
 
+  res.setHeader('Allow', 'GET, OPTIONS, POST');
   res.status(405).json({ error: 'Method not allowed' });
 };
 
