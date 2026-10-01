@@ -200,8 +200,8 @@ export const InlineEdit: React.FC<InlineEditProps> = ({
         ref={triggerRef}
         role="button"
         tabIndex={0}
-        aria-label={label ? `${label}, edit` : undefined}
-        title="Click to edit"
+        aria-label={`${fieldLabel}, edit`}
+        title={label ? `Edit ${label}` : 'Edit'}
         onKeyDown={handleTriggerKeyDown}
         className="rounded-sm outline-none box-decoration-clone focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 print:outline-none"
       >

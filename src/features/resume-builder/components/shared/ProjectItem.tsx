@@ -5,11 +5,14 @@ import { LinkIcon } from 'lucide-react';
 
 interface ProjectItemProps {
   item: ResumeData['projects'][0];
+  /** Zero-based position in the project list; keeps repeated-row edit
+   *  triggers distinguishable to screen readers. */
+  index: number;
   onUpdate: (updatedItem: ResumeData['projects'][0]) => void;
   layout: 'classic' | 'modern' | 'minimalist' | 'creative';
 }
 
-export const ProjectItem: React.FC<ProjectItemProps> = ({ item, onUpdate, layout }) => {
+export const ProjectItem: React.FC<ProjectItemProps> = ({ item, index, onUpdate, layout }) => {
   if (layout === 'minimalist') {
     return (
       <div className="flex flex-col md:flex-row print:flex-row gap-4 project-item">
@@ -35,6 +38,7 @@ export const ProjectItem: React.FC<ProjectItemProps> = ({ item, onUpdate, layout
             as="p"
             multiline
             className="text-sm text-slate-700 leading-relaxed mt-2 mb-3 w-full"
+            label={`Description, project ${index + 1}`}
             value={item.description || ''}
             onSave={(val) => onUpdate({ ...item, description: val })}
           />
@@ -86,6 +90,7 @@ export const ProjectItem: React.FC<ProjectItemProps> = ({ item, onUpdate, layout
           as="p"
           multiline
           className="text-sm text-slate-600 mb-3 leading-relaxed w-full"
+          label={`Description, project ${index + 1}`}
           value={item.description || ''}
           onSave={(val) => onUpdate({ ...item, description: val })}
         />
@@ -129,6 +134,7 @@ export const ProjectItem: React.FC<ProjectItemProps> = ({ item, onUpdate, layout
           as="p"
           multiline
           className="text-xs text-slate-600 mb-2 w-full"
+          label={`Description, project ${index + 1}`}
           value={item.description || ''}
           onSave={(val) => onUpdate({ ...item, description: val })}
         />
@@ -179,6 +185,7 @@ export const ProjectItem: React.FC<ProjectItemProps> = ({ item, onUpdate, layout
             color: 'var(--color-body)',
             lineHeight: 'var(--lh-body)',
           }}
+          label={`Description, project ${index + 1}`}
           value={item.description || ''}
           onSave={(val) => onUpdate({ ...item, description: val })}
         />

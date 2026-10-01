@@ -4,12 +4,21 @@ import { InlineEdit } from '@/features/resume-builder/components/InlineEdit';
 
 interface WorkItemProps {
   item: ResumeData['work'][0];
+  /** Zero-based position in the experience list; keeps repeated-row edit
+   *  triggers distinguishable to screen readers. */
+  index: number;
   onUpdate: (updatedItem: ResumeData['work'][0]) => void;
   themeColor?: string;
   layout: 'classic' | 'modern' | 'minimalist' | 'creative';
 }
 
-export const WorkItem: React.FC<WorkItemProps> = ({ item, onUpdate, themeColor, layout }) => {
+export const WorkItem: React.FC<WorkItemProps> = ({
+  item,
+  index,
+  onUpdate,
+  themeColor,
+  layout,
+}) => {
   if (layout === 'minimalist') {
     return (
       <div className="flex flex-col md:flex-row print:flex-row gap-4 work-item">
@@ -20,6 +29,7 @@ export const WorkItem: React.FC<WorkItemProps> = ({ item, onUpdate, themeColor, 
           <InlineEdit
             as="h3"
             className="font-semibold text-slate-900 text-base inline-block"
+            label={`Job title, experience ${index + 1}`}
             value={item.position || ''}
             onSave={(val) => onUpdate({ ...item, position: val })}
           />
@@ -27,6 +37,7 @@ export const WorkItem: React.FC<WorkItemProps> = ({ item, onUpdate, themeColor, 
             as="div"
             className="text-sm text-slate-600 mb-3 inline-block"
             style={{ color: themeColor }}
+            label={`Company, experience ${index + 1}`}
             value={item.name || ''}
             onSave={(val) => onUpdate({ ...item, name: val })}
           />
@@ -34,6 +45,7 @@ export const WorkItem: React.FC<WorkItemProps> = ({ item, onUpdate, themeColor, 
             as="p"
             multiline
             className="text-sm text-slate-700 leading-relaxed mb-3 w-full"
+            label={`Description, experience ${index + 1}`}
             value={item.summary || ''}
             onSave={(val) => onUpdate({ ...item, summary: val })}
           />
@@ -55,6 +67,7 @@ export const WorkItem: React.FC<WorkItemProps> = ({ item, onUpdate, themeColor, 
           <InlineEdit
             as="h3"
             className="font-bold text-slate-800 text-lg leading-tight inline-block"
+            label={`Job title, experience ${index + 1}`}
             value={item.position || ''}
             onSave={(val) => onUpdate({ ...item, position: val })}
           />
@@ -66,6 +79,7 @@ export const WorkItem: React.FC<WorkItemProps> = ({ item, onUpdate, themeColor, 
           as="p"
           className="text-sm font-medium mb-3 inline-block"
           style={{ color: themeColor }}
+          label={`Company, experience ${index + 1}`}
           value={item.name || ''}
           onSave={(val) => onUpdate({ ...item, name: val })}
         />
@@ -73,6 +87,7 @@ export const WorkItem: React.FC<WorkItemProps> = ({ item, onUpdate, themeColor, 
           as="p"
           multiline
           className="text-sm text-slate-600 mb-3 leading-relaxed w-full"
+          label={`Description, experience ${index + 1}`}
           value={item.summary || ''}
           onSave={(val) => onUpdate({ ...item, summary: val })}
         />
@@ -102,6 +117,7 @@ export const WorkItem: React.FC<WorkItemProps> = ({ item, onUpdate, themeColor, 
           <InlineEdit
             as="h4"
             className="font-bold text-slate-800 text-base inline-block"
+            label={`Job title, experience ${index + 1}`}
             value={item.position || ''}
             onSave={(val) => onUpdate({ ...item, position: val })}
           />
@@ -109,6 +125,7 @@ export const WorkItem: React.FC<WorkItemProps> = ({ item, onUpdate, themeColor, 
             as="div"
             className="text-sm font-semibold inline-block"
             style={{ color: themeColor }}
+            label={`Company, experience ${index + 1}`}
             value={item.name || ''}
             onSave={(val) => onUpdate({ ...item, name: val })}
           />
@@ -120,6 +137,7 @@ export const WorkItem: React.FC<WorkItemProps> = ({ item, onUpdate, themeColor, 
           as="p"
           multiline
           className="text-sm text-slate-600 mb-2 w-full"
+          label={`Description, experience ${index + 1}`}
           value={item.summary || ''}
           onSave={(val) => onUpdate({ ...item, summary: val })}
         />
@@ -142,6 +160,7 @@ export const WorkItem: React.FC<WorkItemProps> = ({ item, onUpdate, themeColor, 
             as="h3"
             className="font-bold inline-block"
             style={{ fontSize: 'calc(var(--size-body) * 1.15)', color: 'var(--color-body)' }}
+            label={`Company, experience ${index + 1}`}
             value={item.name || ''}
             onSave={(val) => onUpdate({ ...item, name: val })}
           />
@@ -154,6 +173,7 @@ export const WorkItem: React.FC<WorkItemProps> = ({ item, onUpdate, themeColor, 
             as="p"
             className="font-semibold inline-block"
             style={{ fontSize: 'var(--size-body)', color: 'var(--color-body)' }}
+            label={`Job title, experience ${index + 1}`}
             value={item.position || ''}
             onSave={(val) => onUpdate({ ...item, position: val })}
           />
@@ -167,6 +187,7 @@ export const WorkItem: React.FC<WorkItemProps> = ({ item, onUpdate, themeColor, 
             color: 'var(--color-body)',
             lineHeight: 'var(--lh-body)',
           }}
+          label={`Description, experience ${index + 1}`}
           value={item.summary || ''}
           onSave={(val) => onUpdate({ ...item, summary: val })}
         />
@@ -197,6 +218,7 @@ export const WorkItem: React.FC<WorkItemProps> = ({ item, onUpdate, themeColor, 
         <InlineEdit
           as="h3"
           className="font-bold text-base"
+          label={`Job title, experience ${index + 1}`}
           value={item.position || ''}
           onSave={(val) => onUpdate({ ...item, position: val })}
         />
@@ -208,6 +230,7 @@ export const WorkItem: React.FC<WorkItemProps> = ({ item, onUpdate, themeColor, 
         as="p"
         className="text-sm font-semibold"
         style={{ color: themeColor }}
+        label={`Company, experience ${index + 1}`}
         value={item.name || ''}
         onSave={(val) => onUpdate({ ...item, name: val })}
       />
@@ -215,6 +238,7 @@ export const WorkItem: React.FC<WorkItemProps> = ({ item, onUpdate, themeColor, 
         as="p"
         multiline
         className="text-sm text-slate-700 mt-2"
+        label={`Description, experience ${index + 1}`}
         value={item.summary || ''}
         onSave={(val) => onUpdate({ ...item, summary: val })}
       />

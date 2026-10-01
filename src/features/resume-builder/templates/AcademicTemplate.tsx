@@ -44,12 +44,14 @@ const AcademicHeader = React.memo(function AcademicHeader({
         as="h1"
         className="text-3xl font-bold uppercase tracking-wider mb-2 block w-full"
         style={{ color: themeColor }}
+        label="Full name"
         value={basics.name || ''}
         onSave={(val) => onUpdate?.({ ...basics, name: val })}
       />
       <InlineEdit
         as="p"
         className="text-lg text-slate-600 italic mb-4 block w-full"
+        label="Professional headline"
         value={basics.label || ''}
         onSave={(val) => onUpdate?.({ ...basics, label: val })}
       />
@@ -147,6 +149,7 @@ const AcademicTemplate: React.FC<TemplateProps> = ({
                 as="div"
                 multiline
                 className="w-full"
+                label="Professional summary"
                 value={basics.summary || ''}
                 onSave={(val) => onUpdate?.({ ...data, basics: { ...basics, summary: val } })}
               />
@@ -171,6 +174,7 @@ const AcademicTemplate: React.FC<TemplateProps> = ({
                     <InlineEdit
                       as="h3"
                       className="font-bold text-slate-900 text-base inline-block"
+                      label={`Institution, education ${i + 1}`}
                       value={edu.institution || ''}
                       onSave={(val) => {
                         const newEdu = [...education];
@@ -210,6 +214,7 @@ const AcademicTemplate: React.FC<TemplateProps> = ({
                     <InlineEdit
                       as="h3"
                       className="font-bold text-base text-slate-900 inline-block"
+                      label={`Company, experience ${i + 1}`}
                       value={job.name || ''}
                       onSave={(val) => {
                         const newWork = [...work];
@@ -224,6 +229,7 @@ const AcademicTemplate: React.FC<TemplateProps> = ({
                   <InlineEdit
                     as="div"
                     className="font-semibold text-sm text-slate-800 mb-2 inline-block"
+                    label={`Job title, experience ${i + 1}`}
                     value={job.position || ''}
                     onSave={(val) => {
                       const newWork = [...work];
@@ -235,6 +241,7 @@ const AcademicTemplate: React.FC<TemplateProps> = ({
                     as="p"
                     multiline
                     className="text-sm text-slate-700 mb-2 leading-relaxed w-full"
+                    label={`Description, experience ${i + 1}`}
                     value={job.summary || ''}
                     onSave={(val) => {
                       const newWork = [...work];
@@ -290,6 +297,7 @@ const AcademicTemplate: React.FC<TemplateProps> = ({
                     as="p"
                     multiline
                     className="text-sm text-slate-700 mb-2 leading-relaxed w-full"
+                    label={`Description, project ${i + 1}`}
                     value={project.description || ''}
                     onSave={(val) => {
                       const newProjects = [...projects];

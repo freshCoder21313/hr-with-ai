@@ -86,7 +86,7 @@ const PreviewViewBase: React.FC<PreviewViewProps> = ({
             <Button
               variant="ghost"
               size="icon"
-              className="h-9 w-9 rounded-full"
+              className="h-9 w-9 rounded-full tour-layout-switch"
               aria-label="Switch template"
             >
               <LayoutTemplate className="w-5 h-5" />
@@ -138,7 +138,7 @@ const PreviewViewBase: React.FC<PreviewViewProps> = ({
           size="icon"
           onClick={onTranslate}
           disabled={isTranslating}
-          className="h-9 w-9 rounded-full relative"
+          className="h-9 w-9 rounded-full relative tour-translate"
           aria-label={`Translate (current: ${viewLanguage === 'en' ? 'English' : 'Vietnamese'})`}
         >
           {isTranslating ? (

@@ -36,6 +36,7 @@ export const EducationSection: React.FC<EducationSectionProps> = ({
           <EducationItem
             key={index}
             item={item}
+            index={index}
             onUpdate={(updatedItem) => handleUpdate(index, updatedItem)}
             layout={layout}
           />
@@ -59,6 +60,7 @@ export const EducationSection: React.FC<EducationSectionProps> = ({
             <EducationItem
               key={index}
               item={item}
+              index={index}
               onUpdate={(updatedItem) => handleUpdate(index, updatedItem)}
               layout={layout}
             />
@@ -85,6 +87,7 @@ export const EducationSection: React.FC<EducationSectionProps> = ({
             <EducationItem
               key={index}
               item={item}
+              index={index}
               onUpdate={(updatedItem) => handleUpdate(index, updatedItem)}
               layout={layout}
             />
@@ -101,6 +104,7 @@ export const EducationSection: React.FC<EducationSectionProps> = ({
           <EducationItem
             key={index}
             item={item}
+            index={index}
             onUpdate={(updatedItem) => handleUpdate(index, updatedItem)}
             layout={layout}
           />

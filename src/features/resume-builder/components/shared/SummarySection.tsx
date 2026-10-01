@@ -25,6 +25,7 @@ export const SummarySection: React.FC<SummarySectionProps> = ({
             as="div"
             multiline
             className="w-full"
+            label="Professional summary"
             value={summary || ''}
             onSave={onUpdate}
           />
@@ -34,7 +35,14 @@ export const SummarySection: React.FC<SummarySectionProps> = ({
   } else if (layout === 'modern') {
     return (
       <div className="mb-10 text-slate-600 text-sm leading-relaxed max-w-prose">
-        <InlineEdit as="div" multiline className="w-full" value={summary || ''} onSave={onUpdate} />
+        <InlineEdit
+          as="div"
+          multiline
+          className="w-full"
+          label="Professional summary"
+          value={summary || ''}
+          onSave={onUpdate}
+        />
       </div>
     );
   } else if (layout === 'creative') {
@@ -51,6 +59,7 @@ export const SummarySection: React.FC<SummarySectionProps> = ({
             as="div"
             multiline
             className="w-full"
+            label="Professional summary"
             value={summary || ''}
             onSave={onUpdate}
           />
@@ -84,6 +93,7 @@ export const SummarySection: React.FC<SummarySectionProps> = ({
             as="div"
             multiline
             className="w-full"
+            label="Professional summary"
             value={summary || ''}
             onSave={onUpdate}
           />

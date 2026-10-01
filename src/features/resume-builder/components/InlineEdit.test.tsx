@@ -7,7 +7,8 @@ import { InlineEdit } from './InlineEdit';
 vi.mock('@/lib/logger', () => ({ logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn() } }));
 vi.mock('sonner', () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
 
-// The trigger's accessible name is its own text (the value, or the placeholder).
+// The trigger is named by its field label (or the placeholder, then a generic
+// fallback), not by the value it happens to hold.
 const getTrigger = () => screen.getByRole('button');
 
 beforeEach(() => {
@@ -139,6 +140,32 @@ describe('InlineEdit keyboard accessibility', () => {
     rerender(<InlineEdit value="" onSave={vi.fn()} />);
     fireEvent.keyDown(getTrigger(), { key: 'Enter' });
     expect(screen.getByRole('textbox', { name: 'Edit field' })).toBeInTheDocument();
+  });
+
+  it('names the trigger and its textbox after the field, not the value', () => {
+    render(<InlineEdit as="h3" value="Acme Corp" label="Company" onSave={vi.fn()} />);
+
+    expect(getTrigger()).toHaveAccessibleName('Company, edit');
+
+    fireEvent.keyDown(getTrigger(), { key: 'Enter' });
+    expect(screen.getByRole('textbox', { name: 'Company' })).toBeInTheDocument();
+  });
+
+  it('hints at the field without implying a mouse is required', () => {
+    const { rerender } = render(<InlineEdit value="Acme" onSave={vi.fn()} />);
+    expect(getTrigger().getAttribute('title')).toBe('Edit');
+
+    rerender(<InlineEdit value="Acme" label="Company" onSave={vi.fn()} />);
+    expect(getTrigger().getAttribute('title')).toBe('Edit Company');
+    expect(getTrigger().getAttribute('title')).not.toMatch(/click/i);
+  });
+
+  it('still opens the editor from the keyboard when a label is set', () => {
+    render(<InlineEdit value="Acme" label="Company" onSave={vi.fn()} />);
+
+    fireEvent.keyDown(getTrigger(), { key: ' ' });
+
+    expect(screen.getByRole('textbox', { name: 'Company' })).toBeInTheDocument();
   });
 
   it('does not expose an editor when readOnly', () => {

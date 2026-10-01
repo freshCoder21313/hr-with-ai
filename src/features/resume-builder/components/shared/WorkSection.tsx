@@ -32,6 +32,7 @@ export const WorkSection: React.FC<WorkSectionProps> = ({ work, onUpdate, themeC
             <WorkItem
               key={index}
               item={item}
+              index={index}
               onUpdate={(updatedItem) => handleUpdate(index, updatedItem)}
               themeColor={themeColor}
               layout={layout}
@@ -54,6 +55,7 @@ export const WorkSection: React.FC<WorkSectionProps> = ({ work, onUpdate, themeC
             <WorkItem
               key={index}
               item={item}
+              index={index}
               onUpdate={(updatedItem) => handleUpdate(index, updatedItem)}
               themeColor={themeColor}
               layout={layout}
@@ -81,6 +83,7 @@ export const WorkSection: React.FC<WorkSectionProps> = ({ work, onUpdate, themeC
             <WorkItem
               key={index}
               item={item}
+              index={index}
               onUpdate={(updatedItem) => handleUpdate(index, updatedItem)}
               themeColor={themeColor}
               layout={layout}
@@ -98,6 +101,7 @@ export const WorkSection: React.FC<WorkSectionProps> = ({ work, onUpdate, themeC
           <WorkItem
             key={index}
             item={item}
+            index={index}
             onUpdate={(updatedItem) => handleUpdate(index, updatedItem)}
             themeColor={themeColor}
             layout={layout}

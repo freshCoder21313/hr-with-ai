@@ -22,6 +22,7 @@ export const ResumeHeader: React.FC<ResumeHeaderProps> = ({
         <InlineEdit
           as="h1"
           className="text-4xl font-light tracking-tight text-slate-900 mb-3 block w-full"
+          label="Full name"
           value={basics.name || ''}
           onSave={(val) => onUpdate({ ...basics, name: val })}
         />
@@ -29,6 +30,7 @@ export const ResumeHeader: React.FC<ResumeHeaderProps> = ({
           as="p"
           className="text-lg text-slate-500 mb-6 block w-full"
           style={{ color: themeColor }}
+          label="Professional headline"
           value={basics.label || ''}
           onSave={(val) => onUpdate({ ...basics, label: val })}
         />
@@ -100,12 +102,14 @@ export const ResumeHeader: React.FC<ResumeHeaderProps> = ({
             <InlineEdit
               as="h1"
               className="text-4xl font-extrabold text-slate-900 tracking-tight leading-none mb-3 break-words block w-full"
+              label="Full name"
               value={basics.name || ''}
               onSave={(val) => onUpdate({ ...basics, name: val })}
             />
             <InlineEdit
               as="p"
               className="text-xl font-semibold tracking-wide uppercase text-sm mb-4 block w-full"
+              label="Professional headline"
               value={basics.label || ''}
               onSave={(val) => onUpdate({ ...basics, label: val })}
             />
@@ -126,6 +130,7 @@ export const ResumeHeader: React.FC<ResumeHeaderProps> = ({
         <InlineEdit
           as="h1"
           className="text-2xl font-bold tracking-wide mb-2 text-white block w-full"
+          label="Full name"
           value={basics.name || ''}
           onSave={(val) => onUpdate({ ...basics, name: val })}
         />
@@ -133,6 +138,7 @@ export const ResumeHeader: React.FC<ResumeHeaderProps> = ({
           as="p"
           className="text-sm font-medium tracking-wider uppercase opacity-80 block w-full"
           style={{ color: themeColor }}
+          label="Professional headline"
           value={basics.label || ''}
           onSave={(val) => onUpdate({ ...basics, label: val })}
         />
@@ -153,6 +159,7 @@ export const ResumeHeader: React.FC<ResumeHeaderProps> = ({
             fontFamily: 'var(--font-name)',
             fontWeight: 'var(--weight-name)',
           }}
+          label="Full name"
           value={basics.name || ''}
           onSave={(val) => onUpdate({ ...basics, name: val })}
         />
@@ -160,6 +167,7 @@ export const ResumeHeader: React.FC<ResumeHeaderProps> = ({
           as="p"
           className="mb-4 block w-full font-medium"
           style={{ color: 'var(--color-heading)', fontSize: 'calc(var(--size-name) * 0.5)' }}
+          label="Professional headline"
           value={basics.label || ''}
           onSave={(val) => onUpdate({ ...basics, label: val })}
         />

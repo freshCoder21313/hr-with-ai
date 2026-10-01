@@ -5,6 +5,9 @@ import { cn } from '@/lib/utils';
 
 interface EducationItemProps {
   item: ResumeData['education'][0];
+  /** Zero-based position in the education list; keeps repeated-row edit
+   *  triggers distinguishable to screen readers. */
+  index: number;
   onUpdate: (updatedItem: ResumeData['education'][0]) => void;
   layout: 'classic' | 'modern' | 'minimalist' | 'creative';
   isSidebar?: boolean;
@@ -12,6 +15,7 @@ interface EducationItemProps {
 
 export const EducationItem: React.FC<EducationItemProps> = ({
   item,
+  index,
   onUpdate,
   layout,
   isSidebar,
@@ -26,6 +30,7 @@ export const EducationItem: React.FC<EducationItemProps> = ({
           <InlineEdit
             as="h3"
             className="font-semibold text-slate-900 text-base inline-block"
+            label={`Institution, education ${index + 1}`}
             value={item.institution || ''}
             onSave={(val) => onUpdate({ ...item, institution: val })}
           />
@@ -54,6 +59,7 @@ export const EducationItem: React.FC<EducationItemProps> = ({
         <div className={cn('font-bold text-sm', isSidebar ? 'text-white' : 'text-slate-800')}>
           <InlineEdit
             as="span"
+            label={`Institution, education ${index + 1}`}
             value={item.institution || ''}
             onSave={(val) => onUpdate({ ...item, institution: val })}
           />
@@ -76,6 +82,7 @@ export const EducationItem: React.FC<EducationItemProps> = ({
             as="h3"
             className="font-bold inline-block"
             style={{ fontSize: 'calc(var(--size-body) * 1.15)', color: 'var(--color-body)' }}
+            label={`Institution, education ${index + 1}`}
             value={item.institution || ''}
             onSave={(val) => onUpdate({ ...item, institution: val })}
           />

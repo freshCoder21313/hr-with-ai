@@ -12,7 +12,11 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { getErrorMessage } from '@/lib/utils';
 import { sanitizeResumeDataForSave } from '../SectionForms/entryIds';
 import { exportElementToPdf } from '@/services/resume/pdfExportService';
-import { TOUR_STEPS } from '@/features/resume-builder/hooks/resumeBuilderTour';
+import {
+  buildTourSteps,
+  isTerminalTourStatus,
+  TOUR_COMPLETED_KEY,
+} from '@/features/resume-builder/hooks/resumeBuilderTour';
 
 export const useResumeBuilder = () => {
   const { id } = useParams<{ id: string }>();
@@ -32,7 +36,19 @@ export const useResumeBuilder = () => {
   const [isTranslating, setIsTranslating] = useState(false);
   const [viewLanguage, setViewLanguage] = useState<'vi' | 'en'>('en');
   const [runTour, setRunTour] = useState(false);
+  // Resolved when the tour is armed, so steps whose targets are not on the
+  // page never enter the walkthrough.
+  const [tourSteps, setTourSteps] = useState(() => buildTourSteps());
   const [showStyleEditor, setShowStyleEditor] = useState(false);
+
+  // The editor has mounted by the time data resolves, so this is the first
+  // point where the tour's targets can be probed.
+  useEffect(() => {
+    if (isLoading || !data) return;
+    if (localStorage.getItem(TOUR_COMPLETED_KEY)) return;
+    setTourSteps(buildTourSteps());
+    setRunTour(true);
+  }, [isLoading, data]);
 
   // Mirror volatile state in refs so data-dependent callbacks stay referentially
   // stable across keystrokes (identities no longer change when `data` changes).
@@ -285,15 +301,21 @@ export const useResumeBuilder = () => {
     [id]
   );
 
-  useEffect(() => {
-    const hasSeenTour = localStorage.getItem('hasSeenResumeBuilderTour');
-    if (!hasSeenTour && !isLoading && data) setRunTour(true);
-  }, [isLoading, data]);
-
-  const handleTourFinish = useCallback(() => {
+  /** Close the tour and remember that it is done. Idempotent, so Skip, the
+   *  last step, an overlay click and the Escape fallback can all call it. */
+  const handleTourDismiss = useCallback(() => {
     setRunTour(false);
-    localStorage.setItem('hasSeenResumeBuilderTour', 'true');
+    localStorage.setItem(TOUR_COMPLETED_KEY, 'true');
   }, []);
+
+  /** Any Joyride status that means the walkthrough is over persists completion,
+   *  including `error`: a broken step must not bring the trap back next visit. */
+  const handleTourCallback = useCallback(
+    (status: string) => {
+      if (isTerminalTourStatus(status)) handleTourDismiss();
+    },
+    [handleTourDismiss]
+  );
 
   const handleViewMode = useCallback((mode: 'editor' | 'preview' | 'split') => {
     setShowPreview(mode === 'preview');
@@ -321,7 +343,7 @@ export const useResumeBuilder = () => {
       runTour,
       showStyleEditor,
       id,
-      tourSteps: TOUR_STEPS,
+      tourSteps,
     }),
     [
       resume,
@@ -340,6 +362,7 @@ export const useResumeBuilder = () => {
       runTour,
       showStyleEditor,
       id,
+      tourSteps,
     ]
   );
 
@@ -362,7 +385,8 @@ export const useResumeBuilder = () => {
       handleAddSection,
       handleDirectUpdate,
       handleViewMode,
-      handleTourFinish,
+      handleTourDismiss,
+      handleTourCallback,
       navigate,
       updateSection,
     }),
@@ -384,7 +408,8 @@ export const useResumeBuilder = () => {
       handleAddSection,
       handleDirectUpdate,
       handleViewMode,
-      handleTourFinish,
+      handleTourDismiss,
+      handleTourCallback,
       navigate,
       updateSection,
     ]
