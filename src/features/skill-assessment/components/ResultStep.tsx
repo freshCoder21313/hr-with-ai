@@ -11,7 +11,7 @@ export const ResultStep: React.FC = () => {
     useSkillAssessmentStore();
   const navigate = useNavigate();
 
-  // Tính điểm theo từng sub_skill
+  // Score each sub-skill separately
   const subSkillScores = useMemo(() => {
     const scores: Record<string, { total: number; correct: number }> = {};
 
@@ -35,7 +35,7 @@ export const ResultStep: React.FC = () => {
     }));
   }, [quizQuestions, userAnswers]);
 
-  // Phân loại điểm yếu
+  // Sub-skills scoring under 70% count as weaknesses
   const weaknesses = subSkillScores.filter((s) => s.score < 70);
 
   const handleDeepDive = () => {
@@ -191,12 +191,12 @@ export const ResultStep: React.FC = () => {
                   return (
                     <div
                       key={q.id}
-                      className={`p-5 border rounded-xl transition-colors ${isCorrect ? 'border-green-500/20 bg-green-500/5' : 'border-destructive/20 bg-destructive/5'}`}
+                      className={`p-5 border rounded-xl transition-colors ${isCorrect ? 'border-success/25 bg-success/5' : 'border-destructive/20 bg-destructive/5'}`}
                     >
                       <div className="flex items-start gap-3 mb-3">
                         <div className="mt-0.5">
                           {isCorrect ? (
-                            <CheckCircle className="w-5 h-5 text-green-500" />
+                            <CheckCircle className="w-5 h-5 text-success" />
                           ) : (
                             <XCircle className="w-5 h-5 text-destructive" />
                           )}
@@ -220,7 +220,7 @@ export const ResultStep: React.FC = () => {
                             <span
                               className={
                                 isCorrect
-                                  ? 'text-green-600 dark:text-green-400 font-medium'
+                                  ? 'text-foreground font-medium'
                                   : 'text-destructive font-medium'
                               }
                             >
@@ -228,11 +228,11 @@ export const ResultStep: React.FC = () => {
                             </span>
                           </div>
                           {!isCorrect && (
-                            <div className="p-3 bg-green-500/10 rounded-lg border border-green-500/20">
-                              <span className="block text-xs font-semibold uppercase text-green-600/80 dark:text-green-400/80 mb-1">
+                            <div className="p-3 bg-success/10 rounded-lg border border-success/25">
+                              <span className="block text-xs font-semibold uppercase text-muted-foreground mb-1">
                                 Correct Answer
                               </span>
-                              <span className="text-green-700 dark:text-green-400 font-medium">
+                              <span className="text-foreground font-medium">
                                 {q.correct_answer}
                               </span>
                             </div>

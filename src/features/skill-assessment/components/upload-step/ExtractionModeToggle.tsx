@@ -17,7 +17,8 @@ interface ExtractionModeToggleProps {
 const MODE_DESCRIPTIONS: Record<ExtractionMode, string> = {
   auto: 'Combines both: asks the AI, and falls back to the local parser if the AI call fails or no key is configured.',
   ai: 'Sends the full resume text to your configured AI provider to extract skills. Requires an API key.',
-  regex: 'Reads the file only on this device — it scans the skills / technologies / tools / expertise sections. Private, but it often finds nothing when your CV has no such section, and you can enter skills by hand instead.',
+  regex:
+    'Reads the file only on this device — it scans the skills / technologies / tools / expertise sections. Private, but it often finds nothing when your CV has no such section, and you can enter skills by hand instead.',
 };
 
 export const ExtractionModeToggle: React.FC<ExtractionModeToggleProps> = ({

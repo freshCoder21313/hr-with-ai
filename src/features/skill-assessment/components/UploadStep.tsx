@@ -70,7 +70,6 @@ export const UploadStep: React.FC = () => {
       setIsLoading(true);
       setIsExtracting(true);
       setError(null);
-      setError(null);
 
       let skills: string[] = [];
 
@@ -254,10 +253,7 @@ export const UploadStep: React.FC = () => {
           assessment.
         </p>
 
-        <ExtractionModeToggle
-          value={extractionMode}
-          onValueChange={setExtractionMode}
-        />
+        <ExtractionModeToggle value={extractionMode} onValueChange={setExtractionMode} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 px-2">

@@ -61,10 +61,11 @@ export const UploadTab: React.FC<UploadTabProps> = ({
             <Tooltip>
               <TooltipTrigger asChild>
                 <LoadingButton
-                  variant="ghost"
-                  size="icon"
+                  type="button"
+                  aria-label="Regenerate sync ID"
                   onClick={generateNewId}
-                  className="h-10 w-10 rounded-xl hover:bg-background hover:text-primary transition-colors"
+                  size="icon-sm"
+                  className="rounded-xl hover:bg-background hover:text-primary transition-colors"
                   isLoading={isLoading}
                   loadingText=""
                 >
@@ -78,10 +79,11 @@ export const UploadTab: React.FC<UploadTabProps> = ({
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
+                  type="button"
                   variant="ghost"
-                  size="icon"
+                  aria-label="Copy sync ID"
                   onClick={handleCopyId}
-                  className="h-10 w-10 rounded-xl hover:bg-background hover:text-primary transition-colors"
+                  className="rounded-xl hover:bg-background hover:text-primary transition-colors"
                 >
                   <Copy className="h-5 w-5" />
                 </Button>
@@ -98,8 +100,7 @@ export const UploadTab: React.FC<UploadTabProps> = ({
           </div>
           <p className="text-xs text-muted-foreground leading-relaxed">
             <span className="font-bold text-foreground">Security Notice:</span> Keep this ID
-            private. You&apos;ll need it along with your password to restore data on other
-            devices.
+            private. You&apos;ll need it along with your password to restore data on other devices.
           </p>
         </div>
       </div>
@@ -120,9 +121,15 @@ export const UploadTab: React.FC<UploadTabProps> = ({
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors"
+            aria-label="Show password"
+            aria-pressed={showPassword}
+            className="absolute right-2 top-1/2 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-xl text-muted-foreground hover:text-primary hover:bg-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+            {showPassword ? (
+              <EyeOff className="h-5 w-5" aria-hidden="true" />
+            ) : (
+              <Eye className="h-5 w-5" aria-hidden="true" />
+            )}
           </button>
         </div>
         <p className="text-[11px] text-muted-foreground font-medium px-1 italic">
@@ -153,15 +160,15 @@ export const UploadTab: React.FC<UploadTabProps> = ({
           >
             {includeApiKey ? (
               <>
-                <span className="font-bold">Warning:</span> Cloud backup will include API
-                keys, GitHub tokens, and voice-provider secrets. Only use a trusted Sync ID
-                and strong password.
+                <span className="font-bold">Warning:</span> Cloud backup will include API keys,
+                GitHub tokens, and voice-provider secrets. Only use a trusted Sync ID and strong
+                password.
               </>
             ) : (
               <>
-                <span className="font-bold">Privacy default:</span> API keys, GitHub tokens,
-                and voice secrets are <span className="font-semibold">excluded</span> from
-                this backup. Interviews and resumes still sync.
+                <span className="font-bold">Privacy default:</span> API keys, GitHub tokens, and
+                voice secrets are <span className="font-semibold">excluded</span> from this backup.
+                Interviews and resumes still sync.
               </>
             )}
           </p>

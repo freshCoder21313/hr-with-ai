@@ -102,11 +102,12 @@ export const FileUploadZone: React.FC<FileUploadZoneProps> = ({
 
         {showManual && (
           <div className="space-y-4 pt-4 border-t">
-            <Label className="text-sm font-medium">
+            <Label htmlFor="manual-skills-input" className="text-sm font-medium">
               Extraction failed. Please enter your skills manually (comma separated):
             </Label>
             <div className="flex flex-col sm:flex-row gap-3">
               <Input
+                id="manual-skills-input"
                 value={manualSkills}
                 onChange={(e) => onManualSkillsChange(e.target.value)}
                 placeholder="e.g. React, TypeScript, Node.js"

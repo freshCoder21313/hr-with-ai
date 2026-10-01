@@ -7,7 +7,11 @@ interface SyncStatusBannerProps {
   success: string | null;
   onDismiss?: () => void;
 }
-export const SyncStatusBanner: React.FC<SyncStatusBannerProps> = ({ error, success, onDismiss }) => {
+export const SyncStatusBanner: React.FC<SyncStatusBannerProps> = ({
+  error,
+  success,
+  onDismiss,
+}) => {
   return (
     <>
       {error && (

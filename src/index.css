@@ -1,5 +1,9 @@
 @import 'tailwindcss';
 @config "../tailwind.config.js";
+/* Tailwind v4 does not read `darkMode` from the JS config that `@config` loads, so the
+   `dark` variant would fall back to `prefers-color-scheme` and ignore the `.dark`
+   class the theme provider toggles on <html>. Declare it explicitly (selector strategy). */
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
   /* Safe Area Variables */
@@ -87,15 +91,19 @@
   --accent: 210 40% 96.1%;
   --accent-foreground: 222.2 47.4% 11.2%;
 
-  --destructive: 0 84.2% 60.2%;
-  /* red-500 */
+  /* Light-mode status tokens. Lightness is chosen so BOTH directions pass WCAG AA 4.5:1
+     on white: the token as body text, and the paired *-foreground on the token itself. */
+  --destructive: 0 84.2% 48%;
+  /* white-on-token 4.64:1, token-as-text 4.86:1 (was 0 84.2% 60.2% = 3.76:1) */
   --destructive-foreground: 210 40% 98%;
 
-  --success: 142 72% 39%;
+  --success: 142 72% 30%;
+  /* white-on-token 4.79:1, token-as-text 4.79:1 (was 142 72% 39% = 3.0:1) */
   --success-foreground: 0 0% 100%;
 
-  --warning: 32 95% 44%;
-  --warning-foreground: 0 0% 100%;
+  --warning: 32 95% 34%;
+  /* white-on-token 4.74:1, token-as-text 4.97:1 (was 32 95% 44% = 3.15:1) */
+  --warning-foreground: 210 40% 98%;
 
   --info: 221 83% 53%;
   --info-foreground: 0 0% 100%;
@@ -109,6 +117,10 @@
   --ring: 221.2 83.2% 53.3%;
 
   --radius: 0.5rem;
+
+  /* Let the UA render native controls (scrollbars, date pickers, form widgets) for the
+     active theme instead of the light default. */
+  color-scheme: light;
 }
 
 .dark {
@@ -138,14 +150,19 @@
   --accent: 217.2 32.6% 17.5%;
   --accent-foreground: 210 40% 98%;
 
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 210 40% 98%;
+  /* Dark-mode status tokens: light enough to read as text on the near-black background,
+     with a dark paired foreground so both directions still clear 4.5:1. */
+  --destructive: 0 62.8% 57%;
+  /* token-as-text 4.78:1, foreground-on-token 4.57:1 (was 0 62.8% 30.6% = 2.0:1) */
+  --destructive-foreground: 222.2 47.4% 6%;
 
-  --success: 142 76% 45%;
+  --success: 142 76% 33%;
+  /* token-as-text 5.1:1, foreground-on-token 4.55:1 (was 142 76% 45% = 9.18:1 / 2.08:1) */
   --success-foreground: 222.2 47.4% 11.2%;
 
-  --warning: 38 92% 50%;
-  --warning-foreground: 38 92% 10%;
+  --warning: 38 92% 39%;
+  /* token-as-text 5.8:1, foreground-on-token 4.56:1 (was 38 92% 50% = 9.35:1 / 2.04:1) */
+  --warning-foreground: 38 92% 6%;
 
   --info: 199 89% 48%;
   --info-foreground: 222.2 47.4% 11.2%;
@@ -157,6 +174,8 @@
   /* slate-800 */
   --input: 217.2 32.6% 17.5%;
   --ring: 224.3 76.3% 48%;
+
+  color-scheme: dark;
 }
 
 /* Custom scrollbar for chat area */
@@ -196,6 +215,21 @@ body {
   padding-top: var(--safe-top);
 }
 
+/* Opt-in full-height routes: a route root marked `data-app-fill` (plus `flex-1 min-h-0`)
+   fills exactly the space under the header without page scroll. Screen-only so printing
+   keeps normal flow. Without `:has()` support, layout falls back to normal page scroll. */
+@media screen {
+  .app-shell:has([data-app-fill]) {
+    height: 100dvh;
+    overflow: hidden;
+  }
+
+  .app-main:has([data-app-fill]) {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+}
 
 @page {
   size: A4;

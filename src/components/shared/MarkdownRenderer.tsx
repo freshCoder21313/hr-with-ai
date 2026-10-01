@@ -158,22 +158,20 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = memo(({ content }) => 
             {children}
           </h1>
         ),
-        h2: ({ children }) => <h2 className="text-xl font-bold mb-3 mt-5 text-foreground">{children}</h2>,
-        h3: ({ children }) => <h3 className="text-lg font-bold mb-2 mt-4 text-foreground">{children}</h3>,
+        h2: ({ children }) => (
+          <h2 className="text-xl font-bold mb-3 mt-5 text-foreground">{children}</h2>
+        ),
+        h3: ({ children }) => (
+          <h3 className="text-lg font-bold mb-2 mt-4 text-foreground">{children}</h3>
+        ),
         h4: ({ children }) => (
-          <h4 className="text-base font-bold mb-2 mt-3 text-foreground">
-            {children}
-          </h4>
+          <h4 className="text-base font-bold mb-2 mt-3 text-foreground">{children}</h4>
         ),
         h5: ({ children }) => (
-          <h5 className="text-sm font-bold mb-1 mt-2 text-muted-foreground">
-            {children}
-          </h5>
+          <h5 className="text-sm font-bold mb-1 mt-2 text-muted-foreground">{children}</h5>
         ),
         h6: ({ children }) => (
-          <h6 className="text-sm font-semibold mb-1 mt-2 text-muted-foreground">
-            {children}
-          </h6>
+          <h6 className="text-sm font-semibold mb-1 mt-2 text-muted-foreground">{children}</h6>
         ),
         hr: () => <hr className="my-6 border-t border-border" />,
         blockquote: ({ children }) => (
@@ -224,17 +222,11 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = memo(({ content }) => 
           </th>
         ),
         td: ({ children }) => (
-          <td className="px-4 py-2 whitespace-nowrap text-sm border-b border-border">
-            {children}
-          </td>
+          <td className="px-4 py-2 whitespace-nowrap text-sm border-b border-border">{children}</td>
         ),
-        del: ({ children }) => (
-          <del className="line-through text-muted-foreground">{children}</del>
-        ),
+        del: ({ children }) => <del className="line-through text-muted-foreground">{children}</del>,
         strong: ({ children }) => <strong className="font-bold text-foreground">{children}</strong>,
-        em: ({ children }) => (
-          <em className="italic text-foreground">{children}</em>
-        ),
+        em: ({ children }) => <em className="italic text-foreground">{children}</em>,
       }}
     >
       {processedContent}

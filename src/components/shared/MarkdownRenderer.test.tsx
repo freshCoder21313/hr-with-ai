@@ -17,9 +17,7 @@ describe('MarkdownRenderer url sanitization', () => {
 
   it('preserves search:, http(s) and relative links', () => {
     render(
-      <MarkdownRenderer
-        content={'[s](search:react) [h](https://example.com) [r](/docs/page)'}
-      />
+      <MarkdownRenderer content={'[s](search:react) [h](https://example.com) [r](/docs/page)'} />
     );
     expect(screen.getByText('s').getAttribute('href')).toContain('search?q=react');
     expect(screen.getByText('h').getAttribute('href')).toBe('https://example.com');

@@ -142,38 +142,38 @@ const SkillRadarChart: React.FC<SkillRadarChartProps> = ({ interviews }) => {
           className="h-full w-full"
         >
           <ResponsiveContainer width="100%" height="100%">
-          <RadarChart cx="50%" cy="50%" outerRadius="75%" data={data}>
-            <defs>
-              <linearGradient id="radarGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#6366f1" stopOpacity={0.8} />
-                <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.4} />
-              </linearGradient>
-            </defs>
-            <PolarGrid stroke={isDark ? '#334155' : '#e2e8f0'} strokeOpacity={0.5} />
-            <PolarAngleAxis
-              dataKey="subject"
-              tick={{ fill: isDark ? '#94a3b8' : '#64748b', fontSize: 11, fontWeight: 500 }}
-              tickFormatter={formatSkillLabel}
-            />
-            <PolarRadiusAxis angle={30} domain={[0, 10]} tick={false} axisLine={false} />
-            <Radar
-              name="Proficiency"
-              dataKey="proficiency"
-              stroke="#6366f1"
-              strokeWidth={2}
-              fill="url(#radarGradient)"
-              fillOpacity={0.6}
-              animationBegin={0}
-              animationDuration={1500}
-            />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: isDark ? '#1e293b' : '#fff',
-                borderRadius: '8px',
-                border: 'none',
-              }}
-            />
-          </RadarChart>
+            <RadarChart cx="50%" cy="50%" outerRadius="75%" data={data}>
+              <defs>
+                <linearGradient id="radarGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#6366f1" stopOpacity={0.8} />
+                  <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.4} />
+                </linearGradient>
+              </defs>
+              <PolarGrid stroke={isDark ? '#334155' : '#e2e8f0'} strokeOpacity={0.5} />
+              <PolarAngleAxis
+                dataKey="subject"
+                tick={{ fill: isDark ? '#94a3b8' : '#64748b', fontSize: 11, fontWeight: 500 }}
+                tickFormatter={formatSkillLabel}
+              />
+              <PolarRadiusAxis angle={30} domain={[0, 10]} tick={false} axisLine={false} />
+              <Radar
+                name="Proficiency"
+                dataKey="proficiency"
+                stroke="#6366f1"
+                strokeWidth={2}
+                fill="url(#radarGradient)"
+                fillOpacity={0.6}
+                animationBegin={0}
+                animationDuration={1500}
+              />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: isDark ? '#1e293b' : '#fff',
+                  borderRadius: '8px',
+                  border: 'none',
+                }}
+              />
+            </RadarChart>
           </ResponsiveContainer>
         </div>
         <ul className="sr-only">

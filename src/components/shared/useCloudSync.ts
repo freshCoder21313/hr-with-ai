@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { logger } from '@/lib/logger';
+import { toast } from 'sonner';
 import { syncService } from '@/services/core/syncService';
 
 export function useCloudSync() {
@@ -37,9 +38,15 @@ export function useCloudSync() {
     setSuccess(null);
   };
 
-  const handleCopyId = () => {
-    navigator.clipboard.writeText(uploadId);
-    setSuccess('ID copied to clipboard');
+  const handleCopyId = async () => {
+    try {
+      await navigator.clipboard.writeText(uploadId);
+      setSuccess('ID copied to clipboard');
+    } catch (err: unknown) {
+      logger.error('useCloudSync: clipboard write failed', err);
+      toast.error('Could not copy to clipboard. Copy the ID manually.');
+      setError('Copy failed. Copy the ID manually.');
+    }
     setTimeout(() => setSuccess(null), 2000);
   };
 
@@ -72,7 +79,8 @@ export function useCloudSync() {
       } else {
         setError(result.message || 'Upload failed');
       }
-    } catch {
+    } catch (err: unknown) {
+      logger.error('useCloudSync: upload failed', err);
       setError('An unexpected error occurred.');
     } finally {
       setIsLoading(false);
@@ -97,7 +105,8 @@ export function useCloudSync() {
       } else {
         setError(result.message || 'Download failed');
       }
-    } catch {
+    } catch (err: unknown) {
+      logger.error('useCloudSync: download failed', err);
       setError('An unexpected error occurred.');
     } finally {
       setIsLoading(false);
@@ -127,7 +136,8 @@ export function useCloudSync() {
           ? 'Backup file downloaded (includes API keys). Store it securely.'
           : 'Backup file downloaded. API keys and tokens were excluded.'
       );
-    } catch {
+    } catch (err: unknown) {
+      logger.error('useCloudSync: offline export failed', err);
       setError('Failed to export data.');
     } finally {
       setIsLoading(false);

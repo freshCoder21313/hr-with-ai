@@ -42,8 +42,8 @@ export const DownloadTab: React.FC<DownloadTabProps> = ({
             Warning
           </h3>
           <p className="text-xs text-amber-800 dark:text-amber-300 leading-relaxed opacity-90">
-            Data will be <span className="font-bold">smartly merged</span>. Newer versions
-            from cloud will update local records. Unique local data is preserved.
+            Data will be <span className="font-bold">smartly merged</span>. Newer versions from
+            cloud will update local records. Unique local data is preserved.
           </p>
         </div>
       </div>

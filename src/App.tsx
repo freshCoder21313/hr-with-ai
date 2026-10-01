@@ -26,10 +26,16 @@ const HistoryPage = lazy(() => import('@/features/history/HistoryPage'));
 const SkillAssessmentPage = lazy(() => import('@/features/skill-assessment/SkillAssessmentPage'));
 
 const PageLoader = () => (
-  <div className="flex items-center justify-center min-h-[50vh]">
+  <div className="flex items-center justify-center min-h-[50dvh]">
     <Loader2 className="w-8 h-8 animate-spin text-primary" />
   </div>
 );
+
+// Sonner's toaster is `position: fixed`, so the shell's safe-area padding does not
+// reach it. Keep its default gaps (24px desktop / 16px mobile) and add the bottom
+// inset so toasts clear the Android gesture bar / iOS home indicator.
+const TOAST_OFFSET = { bottom: 'calc(24px + var(--safe-bottom, 0px))' } as const;
+const TOAST_MOBILE_OFFSET = { bottom: 'calc(16px + var(--safe-bottom, 0px))' } as const;
 
 const App: React.FC = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -74,7 +80,7 @@ const App: React.FC = () => {
             <HashRouter>
               <GlobalErrorHandler />
               <ErrorBoundary>
-                <div className="min-h-[100dvh] flex flex-col bg-background text-foreground pt-[var(--safe-top)] pb-[var(--safe-bottom)] pl-[var(--safe-left)] pr-[var(--safe-right)] print:block print:bg-white print:min-h-0">
+                <div className="app-shell min-h-[100dvh] flex flex-col bg-background text-foreground pt-[var(--safe-top)] pb-[var(--safe-bottom)] pl-[var(--safe-left)] pr-[var(--safe-right)] print:block print:bg-white print:min-h-0">
                   <ApiKeyModal />
                   <SettingsModal open={isSettingsOpen} onOpenChange={setIsSettingsOpen} />
                   <Header onOpenSettings={() => setIsSettingsOpen(true)} />
@@ -110,10 +116,11 @@ const App: React.FC = () => {
                     position="bottom-center"
                     richColors
                     closeButton
-                    toastOptions={{ className: 'mb-safe' }}
+                    offset={TOAST_OFFSET}
+                    mobileOffset={TOAST_MOBILE_OFFSET}
                   />
 
-                  <main className="flex-1 w-full py-0 print:p-0 print:m-0 print:block print:flex-none">
+                  <main className="app-main flex-1 w-full py-0 print:p-0 print:m-0 print:block print:flex-none">
                     <Suspense fallback={<PageLoader />}>
                       <Routes>
                         <Route path="/" element={<LandingPage />} />

@@ -66,9 +66,7 @@ export const SelectSkillStep: React.FC = () => {
       toast.error('Please configure an AI API key to start a real assessment.');
       // The quiz is scored against a real answer key, so there is nothing to
       // fall back to: block instead of faking a score the user would believe.
-      setError(
-        'An AI API key is required to generate a real assessment. Add one to continue.'
-      );
+      setError('An AI API key is required to generate a real assessment. Add one to continue.');
       return;
     }
 
@@ -93,7 +91,6 @@ export const SelectSkillStep: React.FC = () => {
       setIsLoading(false);
     }
   };
-
 
   const handleAddManualSkill = () => {
     const newSkill = manualSkill.trim();

@@ -8,16 +8,6 @@ vi.mock('@/services/core/notificationService', () => ({
   notificationService: { confirm: vi.fn().mockResolvedValue(true) },
 }));
 
-vi.mock('@/components/ui/tooltip', () => {
-  const passthrough = ({ children }: { children: React.ReactNode }) => <>{children}</>;
-  return {
-    TooltipProvider: passthrough,
-    Tooltip: passthrough,
-    TooltipTrigger: passthrough,
-    TooltipContent: passthrough,
-  };
-});
-
 const q1: QuizQuestion = {
   id: 'q1',
   question: 'What is a hook?',
@@ -26,6 +16,8 @@ const q1: QuizQuestion = {
   explanation: 'Hooks are functions',
   sub_skill: 'Hooks',
 };
+
+const HINT = 'Hooks must start with "use"';
 
 describe('QuizStep accessibility', () => {
   beforeEach(() => {
@@ -49,5 +41,34 @@ describe('QuizStep accessibility', () => {
 
     fireEvent.click(option);
     expect(useSkillAssessmentStore.getState().userAnswers).toEqual({ q1: 'A function' });
+  });
+
+  it('exposes the hint as a toggleable disclosure instead of a hover-only tooltip', () => {
+    useSkillAssessmentStore.setState({ quizQuestions: [{ ...q1, hint: HINT }] });
+    render(<QuizStep />);
+
+    // The hint is not exposed until the user asks for it.
+    expect(screen.queryByText(HINT)).toBeNull();
+
+    const toggle = screen.getByRole('button', { name: 'Show hint' });
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    expect(toggle).toHaveAttribute('aria-controls');
+
+    fireEvent.click(toggle);
+
+    expect(screen.getByText(HINT)).toBeInTheDocument();
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    // aria-controls resolves to the region that actually holds the hint.
+    expect(document.getElementById(toggle.getAttribute('aria-controls')!)).toContainElement(
+      screen.getByText(HINT)
+    );
+
+    fireEvent.click(toggle);
+    expect(screen.queryByText(HINT)).toBeNull();
+  });
+
+  it('omits the hint control when the question has no hint', () => {
+    render(<QuizStep />);
+    expect(screen.queryByRole('button', { name: 'Show hint' })).toBeNull();
   });
 });

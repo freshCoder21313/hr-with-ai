@@ -16,11 +16,22 @@ const buttonVariants = cva(
         link: 'text-primary underline-offset-4 hover:underline active:scale-100',
         blue: 'bg-primary text-primary-foreground hover:bg-primary/90 focus:ring-primary',
       },
+      // Heights are responsive (touch-first on mobile). Don't shrink a sized
+      // Button with `className="h-6"`: tailwind-merge only replaces the class
+      // of the same breakpoint, so `md:h-10` survives and it renders 40px on
+      // desktop. Use a compact size instead; if you must override, set both
+      // breakpoints for height and width.
       size: {
         default: 'h-11 md:h-10 px-4 py-2',
         sm: 'h-11 md:h-9 rounded-md px-3',
         lg: 'h-12 md:h-11 rounded-md px-8',
         icon: 'h-11 w-11 md:h-10 md:w-10',
+        /** Compact text button for dense panels: 40px touch, 32px desktop. */
+        xs: 'h-10 md:h-8 rounded-md px-2.5 text-xs',
+        /** Compact icon button: 40px touch, 32px desktop. */
+        'icon-sm': 'h-10 w-10 md:h-8 md:w-8',
+        /** Dense toolbars only: 32px touch, 24px desktop (WCAG 2.2 AA floor). */
+        'icon-xs': 'h-8 w-8 md:h-6 md:w-6',
       },
     },
     defaultVariants: {

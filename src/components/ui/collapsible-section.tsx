@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import { Button } from './button';
+import React, { useId, useState } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface CollapsibleSectionProps {
+  /** Rendered inside the toggle `<button>`, so keep it phrasing content (text, spans, icons). */
   title: React.ReactNode;
   children: React.ReactNode;
   defaultOpen?: boolean;
@@ -21,24 +21,37 @@ export const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
   contentClassName,
 }) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
+  const contentId = useId();
 
   return (
     <div
       className={cn('border rounded-lg bg-card shadow-sm overflow-hidden border-border', className)}
     >
-      <div
+      <button
+        type="button"
+        aria-expanded={isOpen}
+        // Content is unmounted while collapsed, so only reference it when it exists.
+        aria-controls={isOpen ? contentId : undefined}
+        onClick={() => setIsOpen((open) => !open)}
         className={cn(
-          'flex items-center justify-between p-4 bg-muted/50 border-b border-border cursor-pointer hover:bg-muted/80 transition-colors',
+          'flex w-full items-center justify-between gap-2 p-4 text-left bg-muted/50 border-b border-border cursor-pointer hover:bg-muted/80 transition-colors',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring',
           headerClassName
         )}
-        onClick={() => setIsOpen(!isOpen)}
       >
-        <div className="font-bold text-lg text-foreground flex-1">{title}</div>
-        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 shrink-0">
+        <span className="block font-bold text-lg text-foreground flex-1">{title}</span>
+        <span
+          aria-hidden="true"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-foreground"
+        >
           {isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-        </Button>
-      </div>
-      {isOpen && <div className={cn('p-4', contentClassName)}>{children}</div>}
+        </span>
+      </button>
+      {isOpen && (
+        <div id={contentId} className={cn('p-4', contentClassName)}>
+          {children}
+        </div>
+      )}
     </div>
   );
 };

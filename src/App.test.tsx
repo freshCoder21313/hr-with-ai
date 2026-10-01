@@ -39,14 +39,19 @@ vi.mock('sonner', () => ({
 }));
 
 vi.mock('@/features/dashboard/SetupRoom', () => ({ default: () => <div data-testid="page" /> }));
-vi.mock('@/features/interview/InterviewRoom', () => ({ default: () => <div data-testid="page" /> }));
+vi.mock('@/features/interview/InterviewRoom', () => ({
+  default: () => <div data-testid="page" />,
+}));
 vi.mock('@/features/interview/FeedbackView', () => ({ default: () => <div data-testid="page" /> }));
-vi.mock('@/features/resume-builder/ResumeBuilder', () => ({ default: () => <div data-testid="page" /> }));
+vi.mock('@/features/resume-builder/ResumeBuilder', () => ({
+  default: () => <div data-testid="page" />,
+}));
 vi.mock('@/features/cv-studio/CVStudioPage', () => ({ default: () => <div data-testid="page" /> }));
 vi.mock('@/features/landing/LandingPage', () => ({ default: () => <div data-testid="page" /> }));
 vi.mock('@/features/history/HistoryPage', () => ({ default: () => <div data-testid="page" /> }));
-vi.mock('@/features/skill-assessment/SkillAssessmentPage', () => ({ default: () => <div data-testid="page" /> }));
-
+vi.mock('@/features/skill-assessment/SkillAssessmentPage', () => ({
+  default: () => <div data-testid="page" />,
+}));
 
 beforeAll(() => {
   vi.stubGlobal(
