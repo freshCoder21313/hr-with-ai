@@ -30,7 +30,9 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Pencil,
+  Sparkles,
 } from 'lucide-react';
+import { SmartJDImportModal } from './SmartJDImportModal';
 
 interface CVJobPanelProps {
   jobs: Job[];
@@ -54,6 +56,7 @@ interface CVJobPanelProps {
   onOpenPromptModal: () => void;
   onViewResult: (id: number) => void;
   onReTailorJob: (id: string) => void;
+  onOpenSmartJDModal?: () => void;
 }
 
 export const CVJobPanel: React.FC<CVJobPanelProps> = ({
@@ -78,10 +81,17 @@ export const CVJobPanel: React.FC<CVJobPanelProps> = ({
   onOpenPromptModal,
   onViewResult,
   onReTailorJob,
+  onOpenSmartJDModal,
 }) => {
   const selectedResumeName = resumes.find((r) => r.id === selectedResumeId)?.fileName;
   const [renameOpen, setRenameOpen] = useState(false);
   const [renameValue, setRenameValue] = useState('');
+  const [isSmartJDModalOpen, setIsSmartJDModalOpen] = useState(false);
+
+  const handleOpenSmartJD = () => {
+    setIsSmartJDModalOpen(true);
+    onOpenSmartJDModal?.();
+  };
 
   const handleRenameSubmit = () => {
     const trimmed = renameValue.trim();
@@ -196,6 +206,20 @@ export const CVJobPanel: React.FC<CVJobPanelProps> = ({
                 </Button>
               </TooltipTrigger>
               <TooltipContent>Add Job</TooltipContent>
+            </Tooltip>
+            <Tooltip delayDuration={0}>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon-sm"
+                  onClick={handleOpenSmartJD}
+                  aria-label="Auto-fill JD"
+                  className="text-primary hover:text-primary hover:bg-primary/10"
+                >
+                  <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>✨ Auto-Fill JD</TooltipContent>
             </Tooltip>
             <Tooltip delayDuration={0}>
               <TooltipTrigger asChild>
@@ -315,6 +339,21 @@ export const CVJobPanel: React.FC<CVJobPanelProps> = ({
             <TooltipContent side="right">Add Job</TooltipContent>
           </Tooltip>
 
+          <Tooltip delayDuration={0}>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                onClick={handleOpenSmartJD}
+                aria-label="Auto-fill JD"
+                className="text-primary hover:text-primary hover:bg-primary/10"
+              >
+                <Sparkles className="w-4 h-4" aria-hidden="true" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="right">✨ Auto-Fill JD</TooltipContent>
+          </Tooltip>
+
           <div className="flex flex-col gap-1.5 items-center mt-1">
             {jobs.map((job) => {
               const s = processingStatus[job.id]?.status || 'idle';
@@ -405,6 +444,11 @@ export const CVJobPanel: React.FC<CVJobPanelProps> = ({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <SmartJDImportModal
+        isOpen={isSmartJDModalOpen}
+        onClose={() => setIsSmartJDModalOpen(false)}
+      />
     </div>
   );
 };

@@ -127,4 +127,7 @@ export interface SetupFormData {
   companyStatus: string;
   interviewContext: string;
   isPanel?: boolean; // Panel Interview Mode
+  companyName?: string;
+  requirements?: string;
+  experienceLevel?: string;
 }

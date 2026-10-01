@@ -41,6 +41,7 @@ const SetupRoom: React.FC = () => {
               onResearchCompany={actions.handleResearchCompany}
               onTogglePanel={actions.handleTogglePanel}
               onChange={actions.handleChange}
+              onAutoFillFromRawJD={actions.handleAutoFillFromRawJD}
             />
 
             <JDInput

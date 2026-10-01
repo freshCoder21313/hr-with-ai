@@ -9,6 +9,7 @@ import { validateInterviewSetup } from '@/lib/validation';
 import { useSetupJobs } from './useSetupJobs';
 import { useSetupResumes } from './useSetupResumes';
 import { useSetupAIActions } from './useSetupAIActions';
+import { ParsedJobData } from '@/services/jobs/jdParser';
 
 interface SkillAssessmentNavigationState {
   source?: 'skill-assessment';
@@ -105,6 +106,30 @@ export const useSetupRoom = () => {
     setFormData((prev) => ({ ...prev, isPanel: !prev.isPanel }));
   }, []);
 
+  const handleAutoFillFromRawJD = useCallback((parsed: ParsedJobData) => {
+    const levelMap: Record<string, 'easy' | 'medium' | 'hard' | 'hardcore'> = {
+      intern: 'easy',
+      fresher: 'easy',
+      junior: 'easy',
+      mid: 'medium',
+      senior: 'hard',
+      lead: 'hardcore',
+      manager: 'hardcore',
+    };
+    const mappedDifficulty = parsed.experienceLevel ? levelMap[parsed.experienceLevel] : undefined;
+
+    setFormData((prev) => ({
+      ...prev,
+      company: parsed.company !== 'Target Company' ? parsed.company : prev.company,
+      companyName: parsed.company !== 'Target Company' ? parsed.company : (prev.companyName || prev.company),
+      jobTitle: parsed.title || prev.jobTitle,
+      jobDescription: parsed.description || prev.jobDescription,
+      difficulty: mappedDifficulty || prev.difficulty,
+      requirements: parsed.requirements.join(', '),
+      experienceLevel: parsed.experienceLevel || prev.experienceLevel,
+    }));
+  }, []);
+
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
@@ -168,6 +193,7 @@ export const useSetupRoom = () => {
       setIsJobModalOpen: jobs.setIsJobModalOpen,
       loadData,
       handleTogglePanel,
+      handleAutoFillFromRawJD,
     },
   };
 };
