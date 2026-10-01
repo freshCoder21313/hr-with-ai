@@ -15,6 +15,8 @@ import { voiceInterviewService } from '@/services/voice/voiceInterviewService';
 import { Message, VoiceSettings } from '@/types';
 import { getErrorMessage, nextMessageId } from '@/lib/utils';
 import { isNonEmptyString } from '@/lib/validation';
+import { createStreamPersistence } from '@/features/interview/hooks/interviewStreamPersistence';
+
 import { loadUserSettings } from '@/services/core/settingsService';
 import { speechToTextService } from '@/services/voice/speechToTextService';
 
@@ -34,8 +36,18 @@ export const useVoiceInterview = () => {
     setAudioLevel,
   } = useVoiceInterviewStore();
 
-  const { currentInterview, addMessage, updateLastMessage, markLastMessageAsError, setLoading } =
-    useInterviewStore();
+  const {
+    currentInterview,
+    addMessage,
+    updateMessageByTimestamp,
+    markMessageAsError,
+    setLoading,
+    setError,
+    beginGeneration,
+    isGenerationCurrent,
+    endGeneration,
+    setStreamingMessageId,
+  } = useInterviewStore();
 
   // Seed the store from persisted sources: the user's saved defaults first, then
   // this interview's own voice settings on top. Runs once per interview so a late
@@ -132,6 +144,9 @@ export const useVoiceInterview = () => {
 
   // Action: Start Listening
   const startListening = useCallback(async () => {
+    // Opening the mic mid-turn would capture the AI's own synthesis and hand
+    // it back as the user's next answer.
+    if (useInterviewStore.getState().activeGenerationId !== null) return;
     setCurrentState('listening');
     setIsListening(true);
     clearTranscript();
@@ -195,17 +210,31 @@ export const useVoiceInterview = () => {
     currentStateRef.current = currentState;
   }, [currentState]);
 
-  // Unmount-only teardown. `stt`/`recorder` are fresh object literals on every
-  // render, so depending on them would tear the mic down after each re-render.
+  // `tts`/`stt` are fresh object literals each render, so they are captured in
+  // refs to keep the unmount-only teardown from closing over stale instances.
+  const ttsRef = useRef(tts);
+  useEffect(() => {
+    ttsRef.current = tts;
+  });
+
+  // Unmount-only teardown. Every owned resource is released: the recogniser,
+  // the recorder, the sentence callback feeding TTS, any queued speech, and
+  // synthesis already in flight. Switching to text mode unmounts this hook, so
+  // without `tts.stop()` the avatar would keep talking over the text room.
   useEffect(() => {
     return () => {
       voiceInterviewService.setOnSentenceCallback(null);
       voiceInterviewService.reset();
+      speechToTextService.setOnSilenceCallback(null);
       stopListeningRef.current();
       cancelRecordingRef.current();
-      setIsListening(false);
+      ttsRef.current.stop();
+      clearTTSQueue();
+      // Store writes only: this cleanup runs after React has discarded the
+      // tree, so component state must not be touched here.
+      useVoiceInterviewStore.setState({ currentState: 'idle' });
     };
-  }, []);
+  }, [clearTTSQueue]);
 
   // Process AI Response
   const processAIResponse = useCallback(
@@ -224,15 +253,26 @@ export const useVoiceInterview = () => {
           ? messages.slice(0, -1)
           : messages;
 
+      // Claim write ownership *before* the placeholder exists, reusing the same
+      // store protocol the text hook uses. Without it, overlapping voice sends
+      // both streamed through `updateLastMessage`, so whichever message happened
+      // to be last absorbed both answers and either send could clear loading.
+      const generationId = beginGeneration();
+      const persistence = createStreamPersistence(currentInterview, {
+        generationId,
+        isGenerationCurrent,
+      });
+
       setCurrentState('waiting_ai');
       setLoading(true);
 
-      // Create Code Placeholder Message
-      addMessage({
-        role: 'model',
-        content: '', // Streaming fills this
-        timestamp: nextMessageId(),
-      });
+      // Placeholder for the AI message. Streaming writes are pinned to this
+      // timestamp rather than to "whatever is last".
+      const streamId = nextMessageId();
+      addMessage({ role: 'model', content: '', timestamp: streamId });
+      // Marks the turn undelivered so a newer claim resolves it to an explicit
+      // error instead of leaving a half-answer looking finished.
+      setStreamingMessageId(streamId);
 
       // Setup TTS Buffering
       voiceInterviewService.reset();
@@ -250,6 +290,7 @@ export const useVoiceInterview = () => {
 
         // Stream
         let fullContent = '';
+        persistence.attachLifecycleFlush();
         for await (const chunk of streamInterviewMessage(
           priorMessages,
           userText,
@@ -258,27 +299,76 @@ export const useVoiceInterview = () => {
           currentInterview.code
         )) {
           fullContent += chunk;
-          updateLastMessage(fullContent);
+
+          // A superseded generation must not write into the transcript.
+          if (!isGenerationCurrent(generationId)) {
+            logger.warn('Discarding voice chunk from a superseded generation:', generationId);
+            return;
+          }
+          updateMessageByTimestamp(streamId, fullContent);
+          persistence.checkpoint();
           voiceInterviewService.feedStreamChunk(chunk);
         }
 
         // Final flush
         voiceInterviewService.flush();
-        updateLastMessage(fullContent); // Ensure final consistency
+        if (!isGenerationCurrent(generationId)) return;
+        updateMessageByTimestamp(streamId, fullContent);
+        // The answer is delivered; a newer claim must no longer interrupt it.
+        setStreamingMessageId(null);
 
-        setLoading(false);
+        await persistence.settleCheckpoints();
+
+        if (!isGenerationCurrent(generationId)) return;
+
+        // Voice turns had no Dexie write at all, so the transcript vanished on
+        // reload and the end-session feedback read an empty history.
+        try {
+          await persistence.persistLiveState();
+        } catch (persistErr: unknown) {
+          logger.error('Failed to persist voice interview state:', persistErr);
+          setError(
+            persistErr instanceof Error
+              ? `Answer received but could not be saved: ${persistErr.message}`
+              : 'Answer received but could not be saved.'
+          );
+        }
       } catch (error: unknown) {
         logger.error(error);
-        markLastMessageAsError(getErrorMessage(error));
-        setCurrentState('idle');
-        setLoading(false);
+        // A superseded writer must not overwrite the newer turn's state.
+        if (isGenerationCurrent(generationId)) {
+          markMessageAsError(streamId, getErrorMessage(error));
+          try {
+            await persistence.persistLiveState();
+          } catch (persistErr: unknown) {
+            logger.error('Failed to persist failed voice turn:', persistErr);
+          }
+        }
+        // Only the owning generation resets the room. A superseded writer
+        // setting `idle` here would show "Ready" while the newer answer is
+        // still streaming.
+        if (isGenerationCurrent(generationId)) setCurrentState('idle');
+      } finally {
+        persistence.detachLifecycleFlush();
+        // Only the owning generation releases the turn, so a superseded writer
+        // cannot clear loading while the newer answer is still streaming.
+        if (isGenerationCurrent(generationId)) {
+          endGeneration(generationId);
+          setStreamingMessageId(null);
+          setLoading(false);
+        }
       }
     },
     [
       addMessage,
-      updateLastMessage,
-      markLastMessageAsError,
+      updateMessageByTimestamp,
+      markMessageAsError,
       setLoading,
+      setError,
+      beginGeneration,
+      isGenerationCurrent,
+      endGeneration,
+      setStreamingMessageId,
       clearTTSQueue,
       addToTTSQueue,
       setCurrentState,
@@ -289,6 +379,14 @@ export const useVoiceInterview = () => {
   const sendTextMessage = useCallback(
     async (text: string) => {
       if (!isNonEmptyString(text)) return;
+
+      // Single-flight guard: a turn already owns the transcript, and starting
+      // a second one would interleave two writers against the same model
+      // message. Preserving the user's text matters more than the send.
+      if (useInterviewStore.getState().activeGenerationId !== null) {
+        toast.info('Still answering the previous message — one moment.');
+        return;
+      }
 
       // Add User Message
       const userMsg: Message = {
@@ -307,6 +405,17 @@ export const useVoiceInterview = () => {
 
   // Action: Stop Listening and Send
   const stopAndSend = useCallback(async () => {
+    // Same single-flight guard as the text path: a rapid second tap while the
+    // previous answer streams would otherwise start a competing turn.
+    if (useInterviewStore.getState().activeGenerationId !== null) {
+      setIsListening(false);
+      stt.stopListening();
+      recorder.cancelRecording();
+      setCurrentState('idle');
+      toast.info('Still answering the previous message — one moment.');
+      return;
+    }
+
     setIsListening(false);
     stt.stopListening();
     recorder.cancelRecording(); // Stop visualizer
@@ -375,12 +484,16 @@ export const useVoiceInterview = () => {
 
   const endInterview = useCallback(() => {
     tts.stop();
+    // Ending the call must also drop speech still queued: the hook unmounts
+    // shortly after, and anything left would be spoken into the feedback view.
+    clearTTSQueue();
+    voiceInterviewService.setOnSentenceCallback(null);
+    voiceInterviewService.reset();
     setIsListening(false);
     stt.stopListening();
     recorder.cancelRecording();
     setCurrentState('idle');
-    // Any cleanup
-  }, [tts, stt, recorder, setCurrentState]);
+  }, [tts, stt, recorder, setCurrentState, clearTTSQueue]);
 
   return {
     state: currentState,

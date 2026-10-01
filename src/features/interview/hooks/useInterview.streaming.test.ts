@@ -970,4 +970,95 @@ describe('useInterview streaming persistence and concurrency', () => {
     expect(history.map((m) => m.content)).toEqual(['earlier answer']);
     expect(vi.mocked(streamInterviewMessage).mock.calls[0][1]).toBe('the new question');
   });
+
+  describe('blocked sends with no API key', () => {
+    /** Simulates the user having no provider key configured. */
+    const clearApiKey = () => {
+      vi.mocked(getStoredAIConfig).mockReturnValue({
+        apiKey: '',
+      } as unknown as AIConfig);
+    };
+
+    it('retry keeps the user turn and the failed answer when no key is configured', async () => {
+      // Retry removed the failed model turn *and* the user turn it answers,
+      // then `sendMessage` returned early on the missing key — deleting the
+      // question with no answer ever produced.
+      clearApiKey();
+      const messages: Message[] = [
+        { role: 'model', content: 'What is a closure?', timestamp: 1 },
+        { role: 'user', content: 'A function that captures scope.', timestamp: 2 },
+        { role: 'model', content: 'upstream 500', timestamp: 3, isError: true },
+      ];
+      useInterviewStore.getState().setInterview(makeInterview(messages));
+
+      const { result } = render();
+      await act(async () => {
+        await result.current.retryLastMessage();
+      });
+
+      expect(useInterviewStore.getState().currentInterview!.messages).toEqual(messages);
+      expect(vi.mocked(streamInterviewMessage)).not.toHaveBeenCalled();
+      expect(openApiKeyModal).toHaveBeenCalled();
+    });
+
+    it('regenerate keeps both turns when no key is configured', async () => {
+      // Regenerate claimed loading and removed the model + user turns before
+      // the early return, losing the answer and stranding isLoading.
+      clearApiKey();
+      const messages: Message[] = [
+        { role: 'model', content: 'What is a closure?', timestamp: 1 },
+        { role: 'user', content: 'A function that captures scope.', timestamp: 2 },
+        { role: 'model', content: 'the earlier answer', timestamp: 3 },
+      ];
+      useInterviewStore.getState().setInterview(makeInterview(messages));
+
+      const { result } = render();
+      await act(async () => {
+        await result.current.regenerateLastResponse();
+      });
+
+      expect(useInterviewStore.getState().currentInterview!.messages).toEqual(messages);
+      expect(vi.mocked(streamInterviewMessage)).not.toHaveBeenCalled();
+      expect(openApiKeyModal).toHaveBeenCalled();
+    });
+
+    it('a blocked regenerate returns the room to idle', async () => {
+      // The old path called setLoading(true) before the guard, so the room was
+      // stuck "processing" with no turn in flight.
+      clearApiKey();
+      useInterviewStore.getState().setInterview(
+        makeInterview([
+          { role: 'user', content: 'q', timestamp: 1 },
+          { role: 'model', content: 'a', timestamp: 2 },
+        ])
+      );
+
+      const { result } = render();
+      await act(async () => {
+        await result.current.regenerateLastResponse();
+      });
+
+      expect(useInterviewStore.getState().isLoading).toBe(false);
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    it('a blocked retry does not claim generation ownership', async () => {
+      clearApiKey();
+      useInterviewStore.getState().setInterview(
+        makeInterview([
+          { role: 'user', content: 'q', timestamp: 1 },
+          { role: 'model', content: 'boom', timestamp: 2, isError: true },
+        ])
+      );
+
+      const { result } = render();
+      await act(async () => {
+        await result.current.retryLastMessage();
+      });
+
+      // A stuck claim would make every later retry/regenerate a no-op.
+      expect(useInterviewStore.getState().activeGenerationId).toBeNull();
+      expect(useInterviewStore.getState().streamingMessageId).toBeNull();
+    });
+  });
 });

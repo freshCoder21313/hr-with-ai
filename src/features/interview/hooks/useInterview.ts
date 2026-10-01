@@ -46,6 +46,21 @@ export const useInterview = () => {
     setStreamingMessageId,
   } = useInterviewStore();
 
+  /**
+   * Precondition for every outbound turn: returns `false` after prompting for
+   * an API key when none is configured.
+   *
+   * Callers that mutate the transcript must consult this *before* removing
+   * anything. `sendMessage` bails on a missing key, so a removal performed
+   * first would erase the user's question and the failed answer irrecoverably.
+   */
+  const ensureProviderConfigured = useCallback((): boolean => {
+    if (!getStoredAIConfig().apiKey) {
+      openApiKeyModal();
+      return false;
+    }
+    return true;
+  }, []);
   const startNewInterview = useCallback(
     async (data: SetupFormData) => {
       try {
@@ -172,11 +187,10 @@ export const useInterview = () => {
       // Bail before claiming: a send that never reaches the provider must not
       // invalidate the generation currently streaming an answer, or its
       // undelivered turn would be interrupted for nothing.
-      const config = getStoredAIConfig();
-      if (!config.apiKey) {
-        openApiKeyModal();
+      if (!ensureProviderConfigured()) {
         return;
       }
+      const config = getStoredAIConfig();
 
       let streamId = 0;
       // Claim write ownership for this generation. Any older in-flight
@@ -389,11 +403,15 @@ export const useInterview = () => {
       beginGeneration,
       isGenerationCurrent,
       endGeneration,
+      ensureProviderConfigured,
     ]
   );
 
   const retryLastMessage = useCallback(async () => {
     const latestInterview = useInterviewStore.getState().currentInterview;
+    // Before any removal: a send that cannot reach the provider must not cost
+    // the user the failed turn or the question it answers.
+    if (!ensureProviderConfigured()) return;
     // A generation already owns write access; retrying now would interleave
     // two writers against the same transcript.
     if (useInterviewStore.getState().activeGenerationId !== null) return;
@@ -422,10 +440,13 @@ export const useInterview = () => {
         }
       }
     }
-  }, [removeLastMessage, sendMessage]);
+  }, [removeLastMessage, sendMessage, ensureProviderConfigured]);
 
   const regenerateLastResponse = useCallback(async () => {
     const latestInterview = useInterviewStore.getState().currentInterview;
+    // Same precondition as retry, and for the same reason: both removals below
+    // are only recoverable if a provider call actually follows them.
+    if (!ensureProviderConfigured()) return;
     if (useInterviewStore.getState().activeGenerationId !== null) return;
     if (!latestInterview || latestInterview.messages.length < 2) return;
 
@@ -435,7 +456,6 @@ export const useInterview = () => {
 
     if (lastAiMsg.role !== 'model' || lastUserMsg.role !== 'user') return;
 
-    setLoading(true);
     try {
       removeLastMessage();
 
@@ -451,8 +471,12 @@ export const useInterview = () => {
     } catch (error) {
       logger.error('Error regenerating response:', error);
       setError((error as Error).message);
+    } finally {
+      // The regenerating turn owns this flag; a send that could not start
+      // must not leave the room permanently "processing".
+      if (useInterviewStore.getState().activeGenerationId === null) setLoading(false);
     }
-  }, [removeLastMessage, sendMessage, setLoading, setError]);
+  }, [removeLastMessage, sendMessage, setLoading, setError, ensureProviderConfigured]);
 
   return {
     startNewInterview,

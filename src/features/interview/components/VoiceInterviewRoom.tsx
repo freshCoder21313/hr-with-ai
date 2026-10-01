@@ -21,15 +21,31 @@ import {
 import MarkdownRenderer from '@/components/shared/MarkdownRenderer';
 import { isNonEmptyString } from '@/lib/validation';
 import { notificationService } from '@/services/core/notificationService';
+import { InterviewErrorBanner } from './InterviewErrorBanner';
+import { EndingSessionOverlay } from './EndingSessionOverlay';
 
 interface VoiceInterviewRoomProps {
   onSwitchToText?: () => void;
-  onEndInterview?: () => Promise<void>;
+  /** Re-runs the last failed turn; used by the shared error banner. */
+  onRetry?: () => void | Promise<void>;
+  /**
+   * Runs the end-session work. `alreadyConfirmed` is `true` because this
+   * component raises the End Call dialog itself; the parent must not ask again.
+   */
+  onEndInterview?: (alreadyConfirmed?: boolean) => Promise<void>;
 }
+
+/**
+ * Text-mode end already confirms in `InterviewRoom`. The voice branch used to
+ * confirm here *and* there, so one End Call raised two dialogs. Only the voice
+ * branch confirms when it owns the call; the parent confirms when it does not.
+ */
+const OWNS_END_CONFIRMATION = true;
 
 export const VoiceInterviewRoom: React.FC<VoiceInterviewRoomProps> = ({
   onSwitchToText,
   onEndInterview,
+  onRetry,
 }) => {
   const navigate = useNavigate();
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -52,6 +68,10 @@ export const VoiceInterviewRoom: React.FC<VoiceInterviewRoomProps> = ({
     sendTextMessage,
     endInterview,
   } = useVoiceInterview();
+  // A turn in flight owns the transcript: sending again would interleave two
+  // writers, and a second confirm would race the first end-call.
+  const isTurnActive = useInterviewStore((state) => state.isLoading);
+  const [isEnding, setIsEnding] = useState(false);
 
   // Access store directly for messages state
   const { currentInterview } = useInterviewStore();
@@ -64,22 +84,35 @@ export const VoiceInterviewRoom: React.FC<VoiceInterviewRoomProps> = ({
 
   const handleSendText = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isNonEmptyString(textInput)) return;
-    sendTextMessage(textInput);
+    if (!isNonEmptyString(textInput) || isTurnActive) return;
     setTextInput('');
+    void sendTextMessage(textInput);
   };
 
   const handleEndCall = async () => {
-    const confirmed = await notificationService.confirm({
-      title: 'End Call',
-      message: 'Are you sure you want to end this voice interview?',
-    });
-    if (!confirmed) return;
+    if (isEnding) return;
+
+    if (OWNS_END_CONFIRMATION) {
+      const confirmed = await notificationService.confirm({
+        title: 'End Call',
+        message: 'Are you sure you want to end this voice interview?',
+      });
+      if (!confirmed) return;
+    }
+
+    setIsEnding(true);
     endInterview();
-    if (onEndInterview) {
-      await onEndInterview();
-    } else {
-      navigate('/');
+    try {
+      if (onEndInterview) {
+        await onEndInterview(OWNS_END_CONFIRMATION);
+      } else {
+        navigate('/');
+      }
+    } catch (error) {
+      // Feedback generation failed; release the blocker so the user can
+      // choose again rather than facing a permanent overlay.
+      notificationService.error('Failed to end session', error);
+      setIsEnding(false);
     }
   };
 
@@ -87,6 +120,12 @@ export const VoiceInterviewRoom: React.FC<VoiceInterviewRoomProps> = ({
 
   return (
     <div className="flex flex-col flex-1 min-h-0 bg-gradient-to-b from-slate-900 to-slate-950 text-white overflow-hidden relative">
+      {/* Feedback generation blocks every control until it settles, so the
+          user cannot start a new turn against an interview being finalized. */}
+      {isEnding && <EndingSessionOverlay />}
+      <div className="px-4 sm:px-6">
+        <InterviewErrorBanner onRetry={onRetry} onDark />
+      </div>
       {/* Header / Status Bar */}
       <div className="px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between border-b border-white/10 bg-black/20 backdrop-blur-sm z-10 gap-2">
         <div>
@@ -134,7 +173,13 @@ export const VoiceInterviewRoom: React.FC<VoiceInterviewRoomProps> = ({
           >
             <Settings className="w-4 h-4 sm:w-5 sm:h-5" />
           </Button>
-          <Button variant="destructive" size="sm" className="gap-2" onClick={handleEndCall}>
+          <Button
+            variant="destructive"
+            size="sm"
+            className="gap-2"
+            onClick={handleEndCall}
+            disabled={isEnding}
+          >
             <PhoneMissed className="w-4 h-4" />
             End Call
           </Button>
@@ -217,9 +262,20 @@ export const VoiceInterviewRoom: React.FC<VoiceInterviewRoomProps> = ({
 
         {/* Mic Control (Center) */}
         <div className="transform -translate-y-4">
-          <VoiceMicButton isListening={isListening} onStart={startListening} onStop={stopAndSend} />
+          <VoiceMicButton
+            isListening={isListening}
+            onStart={startListening}
+            onStop={stopAndSend}
+            // One turn at a time: a second send would interleave two writers
+            // against the same streaming model message.
+            disabled={isTurnActive || isEnding}
+          />
           <p className="text-center text-xs mt-2 text-slate-300 font-medium uppercase tracking-widest">
-            {isListening ? 'Tap to Send' : 'Tap to Speak'}
+            {isTurnActive || isEnding
+              ? 'AI is responding…'
+              : isListening
+                ? 'Tap to Send'
+                : 'Tap to Speak'}
           </p>
         </div>
 
@@ -259,12 +315,13 @@ export const VoiceInterviewRoom: React.FC<VoiceInterviewRoomProps> = ({
                 onChange={(e) => setTextInput(e.target.value)}
                 placeholder="Type a message..."
                 className="flex-1 bg-background text-foreground"
+                disabled={isTurnActive || isEnding}
               />
               <Button
                 type="submit"
                 size="icon"
                 aria-label="Send message"
-                disabled={!isNonEmptyString(textInput)}
+                disabled={!isNonEmptyString(textInput) || isTurnActive || isEnding}
               >
                 <Send className="w-4 h-4" />
               </Button>

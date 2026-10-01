@@ -67,7 +67,15 @@ vi.mock('@/features/interview/interviewStore', () => ({
       updateLastMessage: (...a: unknown[]) => updateLastMessage(...a),
       setLoading: vi.fn(),
     }),
-    { getState: () => ({ isLoading: false, currentInterview: storeState.currentInterview }) }
+    {
+      getState: () => ({
+        isLoading: false,
+        // The single-flight guard reads ownership from here; `undefined` would
+        // read as "a generation is active" and block every send.
+        activeGenerationId: null,
+        currentInterview: storeState.currentInterview,
+      }),
+    }
   ),
 }));
 

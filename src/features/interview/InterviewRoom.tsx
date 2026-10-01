@@ -25,6 +25,7 @@ import { InputArea } from './components/InputArea';
 import { ToolModals } from './components/ToolModals';
 import { VoiceInterviewRoom } from './components/VoiceInterviewRoom';
 import { EndingSessionOverlay } from './components/EndingSessionOverlay';
+import { InterviewErrorBanner } from './components/InterviewErrorBanner';
 
 import { useInterviewTimer } from './hooks/useInterviewTimer';
 import { useToolHandlers } from './hooks/useToolHandlers';
@@ -119,20 +120,30 @@ const InterviewRoom: React.FC = () => {
     handleSendMessage('[Time expired - no answer provided]');
   });
 
-  const handleEndInterview = useCallback(async () => {
-    const confirmed = await notificationService.confirm({
-      title: 'End Interview',
-      message: 'Are you sure you want to end this interview? AI will generate feedback for you.',
-    });
-    if (!confirmed) return;
-    setIsEndingSession(true);
-    try {
-      await endSession();
-    } catch (error) {
-      notificationService.error('Failed to end session', error);
-      setIsEndingSession(false);
-    }
-  }, [endSession]);
+  /**
+   * `alreadyConfirmed` is set by the voice branch, which raises its own "End
+   * Call" dialog. Without it, one End Call confirmed twice in succession.
+   */
+  const handleEndInterview = useCallback(
+    async (alreadyConfirmed = false) => {
+      if (!alreadyConfirmed) {
+        const confirmed = await notificationService.confirm({
+          title: 'End Interview',
+          message:
+            'Are you sure you want to end this interview? AI will generate feedback for you.',
+        });
+        if (!confirmed) return;
+      }
+      setIsEndingSession(true);
+      try {
+        await endSession();
+      } catch (error) {
+        notificationService.error('Failed to end session', error);
+        setIsEndingSession(false);
+      }
+    },
+    [endSession]
+  );
 
   const handleSelectJob = useCallback(
     async (job: JobRecommendation, tailoredResumeText: string) => {
@@ -189,6 +200,7 @@ const InterviewRoom: React.FC = () => {
               ? () => setViewMode('text')
               : undefined
           }
+          onRetry={retryLastMessage}
           onEndInterview={handleEndInterview}
         />
       </div>
@@ -205,12 +217,12 @@ const InterviewRoom: React.FC = () => {
         description="Live AI mock interview regarding your target role. Receive real-time hints and feedback."
       />
       {isEndingSession && <EndingSessionOverlay />}
-
+      <InterviewErrorBanner onRetry={retryLastMessage} />
       <InterviewHeader
         interview={currentInterview}
         timer={timer}
         onOpenSettings={() => setShowSettings(true)}
-        onEndSession={handleEndInterview}
+        onEndSession={() => void handleEndInterview()}
         viewMode={viewMode}
         onSwitchViewMode={
           interaction === 'hybrid' || interaction === 'text'

@@ -132,7 +132,7 @@ export const InterviewHeader: React.FC<InterviewHeaderProps> = ({
         <Button
           variant="destructive"
           size="sm"
-          onClick={onEndSession}
+          onClick={() => onEndSession()}
           aria-label="End session"
           className="gap-2 h-11 px-4 text-xs"
         >
