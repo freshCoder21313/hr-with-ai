@@ -1,5 +1,4 @@
 import { neon } from '@neondatabase/serverless';
-import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
@@ -21,12 +20,15 @@ if (!databaseUrl) {
 
 const sql = neon(databaseUrl);
 
+// KEEP IN SYNC: the inline DDL below must match
+// migrations/001_initial_schema.sql, which is the version to paste into the
+// Neon SQL Editor. The .sql file is deliberately not read here: the neon
+// driver only documents single-statement sql`...` / sql.query(text, params)
+// and sql.transaction([...]), not multi-statement strings, so the statements
+// are duplicated. Add new statements to both places.
 async function runMigration() {
-  const migrationPath = path.resolve(__dirname, '../migrations/001_initial_schema.sql');
-  const migrationSql = fs.readFileSync(migrationPath, 'utf8');
-  
   console.log('Running migration...');
-  
+
   try {
     // 1. Create table for backups
     await sql`CREATE TABLE IF NOT EXISTS backups (
@@ -48,7 +50,7 @@ async function runMigration() {
 
     // 3. Create index for rate limits
     await sql`CREATE INDEX IF NOT EXISTS idx_rate_limits_ip_timestamp ON rate_limits(ip, timestamp)`;
-    
+
     console.log('Migration completed successfully.');
   } catch (error) {
     console.error('Migration failed:', error);

@@ -9,7 +9,18 @@ module.exports = {
     'plugin:react/jsx-runtime',
     'prettier'
   ],
-  ignorePatterns: ['dist', '.eslintrc.cjs'],
+  ignorePatterns: [
+    'dist',
+    'dist-ssr',
+    'coverage',
+    'android',
+    'test-results',
+    'playwright-report',
+    'blob-report',
+    'graphify-out',
+    'aidlc-docs',
+    'node_modules',
+  ],
   parser: '@typescript-eslint/parser',
   plugins: ['react-refresh', 'react'],
   rules: {
@@ -34,6 +45,34 @@ module.exports = {
       rules: {
         'no-console': 'off',
         '@typescript-eslint/no-explicit-any': 'off',
+      },
+    },
+    {
+      // Node-side tooling: CLI scripts and root config files
+      files: ['scripts/**/*.{js,cjs,ts}', '*.config.{js,cjs,ts}', '.eslintrc.cjs'],
+      env: { node: true },
+    },
+    {
+      // CLI scripts report progress on stdout
+      files: ['scripts/**/*.{js,cjs,ts}'],
+      rules: { 'no-console': 'off' },
+    },
+    {
+      // Layering: features → services → lib/types. These layers must never depend on src/features.
+      files: ['src/services/**', 'src/lib/**', 'src/types/**', 'src/hooks/**'],
+      rules: {
+        'no-restricted-imports': [
+          'error',
+          {
+            patterns: [
+              {
+                group: ['@/features', '@/features/*', '**/features/**'],
+                message:
+                  'src/services, src/lib, src/types and src/hooks must not import from src/features (layering: features → services → lib/types).',
+              },
+            ],
+          },
+        ],
       },
     },
   ],

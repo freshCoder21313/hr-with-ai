@@ -2,11 +2,11 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   server: {
-    androidScheme: "https"
+    androidScheme: 'https',
   },
   appId: 'com.hrwithai.app',
   appName: 'HR with AI',
-  webDir: 'dist'
+  webDir: 'dist',
 };
 
 export default config;

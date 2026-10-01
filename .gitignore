@@ -43,3 +43,7 @@ aidlc-docs/
 /blob-report/
 /playwright/.cache/
 graphify-out/
+.claude-flow/
+# Throwaway scratch / probe artifacts
+.scratch/
+vitest.probe.config.ts

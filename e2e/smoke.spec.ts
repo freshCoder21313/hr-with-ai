@@ -15,9 +15,9 @@ test.describe('smoke journeys', () => {
 
     await expect(page).toHaveTitle(/HR|Interview|AI/i);
     await expect(page.getByRole('main')).toBeVisible();
-    await expect(
-      page.getByRole('button').or(page.getByRole('link')).first()
-    ).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByRole('button').or(page.getByRole('link')).first()).toBeVisible({
+      timeout: 15_000,
+    });
   });
 
   test('setup room form is reachable', async ({ page }) => {
@@ -35,19 +35,23 @@ test.describe('smoke journeys', () => {
     await expect(page.locator('body')).not.toContainText('Unexpected Application Error');
   });
 
-  test('resume builder reachable and has expected components', async ({ page }) => {
-    // Navigate to setup first
-    await page.goto('/#/setup');
-    
-    // We can't easily navigate to a specific resume without creating one in E2E
-    // But we can check if the route exists or just rely on the existing smoke tests.
-    // Let's add a test for the Settings Modal since we refactored it
+  test('settings dialog shows the AI Provider Profiles section', async ({ page }) => {
+    // Pre-seed localStorage to bypass onboarding ApiKeyModal, which is also
+    // titled "AI Provider Profiles" and would otherwise aria-hide the header.
+    await page.addInitScript(() => {
+      localStorage.setItem('ai_active_profile_id', 'e2e_profile');
+      localStorage.setItem('ai_setup_banner_dismissed', 'true');
+    });
+
     await page.goto('/#/');
-    // Open settings (usually in header)
-    const settingsBtn = page.getByRole('button', { name: /settings/i }).first();
-    if (await settingsBtn.isVisible()) {
-        await settingsBtn.click();
-        await expect(page.getByText(/AI Provider Profiles/i)).toBeVisible();
-    }
+
+    const settingsBtn = page.getByRole('button', { name: 'Settings' }).first();
+    await expect(settingsBtn).toBeVisible();
+    await settingsBtn.click();
+
+    // Scope to the dialog: the ApiKeyModal shares the same heading text.
+    const dialog = page.getByRole('dialog', { name: 'Settings' });
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByText('AI Provider Profiles', { exact: true })).toBeVisible();
   });
 });

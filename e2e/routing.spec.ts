@@ -19,7 +19,9 @@ test.describe('Automated Route Crawl', () => {
   ];
 
   for (const route of routes) {
-    test(`route "${route.name}" should mount and render without React/page errors`, async ({ page }) => {
+    test(`route "${route.name}" should mount and render without React/page errors`, async ({
+      page,
+    }) => {
       const pageErrors: Error[] = [];
 
       // Pre-seed localStorage to bypass onboarding dialogs and banners
@@ -35,12 +37,15 @@ test.describe('Automated Route Crawl', () => {
 
       // 3. Navigate to the target route
       await page.goto(route.path);
-      
+
       // Allow single-page router and Dexie.js to settle initial loads
       await page.waitForTimeout(2000);
 
       // 4. Assert no uncaught JavaScript exceptions occurred on the page
-      expect(pageErrors, `Uncaught page errors on ${route.path}: ${pageErrors.map(e => e.stack || e.message).join('\n')}`).toHaveLength(0);
+      expect(
+        pageErrors,
+        `Uncaught page errors on ${route.path}: ${pageErrors.map((e) => e.stack || e.message).join('\n')}`
+      ).toHaveLength(0);
 
       // 6. Assert that the Error Boundary was not triggered
       const bodyText = await page.innerText('body');
