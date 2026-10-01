@@ -15,6 +15,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import ResumePreview from '../../ResumePreview';
@@ -35,10 +36,22 @@ interface PreviewViewProps {
 }
 
 const COLORS = [
-  '#2563eb', '#1e40af', '#0f172a', '#059669',
-  '#16a34a', '#d97706', '#ea580c', '#dc2626',
-  '#e11d48', '#c026d3', '#9333ea', '#7c3aed',
-  '#4f46e5', '#0891b2', '#0d9488', '#0284c7',
+  '#2563eb',
+  '#1e40af',
+  '#0f172a',
+  '#059669',
+  '#16a34a',
+  '#d97706',
+  '#ea580c',
+  '#dc2626',
+  '#e11d48',
+  '#c026d3',
+  '#9333ea',
+  '#7c3aed',
+  '#4f46e5',
+  '#0891b2',
+  '#0d9488',
+  '#0284c7',
 ];
 
 const PreviewViewBase: React.FC<PreviewViewProps> = ({
@@ -108,11 +121,12 @@ const PreviewViewBase: React.FC<PreviewViewProps> = ({
               {COLORS.map((color) => (
                 <button
                   key={color}
+                  type="button"
+                  aria-label={`Accent color ${color}`}
+                  title={color}
                   className="w-8 h-8 rounded-full border border-border shadow-sm hover:scale-110 transition-transform focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
                   style={{ backgroundColor: color }}
                   onClick={() => onThemeColorChange(color)}
-                  title={color}
-                  aria-label={`Accent color ${color}`}
                 />
               ))}
             </div>
@@ -156,7 +170,8 @@ const PreviewViewBase: React.FC<PreviewViewProps> = ({
               variant="outline"
               size="icon"
               onClick={onShowReorder}
-              className="h-10 w-10 rounded-full bg-background shadow-sm hover:shadow-md transition-all"
+              aria-label="Arrange sections"
+              className="rounded-full bg-background shadow-sm hover:shadow-md transition-all"
             >
               <List className="w-5 h-5" />
             </Button>
@@ -173,7 +188,8 @@ const PreviewViewBase: React.FC<PreviewViewProps> = ({
                 <Button
                   variant="outline"
                   size="icon"
-                  className="h-10 w-10 rounded-full bg-background shadow-sm hover:shadow-md transition-all"
+                  aria-label="Switch template"
+                  className="rounded-full bg-background shadow-sm hover:shadow-md transition-all"
                 >
                   <LayoutTemplate className="w-5 h-5" />
                 </Button>
@@ -184,13 +200,11 @@ const PreviewViewBase: React.FC<PreviewViewProps> = ({
             </TooltipContent>
           </Tooltip>
           <DropdownMenuContent side="right" align="start">
-            {(['modern', 'classic', 'creative', 'minimalist', 'academic'] as const).map(
-              (t) => (
-                <DropdownMenuItem key={t} onClick={() => onSetTemplate(t)}>
-                  {t.charAt(0).toUpperCase() + t.slice(1)}
-                </DropdownMenuItem>
-              )
-            )}
+            {(['modern', 'classic', 'creative', 'minimalist', 'academic'] as const).map((t) => (
+              <DropdownMenuItem key={t} onClick={() => onSetTemplate(t)}>
+                {t.charAt(0).toUpperCase() + t.slice(1)}
+              </DropdownMenuItem>
+            ))}
           </DropdownMenuContent>
         </DropdownMenu>
 
@@ -201,7 +215,8 @@ const PreviewViewBase: React.FC<PreviewViewProps> = ({
                 <Button
                   variant="outline"
                   size="icon"
-                  className="h-10 w-10 rounded-full bg-background shadow-sm hover:shadow-md transition-all relative overflow-hidden group"
+                  aria-label="Change accent color"
+                  className="rounded-full bg-background shadow-sm hover:shadow-md transition-all relative overflow-hidden group"
                 >
                   <Palette className="w-5 h-5 z-10" />
                   <div
@@ -220,10 +235,12 @@ const PreviewViewBase: React.FC<PreviewViewProps> = ({
               {COLORS.map((color) => (
                 <button
                   key={color}
+                  type="button"
+                  aria-label={`Accent color ${color}`}
+                  title={color}
                   className="w-8 h-8 rounded-full border border-border shadow-sm hover:scale-110 transition-transform focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
                   style={{ backgroundColor: color }}
                   onClick={() => onThemeColorChange(color)}
-                  title={color}
                 />
               ))}
             </div>
@@ -240,7 +257,8 @@ const PreviewViewBase: React.FC<PreviewViewProps> = ({
                 <Button
                   variant="outline"
                   size="icon"
-                  className="h-10 w-10 rounded-full bg-background shadow-sm hover:shadow-md transition-all"
+                  aria-label="Change font"
+                  className="rounded-full bg-background shadow-sm hover:shadow-md transition-all"
                 >
                   <TypeIcon className="w-5 h-5" />
                 </Button>
@@ -251,15 +269,9 @@ const PreviewViewBase: React.FC<PreviewViewProps> = ({
             </TooltipContent>
           </Tooltip>
           <DropdownMenuContent side="right" align="start">
-            <DropdownMenuItem onClick={() => onFontChange('sans')}>
-              Sans-serif
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onFontChange('serif')}>
-              Serif
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onFontChange('mono')}>
-              Monospace
-            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onFontChange('sans')}>Sans-serif</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onFontChange('serif')}>Serif</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onFontChange('mono')}>Monospace</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -267,25 +279,20 @@ const PreviewViewBase: React.FC<PreviewViewProps> = ({
       {/* Main Preview Area */}
       <div className="flex-1 overflow-y-auto p-4 md:p-8 flex justify-center">
         <div className="scale-[0.8] md:scale-90 origin-top shadow-2xl h-fit w-full max-w-[210mm]">
-          <ResumePreview
-            data={data}
-            template={template}
-            onUpdate={onUpdate}
-          />
+          <ResumePreview data={data} template={template} onUpdate={onUpdate} />
         </div>
       </div>
 
       {/* Right Toolbar */}
       <div className="hidden md:flex flex-col gap-2 p-4 w-16 items-center shrink-0 z-10 justify-center">
-        {(template === 'creative' ||
-          template === 'minimalist' ||
-          template === 'academic') && (
+        {(template === 'creative' || template === 'minimalist' || template === 'academic') && (
           <Tooltip delayDuration={0}>
             <TooltipTrigger asChild>
               <div className="relative flex items-center justify-center">
-                <div className="h-10 w-10 rounded-full bg-background shadow-sm flex items-center justify-center cursor-pointer overflow-hidden border border-input hover:shadow-md transition-all">
+                <div className="h-10 w-10 rounded-full bg-background shadow-sm flex items-center justify-center cursor-pointer overflow-hidden border border-input hover:shadow-md transition-all focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2">
                   <input
                     type="color"
+                    aria-label={`Theme color, current ${data.meta?.themeColor || '#8b5cf6'}`}
                     value={data.meta?.themeColor || '#8b5cf6'}
                     onChange={(e) => onThemeColorChange(e.target.value)}
                     className="absolute inset-0 opacity-0 cursor-pointer h-full w-full"
@@ -303,41 +310,42 @@ const PreviewViewBase: React.FC<PreviewViewProps> = ({
           </Tooltip>
         )}
 
-        <Tooltip delayDuration={0}>
-          <TooltipTrigger asChild>
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-10 w-10 rounded-full bg-background shadow-sm hover:shadow-md transition-all relative"
-            >
-              <Languages className="w-5 h-5" />
-              <span className="absolute -bottom-1 -right-1 text-[8px] font-bold bg-primary text-primary-foreground px-1 rounded-sm uppercase">
-                {viewLanguage}
-              </span>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="left">
-            <div className="flex flex-col gap-2">
-              <p className="text-xs font-semibold">
-                Current: {viewLanguage === 'en' ? 'English' : 'Vietnamese'}
-              </p>
-              <Button
-                size="sm"
-                variant="secondary"
-                className="w-full text-xs h-7"
-                onClick={onTranslate}
-                disabled={isTranslating}
-              >
-                {isTranslating ? (
-                  <Loader2 className="w-3 h-3 animate-spin mr-1" />
-                ) : (
-                  <Wand2 className="w-3 h-3 mr-1" />
-                )}
-                Translate
-              </Button>
-            </div>
-          </TooltipContent>
-        </Tooltip>
+        <DropdownMenu>
+          <Tooltip delayDuration={0}>
+            <TooltipTrigger asChild>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  disabled={isTranslating}
+                  aria-label={`Translate (current: ${viewLanguage === 'en' ? 'English' : 'Vietnamese'})`}
+                  className="rounded-full bg-background shadow-sm hover:shadow-md transition-all relative"
+                >
+                  {isTranslating ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <Languages className="w-5 h-5" />
+                  )}
+                  <span className="absolute -bottom-1 -right-1 text-[8px] font-bold bg-primary text-primary-foreground px-1 rounded-sm uppercase">
+                    {viewLanguage}
+                  </span>
+                </Button>
+              </DropdownMenuTrigger>
+            </TooltipTrigger>
+            <TooltipContent side="left">
+              <p>Translate Resume</p>
+            </TooltipContent>
+          </Tooltip>
+          <DropdownMenuContent side="left" align="start">
+            <DropdownMenuLabel>Translate resume</DropdownMenuLabel>
+            {/* A tooltip can't hold the only actionable control: it skips touch
+                pointers and its content isn't reliably reachable by keyboard. */}
+            <DropdownMenuItem onClick={onTranslate} disabled={isTranslating}>
+              <Wand2 className="w-4 h-4 mr-2" aria-hidden="true" />
+              Translate to {viewLanguage === 'en' ? 'Vietnamese' : 'English'}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         <Tooltip delayDuration={0}>
           <TooltipTrigger asChild>
@@ -345,7 +353,8 @@ const PreviewViewBase: React.FC<PreviewViewProps> = ({
               variant="outline"
               size="icon"
               onClick={onPrint}
-              className="h-10 w-10 rounded-full bg-background text-primary border-primary/20 hover:bg-primary/5 shadow-sm hover:shadow-md transition-all"
+              aria-label="Export PDF"
+              className="rounded-full bg-background text-primary border-primary/20 hover:bg-primary/5 shadow-sm hover:shadow-md transition-all"
             >
               <Printer className="w-5 h-5" />
             </Button>

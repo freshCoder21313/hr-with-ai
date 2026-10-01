@@ -9,12 +9,7 @@ interface SplitViewProps {
   onUpdate: (data: ResumeData) => void;
 }
 
-const SplitViewBase: React.FC<SplitViewProps> = ({
-  resume,
-  data,
-  template,
-  onUpdate,
-}) => {
+const SplitViewBase: React.FC<SplitViewProps> = ({ resume, data, template, onUpdate }) => {
   return (
     <div className="flex w-full h-full overflow-hidden">
       <div className="w-1/2 border-r border-border flex flex-col bg-muted/10">
@@ -34,11 +29,7 @@ const SplitViewBase: React.FC<SplitViewProps> = ({
         </div>
         <div className="flex-1 overflow-y-auto p-8 flex justify-center">
           <div className="scale-[0.65] origin-top shadow-xl w-full max-w-[210mm]">
-            <ResumePreview
-              data={data}
-              template={template}
-              onUpdate={onUpdate}
-            />
+            <ResumePreview data={data} template={template} onUpdate={onUpdate} />
           </div>
         </div>
       </div>

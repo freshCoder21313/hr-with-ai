@@ -5,7 +5,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { db } from '@/lib/db';
 import { Resume } from '@/types';
 import { ResumeData, TemplateType } from '@/types/resume';
-import { Step } from 'react-joyride';
 import { getStoredAIConfig } from '@/services/ai/aiConfigService';
 import { parseResumeToJSON, translateResume } from '@/services/resume/resumeAIService';
 import { openApiKeyModal } from '@/events/apiKeyEvents';
@@ -13,35 +12,7 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { getErrorMessage } from '@/lib/utils';
 import { sanitizeResumeDataForSave } from '../SectionForms/entryIds';
 import { exportElementToPdf } from '@/services/resume/pdfExportService';
-
-const TOUR_STEPS: Step[] = [
-  {
-    target: 'body',
-    content: "Welcome to the AI Resume Builder! Let's take a quick tour.",
-    placement: 'center',
-  },
-  {
-    target: '.tour-magic-format',
-    content: 'Uploaded a raw text resume? Click here to let AI automatically format it for you!',
-  },
-  {
-    target: '.tour-layout-switch',
-    content:
-      'Switch between Modern, Classic, Creative, Minimalist, or Academic templates instantly.',
-  },
-  {
-    target: '.tour-translate',
-    content: 'Translate your entire resume between English and Vietnamese with one click.',
-  },
-  {
-    target: '.tour-preview-toggle',
-    content: 'Toggle between Editor, Full Preview, or Split View side-by-side.',
-  },
-  {
-    target: '.tour-fab',
-    content: 'Use this button to quickly add new Work Experience, Education, or Skills.',
-  },
-];
+import { TOUR_STEPS } from '@/features/resume-builder/hooks/resumeBuilderTour';
 
 export const useResumeBuilder = () => {
   const { id } = useParams<{ id: string }>();
@@ -196,15 +167,12 @@ export const useResumeBuilder = () => {
     }
   }, [id]);
 
-  const handleOrderSave = useCallback(
-    (newOrder: { main: string[]; sidebar?: string[] }) => {
-      const data = dataRef.current;
-      const template = templateRef.current;
-      if (!data) return;
-      setData({ ...data, meta: { ...data.meta, sectionOrder: newOrder, template } });
-    },
-    []
-  );
+  const handleOrderSave = useCallback((newOrder: { main: string[]; sidebar?: string[] }) => {
+    const data = dataRef.current;
+    const template = templateRef.current;
+    if (!data) return;
+    setData({ ...data, meta: { ...data.meta, sectionOrder: newOrder, template } });
+  }, []);
 
   const handleTranslate = useCallback(async () => {
     const data = dataRef.current;
@@ -239,7 +207,10 @@ export const useResumeBuilder = () => {
       if (!data || !id) return;
       const newData = { ...data, meta: { ...data.meta, themeColor: color } };
       setData(newData);
-      db.resumes.update(parseInt(id), { parsedData: newData });
+      void db.resumes.update(parseInt(id), { parsedData: newData }).catch((error) => {
+        logger.error('Failed to persist theme color', error);
+        toast.error('Failed to save theme color.');
+      });
     },
     [id]
   );
@@ -250,7 +221,10 @@ export const useResumeBuilder = () => {
       if (!data || !id) return;
       const newData = { ...data, meta: { ...data.meta, fontFamily } };
       setData(newData);
-      db.resumes.update(parseInt(id), { parsedData: newData });
+      void db.resumes.update(parseInt(id), { parsedData: newData }).catch((error) => {
+        logger.error('Failed to persist font choice', error);
+        toast.error('Failed to save font choice.');
+      });
     },
     [id]
   );
@@ -299,7 +273,14 @@ export const useResumeBuilder = () => {
   const handleDirectUpdate = useCallback(
     (newData: ResumeData) => {
       setData(newData);
-      if (id) db.resumes.update(parseInt(id), { parsedData: sanitizeResumeDataForSave(newData) });
+      if (id) {
+        void db.resumes
+          .update(parseInt(id), { parsedData: sanitizeResumeDataForSave(newData) })
+          .catch((error) => {
+            logger.error('Failed to persist edit', error);
+            toast.error('Failed to save change.');
+          });
+      }
     },
     [id]
   );
@@ -326,7 +307,6 @@ export const useResumeBuilder = () => {
     () => ({
       resume,
       data,
-      debouncedData,
       isLoading: isLoadingState,
       notFound: isNotFound,
       isProcessing,
@@ -346,7 +326,6 @@ export const useResumeBuilder = () => {
     [
       resume,
       data,
-      debouncedData,
       isLoadingState,
       isNotFound,
       isProcessing,

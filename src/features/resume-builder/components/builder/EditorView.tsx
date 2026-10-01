@@ -35,11 +35,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
   return (
     <>
       <div className="w-64 bg-card border-r border-border flex-shrink-0 overflow-y-auto hidden md:block">
-        <Tabs
-          value={activeTab}
-          onValueChange={onActiveTabChange}
-          className="w-full"
-        >
+        <Tabs value={activeTab} onValueChange={onActiveTabChange} className="w-full">
           <TabsList className="flex flex-col h-auto bg-transparent p-2 gap-1 w-full justify-start">
             <TabsTrigger value="basics" className="w-full justify-start px-4 py-2">
               Basics & Contact
@@ -62,12 +58,8 @@ export const EditorView: React.FC<EditorViewProps> = ({
 
       <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-background editor-scroll-area">
         <div className="md:hidden mb-4 border-b border-border pb-2">
-          <Tabs
-            value={activeTab}
-            onValueChange={onActiveTabChange}
-            className="w-full"
-          >
-            <TabsList className="flex h-auto w-full justify-start overflow-x-auto bg-muted/50 p-1 gap-1 no-scrollbar">
+          <Tabs value={activeTab} onValueChange={onActiveTabChange} className="w-full">
+            <TabsList className="flex h-auto w-full justify-start overflow-x-auto bg-muted/50 p-1 gap-1 scrollbar-hide">
               <TabsTrigger value="basics" className="shrink-0 px-3 py-1.5 text-xs">
                 Basics
               </TabsTrigger>
@@ -93,8 +85,8 @@ export const EditorView: React.FC<EditorViewProps> = ({
                 <Wand2 className="w-5 h-5" /> AI Magic Available
               </h3>
               <p className="text-muted-foreground text-sm mb-4">
-                This resume seems to be raw text. Use &quot;Smart Format&quot; to
-                automatically structure it into fields using AI.
+                This resume seems to be raw text. Use &quot;Smart Format&quot; to automatically
+                structure it into fields using AI.
               </p>
               <LoadingButton
                 onClick={onSmartFormat}
@@ -110,16 +102,10 @@ export const EditorView: React.FC<EditorViewProps> = ({
           )}
 
           {activeTab === 'basics' && (
-            <BasicsForm
-              data={data.basics}
-              onChange={(val) => onUpdateSection('basics', val)}
-            />
+            <BasicsForm data={data.basics} onChange={(val) => onUpdateSection('basics', val)} />
           )}
           {activeTab === 'work' && (
-            <WorkForm
-              data={data.work || []}
-              onChange={(val) => onUpdateSection('work', val)}
-            />
+            <WorkForm data={data.work || []} onChange={(val) => onUpdateSection('work', val)} />
           )}
           {activeTab === 'education' && (
             <EducationForm
@@ -146,9 +132,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
         <QuickActionFab
           onAddSection={onAddSection}
           onScrollToTop={() =>
-            document
-              .querySelector('.editor-scroll-area')
-              ?.scrollTo({ top: 0, behavior: 'smooth' })
+            document.querySelector('.editor-scroll-area')?.scrollTo({ top: 0, behavior: 'smooth' })
           }
           onScrollToBottom={() =>
             document

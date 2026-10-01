@@ -1,7 +1,9 @@
-import React, { useCallback, useMemo, useRef } from 'react';
-import { Loader2 } from 'lucide-react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Loader2, FileQuestion } from 'lucide-react';
 import Joyride from 'react-joyride';
 import SEO from '@/components/shared/SEO';
+import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/ui/empty-state';
 import ResumePreview from './ResumePreview';
 import SectionReorderDialog from './components/SectionReorderDialog';
 import { useResumeBuilder } from './hooks/useResumeBuilder';
@@ -9,14 +11,23 @@ import { BuilderHeader } from './components/builder/BuilderHeader';
 import { EditorView } from './components/builder/EditorView';
 import { PreviewView } from './components/builder/PreviewView';
 import { SplitView } from './components/builder/SplitView';
+import { ChevronLeft } from 'lucide-react';
 
 const ResumeBuilder: React.FC = () => {
   const { state, actions } = useResumeBuilder();
   const { data, template } = state;
   const { navigate, setShowReorderDialog } = actions;
-  const exportRef = useRef<HTMLDivElement>(null);
+  // The export host renders a full copy of the preview, including every
+  // inline-edit trigger. `inert` keeps that copy out of the tab order and the
+  // a11y tree; it is set from a callback ref because the host only mounts once
+  // loading finishes, and React 18's types don't declare the attribute.
+  const [exportHost, setExportHost] = useState<HTMLDivElement | null>(null);
 
   const handleBack = useCallback(() => navigate('/setup'), [navigate]);
+
+  useEffect(() => {
+    exportHost?.setAttribute('inert', '');
+  }, [exportHost]);
   const closeReorder = useCallback(() => setShowReorderDialog(false), [setShowReorderDialog]);
   const openReorder = useCallback(() => setShowReorderDialog(true), [setShowReorderDialog]);
   const reorderData = useMemo(
@@ -26,13 +37,37 @@ const ResumeBuilder: React.FC = () => {
 
   if (state.isLoading) {
     return (
-      <div className="flex h-[100dvh] items-center justify-center">
-        <Loader2 className="animate-spin" />
+      <div
+        data-app-fill
+        className="flex flex-1 min-h-0 items-center justify-center bg-background text-foreground"
+        role="status"
+        aria-live="polite"
+      >
+        <Loader2 className="animate-spin" aria-hidden="true" />
+        <span className="sr-only">Loading resume…</span>
       </div>
     );
   }
 
-  if (state.notFound) return <div className="p-8">Resume not found</div>;
+  if (state.notFound) {
+    return (
+      <div
+        data-app-fill
+        className="flex flex-1 min-h-0 items-center justify-center bg-background text-foreground p-6"
+      >
+        <EmptyState
+          icon={<FileQuestion className="h-8 w-8" aria-hidden="true" />}
+          title="Resume not found"
+          message="This resume may have been deleted, or the link is no longer valid."
+          action={
+            <Button onClick={handleBack}>
+              <ChevronLeft className="w-4 h-4" aria-hidden="true" /> Back to dashboard
+            </Button>
+          }
+        />
+      </div>
+    );
+  }
 
   const { resume } = state;
   const viewMode = state.isSplitView ? 'split' : state.showPreview ? 'preview' : 'editor';
@@ -48,7 +83,7 @@ const ResumeBuilder: React.FC = () => {
           cannot be rasterized). Fixed A4 width keeps output deterministic
           across view modes; also serves browser print via print: overrides. */}
       <div
-        ref={exportRef}
+        ref={setExportHost}
         aria-hidden="true"
         className="pointer-events-none fixed -left-[10000px] top-0 w-[794px] bg-white print:static print:left-0 print:w-auto"
       >
@@ -74,7 +109,10 @@ const ResumeBuilder: React.FC = () => {
         }}
       />
 
-      <div className="flex flex-col h-[100dvh] bg-background text-foreground pb-[var(--safe-bottom)] print:hidden">
+      <div
+        data-app-fill
+        className="flex flex-col flex-1 min-h-0 bg-background text-foreground print:hidden"
+      >
         <BuilderHeader
           resume={resume!}
           viewMode={viewMode}
@@ -90,13 +128,16 @@ const ResumeBuilder: React.FC = () => {
           {state.isSplitView ? (
             <SplitView
               resume={resume!}
-              data={state.debouncedData || data!}
+              // Live data, not the debounced snapshot: the preview is itself an
+              // editing surface, so a stale snapshot makes the next inline edit
+              // write back the previous value and silently lose changes.
+              data={data!}
               template={template}
               onUpdate={actions.handleDirectUpdate}
             />
           ) : state.showPreview ? (
             <PreviewView
-              data={state.debouncedData || data!}
+              data={data!}
               template={template}
               viewLanguage={state.viewLanguage}
               isTranslating={state.isTranslating}
@@ -105,7 +146,7 @@ const ResumeBuilder: React.FC = () => {
               onThemeColorChange={actions.handleThemeColorChange}
               onFontChange={actions.handleFontChange}
               onTranslate={actions.handleTranslate}
-              onPrint={() => actions.handleExportPdf(exportRef.current, resume?.fileName ?? 'resume')}
+              onPrint={() => actions.handleExportPdf(exportHost, resume?.fileName ?? 'resume')}
               onShowReorder={openReorder}
             />
           ) : (

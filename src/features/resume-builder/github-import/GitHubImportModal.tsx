@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import {
   Github,
@@ -109,12 +110,10 @@ export const GitHubImportModal: React.FC<GitHubImportModalProps> = ({
                   />
                 </div>
                 <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     id="hideForks"
-                    className="h-4 w-4 rounded border-gray-300"
                     checked={state.hideForks}
-                    onChange={(e) => actions.setHideForks(e.target.checked)}
+                    onCheckedChange={(checked) => actions.setHideForks(checked === true)}
                   />
                   <Label htmlFor="hideForks" className="cursor-pointer">
                     Hide Forks
@@ -132,11 +131,13 @@ export const GitHubImportModal: React.FC<GitHubImportModalProps> = ({
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {state.filteredRepos.map((repo) => (
-                  <div
+                  <button
+                    type="button"
                     key={repo.id}
+                    aria-pressed={state.selectedRepoIds.includes(repo.id)}
                     onClick={() => actions.handleToggleRepo(repo.id)}
                     className={cn(
-                      'cursor-pointer border rounded-lg p-4 transition-all hover:bg-accent/50',
+                      'text-left cursor-pointer border rounded-lg p-4 transition-all hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
                       state.selectedRepoIds.includes(repo.id)
                         ? 'border-primary bg-primary/5 ring-1 ring-primary'
                         : 'border-border'
@@ -156,20 +157,23 @@ export const GitHubImportModal: React.FC<GitHubImportModalProps> = ({
                     <div className="flex items-center gap-3 text-xs text-muted-foreground">
                       {repo.language && (
                         <span className="flex items-center gap-1">
-                          <span className="w-2 h-2 rounded-full bg-yellow-400" />
+                          <span
+                            className="w-2 h-2 rounded-full bg-yellow-400 dark:bg-yellow-300"
+                            aria-hidden="true"
+                          />
                           {repo.language}
                         </span>
                       )}
                       <span className="flex items-center gap-1">
-                        <Star className="w-3 h-3" /> {repo.stargazers_count}
+                        <Star className="w-3 w-3" aria-hidden="true" /> {repo.stargazers_count}
                       </span>
                       {repo.fork && (
                         <span className="flex items-center gap-1">
-                          <GitFork className="w-3 h-3" /> Fork
+                          <GitFork className="h-3 w-3" aria-hidden="true" /> Fork
                         </span>
                       )}
                     </div>
-                  </div>
+                  </button>
                 ))}
                 {state.filteredRepos.length === 0 && (
                   <div className="col-span-full text-center py-8 text-muted-foreground">
@@ -211,9 +215,10 @@ export const GitHubImportModal: React.FC<GitHubImportModalProps> = ({
                             href={project.url}
                             target="_blank"
                             rel="noopener noreferrer"
+                            aria-label={`Open ${project.name} on GitHub`}
                             className="text-muted-foreground hover:text-primary"
                           >
-                            <ExternalLink className="h-3 w-3" />
+                            <ExternalLink className="h-3 w-3" aria-hidden="true" />
                           </a>
                         )}
                       </CardTitle>
@@ -257,14 +262,15 @@ export const GitHubImportModal: React.FC<GitHubImportModalProps> = ({
 
                     {project.suggestedInterviewQuestions &&
                       project.suggestedInterviewQuestions.length > 0 && (
-                        <div className="mt-4 p-3 bg-indigo-50/50 rounded-md border border-indigo-100">
-                          <h5 className="text-xs font-bold text-indigo-700 flex items-center gap-1 mb-2">
-                            <Zap className="w-3 h-3" /> Technical Deep-Dive (Target Questions)
+                        <div className="mt-4 p-3 bg-indigo-50/50 dark:bg-indigo-950/40 rounded-md border border-indigo-100 dark:border-indigo-900">
+                          <h5 className="text-xs font-bold text-indigo-700 dark:text-indigo-300 flex items-center gap-1 mb-2">
+                            <Zap className="w-3 h-3" aria-hidden="true" /> Technical Deep-Dive
+                            (Target Questions)
                           </h5>
                           <div className="space-y-2">
                             {project.suggestedInterviewQuestions.map((q, qidx) => (
                               <div key={qidx} className="text-[11px]">
-                                <span className="font-semibold text-indigo-900">
+                                <span className="font-semibold text-indigo-900 dark:text-indigo-100">
                                   Q: {q.question}
                                 </span>
                                 <div className="flex flex-wrap gap-1 mt-1">
@@ -272,7 +278,7 @@ export const GitHubImportModal: React.FC<GitHubImportModalProps> = ({
                                     <Badge
                                       key={t}
                                       variant="outline"
-                                      className="text-[9px] py-0 h-4 bg-white/50"
+                                      className="text-[9px] py-0 h-4 bg-white/50 dark:bg-white/10"
                                     >
                                       {t}
                                     </Badge>

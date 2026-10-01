@@ -28,21 +28,23 @@ const QuickActionFab: React.FC<QuickActionFabProps> = ({
   onScrollToBottom,
 }) => {
   return (
-    <div className="fixed bottom-8 right-8 z-50 flex flex-col gap-3">
+    <div className="fixed bottom-[calc(2rem_+_var(--safe-bottom))] right-[calc(2rem_+_var(--safe-right))] z-50 flex flex-col gap-3">
       {/* Navigation Buttons */}
       <div className="flex flex-col gap-2 opacity-50 hover:opacity-100 transition-opacity">
         <Button
-          size="icon"
+          size="icon-sm"
           variant="secondary"
-          className="h-8 w-8 rounded-full shadow-sm"
+          aria-label="Scroll to top"
+          className="rounded-full shadow-sm"
           onClick={onScrollToTop}
         >
           <ChevronUp className="h-4 w-4" />
         </Button>
         <Button
-          size="icon"
+          size="icon-sm"
           variant="secondary"
-          className="h-8 w-8 rounded-full shadow-sm"
+          aria-label="Scroll to bottom"
+          className="rounded-full shadow-sm"
           onClick={onScrollToBottom}
         >
           <ChevronDown className="h-4 w-4" />
@@ -54,7 +56,8 @@ const QuickActionFab: React.FC<QuickActionFabProps> = ({
         <DropdownMenuTrigger asChild>
           <Button
             size="icon"
-            className="h-14 w-14 rounded-full shadow-xl bg-primary hover:bg-primary/90 transition-transform hover:scale-105"
+            aria-label="Add section"
+            className="h-14 w-14 md:h-14 md:w-14 rounded-full shadow-xl bg-primary hover:bg-primary/90 transition-transform hover:scale-105"
           >
             <Plus className="h-6 w-6 text-primary-foreground" />
           </Button>
@@ -64,7 +67,7 @@ const QuickActionFab: React.FC<QuickActionFabProps> = ({
             onClick={() => onAddSection('work')}
             className="cursor-pointer gap-3 p-3"
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-blue-600">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-300">
               <Briefcase className="h-4 w-4" />
             </div>
             <div className="flex flex-col">
@@ -77,7 +80,7 @@ const QuickActionFab: React.FC<QuickActionFabProps> = ({
             onClick={() => onAddSection('education')}
             className="cursor-pointer gap-3 p-3"
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100 text-green-600">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100 text-green-600 dark:bg-green-900/50 dark:text-green-300">
               <GraduationCap className="h-4 w-4" />
             </div>
             <div className="flex flex-col">
@@ -90,7 +93,7 @@ const QuickActionFab: React.FC<QuickActionFabProps> = ({
             onClick={() => onAddSection('skills')}
             className="cursor-pointer gap-3 p-3"
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-100 text-purple-600">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-100 text-purple-600 dark:bg-purple-900/50 dark:text-purple-300">
               <Code className="h-4 w-4" />
             </div>
             <div className="flex flex-col">
@@ -103,7 +106,7 @@ const QuickActionFab: React.FC<QuickActionFabProps> = ({
             onClick={() => onAddSection('projects')}
             className="cursor-pointer gap-3 p-3"
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-100 text-orange-600">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-100 text-orange-600 dark:bg-orange-900/50 dark:text-orange-300">
               <FolderGit2 className="h-4 w-4" />
             </div>
             <div className="flex flex-col">

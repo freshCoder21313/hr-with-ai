@@ -23,7 +23,8 @@ export const ProjectItem: React.FC<ProjectItemProps> = ({ item, onUpdate, layout
               <a
                 href={item.url}
                 target="_blank"
-                rel="noreferrer"
+                rel="noopener noreferrer"
+                aria-label={`Project link: ${item.name || item.url}`}
                 className="text-slate-400 hover:text-slate-900 transition-colors"
               >
                 <LinkIcon size={12} />
@@ -69,7 +70,8 @@ export const ProjectItem: React.FC<ProjectItemProps> = ({ item, onUpdate, layout
               <a
                 href={item.url}
                 target="_blank"
-                rel="noreferrer"
+                rel="noopener noreferrer"
+                aria-label={`Project link: ${item.name || item.url}`}
                 className="text-slate-400 hover:text-blue-600 transition-colors"
               >
                 <LinkIcon size={14} />
@@ -108,7 +110,13 @@ export const ProjectItem: React.FC<ProjectItemProps> = ({ item, onUpdate, layout
           <h4 className="font-bold text-slate-800 text-sm">
             {item.name}
             {item.url && (
-              <a href={item.url} target="_blank" rel="noreferrer" className="ml-2 inline-block">
+              <a
+                href={item.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`Project link: ${item.name || item.url}`}
+                className="ml-2 inline-block"
+              >
                 <LinkIcon size={12} className="text-slate-400 hover:text-blue-500" />
               </a>
             )}

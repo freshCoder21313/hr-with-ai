@@ -68,17 +68,17 @@ export function useSectionAnalysis<T>(sectionName: string) {
     setAnalyzingIndex(index);
     try {
       const result = await analyzeResumeSection(sectionName, entry, config);
-      
+
       let message = `AI Critique:\n${result.critique}`;
-      
+
       if (result.rewrittenExample) {
         message += `\n\nRewritten Example:\n${result.rewrittenExample}`;
       }
-      
+
       if (result.suggestions && result.suggestions.length > 0) {
         message += `\n\nSuggestions:\n- ${result.suggestions.join('\n- ')}`;
       }
-      
+
       toast.info(message, { duration: 8000 });
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : 'Analysis failed';

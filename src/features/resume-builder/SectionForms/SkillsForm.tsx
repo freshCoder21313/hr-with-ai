@@ -58,10 +58,12 @@ const SkillsForm: React.FC<SkillsFormProps> = ({ data, onChange }) => {
                   >
                     {kw}
                     <button
+                      type="button"
+                      aria-label={`Remove ${kw}`}
                       onClick={() => handleRemoveKeyword(kIndex)}
                       className="text-muted-foreground hover:text-red-500"
                     >
-                      <X size={12} />
+                      <X size={12} aria-hidden="true" />
                     </button>
                   </span>
                 ))}

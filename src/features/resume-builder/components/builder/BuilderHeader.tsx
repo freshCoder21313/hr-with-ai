@@ -1,13 +1,5 @@
 import React from 'react';
-import {
-  Wand2,
-  ChevronLeft,
-  Save,
-  Eye,
-  Columns,
-  Check,
-  Loader2,
-} from 'lucide-react';
+import { Wand2, ChevronLeft, Save, Eye, Columns, Check, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { LoadingButton } from '@/components/ui/loading-button';
 import { cn } from '@/lib/utils';
@@ -45,7 +37,10 @@ const BuilderHeaderBase: React.FC<BuilderHeaderProps> = ({
         >
           <ChevronLeft className="w-4 h-4 mr-0.5 sm:mr-1" /> Back
         </Button>
-        <h1 className="font-bold text-sm sm:text-lg text-foreground truncate" title={resume.fileName}>
+        <h1
+          className="font-bold text-sm sm:text-lg text-foreground truncate"
+          title={resume.fileName}
+        >
           {resume.fileName}
         </h1>
       </div>
@@ -123,7 +118,10 @@ const BuilderHeaderBase: React.FC<BuilderHeaderProps> = ({
           )}
         </span>
 
-        <Button onClick={onSave} className="h-8 px-2.5 sm:h-9 sm:px-4 text-xs sm:text-sm gap-1 sm:gap-2">
+        <Button
+          onClick={onSave}
+          className="h-8 px-2.5 sm:h-9 sm:px-4 text-xs sm:text-sm gap-1 sm:gap-2"
+        >
           <Save className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> Save
         </Button>
       </div>
