@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 import { db } from '@/lib/db';
 import { Resume } from '@/types';
 import { ResumeData } from '@/types/resume';
@@ -44,8 +45,13 @@ export const useCVTailoring = ({ jobs, globalPrompt, onResumesUpdated }: UseCVTa
   }, []);
 
   const refreshResumes = useCallback(async () => {
-    const all = await db.resumes.toArray();
-    onResumesUpdated(all.sort((a, b) => b.createdAt - a.createdAt));
+    try {
+      const all = await db.resumes.toArray();
+      onResumesUpdated(all.sort((a, b) => b.createdAt - a.createdAt));
+    } catch (err) {
+      logger.error('Failed to refresh CV list after tailoring', err);
+      toast.error('Could not refresh the CV list. Please try again.');
+    }
   }, [onResumesUpdated]);
 
   const handleStartTailoring = useCallback(
@@ -122,8 +128,12 @@ export const useCVTailoring = ({ jobs, globalPrompt, onResumesUpdated }: UseCVTa
         );
       }
 
-      await refreshResumes();
-      setIsProcessing(false);
+      // Always reset, even if the refresh throws, or the panel sticks on "Tailoring...".
+      try {
+        await refreshResumes();
+      } finally {
+        setIsProcessing(false);
+      }
     },
     [selectedResumeId, selectedJobs, jobs, globalPrompt, refreshResumes]
   );

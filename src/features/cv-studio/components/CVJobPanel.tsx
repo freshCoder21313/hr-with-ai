@@ -112,9 +112,10 @@ export const CVJobPanel: React.FC<CVJobPanelProps> = ({
             <TooltipTrigger asChild>
               <Button
                 variant="ghost"
-                size="icon"
-                className="h-8 w-8 shrink-0"
+                size="icon-sm"
+                className="shrink-0"
                 onClick={onTogglePanel}
+                aria-label={isJobPanelOpen ? 'Collapse job panel' : 'Expand job panel'}
               >
                 {isJobPanelOpen ? (
                   <PanelLeftClose className="w-4 h-4" />
@@ -133,12 +134,17 @@ export const CVJobPanel: React.FC<CVJobPanelProps> = ({
       {isJobPanelOpen && (
         <div className="flex flex-col flex-1 overflow-hidden">
           <div className="px-3 py-2 border-b border-border space-y-1.5">
-            <Label className="text-[10px] text-muted-foreground uppercase tracking-wider">
+            <Label
+              htmlFor="cv-source-select"
+              className="text-[10px] text-muted-foreground uppercase tracking-wider"
+            >
               Source CV
             </Label>
             <div className="flex gap-1.5 items-center">
               <select
-                className="flex-1 p-1.5 text-xs border rounded-md bg-background min-w-0"
+                id="cv-source-select"
+                aria-label="Source CV"
+                className="flex-1 min-w-0 rounded-md border bg-background p-1.5 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 md:h-8 md:text-xs"
                 value={selectedResumeId ?? ''}
                 onChange={(e) => onSelectResume(Number(e.target.value))}
               >
@@ -153,8 +159,8 @@ export const CVJobPanel: React.FC<CVJobPanelProps> = ({
                 <TooltipTrigger asChild>
                   <Button
                     variant="outline"
-                    size="icon"
-                    className="h-7 w-7 shrink-0 hover:bg-primary/10 hover:text-primary hover:border-primary/30"
+                    size="icon-sm"
+                    className="shrink-0 hover:bg-primary/10 hover:text-primary hover:border-primary/30"
                     onClick={() => {
                       if (!selectedResumeId) return;
                       setRenameValue(
@@ -163,8 +169,9 @@ export const CVJobPanel: React.FC<CVJobPanelProps> = ({
                       setRenameOpen(true);
                     }}
                     disabled={!selectedResumeId}
+                    aria-label="Rename CV"
                   >
-                    <Pencil className="w-3 h-3 text-primary" />
+                    <Pencil className="w-3.5 h-3.5 text-primary" aria-hidden="true" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>Rename CV</TooltipContent>
@@ -182,24 +189,34 @@ export const CVJobPanel: React.FC<CVJobPanelProps> = ({
           <div className="flex items-center gap-1 px-3 py-1.5 border-b border-border flex-wrap">
             <Tooltip delayDuration={0}>
               <TooltipTrigger asChild>
-                <Button variant="outline" size="icon" className="h-6 w-6" onClick={onAddJob}>
-                  <Plus className="w-3 h-3" />
+                <Button variant="outline" size="icon-sm" onClick={onAddJob} aria-label="Add job">
+                  <Plus className="w-3.5 h-3.5" aria-hidden="true" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>Add Job</TooltipContent>
             </Tooltip>
             <Tooltip delayDuration={0}>
               <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={onOpenPromptModal}>
-                  <Settings className="w-3 h-3" />
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  onClick={onOpenPromptModal}
+                  aria-label="Edit global prompt"
+                >
+                  <Settings className="w-3.5 h-3.5" aria-hidden="true" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>Edit Global Prompt</TooltipContent>
             </Tooltip>
             <Tooltip delayDuration={0}>
               <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={onImportJobs}>
-                  <Upload className="w-3 h-3" />
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  onClick={onImportJobs}
+                  aria-label="Import jobs"
+                >
+                  <Upload className="w-3.5 h-3.5" aria-hidden="true" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>Import Jobs</TooltipContent>
@@ -208,12 +225,12 @@ export const CVJobPanel: React.FC<CVJobPanelProps> = ({
               <TooltipTrigger asChild>
                 <Button
                   variant="ghost"
-                  size="icon"
-                  className="h-6 w-6"
+                  size="icon-sm"
                   onClick={onExportJobs}
                   disabled={jobs.length === 0}
+                  aria-label="Export jobs"
                 >
-                  <Download className="w-3 h-3" />
+                  <Download className="w-3.5 h-3.5" aria-hidden="true" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>Export Jobs</TooltipContent>
@@ -221,8 +238,8 @@ export const CVJobPanel: React.FC<CVJobPanelProps> = ({
           </div>
 
           <p className="text-[11px] text-muted-foreground leading-relaxed px-3 py-1.5 border-b border-border">
-            <span className="font-semibold">Note:</span> Your Jobs list and Prompts are saved locally in
-            this browser and are not synced to the cloud. Use Export to create backups.
+            <span className="font-semibold">Note:</span> Your Jobs list and Prompts are saved
+            locally in this browser and are not synced to the cloud. Use Export to create backups.
           </p>
 
           <div className="flex-1 overflow-y-auto p-2 space-y-2">
@@ -259,18 +276,19 @@ export const CVJobPanel: React.FC<CVJobPanelProps> = ({
               </div>
             )}
             <Button
-              className="w-full h-9 text-sm"
+              className="w-full"
               onClick={onStartTailoring}
               disabled={isProcessing || !selectedResumeId || selectedJobs.size === 0}
             >
               {isProcessing ? (
                 <>
-                  <Wand2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Wand2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
                   Tailoring...
                 </>
               ) : (
                 <>
-                  <Play className="mr-2 h-4 w-4 fill-current" /> Start Tailoring ({selectedJobs.size})
+                  <Play className="mr-2 h-4 w-4 fill-current" aria-hidden="true" /> Start Tailoring
+                  ({selectedJobs.size})
                 </>
               )}
             </Button>
@@ -287,8 +305,8 @@ export const CVJobPanel: React.FC<CVJobPanelProps> = ({
         <div className="flex flex-col items-center pt-3 gap-2 px-1">
           <Tooltip delayDuration={0}>
             <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onAddJob}>
-                <Plus className="w-4 h-4" />
+              <Button variant="ghost" size="icon-sm" onClick={onAddJob} aria-label="Add job">
+                <Plus className="w-4 h-4" aria-hidden="true" />
               </Button>
             </TooltipTrigger>
             <TooltipContent side="right">Add Job</TooltipContent>
@@ -301,6 +319,8 @@ export const CVJobPanel: React.FC<CVJobPanelProps> = ({
                 <Tooltip key={job.id} delayDuration={0}>
                   <TooltipTrigger asChild>
                     <div
+                      role="img"
+                      aria-label={`${job.title || 'Untitled'}${job.company ? ` @ ${job.company}` : ''} — ${s}`}
                       className={`w-2.5 h-2.5 rounded-full border ${
                         s === 'completed'
                           ? 'bg-green-500 border-green-500'
@@ -326,15 +346,16 @@ export const CVJobPanel: React.FC<CVJobPanelProps> = ({
               <Tooltip delayDuration={0}>
                 <TooltipTrigger asChild>
                   <Button
-                    size="icon"
-                    className="h-8 w-8 mt-2"
+                    size="icon-sm"
+                    className="mt-2"
                     onClick={onStartTailoring}
                     disabled={isProcessing || !selectedResumeId}
+                    aria-label="Start tailoring selected jobs"
                   >
                     {isProcessing ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
                     ) : (
-                      <Play className="w-4 h-4 fill-current" />
+                      <Play className="w-4 h-4 fill-current" aria-hidden="true" />
                     )}
                   </Button>
                 </TooltipTrigger>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -31,6 +31,11 @@ export const CVJobCard: React.FC<CVJobCardProps> = ({
   onViewResult,
 }) => {
   const [expanded, setExpanded] = useState(false);
+  const companyId = useId();
+  const titleId = useId();
+  const descriptionId = useId();
+  const customPromptId = useId();
+  const jobLabel = `${job.title || 'Untitled'}${job.company ? ` @ ${job.company}` : ''}`;
   const isDone = status.status === 'completed';
   const isRunning = status.status === 'processing';
   const hasError = status.status === 'error';
@@ -47,6 +52,7 @@ export const CVJobCard: React.FC<CVJobCardProps> = ({
           onCheckedChange={(c) => onSelect(!!c)}
           disabled={isDone || isProcessing}
           className="shrink-0"
+          aria-label={`Select ${jobLabel} for tailoring`}
         />
         <div className="flex-1 min-w-0">
           <p className="text-xs font-semibold truncate text-foreground">
@@ -59,34 +65,41 @@ export const CVJobCard: React.FC<CVJobCardProps> = ({
         </div>
         <div className="flex items-center gap-1 shrink-0">
           {isDone && (
-            <Badge className="bg-emerald-600 text-white hover:bg-emerald-600/90 dark:bg-emerald-500 dark:text-emerald-950 text-[10px] h-5 px-1.5">
-              <CheckCircle2 className="w-2.5 h-2.5 mr-0.5" /> Done
+            <Badge className="bg-emerald-700 text-white hover:bg-emerald-700/90 dark:bg-emerald-500 dark:text-emerald-950 text-[10px] h-5 px-1.5">
+              <CheckCircle2 className="w-2.5 h-2.5 mr-0.5" aria-hidden="true" /> Done
             </Badge>
           )}
           {hasError && (
             <Badge variant="destructive" className="text-[10px] h-5 px-1.5">
-              <AlertCircle className="w-2.5 h-2.5 mr-0.5" /> Err
+              <AlertCircle className="w-2.5 h-2.5 mr-0.5" aria-hidden="true" /> Err
             </Badge>
           )}
-          {isRunning && <Loader2 className="w-3 h-3 animate-spin text-primary" />}
+          {isRunning && (
+            <Loader2 className="w-3 h-3 animate-spin text-primary" aria-hidden="true" />
+          )}
           <Button
             variant="ghost"
-            size="icon"
-            className="h-6 w-6 text-muted-foreground hover:text-destructive"
+            size="icon-sm"
+            className="text-muted-foreground hover:text-destructive"
             onClick={onRemove}
             disabled={isProcessing}
             aria-label="Delete job"
           >
-            <Trash2 className="w-3 h-3" />
+            <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
           </Button>
           <Button
             variant="ghost"
-            size="icon"
-            className="h-6 w-6 text-muted-foreground"
+            size="icon-sm"
+            className="text-muted-foreground"
             onClick={() => setExpanded(!expanded)}
+            aria-expanded={expanded}
             aria-label={expanded ? 'Collapse job details' : 'Expand job details'}
           >
-            {expanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+            {expanded ? (
+              <ChevronUp className="w-3.5 h-3.5" aria-hidden="true" />
+            ) : (
+              <ChevronDown className="w-3.5 h-3.5" aria-hidden="true" />
+            )}
           </Button>
         </div>
       </div>
@@ -95,9 +108,12 @@ export const CVJobCard: React.FC<CVJobCardProps> = ({
         <div className="px-3 pb-3 space-y-2 border-t border-border pt-2">
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <Label className="text-[10px]">Company</Label>
+              <Label htmlFor={companyId} className="text-[10px]">
+                Company
+              </Label>
               <Input
-                className="h-7 text-xs"
+                id={companyId}
+                className="h-10 md:h-7 text-base md:text-xs"
                 placeholder="Google"
                 value={job.company}
                 onChange={(e) => onChange('company', e.target.value)}
@@ -105,9 +121,12 @@ export const CVJobCard: React.FC<CVJobCardProps> = ({
               />
             </div>
             <div>
-              <Label className="text-[10px]">Title</Label>
+              <Label htmlFor={titleId} className="text-[10px]">
+                Title
+              </Label>
               <Input
-                className="h-7 text-xs"
+                id={titleId}
+                className="h-10 md:h-7 text-base md:text-xs"
                 placeholder="SWE"
                 value={job.title}
                 onChange={(e) => onChange('title', e.target.value)}
@@ -116,8 +135,11 @@ export const CVJobCard: React.FC<CVJobCardProps> = ({
             </div>
           </div>
           <div>
-            <Label className="text-[10px]">Job Description</Label>
+            <Label htmlFor={descriptionId} className="text-[10px]">
+              Job Description
+            </Label>
             <Textarea
+              id={descriptionId}
               className="min-h-[80px] text-xs font-mono"
               placeholder="Paste JD here..."
               value={job.description}
@@ -126,8 +148,11 @@ export const CVJobCard: React.FC<CVJobCardProps> = ({
             />
           </div>
           <div>
-            <Label className="text-[10px]">Custom Prompt (optional)</Label>
+            <Label htmlFor={customPromptId} className="text-[10px]">
+              Custom Prompt (optional)
+            </Label>
             <Textarea
+              id={customPromptId}
               className="min-h-[48px] text-xs"
               placeholder="Emphasize React experience..."
               value={job.customPrompt}
@@ -139,7 +164,7 @@ export const CVJobCard: React.FC<CVJobCardProps> = ({
             <Button
               size="sm"
               variant="secondary"
-              className="w-full h-7 text-xs"
+              className="w-full text-xs"
               onClick={() => onViewResult(status.resultId!)}
             >
               View Tailored CV →

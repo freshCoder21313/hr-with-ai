@@ -59,29 +59,33 @@ export const ChangeReviewCard: React.FC<ChangeReviewCardProps> = ({
         return {
           icon: Plus,
           label: 'Add',
-          color: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-          indicator: 'bg-emerald-500',
+          color:
+            'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/30',
+          accent: 'border-l-emerald-500',
         };
       case 'delete':
         return {
           icon: Trash2,
           label: 'Delete',
-          color: 'bg-rose-50 text-rose-700 border-rose-200',
-          indicator: 'bg-rose-500',
+          color:
+            'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-500/15 dark:text-rose-300 dark:border-rose-500/30',
+          accent: 'border-l-rose-500',
         };
       case 'rewrite':
         return {
           icon: RefreshCw,
           label: 'Rewrite',
-          color: 'bg-violet-50 text-violet-700 border-violet-200',
-          indicator: 'bg-violet-500',
+          color:
+            'bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-500/15 dark:text-violet-300 dark:border-violet-500/30',
+          accent: 'border-l-violet-500',
         };
       default:
         return {
           icon: RefreshCw,
           label: 'Update',
-          color: 'bg-sky-50 text-sky-700 border-sky-200',
-          indicator: 'bg-sky-500',
+          color:
+            'bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-500/15 dark:text-sky-300 dark:border-sky-500/30',
+          accent: 'border-l-sky-500',
         };
     }
   };
@@ -95,21 +99,20 @@ export const ChangeReviewCard: React.FC<ChangeReviewCardProps> = ({
     const oldData = change.oldData;
 
     if (action === 'delete') {
-      return <div className="text-sm text-red-600 dark:text-red-400 italic">This section will be removed.</div>;
+      return (
+        <div className="text-sm text-red-600 dark:text-red-400 italic">
+          This section will be removed.
+        </div>
+      );
     }
 
     // Case 1: Arrays (Work, Education, Skills, Projects)
     if (Array.isArray(newData)) {
       const getItemKey = (item: Record<string, unknown>) => {
         if (!item || typeof item !== 'object') return '';
-        return String(
-          item.id ||
-            item.name ||
-            item.company ||
-            item.institution ||
-            item.title ||
-            ''
-        ).trim().toLowerCase();
+        return String(item.id || item.name || item.company || item.institution || item.title || '')
+          .trim()
+          .toLowerCase();
       };
 
       const getItemTitle = (item: Record<string, unknown>, fallbackIdx: number) => {
@@ -162,11 +165,15 @@ export const ChangeReviewCard: React.FC<ChangeReviewCardProps> = ({
             <Button
               variant="ghost"
               size="sm"
-              className="h-5 text-xs"
+              className="h-8 md:h-6 text-xs gap-1"
               onClick={() => setIsExpanded(!isExpanded)}
+              aria-expanded={isExpanded}
             >
-              {isExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-              {isExpanded ? 'Collapse' : 'View Details'}
+              {isExpanded ? (
+                <ChevronUp size={12} aria-hidden="true" />
+              ) : (
+                <ChevronDown size={12} aria-hidden="true" />
+              )}
             </Button>
           </div>
 
@@ -177,12 +184,18 @@ export const ChangeReviewCard: React.FC<ChangeReviewCardProps> = ({
                   <div className="flex items-center gap-1.5 justify-between">
                     <span className="font-semibold truncate">{title}</span>
                     {status === 'added' && (
-                      <Badge variant="outline" className="text-[10px] h-4 px-1 border-emerald-500 text-emerald-600 bg-emerald-50/50 dark:bg-emerald-950/20">
+                      <Badge
+                        variant="outline"
+                        className="text-[10px] h-4 px-1 border-emerald-500 text-emerald-700 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-950/20"
+                      >
                         Added
                       </Badge>
                     )}
                     {status === 'changed' && (
-                      <Badge variant="outline" className="text-[10px] h-4 px-1 border-blue-500 text-blue-600 bg-blue-50/50 dark:bg-blue-950/20">
+                      <Badge
+                        variant="outline"
+                        className="text-[10px] h-4 px-1 border-blue-500 text-blue-700 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-950/20"
+                      >
                         Changed
                       </Badge>
                     )}
@@ -198,7 +211,10 @@ export const ChangeReviewCard: React.FC<ChangeReviewCardProps> = ({
                     Removed
                   </div>
                   {removedItems.map((item, idx) => (
-                    <div key={idx} className="line-through text-muted-foreground text-[11px] truncate">
+                    <div
+                      key={idx}
+                      className="line-through text-muted-foreground text-[11px] truncate"
+                    >
                       {getItemTitle(item, idx)}
                     </div>
                   ))}
@@ -215,14 +231,14 @@ export const ChangeReviewCard: React.FC<ChangeReviewCardProps> = ({
                         status === 'added'
                           ? 'bg-emerald-500'
                           : status === 'changed'
-                          ? 'bg-blue-500'
-                          : 'bg-muted-foreground/60'
+                            ? 'bg-blue-500'
+                            : 'bg-muted-foreground/60'
                       }`}
                     />
                     <span className="truncate max-w-[170px] font-medium">{title}</span>
                   </div>
                   {status === 'added' && (
-                    <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium shrink-0">
+                    <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-medium shrink-0">
                       Added
                     </span>
                   )}
@@ -241,7 +257,10 @@ export const ChangeReviewCard: React.FC<ChangeReviewCardProps> = ({
               {removedItems.length > 0 && (
                 <div className="pt-1 border-t border-border/40 text-[11px] text-muted-foreground">
                   <span className="line-through">
-                    {removedItems.slice(0, 2).map((item, idx) => getItemTitle(item, idx)).join(', ')}
+                    {removedItems
+                      .slice(0, 2)
+                      .map((item, idx) => getItemTitle(item, idx))
+                      .join(', ')}
                   </span>
                   {removedItems.length > 2 && (
                     <span className="italic ml-1">+{removedItems.length - 2} removed</span>
@@ -299,12 +318,12 @@ export const ChangeReviewCard: React.FC<ChangeReviewCardProps> = ({
 
   return (
     <Card
-      className={`w-full shadow-sm border-l-4 ${actionInfo.color.split(' ')[2].replace('border-', 'border-l-')} overflow-hidden transition-all hover:shadow-md`}
+      className={`w-full shadow-sm border-l-4 ${actionInfo.accent} overflow-hidden transition-all hover:shadow-md`}
     >
       <CardHeader className="p-3 pb-2 flex flex-row items-center justify-between space-y-0 gap-3">
         <div className="flex items-center gap-2.5 min-w-0">
           <div className={`p-1.5 rounded-md ${actionInfo.color} shrink-0`}>
-            <SectionIcon size={16} />
+            <SectionIcon size={16} aria-hidden="true" />
           </div>
           <div className="flex flex-col min-w-0">
             <h3 className="font-bold text-xs uppercase tracking-wider text-foreground truncate">
@@ -330,16 +349,12 @@ export const ChangeReviewCard: React.FC<ChangeReviewCardProps> = ({
           variant="ghost"
           size="sm"
           onClick={onReject}
-          className="h-7 text-[10px] text-muted-foreground hover:text-destructive hover:bg-destructive/10 px-2"
+          className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
         >
-          <X size={12} className="mr-1" /> REJECT
+          <X size={12} className="mr-1" aria-hidden="true" /> Reject
         </Button>
-        <Button
-          size="sm"
-          onClick={onAccept}
-          className="h-7 text-[10px] bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-3 shadow-sm"
-        >
-          <Check size={12} className="mr-1" /> ACCEPT
+        <Button size="sm" onClick={onAccept} className="shadow-sm">
+          <Check size={12} className="mr-1" aria-hidden="true" /> Accept
         </Button>
       </CardFooter>
     </Card>

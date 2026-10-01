@@ -86,12 +86,12 @@ export const CVChatPanel: React.FC<CVChatPanelProps> = ({
 
   return (
     <div className="flex flex-col border-r border-border bg-background overflow-hidden w-full md:w-[38%] md:min-w-[280px]">
-      <div className="h-12 px-4 border-b border-border flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-2">
+      <div className="h-12 px-3 sm:px-4 border-b border-border flex items-center justify-between gap-2 shrink-0">
+        <div className="flex items-center gap-2 min-w-0">
           <MessageSquare className="w-4 h-4 text-primary" />
-          <span className="font-semibold text-sm">Chat Assistant</span>
+          <span className="font-semibold text-sm truncate">Chat Assistant</span>
         </div>
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 shrink-0">
           {pendingChanges && (
             <span className="text-[10px] bg-amber-500/10 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-full animate-pulse shrink-0">
               {pendingChanges.length} pending
@@ -115,11 +115,12 @@ export const CVChatPanel: React.FC<CVChatPanelProps> = ({
               <Button
                 variant="outline"
                 size="sm"
-                className="h-7 text-xs gap-1 text-destructive hover:bg-destructive/10 hover:text-destructive border-destructive/20"
+                className="text-xs gap-1 text-destructive hover:bg-destructive/10 hover:text-destructive border-destructive/20"
                 onClick={onDeleteCV}
+                aria-label="Delete current CV"
                 disabled={!chatResumeId}
               >
-                <Trash2 size={12} />
+                <Trash2 size={12} aria-hidden="true" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>Delete Current CV</TooltipContent>
@@ -129,10 +130,10 @@ export const CVChatPanel: React.FC<CVChatPanelProps> = ({
               <Button
                 variant="outline"
                 size="sm"
-                className="h-7 text-xs gap-1"
+                className="text-xs gap-1"
                 onClick={onGitHubImportOpen}
               >
-                <Github size={12} /> Import
+                <Github size={12} aria-hidden="true" /> Import
               </Button>
             </TooltipTrigger>
             <TooltipContent>Import GitHub Projects</TooltipContent>
@@ -147,10 +148,10 @@ export const CVChatPanel: React.FC<CVChatPanelProps> = ({
               <FileEdit size={12} />
             </div>
             <select
-              className="w-full pl-7 pr-8 py-1 text-[11px] font-medium border border-border bg-background rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-primary appearance-none cursor-pointer transition-all hover:border-primary/30"
+              className="w-full min-h-10 rounded-md border border-border bg-background py-1 pl-7 pr-8 text-[11px] font-medium shadow-sm ring-offset-background transition-all hover:border-primary/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 md:min-h-0 md:text-[11px] cursor-pointer appearance-none"
               value={chatResumeId ?? ''}
               onChange={(e) => onChatCVChange(Number(e.target.value))}
-              title="Select CV to Edit"
+              aria-label="Select CV to edit"
             >
               {resumes.map((r) => (
                 <option key={r.id} value={r.id}>
@@ -169,15 +170,16 @@ export const CVChatPanel: React.FC<CVChatPanelProps> = ({
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-7 w-7 shrink-0 opacity-60 hover:opacity-100 hover:bg-primary/10"
+                className="shrink-0 opacity-60 hover:opacity-100 hover:bg-primary/10"
                 onClick={() => {
                   if (!chatResumeId) return;
                   setRenameValue(resumes.find((r) => r.id === chatResumeId)?.fileName || '');
                   setRenameOpen(true);
                 }}
                 disabled={!chatResumeId}
+                aria-label="Rename CV"
               >
-                <Pencil size={12} className="text-primary" />
+                <Pencil size={12} className="text-primary" aria-hidden="true" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>Rename CV</TooltipContent>
@@ -190,12 +192,12 @@ export const CVChatPanel: React.FC<CVChatPanelProps> = ({
               <FileSearch className="w-3.5 h-3.5" />
             </div>
             <select
-              className="w-full h-9 pl-7 pr-6 text-base md:text-xs border border-border/60 bg-background/50 rounded-md focus:outline-none focus:ring-1 focus:ring-amber-400 appearance-none cursor-pointer transition-all hover:bg-background"
+              className="w-full h-10 min-h-10 pl-7 pr-6 text-base ring-offset-background border border-border/60 bg-background/50 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 md:h-9 md:text-xs appearance-none cursor-pointer transition-all hover:bg-background"
               value={contextResumeId ?? ''}
               onChange={(e) =>
                 onSetContextResumeId(e.target.value ? Number(e.target.value) : undefined)
               }
-              title="Reference CV Context"
+              aria-label="Reference CV context"
             >
               <option value="">Auto Context (Main)</option>
               {resumes
@@ -206,9 +208,7 @@ export const CVChatPanel: React.FC<CVChatPanelProps> = ({
                   </option>
                 ))}
             </select>
-            <ChevronDown
-              className="absolute right-2 text-muted-foreground pointer-events-none opacity-40 w-3 h-3"
-            />
+            <ChevronDown className="absolute right-2 text-muted-foreground pointer-events-none opacity-40 w-3 h-3" />
           </div>
 
           <div className="relative flex items-center group">
@@ -216,10 +216,10 @@ export const CVChatPanel: React.FC<CVChatPanelProps> = ({
               <Target className="w-3.5 h-3.5" />
             </div>
             <select
-              className="w-full h-9 pl-7 pr-6 text-base md:text-xs border border-border/60 bg-background/50 rounded-md focus:outline-none focus:ring-1 focus:ring-emerald-400 appearance-none cursor-pointer transition-all hover:bg-background"
+              className="w-full h-10 min-h-10 pl-7 pr-6 text-base ring-offset-background border border-border/60 bg-background/50 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 md:h-9 md:text-xs appearance-none cursor-pointer transition-all hover:bg-background"
               value={contextJobId ?? ''}
               onChange={(e) => onSetContextJobId(e.target.value || undefined)}
-              title="Target Job Context"
+              aria-label="Target job context"
             >
               <option value="">No Target Job</option>
               {jobs.map((j) => (
@@ -228,9 +228,7 @@ export const CVChatPanel: React.FC<CVChatPanelProps> = ({
                 </option>
               ))}
             </select>
-            <ChevronDown
-              className="absolute right-2 text-muted-foreground pointer-events-none opacity-40 w-3 h-3"
-            />
+            <ChevronDown className="absolute right-2 text-muted-foreground pointer-events-none opacity-40 w-3 h-3" />
           </div>
         </div>
       </div>
@@ -244,10 +242,11 @@ export const CVChatPanel: React.FC<CVChatPanelProps> = ({
             <span>Proposed Changes \u2014 review before accepting</span>
           </div>
           {pendingChanges.map((change, idx) => {
-            const sectionOldData = mainCV?.parsedData ? mainCV.parsedData[change.section] : undefined;
-            const changeWithOldData = change.oldData !== undefined
-              ? change
-              : { ...change, oldData: sectionOldData };
+            const sectionOldData = mainCV?.parsedData
+              ? mainCV.parsedData[change.section]
+              : undefined;
+            const changeWithOldData =
+              change.oldData !== undefined ? change : { ...change, oldData: sectionOldData };
             return (
               <ChangeReviewCard
                 key={change.id || idx}

@@ -12,6 +12,8 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -26,6 +28,23 @@ import {
   List,
   Printer,
 } from 'lucide-react';
+
+const THEME_COLORS = [
+  { value: '#2563eb', name: 'Blue' },
+  { value: '#0f172a', name: 'Slate' },
+  { value: '#059669', name: 'Emerald' },
+  { value: '#16a34a', name: 'Green' },
+  { value: '#d97706', name: 'Amber' },
+  { value: '#ea580c', name: 'Orange' },
+  { value: '#dc2626', name: 'Red' },
+  { value: '#e11d48', name: 'Rose' },
+  { value: '#c026d3', name: 'Fuchsia' },
+  { value: '#9333ea', name: 'Purple' },
+  { value: '#7c3aed', name: 'Violet' },
+  { value: '#4f46e5', name: 'Indigo' },
+  { value: '#0891b2', name: 'Cyan' },
+  { value: '#0d9488', name: 'Teal' },
+] as const;
 
 interface CVPreviewPanelProps {
   previewData: ResumeData | undefined;
@@ -54,6 +73,15 @@ export const CVPreviewPanel: React.FC<CVPreviewPanelProps> = ({
   onOpenReorderDialog,
   onPrint,
 }) => {
+  const selectedThemeColor = (previewData?.meta?.themeColor || '#2563eb').toLowerCase();
+
+  const setThemeColor = (color: string) => {
+    if (!mainCV?.parsedData || !mainCV.id) return;
+    onManualUpdate({
+      ...mainCV.parsedData,
+      meta: { ...mainCV.parsedData.meta, themeColor: color },
+    });
+  };
   const renderContent = () => {
     if (previewViewMode === 'split') {
       return (
@@ -115,30 +143,45 @@ export const CVPreviewPanel: React.FC<CVPreviewPanelProps> = ({
     }
 
     return (
-      <div className="flex w-full h-full overflow-hidden">
-        <div className="w-44 shrink-0 border-r border-border bg-card overflow-y-auto">
+      <div className="flex w-full h-full overflow-hidden flex-col xl:flex-row">
+        <div className="w-full shrink-0 border-b border-border bg-card overflow-x-auto xl:w-44 xl:border-b-0 xl:border-r xl:overflow-y-auto xl:overflow-x-hidden">
           <Tabs value={activeTab} onValueChange={onSetActiveTab}>
-            <TabsList className="flex flex-col h-auto bg-transparent p-2 gap-1 w-full justify-start">
-              <TabsTrigger value="basics" className="w-full justify-start px-3 py-2 text-xs">
+            <TabsList className="flex flex-row h-auto bg-transparent p-2 gap-1 w-max min-w-full justify-start xl:flex-col xl:w-full">
+              <TabsTrigger
+                value="basics"
+                className="justify-start whitespace-nowrap px-3 py-3 text-xs xl:py-2"
+              >
                 Basics
               </TabsTrigger>
-              <TabsTrigger value="work" className="w-full justify-start px-3 py-2 text-xs">
+              <TabsTrigger
+                value="work"
+                className="justify-start whitespace-nowrap px-3 py-3 text-xs xl:py-2"
+              >
                 Work
               </TabsTrigger>
-              <TabsTrigger value="education" className="w-full justify-start px-3 py-2 text-xs">
+              <TabsTrigger
+                value="education"
+                className="justify-start whitespace-nowrap px-3 py-3 text-xs xl:py-2"
+              >
                 Education
               </TabsTrigger>
-              <TabsTrigger value="skills" className="w-full justify-start px-3 py-2 text-xs">
+              <TabsTrigger
+                value="skills"
+                className="justify-start whitespace-nowrap px-3 py-3 text-xs xl:py-2"
+              >
                 Skills
               </TabsTrigger>
-              <TabsTrigger value="projects" className="w-full justify-start px-3 py-2 text-xs">
+              <TabsTrigger
+                value="projects"
+                className="justify-start whitespace-nowrap px-3 py-3 text-xs xl:py-2"
+              >
                 Projects
               </TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6 bg-background">
+        <div className="flex-1 overflow-y-auto p-4 bg-background xl:p-6">
           {mainCV?.parsedData ? (
             <div className="max-w-2xl mx-auto">
               {activeTab === 'basics' && (
@@ -184,31 +227,37 @@ export const CVPreviewPanel: React.FC<CVPreviewPanelProps> = ({
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-muted/20">
-      <div className="h-12 px-4 border-b border-border bg-background flex items-center justify-between shrink-0 gap-2">
-        <div className="flex bg-muted p-1 rounded-lg">
+      <div className="h-12 px-3 sm:px-4 border-b border-border bg-background flex items-center justify-between shrink-0 gap-2">
+        <div className="flex bg-muted p-1 rounded-lg shrink-0">
           <Button
             variant="ghost"
             size="sm"
-            className={`h-7 px-3 gap-1 text-xs ${previewViewMode === 'preview' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+            className={`h-7 px-2 sm:px-3 gap-1 text-xs ${previewViewMode === 'preview' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
             onClick={() => onSetPreviewViewMode('preview')}
+            aria-pressed={previewViewMode === 'preview'}
           >
-            <Eye size={12} /> Preview
+            <Eye size={12} aria-hidden="true" />
+            <span className="sr-only sm:not-sr-only">Preview</span>
           </Button>
           <Button
             variant="ghost"
             size="sm"
-            className={`h-7 px-3 gap-1 text-xs ${previewViewMode === 'form' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+            className={`h-7 px-2 sm:px-3 gap-1 text-xs ${previewViewMode === 'form' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
             onClick={() => onSetPreviewViewMode('form')}
+            aria-pressed={previewViewMode === 'form'}
           >
-            <Edit3 size={12} /> Form
+            <Edit3 size={12} aria-hidden="true" />
+            <span className="sr-only sm:not-sr-only">Form</span>
           </Button>
           <Button
             variant="ghost"
             size="sm"
-            className={`h-7 px-3 gap-1 text-xs ${previewViewMode === 'split' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+            className={`h-7 px-2 sm:px-3 gap-1 text-xs ${previewViewMode === 'split' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
             onClick={() => onSetPreviewViewMode('split')}
+            aria-pressed={previewViewMode === 'split'}
           >
-            <Columns size={12} /> Split
+            <Columns size={12} aria-hidden="true" />
+            <span className="sr-only sm:not-sr-only">Split</span>
           </Button>
         </div>
 
@@ -217,8 +266,8 @@ export const CVPreviewPanel: React.FC<CVPreviewPanelProps> = ({
             <Tooltip delayDuration={0}>
               <TooltipTrigger asChild>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <LayoutTemplate className="w-4 h-4" />
+                  <Button variant="ghost" size="icon-sm" aria-label="Switch template">
+                    <LayoutTemplate className="w-4 h-4" aria-hidden="true" />
                   </Button>
                 </DropdownMenuTrigger>
               </TooltipTrigger>
@@ -238,11 +287,16 @@ export const CVPreviewPanel: React.FC<CVPreviewPanelProps> = ({
             <Tooltip delayDuration={0}>
               <TooltipTrigger asChild>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 relative overflow-hidden">
-                    <Palette className="w-4 h-4 z-10" />
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    className="relative overflow-hidden"
+                    aria-label="Theme color"
+                  >
+                    <Palette className="w-4 h-4 z-10" aria-hidden="true" />
                     <div
                       className="absolute inset-0 opacity-20"
-                      style={{ backgroundColor: previewData?.meta?.themeColor || '#2563eb' }}
+                      style={{ backgroundColor: selectedThemeColor }}
                     />
                   </Button>
                 </DropdownMenuTrigger>
@@ -250,37 +304,28 @@ export const CVPreviewPanel: React.FC<CVPreviewPanelProps> = ({
               <TooltipContent>Theme Color</TooltipContent>
             </Tooltip>
             <DropdownMenuContent align="end" className="w-48 p-2">
-              <div className="grid grid-cols-4 gap-2">
-                {[
-                  '#2563eb',
-                  '#0f172a',
-                  '#059669',
-                  '#16a34a',
-                  '#d97706',
-                  '#ea580c',
-                  '#dc2626',
-                  '#e11d48',
-                  '#c026d3',
-                  '#9333ea',
-                  '#7c3aed',
-                  '#4f46e5',
-                  '#0891b2',
-                  '#0d9488',
-                ].map((color) => (
-                  <button
-                    key={color}
-                    className="w-8 h-8 rounded-full border border-border shadow-sm hover:scale-110 transition-transform"
-                    style={{ backgroundColor: color }}
-                    onClick={() => {
-                      if (!mainCV?.parsedData || !mainCV.id) return;
-                      onManualUpdate({
-                        ...mainCV.parsedData,
-                        meta: { ...mainCV.parsedData.meta, themeColor: color },
-                      });
-                    }}
-                  />
-                ))}
-              </div>
+              <DropdownMenuRadioGroup value={selectedThemeColor} onValueChange={setThemeColor}>
+                <div className="grid grid-cols-4 gap-2">
+                  {THEME_COLORS.map(({ value, name }) => (
+                    <DropdownMenuRadioItem
+                      key={value}
+                      value={value}
+                      aria-label={`${name}${selectedThemeColor === value ? ' (selected)' : ''}`}
+                      textValue={name}
+                      onSelect={(event) => event.preventDefault()}
+                      className="h-8 w-8 rounded-full border border-border shadow-sm transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      style={{ backgroundColor: value }}
+                    >
+                      <span
+                        className="flex h-full w-full items-center justify-center text-white drop-shadow"
+                        aria-hidden="true"
+                      >
+                        {selectedThemeColor === value ? '✓' : null}
+                      </span>
+                    </DropdownMenuRadioItem>
+                  ))}
+                </div>
+              </DropdownMenuRadioGroup>
             </DropdownMenuContent>
           </DropdownMenu>
 
@@ -288,8 +333,8 @@ export const CVPreviewPanel: React.FC<CVPreviewPanelProps> = ({
             <Tooltip delayDuration={0}>
               <TooltipTrigger asChild>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <TypeIcon className="w-4 h-4" />
+                  <Button variant="ghost" size="icon-sm" aria-label="Font">
+                    <TypeIcon className="w-4 h-4" aria-hidden="true" />
                   </Button>
                 </DropdownMenuTrigger>
               </TooltipTrigger>
@@ -317,12 +362,12 @@ export const CVPreviewPanel: React.FC<CVPreviewPanelProps> = ({
             <TooltipTrigger asChild>
               <Button
                 variant="ghost"
-                size="icon"
-                className="h-8 w-8"
+                size="icon-sm"
                 onClick={onOpenReorderDialog}
                 disabled={!previewData}
+                aria-label="Arrange sections"
               >
-                <List className="w-4 h-4" />
+                <List className="w-4 h-4" aria-hidden="true" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>Arrange Sections</TooltipContent>
@@ -332,12 +377,13 @@ export const CVPreviewPanel: React.FC<CVPreviewPanelProps> = ({
             <TooltipTrigger asChild>
               <Button
                 variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-primary"
+                size="icon-sm"
+                className="text-primary"
                 onClick={onPrint}
                 disabled={!previewData}
+                aria-label="Export PDF"
               >
-                <Printer className="w-4 h-4" />
+                <Printer className="w-4 h-4" aria-hidden="true" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>Export PDF</TooltipContent>

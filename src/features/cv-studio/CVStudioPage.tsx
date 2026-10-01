@@ -28,8 +28,13 @@ const CVStudioPage: React.FC = () => {
 
   if (state.isLoading) {
     return (
-      <div className="flex h-full items-center justify-center">
-        <Loader2 className="animate-spin" />
+      <div
+        data-app-fill
+        className="flex flex-1 min-h-0 items-center justify-center gap-3 text-muted-foreground"
+        role="status"
+      >
+        <Loader2 className="h-6 w-6 animate-spin" aria-hidden="true" />
+        <span className="text-sm">Loading CV Studio…</span>
       </div>
     );
   }
@@ -46,7 +51,10 @@ const CVStudioPage: React.FC = () => {
         )}
       </div>
 
-      <div className="flex flex-col h-[calc(100dvh-4rem)] overflow-hidden bg-background print:hidden">
+      <div
+        data-app-fill
+        className="flex flex-col flex-1 min-h-0 overflow-hidden bg-background print:hidden"
+      >
         <SEO
           title="CV Studio \u2014 HR With AI"
           description="Unified CV editing, tailoring, and AI chat."
@@ -72,86 +80,90 @@ const CVStudioPage: React.FC = () => {
         </div>
 
         <div className="flex flex-1 overflow-hidden min-h-0">
-          <div className={cn(mobileTab === 'jobs' ? 'flex flex-1 min-w-0' : 'hidden', 'md:contents')}>
-
-        <CVJobPanel
-          jobs={state.jobs}
-          selectedResumeId={state.selectedResumeId}
-          selectedJobs={state.selectedJobs}
-          isJobPanelOpen={ui.isJobPanelOpen}
-          isProcessing={state.isProcessing}
-          progress={state.progress}
-          resumes={state.resumes}
-          processingStatus={state.processingStatus}
-          onAddJob={actions.handleAddJob}
-          onRemoveJob={actions.handleRemoveJob}
-          onUpdateJob={actions.updateJob}
-          onExportJobs={actions.handleExportJobs}
-          onImportJobs={actions.handleImportJobs}
-          onStartTailoring={actions.handleStartTailoring}
-          onSelectResume={actions.setSelectedResumeId}
-          onRenameResume={actions.handleRenameCV}
-          onToggleJobSelection={actions.handleToggleJobSelection}
-          onTogglePanel={() => ui.setIsJobPanelOpen(!ui.isJobPanelOpen)}
-          onOpenPromptModal={() => ui.setIsPromptModalOpen(true)}
-          onViewResult={handleViewResult}
-        />
-          </div>
-          <div className={cn(mobileTab === 'chat' ? 'flex flex-1 min-w-0' : 'hidden', 'md:contents')}>
-
-        <CVChatPanel
-          messages={state.messages}
-          isTyping={state.isTyping}
-          mainCV={state.mainCV}
-          chatResumeId={state.chatResumeId}
-          pendingChanges={state.pendingChanges}
-          resumes={state.resumes}
-          contextResumeId={state.contextResumeId}
-          contextJobId={state.contextJobId}
-          jobs={state.jobs}
-          onSendMessage={actions.handleSendMessage}
-          onAcceptChange={actions.handleAcceptChange}
-          onRejectChange={actions.handleRejectChange}
-          onChatCVChange={actions.handleChatCVChange}
-          onRenameCV={actions.handleRenameCV}
-          onDeleteCV={actions.handleDeleteCurrentCV}
-          onCreateNewCV={actions.handleCreateNewCV}
-          onSetContextResumeId={actions.setContextResumeId}
-          onSetContextJobId={actions.setContextJobId}
-          onGitHubImportOpen={() => ui.setIsGitHubModalOpen(true)}
-        />
+          <div
+            className={cn(mobileTab === 'jobs' ? 'flex flex-1 min-w-0' : 'hidden', 'md:contents')}
+          >
+            <CVJobPanel
+              jobs={state.jobs}
+              selectedResumeId={state.selectedResumeId}
+              selectedJobs={state.selectedJobs}
+              isJobPanelOpen={ui.isJobPanelOpen}
+              isProcessing={state.isProcessing}
+              progress={state.progress}
+              resumes={state.resumes}
+              processingStatus={state.processingStatus}
+              onAddJob={actions.handleAddJob}
+              onRemoveJob={actions.handleRemoveJob}
+              onUpdateJob={actions.updateJob}
+              onExportJobs={actions.handleExportJobs}
+              onImportJobs={actions.handleImportJobs}
+              onStartTailoring={actions.handleStartTailoring}
+              onSelectResume={actions.setSelectedResumeId}
+              onRenameResume={actions.handleRenameCV}
+              onToggleJobSelection={actions.handleToggleJobSelection}
+              onTogglePanel={() => ui.setIsJobPanelOpen(!ui.isJobPanelOpen)}
+              onOpenPromptModal={() => ui.setIsPromptModalOpen(true)}
+              onViewResult={handleViewResult}
+            />
           </div>
           <div
-            className={cn(mobileTab === 'preview' ? 'flex flex-1 min-w-0' : 'hidden', 'md:contents')}
+            className={cn(mobileTab === 'chat' ? 'flex flex-1 min-w-0' : 'hidden', 'md:contents')}
           >
-
-        <CVPreviewPanel
-          previewData={state.previewData}
-          template={ui.template}
-          previewViewMode={ui.previewViewMode}
-          activeTab={ui.activeTab}
-          mainCV={state.mainCV}
-          onSetPreviewViewMode={ui.setPreviewViewMode}
-          onSetTemplate={ui.setTemplate}
-          onSetActiveTab={ui.setActiveTab}
-          onManualUpdate={actions.handleManualUpdate}
-          onOpenReorderDialog={() => ui.setShowReorderDialog(true)}
-          onPrint={async () => {
-            if (!exportRef.current) return;
-            try {
-              const result = await exportElementToPdf(
-                exportRef.current,
-                state.mainCV?.fileName ?? 'CV'
-              );
-              toast.success(
-                result.method === 'download' ? 'PDF downloaded.' : 'PDF ready to share.'
-              );
-            } catch (error) {
-              logger.error('PDF export failed:', error);
-              toast.error('Could not export PDF. Please try again.');
-            }
-          }}
-        />
+            <CVChatPanel
+              messages={state.messages}
+              isTyping={state.isTyping}
+              mainCV={state.mainCV}
+              chatResumeId={state.chatResumeId}
+              pendingChanges={state.pendingChanges}
+              resumes={state.resumes}
+              contextResumeId={state.contextResumeId}
+              contextJobId={state.contextJobId}
+              jobs={state.jobs}
+              onSendMessage={actions.handleSendMessage}
+              onAcceptChange={actions.handleAcceptChange}
+              onRejectChange={actions.handleRejectChange}
+              onChatCVChange={actions.handleChatCVChange}
+              onRenameCV={actions.handleRenameCV}
+              onDeleteCV={actions.handleDeleteCurrentCV}
+              onCreateNewCV={actions.handleCreateNewCV}
+              onSetContextResumeId={actions.setContextResumeId}
+              onSetContextJobId={actions.setContextJobId}
+              onGitHubImportOpen={() => ui.setIsGitHubModalOpen(true)}
+            />
+          </div>
+          <div
+            className={cn(
+              mobileTab === 'preview' ? 'flex flex-1 min-w-0' : 'hidden',
+              'md:contents'
+            )}
+          >
+            <CVPreviewPanel
+              previewData={state.previewData}
+              template={ui.template}
+              previewViewMode={ui.previewViewMode}
+              activeTab={ui.activeTab}
+              mainCV={state.mainCV}
+              onSetPreviewViewMode={ui.setPreviewViewMode}
+              onSetTemplate={ui.setTemplate}
+              onSetActiveTab={ui.setActiveTab}
+              onManualUpdate={actions.handleManualUpdate}
+              onOpenReorderDialog={() => ui.setShowReorderDialog(true)}
+              onPrint={async () => {
+                if (!exportRef.current) return;
+                try {
+                  const result = await exportElementToPdf(
+                    exportRef.current,
+                    state.mainCV?.fileName ?? 'CV'
+                  );
+                  toast.success(
+                    result.method === 'download' ? 'PDF downloaded.' : 'PDF ready to share.'
+                  );
+                } catch (error) {
+                  logger.error('PDF export failed:', error);
+                  toast.error('Could not export PDF. Please try again.');
+                }
+              }}
+            />
           </div>
         </div>
 
