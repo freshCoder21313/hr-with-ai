@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Sparkles, Building2, Briefcase, FileText, MessageSquareText, CheckCircle2, RotateCcw } from 'lucide-react';
+import { Sparkles, Building2, Briefcase, FileText, MessageSquareText, CheckCircle2, RotateCcw, Link2 } from 'lucide-react';
 import { parseRawJobDescription, ParsedJobData } from '@/services/jobs/jdParser';
 import { useJobStore, Job } from '../stores/useJobStore';
 import { toast } from 'sonner';
@@ -32,6 +32,7 @@ export const SmartJDImportModal: React.FC<SmartJDImportModalProps> = ({
   const [parsedData, setParsedData] = useState<ParsedJobData | null>(null);
   const [company, setCompany] = useState('');
   const [title, setTitle] = useState('');
+  const [url, setUrl] = useState('');
   const [description, setDescription] = useState('');
   const [customPrompt, setCustomPrompt] = useState('');
   const [isParsed, setIsParsed] = useState(false);
@@ -46,6 +47,7 @@ export const SmartJDImportModal: React.FC<SmartJDImportModalProps> = ({
     setParsedData(result);
     setCompany(result.company !== 'Target Company' ? result.company : '');
     setTitle(result.title !== 'Target Role' ? result.title : '');
+    setUrl(result.url || '');
     setDescription(result.description);
     setCustomPrompt(result.suggestedCustomPrompt);
     setIsParsed(true);
@@ -57,6 +59,7 @@ export const SmartJDImportModal: React.FC<SmartJDImportModalProps> = ({
     setParsedData(null);
     setCompany('');
     setTitle('');
+    setUrl('');
     setDescription('');
     setCustomPrompt('');
     setIsParsed(false);
@@ -79,6 +82,7 @@ export const SmartJDImportModal: React.FC<SmartJDImportModalProps> = ({
       title: trimmedTitle,
       description: description.trim(),
       customPrompt: customPrompt.trim(),
+      ...(url.trim() ? { url: url.trim() } : {}),
     };
 
     useJobStore.getState().actions.addJob(jobData);
@@ -241,6 +245,20 @@ export const SmartJDImportModal: React.FC<SmartJDImportModalProps> = ({
                     required
                   />
                 </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="extracted-url" className="text-xs flex items-center gap-1.5">
+                  <Link2 className="w-3.5 h-3.5 text-muted-foreground" />
+                  Job Posting URL (optional)
+                </Label>
+                <Input
+                  id="extracted-url"
+                  type="url"
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                  placeholder="https://www.linkedin.com/jobs/view/..."
+                />
               </div>
 
               <div className="space-y-1.5">

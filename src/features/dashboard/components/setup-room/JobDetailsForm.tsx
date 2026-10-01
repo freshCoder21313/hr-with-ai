@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Users, ChevronDown, Trash2, Sparkles } from 'lucide-react';
+import { Search, Users, ChevronDown, Trash2, Sparkles, Link2, ExternalLink } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -94,6 +94,12 @@ export const JobDetailsForm: React.FC<JobDetailsFormProps> = ({
     if (result.title) {
       onChange({
         target: { name: 'jobTitle', value: result.title },
+      } as unknown as React.ChangeEvent<HTMLInputElement>);
+    }
+
+    if (result.url) {
+      onChange({
+        target: { name: 'jobUrl', value: result.url },
       } as unknown as React.ChangeEvent<HTMLInputElement>);
     }
 
@@ -300,6 +306,56 @@ export const JobDetailsForm: React.FC<JobDetailsFormProps> = ({
             placeholder="e.g. Product Manager"
             className="h-11"
           />
+        </div>
+      </div>
+
+      {/* Job URL / Link */}
+      <div className="space-y-2 md:space-y-3">
+        <div className="flex items-center justify-between">
+          <Label htmlFor="jobUrl" className="flex items-center gap-1.5">
+            <Link2 className="w-3.5 h-3.5 text-muted-foreground" />
+            <span>Job URL / Link (optional)</span>
+          </Label>
+          {formData.jobUrl && (
+            <a
+              href={formData.jobUrl.startsWith('http') ? formData.jobUrl : `https://${formData.jobUrl}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+            >
+              <span>Open Job Link</span>
+              <ExternalLink className="w-3 h-3" />
+            </a>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          <Input
+            id="jobUrl"
+            name="jobUrl"
+            type="url"
+            value={formData.jobUrl || ''}
+            onChange={onChange}
+            placeholder="https://www.linkedin.com/jobs/view/..."
+            className="h-11 flex-1"
+          />
+          {formData.jobUrl && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-11 gap-1 text-xs shrink-0"
+              onClick={() => {
+                const targetUrl = formData.jobUrl?.startsWith('http')
+                  ? formData.jobUrl
+                  : `https://${formData.jobUrl}`;
+                window.open(targetUrl, '_blank', 'noopener,noreferrer');
+              }}
+              title="Open original job posting"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              <span>Open Job Link ↗</span>
+            </Button>
+          )}
         </div>
       </div>
 

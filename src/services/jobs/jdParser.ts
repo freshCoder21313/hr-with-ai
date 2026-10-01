@@ -21,6 +21,7 @@ export interface ParsedJobData {
   experienceLevel?: 'intern' | 'fresher' | 'junior' | 'mid' | 'senior' | 'lead' | 'manager';
   suggestedCustomPrompt: string;
   detectedSkills?: string[];
+  url?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -568,6 +569,42 @@ function extractJobMetadata(rawLines: string[], rawText: string): {
 }
 
 /**
+ * Extract Job URL from raw text (e.g. from Job URL prefix, or standard http/https/www URLs).
+ */
+export function extractJobUrl(rawText: string): string | undefined {
+  if (!rawText || typeof rawText !== 'string') return undefined;
+
+  // 1. Check explicit prefix: "Job URL: ...", "Link: ...", "Link tuyển dụng: ...", "Nguồn: ..."
+  const prefixRegex =
+    /(?:^|\n)\s*(?:(?:job\s*)?(?:url|link)|link\s*(?:tuyển\s*dụng|ứng\s*tuyển|công\s*việc|gốc)|nguồn(?:\s*tuyển\s*dụng)?|source)\s*[:：\-–—]\s*([^\s<>()]+)/i;
+  const prefixMatch = rawText.match(prefixRegex);
+  if (prefixMatch && prefixMatch[1]) {
+    let candidate = prefixMatch[1].trim().replace(/[.,;:)\]'">]+$/, '');
+    if (candidate.startsWith('www.')) {
+      candidate = `https://${candidate}`;
+    }
+    if (/^https?:\/\/[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+/.test(candidate)) {
+      return candidate;
+    }
+  }
+
+  // 2. Generic URL in full text
+  const urlRegex = /\b(https?:\/\/[^\s<>()"']+|www\.[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+[^\s<>()"']*)/i;
+  const match = rawText.match(urlRegex);
+  if (match && match[1]) {
+    let candidate = match[1].trim().replace(/[.,;:)\]'">]+$/, '');
+    if (candidate.startsWith('www.')) {
+      candidate = `https://${candidate}`;
+    }
+    if (/^https?:\/\/[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+/.test(candidate)) {
+      return candidate;
+    }
+  }
+
+  return undefined;
+}
+
+/**
  * Main parser function: parse raw JD string into structured ParsedJobData
  */
 export function parseRawJobDescription(rawText: string): ParsedJobData {
@@ -582,6 +619,7 @@ export function parseRawJobDescription(rawText: string): ParsedJobData {
       careerGrowth: [],
       suggestedCustomPrompt: 'Emphasize relevant technical experience, quantifiable achievements, and leadership skills.',
       detectedSkills: [],
+      url: undefined,
     };
   }
 
@@ -595,8 +633,9 @@ export function parseRawJobDescription(rawText: string): ParsedJobData {
   // 2. Extract Company
   const company = extractCompanyName(nonBlankLines, normalizedText, title);
 
-  // 3. Extract Metadata
+  // 3. Extract Metadata & URL
   const { salary, location, employmentType } = extractJobMetadata(rawLines, normalizedText);
+  const url = extractJobUrl(normalizedText);
 
   // 4. Segment Sections
   const responsibilitiesLines: string[] = [];
@@ -710,6 +749,7 @@ export function parseRawJobDescription(rawText: string): ParsedJobData {
     experienceLevel: level,
     suggestedCustomPrompt,
     detectedSkills: foundKeywords,
+    url,
   };
 }
 

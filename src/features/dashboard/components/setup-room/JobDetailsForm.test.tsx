@@ -190,4 +190,85 @@ Requirements:
     const companyCalls = changeCalls.filter((c) => c.name === 'company' || c.name === 'companyName');
     expect(companyCalls).toHaveLength(0); // Should not overwrite existing company
   });
+
+  it('auto-fills jobUrl when raw JD contains a job URL', () => {
+    const onChange = vi.fn();
+    const jdWithUrl = `
+# Frontend Engineer
+Company: VNG
+Job URL: https://careers.vng.com.vn/job/123
+
+Requirements:
+- React experience.
+    `;
+
+    render(
+      <JobDetailsForm
+        formData={defaultFormData}
+        selectedJobId="new"
+        savedJobs={[]}
+        isResearching={false}
+        onSelectSavedJob={vi.fn()}
+        onSaveJob={vi.fn()}
+        onDeleteJob={vi.fn()}
+        onResearchCompany={vi.fn()}
+        onTogglePanel={vi.fn()}
+        onChange={onChange}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /Quick Auto-fill from Raw JD/i }));
+    fireEvent.change(screen.getByPlaceholderText(/Paste raw JD text here/i), {
+      target: { value: jdWithUrl },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /^Auto-fill$/i }));
+
+    const changeCalls = onChange.mock.calls.map((call) => call[0].target);
+    expect(changeCalls).toContainEqual(
+      expect.objectContaining({ name: 'jobUrl', value: 'https://careers.vng.com.vn/job/123' })
+    );
+  });
+
+  it('renders Job URL input and Open Job Link button when jobUrl exists', () => {
+    const windowOpenSpy = vi.spyOn(window, 'open').mockImplementation(() => null);
+    const onChange = vi.fn();
+
+    render(
+      <JobDetailsForm
+        formData={{
+          ...defaultFormData,
+          jobUrl: 'https://careers.google.com/jobs/results/123',
+        }}
+        selectedJobId="new"
+        savedJobs={[]}
+        isResearching={false}
+        onSelectSavedJob={vi.fn()}
+        onSaveJob={vi.fn()}
+        onDeleteJob={vi.fn()}
+        onResearchCompany={vi.fn()}
+        onTogglePanel={vi.fn()}
+        onChange={onChange}
+      />
+    );
+
+    const urlInput = screen.getByLabelText(/Job URL \/ Link/i) as HTMLInputElement;
+    expect(urlInput.value).toBe('https://careers.google.com/jobs/results/123');
+
+    // Test editing URL
+    fireEvent.change(urlInput, { target: { value: 'https://careers.google.com/jobs/results/456' } });
+    expect(onChange).toHaveBeenCalled();
+
+    // Test Open Job Link button
+    const openBtn = screen.getByRole('button', { name: /open job link/i });
+    expect(openBtn).toBeInTheDocument();
+    fireEvent.click(openBtn);
+
+    expect(windowOpenSpy).toHaveBeenCalledWith(
+      'https://careers.google.com/jobs/results/123',
+      '_blank',
+      'noopener,noreferrer'
+    );
+
+    windowOpenSpy.mockRestore();
+  });
 });

@@ -127,4 +127,54 @@ describe('SmartJDImportModal', () => {
     expect(textarea.value).toBe('');
     expect(screen.queryByDisplayValue('GlobalTech Corp')).not.toBeInTheDocument();
   });
+
+  it('parses JD with URL, populates URL field, and saves URL to store', () => {
+    const onJobAdded = vi.fn();
+    const onClose = vi.fn();
+
+    const sampleWithUrl = `
+# Staff DevOps Engineer
+Company: CloudScale Inc
+Job URL: https://cloudscale.io/careers/staff-devops
+
+Responsibilities:
+- Manage Kubernetes clusters across multiple clouds.
+
+Requirements:
+- 7+ years of DevOps experience.
+    `;
+
+    render(
+      <SmartJDImportModal
+        isOpen={true}
+        onClose={onClose}
+        onJobAdded={onJobAdded}
+      />
+    );
+
+    const textarea = screen.getByPlaceholderText(/Paste raw JD here/i);
+    fireEvent.change(textarea, { target: { value: sampleWithUrl } });
+    fireEvent.click(screen.getByRole('button', { name: /Parse & Extract/i }));
+
+    const urlInput = screen.getByLabelText(/Job Posting URL/i) as HTMLInputElement;
+    expect(urlInput.value).toBe('https://cloudscale.io/careers/staff-devops');
+
+    // Test editing URL
+    fireEvent.change(urlInput, {
+      target: { value: 'https://cloudscale.io/careers/staff-devops-v2' },
+    });
+    expect(urlInput.value).toBe('https://cloudscale.io/careers/staff-devops-v2');
+
+    // Add job
+    fireEvent.click(screen.getByRole('button', { name: /Add to Target Jobs/i }));
+
+    const jobs = useJobStore.getState().jobs;
+    expect(jobs).toHaveLength(1);
+    expect(jobs[0].url).toBe('https://cloudscale.io/careers/staff-devops-v2');
+    expect(onJobAdded).toHaveBeenCalledWith(
+      expect.objectContaining({
+        url: 'https://cloudscale.io/careers/staff-devops-v2',
+      })
+    );
+  });
 });

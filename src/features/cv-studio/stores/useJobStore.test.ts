@@ -6,14 +6,21 @@ describe('useJobStore', () => {
     useJobStore.setState({ jobs: [], globalPrompt: 'default' });
   });
 
-  it('should add a job', () => {
+  it('should add a job with optional url', () => {
     const { addJob } = useJobStore.getState().actions;
-    addJob({ company: 'Google', title: 'SWE', description: 'Build things', customPrompt: '' });
+    addJob({
+      company: 'Google',
+      title: 'SWE',
+      description: 'Build things',
+      customPrompt: '',
+      url: 'https://careers.google.com/jobs/123',
+    });
 
     const { jobs } = useJobStore.getState();
     expect(jobs).toHaveLength(1);
     expect(jobs[0].company).toBe('Google');
     expect(jobs[0].title).toBe('SWE');
+    expect(jobs[0].url).toBe('https://careers.google.com/jobs/123');
     expect(jobs[0].id).toBeDefined();
   });
 

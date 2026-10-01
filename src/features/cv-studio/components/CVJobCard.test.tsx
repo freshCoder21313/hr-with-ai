@@ -68,5 +68,55 @@ describe('CVJobCard for a completed job', () => {
 
     expect(screen.getByLabelText('Job Description')).toBeDisabled();
     expect(screen.getByLabelText('Company')).toBeDisabled();
+    expect(screen.getByLabelText('Job URL (optional)')).toBeDisabled();
+  });
+
+  it('renders external link button in header when job has url', () => {
+    const windowOpenSpy = vi.spyOn(window, 'open').mockImplementation(() => null);
+    const jobWithUrl: Job = {
+      ...job,
+      url: 'https://example.com/job/123',
+    };
+
+    const handlers = {
+      onSelect: vi.fn(),
+      onRemove: vi.fn(),
+      onChange: vi.fn(),
+      onViewResult: vi.fn(),
+      onReTailor: vi.fn(),
+    };
+
+    render(
+      <CVJobCard
+        job={jobWithUrl}
+        isSelected={false}
+        status={{ status: 'idle' }}
+        isProcessing={false}
+        {...handlers}
+      />
+    );
+
+    const openLinkBtn = screen.getByRole('button', { name: /open original job posting/i });
+    expect(openLinkBtn).toBeInTheDocument();
+
+    fireEvent.click(openLinkBtn);
+    expect(windowOpenSpy).toHaveBeenCalledWith(
+      'https://example.com/job/123',
+      '_blank',
+      'noopener,noreferrer'
+    );
+
+    windowOpenSpy.mockRestore();
+  });
+
+  it('allows editing job URL in expanded form', () => {
+    const handlers = renderCard({ status: 'idle' });
+
+    fireEvent.click(screen.getByRole('button', { name: /expand job details/i }));
+    const urlInput = screen.getByLabelText('Job URL (optional)');
+    expect(urlInput).toBeEnabled();
+
+    fireEvent.change(urlInput, { target: { value: 'https://careers.google.com/jobs/456' } });
+    expect(handlers.onChange).toHaveBeenCalledWith('url', 'https://careers.google.com/jobs/456');
   });
 });

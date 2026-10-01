@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseRawJobDescription } from './jdParser';
+import { parseRawJobDescription, extractJobUrl } from './jdParser';
 
 describe('parseRawJobDescription (Regex & Heuristics Benchmark)', () => {
   // Sample 1: Standard Markdown English JD
@@ -652,6 +652,73 @@ Quyền lợi:
     expect(result.responsibilities.length).toBe(3);
     expect(result.requirements.length).toBe(4);
     expect(result.suggestedCustomPrompt).toContain('academic foundation');
+  });
+
+  // Sample 21: JD with explicit Job URL prefix
+  it('Sample 21: extracts URL with explicit prefix', () => {
+    const jd21 = `
+# Senior React Native Developer
+Company: Grab Vietnam
+Job URL: https://grab.careers/job/123456/react-native
+
+Key Responsibilities:
+- Build mobile applications with React Native.
+    `;
+
+    const result = parseRawJobDescription(jd21);
+    expect(result.title).toBe('Senior React Native Developer');
+    expect(result.company).toBe('Grab Vietnam');
+    expect(result.url).toBe('https://grab.careers/job/123456/react-native');
+  });
+
+  // Sample 22: JD with Vietnamese Link tuyển dụng / Nguồn prefix
+  it('Sample 22: extracts URL with Vietnamese prefix and trailing punctuation', () => {
+    const jd22 = `
+Vị trí: Backend Engineer (NodeJS)
+Công ty: VNPAY
+Link tuyển dụng: https://vnpay.vn/tuyen-dung/backend-engineer-node.
+Mô tả công việc:
+- Phát triển API cổng thanh toán.
+    `;
+
+    const result = parseRawJobDescription(jd22);
+    expect(result.title).toContain('Backend Engineer (NodeJS)');
+    expect(result.company).toBe('VNPAY');
+    expect(result.url).toBe('https://vnpay.vn/tuyen-dung/backend-engineer-node');
+  });
+
+  // Sample 23: JD with embedded raw www URL
+  it('Sample 23: extracts www URL and prepends https://', () => {
+    const jd23 = `
+DevOps Lead
+FPT Software
+Check original posting at www.topcv.vn/viec-lam/devops-lead/99999
+Requirements:
+- Kubernetes and Terraform expertise.
+    `;
+
+    const result = parseRawJobDescription(jd23);
+    expect(result.title).toBe('DevOps Lead');
+    expect(result.company).toBe('FPT Software');
+    expect(result.url).toBe('https://www.topcv.vn/viec-lam/devops-lead/99999');
+  });
+});
+
+describe('extractJobUrl standalone helper', () => {
+  it('returns undefined for empty or invalid text', () => {
+    expect(extractJobUrl('')).toBeUndefined();
+    expect(extractJobUrl('Just plain text without any link')).toBeUndefined();
+  });
+
+  it('extracts URL with various prefix styles', () => {
+    expect(extractJobUrl('URL: https://example.com/job/1')).toBe('https://example.com/job/1');
+    expect(extractJobUrl('Link: http://example.com/job/2')).toBe('http://example.com/job/2');
+    expect(extractJobUrl('Nguồn: https://linkedin.com/jobs/view/123')).toBe('https://linkedin.com/jobs/view/123');
+    expect(extractJobUrl('Source: https://indeed.com/viewjob?jk=123')).toBe('https://indeed.com/viewjob?jk=123');
+  });
+
+  it('extracts inline URL cleanly', () => {
+    expect(extractJobUrl('Please apply at https://shopee.vn/careers/job/123 (deadline: 30/10)')).toBe('https://shopee.vn/careers/job/123');
   });
 });
 

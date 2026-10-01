@@ -13,6 +13,7 @@ import {
   AlertCircle,
   Trash2,
   RefreshCw,
+  ExternalLink,
 } from 'lucide-react';
 import { Job } from '../stores/useJobStore';
 import { JobWithStatus } from '../hooks/useCVTailoring';
@@ -43,6 +44,7 @@ export const CVJobCard: React.FC<CVJobCardProps> = ({
   const [expanded, setExpanded] = useState(false);
   const companyId = useId();
   const titleId = useId();
+  const urlId = useId();
   const descriptionId = useId();
   const customPromptId = useId();
   const jobLabel = `${job.title || 'Untitled'}${job.company ? ` @ ${job.company}` : ''}`;
@@ -74,6 +76,21 @@ export const CVJobCard: React.FC<CVJobCardProps> = ({
           </p>
         </div>
         <div className="flex items-center gap-1 shrink-0">
+          {job.url && (
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="text-muted-foreground hover:text-primary"
+              onClick={(e) => {
+                e.stopPropagation();
+                window.open(job.url, '_blank', 'noopener,noreferrer');
+              }}
+              title="Open original job posting"
+              aria-label="Open original job posting"
+            >
+              <ExternalLink className="w-3.5 h-3.5" aria-hidden="true" />
+            </Button>
+          )}
           {isDone && (
             <Badge className="bg-emerald-700 text-white hover:bg-emerald-700/90 dark:bg-emerald-500 dark:text-emerald-950 text-[10px] h-5 px-1.5">
               <CheckCircle2 className="w-2.5 h-2.5 mr-0.5" aria-hidden="true" /> Done
@@ -142,6 +159,34 @@ export const CVJobCard: React.FC<CVJobCardProps> = ({
                 onChange={(e) => onChange('title', e.target.value)}
                 disabled={isProcessing}
               />
+            </div>
+          </div>
+          <div>
+            <Label htmlFor={urlId} className="text-[10px]">
+              Job URL (optional)
+            </Label>
+            <div className="flex items-center gap-1">
+              <Input
+                id={urlId}
+                className="h-10 md:h-7 text-base md:text-xs"
+                placeholder="https://..."
+                value={job.url || ''}
+                onChange={(e) => onChange('url', e.target.value)}
+                disabled={isProcessing}
+              />
+              {job.url && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon-sm"
+                  className="h-10 md:h-7 w-10 md:w-7 shrink-0 text-muted-foreground hover:text-primary"
+                  onClick={() => window.open(job.url, '_blank', 'noopener,noreferrer')}
+                  title="Open original job posting"
+                  aria-label="Open link in new tab"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" aria-hidden="true" />
+                </Button>
+              )}
             </div>
           </div>
           <div>

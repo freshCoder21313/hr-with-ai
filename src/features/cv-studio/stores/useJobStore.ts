@@ -10,6 +10,7 @@ export interface Job {
   title: string;
   description: string;
   customPrompt: string;
+  url?: string;
 }
 
 // Omit actions from the state that gets persisted.

@@ -130,4 +130,5 @@ export interface SetupFormData {
   companyName?: string;
   requirements?: string;
   experienceLevel?: string;
+  jobUrl?: string;
 }
