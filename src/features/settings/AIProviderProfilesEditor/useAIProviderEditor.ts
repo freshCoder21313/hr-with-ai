@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { notificationService } from '@/services/core/notificationService';
 import { AIProviderProfile, UserSettings } from '@/types';
 import { loadUserSettings, saveUserSettings } from '@/services/core/settingsService';
+import { emitSettingsChanged } from '@/events/settingsEvents';
 import { normalizeUserSettings } from '@/services/ai/aiProfileService';
 import { testAIConnection, fetchProviderModels } from '@/services/ai/aiConfigService';
 
@@ -24,6 +25,9 @@ export function useAIProviderEditor(onSave?: (settings: UserSettings) => void) {
   useEffect(() => {
     settingsRef.current = settings;
   }, [settings]);
+  // Ids with a confirmation already on screen. Repeated taps used to queue a
+  // duplicate dialog per tap, deleting the same profile several times over.
+  const pendingDeleteIds = useRef(new Set<string>());
 
   useEffect(() => {
     let cancelled = false;
@@ -123,13 +127,17 @@ export function useAIProviderEditor(onSave?: (settings: UserSettings) => void) {
       return;
     }
 
+    if (pendingDeleteIds.current.has(id)) return;
     const profileName = current?.aiProfiles?.find((p) => p.id === id)?.name || 'this profile';
-    const confirmed = await notificationService.confirm({
-      title: 'Delete Profile',
-      message: `Are you sure you want to delete "${profileName}"? This cannot be undone.`,
-      confirmLabel: 'Delete',
-      variant: 'destructive',
-    });
+    pendingDeleteIds.current.add(id);
+    const confirmed = await notificationService
+      .confirm({
+        title: 'Delete Profile',
+        message: `Are you sure you want to delete "${profileName}"? This cannot be undone.`,
+        confirmLabel: 'Delete',
+        variant: 'destructive',
+      })
+      .finally(() => pendingDeleteIds.current.delete(id));
     if (!confirmed) return;
 
     setSettings((prev) => {
@@ -354,6 +362,9 @@ export function useAIProviderEditor(onSave?: (settings: UserSettings) => void) {
       const saved = await saveUserSettings(normalized);
       setSettings(normalized);
       toast.success('AI Profiles saved successfully.');
+      // The first-run banner in App only clears on a SETTINGS_CHANGED broadcast;
+      // without this the banner outlives the very save its CTA asks for.
+      emitSettingsChanged(saved);
       if (onSave) onSave(saved);
     } catch (error) {
       logger.error('Failed to save profiles:', error);

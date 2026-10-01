@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { Cloud, Menu, Settings2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -15,9 +15,14 @@ import { CloudSyncModal } from '@/components/shared/CloudSyncModal';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 const NavLinks = ({ mobile = false, closeMenu }: { mobile?: boolean; closeMenu?: () => void }) => {
+  // Local nav palette (not global tokens): `slate-500`/`blue-600` sit at ~4.4:1 on
+  // the white header and fail WCAG AA for body text. slate-600 (7.6:1) and
+  // blue-700 (6.7:1) clear 4.5:1 while staying visually distinct.
   const linkClass = ({ isActive }: { isActive: boolean }) =>
-    `text-sm font-medium transition-colors hover:text-primary ${
-      isActive ? 'text-primary font-semibold' : 'text-muted-foreground'
+    `text-sm font-medium transition-colors hover:text-blue-700 dark:hover:text-blue-400 ${
+      isActive
+        ? 'text-blue-700 dark:text-blue-400 font-semibold'
+        : 'text-slate-600 dark:text-slate-400'
     } ${mobile ? 'text-lg py-2 border-b border-border' : ''}`;
 
   return (
@@ -42,17 +47,27 @@ const NavLinks = ({ mobile = false, closeMenu }: { mobile?: boolean; closeMenu?:
 };
 
 interface HeaderProps {
-  /** Opens the app-wide Settings modal (interview preferences + AI provider profiles). */
-  onOpenSettings: () => void;
+  /**
+   * Opens the app-wide Settings modal (interview preferences + AI provider profiles).
+   * Receives the element that launched it so the modal can restore focus on close
+   * (a controlled Dialog has no trigger of its own to return focus to).
+   */
+  onOpenSettings: (trigger: HTMLElement) => void;
 }
 
 const Header: React.FC<HeaderProps> = ({ onOpenSettings }) => {
   const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const menuTriggerRef = useRef<HTMLButtonElement | null>(null);
 
-  const handleOpenSettings = () => {
+  const handleOpenSettings = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const invokedFromSheet = isMobileMenuOpen;
     setIsMobileMenuOpen(false);
-    onOpenSettings();
+    // The sheet's own button unmounts with the sheet, so hand back the hamburger
+    // that stays on screen; otherwise return focus to the desktop button.
+    onOpenSettings(
+      invokedFromSheet && menuTriggerRef.current ? menuTriggerRef.current : e.currentTarget
+    );
   };
 
   return (
@@ -118,7 +133,7 @@ const Header: React.FC<HeaderProps> = ({ onOpenSettings }) => {
             <div className="md:hidden">
               <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
                 <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon">
+                  <Button ref={menuTriggerRef} variant="ghost" size="icon">
                     <Menu className="w-5 h-5" />
                     <span className="sr-only">Toggle menu</span>
                   </Button>

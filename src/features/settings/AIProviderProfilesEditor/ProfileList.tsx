@@ -86,11 +86,13 @@ export const ProfileList: React.FC<ProfileListProps> = ({
                   )}
                 </span>
               </button>
-              <div className="flex items-center opacity-100 md:opacity-0 transition-opacity md:group-hover:opacity-100 md:group-focus-within:opacity-100 focus-within:opacity-100">
+              {/* Actions stay visible: a hover-only reveal hid them from keyboard
+                  users and made the destructive delete hover-dependent. */}
+              <div className="flex items-center">
                 <Button
                   type="button"
                   variant="ghost"
-                  size="icon-xs"
+                  size="icon-sm"
                   onClick={(e) => {
                     e.stopPropagation();
                     onDuplicateProfile(profile);
@@ -98,12 +100,12 @@ export const ProfileList: React.FC<ProfileListProps> = ({
                   title="Duplicate"
                   aria-label={`Duplicate profile ${profile.name}`}
                 >
-                  <Copy className="w-3 h-3" />
+                  <Copy className="w-4 h-4" />
                 </Button>
                 <Button
                   type="button"
                   variant="ghost"
-                  size="icon-xs"
+                  size="icon-sm"
                   className="text-destructive hover:text-destructive"
                   onClick={(e) => {
                     e.stopPropagation();
@@ -113,7 +115,7 @@ export const ProfileList: React.FC<ProfileListProps> = ({
                   title="Delete"
                   aria-label={`Delete profile ${profile.name}`}
                 >
-                  <Trash2 className="w-3 h-3" />
+                  <Trash2 className="w-4 h-4" />
                 </Button>
               </div>
             </div>

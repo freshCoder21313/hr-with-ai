@@ -154,15 +154,32 @@ export function useCloudSync() {
 
     resetStatus();
     setIsLoading(true);
+    let data: unknown;
+    // syncService owns the shape; parsing only proves the file is JSON.
+    type SyncPayload = Parameters<typeof syncService.importData>[0];
     try {
-      const text = await file.text();
-      const data = JSON.parse(text);
-      await syncService.importData(data);
+      data = JSON.parse(await file.text());
+    } catch {
+      logger.error('useCloudSync: offline import file was not valid JSON');
+      setError('This file is not valid JSON. Export a fresh backup and try again.');
+      setIsLoading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
+    try {
+      await syncService.importData(data as SyncPayload);
       setSuccess('Data imported successfully! The page will reload momentarily.');
       setTimeout(() => window.location.reload(), 2000);
     } catch (err: unknown) {
-      logger.error(err);
-      setError('Failed to process file. Make sure it is a valid backup JSON.');
+      logger.error('useCloudSync: offline import merge failed', err);
+      // No rollback is promised: the merge writes across several tables, so a
+      // failure part-way through can leave some records applied.
+      setError(
+        err instanceof Error
+          ? `The file parsed, but applying it failed: ${err.message}`
+          : 'The file parsed, but applying it to this device failed.'
+      );
     } finally {
       setIsLoading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';

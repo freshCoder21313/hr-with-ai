@@ -14,6 +14,8 @@ import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
 import { GlobalErrorHandler } from '@/components/shared/GlobalErrorHandler';
 import { db } from '@/lib/db';
 import { hasActiveProfile, openApiKeyModal, subscribeToApiKeyModal } from '@/events/apiKeyEvents';
+import { useFocusReturn } from '@/components/shared/useFocusReturn';
+import { subscribeToSettingsChanged } from '@/events/settingsEvents';
 import { Button } from '@/components/ui/button';
 import { Alert } from '@/components/ui/alert';
 const SetupRoom = lazy(() => import('@/features/dashboard/SetupRoom'));
@@ -39,6 +41,7 @@ const TOAST_MOBILE_OFFSET = { bottom: 'calc(16px + var(--safe-bottom, 0px))' } a
 
 const App: React.FC = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const settingsFocus = useFocusReturn();
 
   const [showConfigBanner, setShowConfigBanner] = useState(() => {
     const dismissed = localStorage.getItem('ai_setup_banner_dismissed') === 'true';
@@ -46,13 +49,18 @@ const App: React.FC = () => {
   });
 
   useEffect(() => {
-    // When API key modal opens or user sets a key, re-check active profile
-    const unsubscribe = subscribeToApiKeyModal(() => {
-      if (hasActiveProfile()) {
-        setShowConfigBanner(false);
-      }
-    });
-    return () => unsubscribe();
+    // Re-sample profile state on both entry points: the API key modal opening and
+    // any successful settings save. Only the former was watched before, so the
+    // first-run banner outlived the very save it asks the user to make.
+    const hideIfConfigured = () => {
+      if (hasActiveProfile()) setShowConfigBanner(false);
+    };
+    const unsubscribeModal = subscribeToApiKeyModal(hideIfConfigured);
+    const unsubscribeSettings = subscribeToSettingsChanged(hideIfConfigured);
+    return () => {
+      unsubscribeModal();
+      unsubscribeSettings();
+    };
   }, []);
 
   useEffect(() => {
@@ -71,6 +79,17 @@ const App: React.FC = () => {
     localStorage.setItem('ai_setup_banner_dismissed', 'true');
     setShowConfigBanner(false);
   };
+  const openSettings = (trigger: HTMLElement) => {
+    settingsFocus.capture(trigger);
+    setIsSettingsOpen(true);
+  };
+
+  const handleSettingsOpenChange = (open: boolean) => {
+    setIsSettingsOpen(open);
+    // Radix's closeAutoFocus handles the animated path; this covers the rest so
+    // no close path can strand focus on <body>.
+    if (!open) settingsFocus.restore();
+  };
 
   return (
     <ThemeProvider defaultTheme="system" storageKey="hr-ai-theme">
@@ -82,8 +101,12 @@ const App: React.FC = () => {
               <ErrorBoundary>
                 <div className="app-shell min-h-[100dvh] flex flex-col bg-background text-foreground pt-[var(--safe-top)] pb-[var(--safe-bottom)] pl-[var(--safe-left)] pr-[var(--safe-right)] print:block print:bg-white print:min-h-0">
                   <ApiKeyModal />
-                  <SettingsModal open={isSettingsOpen} onOpenChange={setIsSettingsOpen} />
-                  <Header onOpenSettings={() => setIsSettingsOpen(true)} />
+                  <SettingsModal
+                    open={isSettingsOpen}
+                    onOpenChange={handleSettingsOpenChange}
+                    restoreFocusTarget={settingsFocus.triggerRef.current}
+                  />
+                  <Header onOpenSettings={openSettings} />
 
                   {showConfigBanner && (
                     <div className="container mx-auto px-4 pt-3 print:hidden">
@@ -102,12 +125,12 @@ const App: React.FC = () => {
                         </div>
                         <Button
                           variant="ghost"
-                          size="icon"
-                          className="h-6 w-6 text-warning hover:bg-warning/20 shrink-0"
+                          size="icon-sm"
+                          className="text-warning hover:bg-warning/20 shrink-0"
                           onClick={dismissBanner}
                           aria-label="Dismiss banner"
                         >
-                          <X className="w-3.5 h-3.5" />
+                          <X className="w-4 h-4" />
                         </Button>
                       </Alert>
                     </div>

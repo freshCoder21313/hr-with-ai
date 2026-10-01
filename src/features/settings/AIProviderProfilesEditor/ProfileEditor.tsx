@@ -190,8 +190,8 @@ export const ProfileEditor: React.FC<ProfileEditorProps> = ({
               <Button
                 type="button"
                 variant="link"
-                size="sm"
-                className="min-h-6 text-[10px] px-0"
+                size="xs"
+                className="text-[10px] px-0"
                 onClick={() => onAddModels(profile.id, fetchedModels)}
               >
                 Add All

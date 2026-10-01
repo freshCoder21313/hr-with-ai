@@ -118,11 +118,11 @@ export const UploadTab: React.FC<UploadTabProps> = ({
             placeholder="Create a strong password"
             className="h-14 px-4 bg-muted/50 border-input rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all pr-12 text-foreground"
           />
+          {/* The label names the next action; aria-pressed would restate state. */}
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            aria-label="Show password"
-            aria-pressed={showPassword}
+            aria-label={showPassword ? 'Hide password' : 'Show password'}
             className="absolute right-2 top-1/2 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-xl text-muted-foreground hover:text-primary hover:bg-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             {showPassword ? (

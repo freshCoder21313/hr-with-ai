@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { logger } from '@/lib/logger';
 import {
   Dialog,
@@ -30,9 +30,21 @@ interface SettingsModalProps {
    * interview room re-reads settings live.
    */
   onSettingsChanged?: (settings: UserSettings) => void;
+  /**
+   * Element that opened the dialog. A controlled Dialog has no trigger of its
+   * own, so Radix would send focus to <body>. Suppressing its default keeps
+   * focus on the launcher; App re-asserts it on the next frame, after Radix's
+   * teardown refocus has run.
+   */
+  restoreFocusTarget?: HTMLElement | null;
 }
 
-const SettingsModal: React.FC<SettingsModalProps> = ({ open, onOpenChange, onSettingsChanged }) => {
+const SettingsModal: React.FC<SettingsModalProps> = ({
+  open,
+  onOpenChange,
+  onSettingsChanged,
+  restoreFocusTarget,
+}) => {
   const [settings, setSettings] = useState<UserSettings>({
     hintsEnabled: false,
     autoFinishEnabled: false,
@@ -48,6 +60,10 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onOpenChange, onSet
   const [isLoading, setIsLoading] = useState(true);
 
   const [activeTab, setActiveTab] = useState('general');
+  const focusReturnRef = useRef<HTMLElement | null>(null);
+  useEffect(() => {
+    if (restoreFocusTarget) focusReturnRef.current = restoreFocusTarget;
+  }, [restoreFocusTarget]);
 
   // Load settings on open
   useEffect(() => {
@@ -105,7 +121,15 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onOpenChange, onSet
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] max-h-[85vh] overflow-y-auto">
+      <DialogContent
+        className="sm:max-w-[500px] max-h-[85vh] overflow-y-auto"
+        onCloseAutoFocus={(e) => {
+          const target = focusReturnRef.current;
+          if (!target?.isConnected) return;
+          e.preventDefault();
+          target.focus();
+        }}
+      >
         <DialogHeader>
           <DialogTitle>Settings</DialogTitle>
           <DialogDescription>

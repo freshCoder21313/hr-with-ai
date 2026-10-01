@@ -15,14 +15,27 @@ export const SyncStatusBanner: React.FC<SyncStatusBannerProps> = ({
   return (
     <>
       {error && (
-        <div className="mb-2 p-4 bg-destructive/10 border border-destructive/20 rounded-2xl flex items-start gap-3 animate-in fade-in slide-in-from-top-4 duration-300">
-          <div className="p-1.5 bg-destructive/20 rounded-full">
-            <AlertCircle className="h-4 w-4 text-destructive" />
+        <div className="mb-2 p-4 bg-destructive/10 border border-destructive/20 rounded-2xl flex items-start justify-between gap-3 animate-in fade-in slide-in-from-top-4 duration-300">
+          <div className="flex items-start gap-3">
+            <div className="p-1.5 bg-destructive/20 rounded-full">
+              <AlertCircle className="h-4 w-4 text-destructive" />
+            </div>
+            <div className="text-sm text-destructive leading-tight">
+              <p className="font-bold mb-0.5">Sync Error</p>
+              <p className="opacity-90">{error}</p>
+            </div>
           </div>
-          <div className="text-sm text-destructive leading-tight">
-            <p className="font-bold mb-0.5">Sync Error</p>
-            <p className="opacity-90">{error}</p>
-          </div>
+          {onDismiss && (
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="text-destructive hover:bg-destructive/20 shrink-0"
+              onClick={onDismiss}
+              aria-label="Dismiss error"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          )}
         </div>
       )}
 
@@ -40,10 +53,10 @@ export const SyncStatusBanner: React.FC<SyncStatusBannerProps> = ({
           {onDismiss && (
             <Button
               variant="ghost"
-              size="icon"
-              className="h-6 w-6 text-emerald-800 dark:text-emerald-200 hover:bg-emerald-500/20 shrink-0"
+              size="icon-sm"
+              className="text-emerald-800 dark:text-emerald-200 hover:bg-emerald-500/20 shrink-0"
               onClick={onDismiss}
-              aria-label="Dismiss"
+              aria-label="Dismiss success"
             >
               <X className="h-4 w-4" />
             </Button>
