@@ -3,14 +3,13 @@ import { logger } from '@/lib/logger';
 // import * as pdfjsLib from 'pdfjs-dist';
 
 /**
- * Đọc nội dung text từ file PDF
+ * Extract text content from PDF file
  */
 const parsePDF = async (file: File): Promise<string> => {
   // Dynamic import for better performance
   const pdfjsLib = await import('pdfjs-dist');
 
-  // Cấu hình Worker cho PDF.js
-  // Sử dụng CDN để giảm tải băng thông cho server (khắc phục technical debt)
+  // Configure Worker for PDF.js using CDN
   if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
     pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@5.4.530/build/pdf.worker.min.mjs`;
   }
@@ -23,12 +22,12 @@ const parsePDF = async (file: File): Promise<string> => {
 
   let fullText = '';
 
-  // Lặp qua từng trang
+  // Iterate through pages
   for (let i = 1; i <= pdf.numPages; i++) {
     const page = await pdf.getPage(i);
     const textContent = await page.getTextContent();
 
-    // Nối các item text lại với nhau
+    // Join text items together
     const pageText = textContent.items
       .filter((item) => 'str' in item)
       .map((item) => (item as { str: string }).str)
@@ -41,7 +40,7 @@ const parsePDF = async (file: File): Promise<string> => {
 };
 
 /**
- * Đọc nội dung từ file Text
+ * Read content from Text file
  */
 const parseText = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -53,7 +52,7 @@ const parseText = (file: File): Promise<string> => {
 };
 
 /**
- * Hàm chính để parse resume dựa trên loại file
+ * Main function to parse resume based on file type
  */
 export const parseResume = async (file: File): Promise<string> => {
   const fileType = file.type;

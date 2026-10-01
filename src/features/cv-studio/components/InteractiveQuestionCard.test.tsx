@@ -39,13 +39,13 @@ describe('InteractiveQuestionCard', () => {
 
   const questionGroup: InteractiveQuestionGroup = {
     id: 'group_project',
-    title: 'Chi tiết dự án',
-    description: 'Bổ sung thông tin cho dự án mới nhất',
+    title: 'Project Details',
+    description: 'Provide information for the latest project',
     questions: [
       {
         id: 'q_scale',
         type: 'radio',
-        question: 'Quy mô hệ thống?',
+        question: 'System scale?',
         options: [
           { id: 'opt_small', label: '< 10k users' },
           { id: 'opt_large', label: '100k+ users' },
@@ -54,7 +54,7 @@ describe('InteractiveQuestionCard', () => {
       {
         id: 'q_skills',
         type: 'checkbox',
-        question: 'Kỹ năng sử dụng?',
+        question: 'Skills used?',
         options: [
           { id: 'ts', label: 'TypeScript' },
           { id: 'py', label: 'Python' },
@@ -64,11 +64,11 @@ describe('InteractiveQuestionCard', () => {
       {
         id: 'q_notes',
         type: 'input',
-        question: 'Ghi chú thêm',
-        inputPlaceholder: 'Nhập ghi chú...',
+        question: 'Additional notes',
+        inputPlaceholder: 'Enter notes...',
       },
     ],
-    submitLabel: 'Gửi toàn bộ thông tin',
+    submitLabel: 'Submit all information',
   };
 
   it('renders radio question and handles single option selection', () => {
@@ -104,7 +104,7 @@ describe('InteractiveQuestionCard', () => {
 
     render(<InteractiveQuestionCard question={radioQuestion} onSubmit={onSubmit} />);
 
-    const input = screen.getByPlaceholderText('Hoặc nhập tuỳ chọn khác...');
+    const input = screen.getByPlaceholderText('Other (Custom input)...');
     fireEvent.change(input, { target: { value: 'Friendly & Casual' } });
 
     const submitBtn = screen.getByRole('button', { name: /Apply Tone/i });
@@ -124,7 +124,7 @@ describe('InteractiveQuestionCard', () => {
 
     render(<InteractiveQuestionCard question={checkboxQuestion} onSubmit={onSubmit} />);
 
-    const submitBtn = screen.getByRole('button', { name: /Xác nhận & Tiếp tục/i });
+    const submitBtn = screen.getByRole('button', { name: /Confirm & Continue/i });
     expect(submitBtn).toBeDisabled();
 
     // Select React
@@ -153,7 +153,7 @@ describe('InteractiveQuestionCard', () => {
     render(<InteractiveQuestionCard question={inputQuestion} onSubmit={onSubmit} />);
 
     const input = screen.getByPlaceholderText('e.g. +$200K ARR');
-    const submitBtn = screen.getByRole('button', { name: /Xác nhận & Tiếp tục/i });
+    const submitBtn = screen.getByRole('button', { name: /Confirm & Continue/i });
     expect(submitBtn).toBeDisabled();
 
     fireEvent.change(input, { target: { value: 'Saved $50k monthly' } });
@@ -173,7 +173,7 @@ describe('InteractiveQuestionCard', () => {
 
     render(<InteractiveQuestionCard question={radioQuestion} onSubmit={vi.fn()} onSkip={onSkip} />);
 
-    const skipBtn = screen.getByRole('button', { name: 'Bỏ qua' });
+    const skipBtn = screen.getByRole('button', { name: 'Skip' });
     fireEvent.click(skipBtn);
     expect(onSkip).toHaveBeenCalledTimes(1);
   });
@@ -188,7 +188,7 @@ describe('InteractiveQuestionCard', () => {
       />
     );
 
-    expect(screen.getByText('Đã chọn:')).toBeInTheDocument();
+    expect(screen.getByText('Selected:')).toBeInTheDocument();
     expect(screen.getByText('Action-oriented')).toBeInTheDocument();
     expect(screen.getByText('“Special note”')).toBeInTheDocument();
   });
@@ -203,13 +203,13 @@ describe('InteractiveQuestionCard', () => {
         />
       );
 
-      expect(screen.getByText('Chi tiết dự án')).toBeInTheDocument();
-      expect(screen.getByText('Bổ sung thông tin cho dự án mới nhất')).toBeInTheDocument();
-      expect(screen.getByText('Bộ 3 câu hỏi')).toBeInTheDocument();
-      expect(screen.getByText('Quy mô hệ thống?')).toBeInTheDocument();
-      expect(screen.getByText('Kỹ năng sử dụng?')).toBeInTheDocument();
-      expect(screen.getByText('Ghi chú thêm')).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /Bỏ qua tất cả/i })).toBeInTheDocument();
+      expect(screen.getByText('Project Details')).toBeInTheDocument();
+      expect(screen.getByText('Provide information for the latest project')).toBeInTheDocument();
+      expect(screen.getByText('3 Questions')).toBeInTheDocument();
+      expect(screen.getByText('System scale?')).toBeInTheDocument();
+      expect(screen.getByText('Skills used?')).toBeInTheDocument();
+      expect(screen.getByText('Additional notes')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Skip all/i })).toBeInTheDocument();
     });
 
     it('manages independent state per question and submits collective answers', () => {
@@ -217,7 +217,7 @@ describe('InteractiveQuestionCard', () => {
 
       render(<InteractiveQuestionCard questionGroup={questionGroup} onSubmit={onSubmit} />);
 
-      const submitBtn = screen.getByRole('button', { name: /Gửi toàn bộ thông tin/i });
+      const submitBtn = screen.getByRole('button', { name: /Submit all information/i });
       expect(submitBtn).toBeDisabled();
 
       // Answer question 1 (radio)
@@ -228,7 +228,7 @@ describe('InteractiveQuestionCard', () => {
       fireEvent.click(screen.getByText('TypeScript'));
 
       // Answer question 3 (input)
-      const input = screen.getByPlaceholderText('Nhập ghi chú...');
+      const input = screen.getByPlaceholderText('Enter notes...');
       fireEvent.change(input, { target: { value: 'High throughput API' } });
 
       fireEvent.click(submitBtn);
@@ -263,7 +263,7 @@ describe('InteractiveQuestionCard', () => {
         />
       );
 
-      expect(screen.getByText('Chi tiết dự án')).toBeInTheDocument();
+      expect(screen.getByText('Project Details')).toBeInTheDocument();
       expect(screen.getByText('100k+ users')).toBeInTheDocument();
       expect(screen.getByText('TypeScript')).toBeInTheDocument();
       expect(screen.getByText('Python')).toBeInTheDocument();

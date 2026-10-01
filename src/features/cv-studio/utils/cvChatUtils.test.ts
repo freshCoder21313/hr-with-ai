@@ -414,21 +414,21 @@ Here is a question:
 
   describe('raw/unfenced JSON extraction (no markdown code fences)', () => {
     it('should extract interactiveQuestion when AI returns raw JSON without ``` (user screenshot case)', () => {
-      const text = `Để giúp bạn tự tin hơn khi ứng tuyển vào vị trí này, tôi có một câu hỏi nhỏ để làm rõ kinh nghiệm của bạn:
+      const text = `To help you feel more confident applying for this role, I have a quick question to clarify your experience:
 {
   "interactiveQuestion": {
     "id": "q_react_exp",
     "type": "radio",
-    "question": "Bạn đã có bao nhiêu năm kinh nghiệm với React và TypeScript?",
-    "description": "Giúp lượng hóa kinh nghiệm thực tế trên CV",
+    "question": "How many years of experience do you have with React and TypeScript?",
+    "description": "Helps quantify real-world experience on your CV",
     "options": [
-      { "id": "opt_1", "label": "Dưới 1 năm" },
-      { "id": "opt_2", "label": "1 - 3 năm", "description": "Mức độ trung cấp" },
-      { "id": "opt_3", "label": "Trên 3 năm", "description": "Senior" }
+      { "id": "opt_1", "label": "Less than 1 year" },
+      { "id": "opt_2", "label": "1 - 3 years", "description": "Mid-level" },
+      { "id": "opt_3", "label": "Over 3 years", "description": "Senior" }
     ],
     "allowCustomInput": true,
-    "inputPlaceholder": "Hoặc ghi số năm cụ thể...",
-    "submitLabel": "Xác nhận & Tiếp tục"
+    "inputPlaceholder": "Or enter specific years...",
+    "submitLabel": "Confirm & Continue"
   }
 }`;
       const result = extractValidatedProposedChanges(text);
@@ -436,48 +436,48 @@ Here is a question:
       expect(result.interactiveQuestion?.id).toBe('q_react_exp');
       expect(result.interactiveQuestion?.type).toBe('radio');
       expect(result.interactiveQuestion?.options).toHaveLength(3);
-      expect(result.interactiveQuestion?.submitLabel).toBe('Xác nhận & Tiếp tục');
+      expect(result.interactiveQuestion?.submitLabel).toBe('Confirm & Continue');
 
       expect(result.cleanedText).toBe(
-        'Để giúp bạn tự tin hơn khi ứng tuyển vào vị trí này, tôi có một câu hỏi nhỏ để làm rõ kinh nghiệm của bạn:'
+        'To help you feel more confident applying for this role, I have a quick question to clarify your experience:'
       );
     });
 
     it('should extract raw unfenced proposedChanges and clean surrounding text', () => {
-      const text = `Tôi đã phân tích CV của bạn và chuẩn bị cập nhật:
+      const text = `I analyzed your CV and prepared updates:
 {
   "proposedChanges": [
     {
       "section": "basics",
       "action": "update",
-      "newData": { "name": "Nguyễn Văn A" },
-      "explanation": "Cập nhật họ tên chuẩn"
+      "newData": { "name": "John Doe" },
+      "explanation": "Update standard full name"
     }
   ]
 }
-Vui lòng xem lại thay đổi ở trên.`;
+Please review the changes above.`;
 
       const result = extractValidatedProposedChanges(text);
       expect(result.changes).toHaveLength(1);
       expect(result.changes[0].section).toBe('basics');
-      expect(result.changes[0].newData).toEqual({ name: 'Nguyễn Văn A' });
+      expect(result.changes[0].newData).toEqual({ name: 'John Doe' });
 
       expect(result.cleanedText).toBe(
-        'Tôi đã phân tích CV của bạn và chuẩn bị cập nhật:\n\nVui lòng xem lại thay đổi ở trên.'
+        'I analyzed your CV and prepared updates:\n\nPlease review the changes above.'
       );
     });
 
     it('should extract raw unfenced interactiveQuestionGroup with multiple questions', () => {
-      const text = `Vui lòng cung cấp thêm thông tin dự án:
+      const text = `Please provide more project details:
 {
   "interactiveQuestionGroup": {
     "id": "grp_proj",
-    "title": "Chi tiết dự án",
+    "title": "Project Details",
     "questions": [
-      { "id": "q1", "type": "input", "question": "Quy mô team?" },
-      { "id": "q2", "type": "radio", "question": "Vai trò chính?", "options": [{ "id": "lead", "label": "Tech Lead" }] }
+      { "id": "q1", "type": "input", "question": "Team size?" },
+      { "id": "q2", "type": "radio", "question": "Main role?", "options": [{ "id": "lead", "label": "Tech Lead" }] }
     ],
-    "submitLabel": "Gửi thông tin"
+    "submitLabel": "Submit info"
   }
 }`;
 
@@ -485,57 +485,57 @@ Vui lòng xem lại thay đổi ở trên.`;
       expect(result.interactiveQuestionGroup).not.toBeNull();
       expect(result.interactiveQuestionGroup?.id).toBe('grp_proj');
       expect(result.interactiveQuestionGroup?.questions).toHaveLength(2);
-      expect(result.interactiveQuestionGroup?.submitLabel).toBe('Gửi thông tin');
-      expect(result.cleanedText).toBe('Vui lòng cung cấp thêm thông tin dự án:');
+      expect(result.interactiveQuestionGroup?.submitLabel).toBe('Submit info');
+      expect(result.cleanedText).toBe('Please provide more project details:');
     });
 
     it('should extract both proposedChanges and interactiveQuestion in raw JSON', () => {
-      const text = `Đã cập nhật mục kĩ năng.
+      const text = `Updated skills section.
 {
   "proposedChanges": [
     {
       "section": "skills",
       "action": "update",
       "newData": [{ "name": "React" }],
-      "explanation": "Thêm React"
+      "explanation": "Add React"
     }
   ],
   "interactiveQuestion": {
     "id": "q_next",
     "type": "radio",
-    "question": "Bạn muốn làm gì tiếp theo?",
-    "options": [{ "id": "exp", "label": "Cập nhật kinh nghiệm" }]
+    "question": "What would you like to do next?",
+    "options": [{ "id": "exp", "label": "Update experience" }]
   }
 }
-Hãy chọn bước tiếp theo!`;
+Please choose next step!`;
 
       const result = extractValidatedProposedChanges(text);
       expect(result.changes).toHaveLength(1);
       expect(result.interactiveQuestion).not.toBeNull();
       expect(result.interactiveQuestion?.id).toBe('q_next');
-      expect(result.cleanedText).toBe('Đã cập nhật mục kĩ năng.\n\nHãy chọn bước tiếp theo!');
+      expect(result.cleanedText).toBe('Updated skills section.\n\nPlease choose next step!');
     });
 
     it('should repair and extract cut-off / streaming raw JSON without fences', () => {
-      const text = `Tôi có câu hỏi sau:
+      const text = `I have the following question:
 {
   "interactiveQuestion": {
     "id": "q_stream_cut",
     "type": "radio",
-    "question": "Bạn đã làm việc bao lâu?",
+    "question": "How long have you worked?",
     "options": [
-      { "id": "1", "label": "1 năm"`;
+      { "id": "1", "label": "1 year"`;
 
       const result = extractValidatedProposedChanges(text);
       expect(result.interactiveQuestion).not.toBeNull();
       expect(result.interactiveQuestion?.id).toBe('q_stream_cut');
-      expect(result.cleanedText).toBe('Tôi có câu hỏi sau:');
+      expect(result.cleanedText).toBe('I have the following question:');
     });
   });
 
   describe('cleanChatResponse', () => {
     it('should clean fenced code blocks from message', () => {
-      const fullResponse = `Xin chào!
+      const fullResponse = `Hello!
 \`\`\`json
 {
   "proposedChanges": [
@@ -548,29 +548,29 @@ Hãy chọn bước tiếp theo!`;
   ]
 }
 \`\`\`
-Chúc bạn một ngày tốt lành!`;
+Have a great day!`;
 
       const cleaned = cleanChatResponse(fullResponse);
-      expect(cleaned).toBe('Xin chào!\n\nChúc bạn một ngày tốt lành!');
+      expect(cleaned).toBe('Hello!\n\nHave a great day!');
     });
 
     it('should clean naked JSON from message', () => {
-      const fullResponse = `Xin chào!
+      const fullResponse = `Hello!
 {
   "interactiveQuestion": {
     "id": "q_test",
     "type": "input",
-    "question": "Họ tên của bạn?"
+    "question": "What is your name?"
   }
 }
-Cảm ơn bạn!`;
+Thank you!`;
 
       const cleaned = cleanChatResponse(fullResponse);
-      expect(cleaned).toBe('Xin chào!\n\nCảm ơn bạn!');
+      expect(cleaned).toBe('Hello!\n\nThank you!');
     });
 
     it('should clean both fenced and unfenced JSON in the same message', () => {
-      const fullResponse = `Đoạn 1
+      const fullResponse = `Paragraph 1
 \`\`\`json
 {
   "proposedChanges": [
@@ -583,7 +583,7 @@ Cảm ơn bạn!`;
   ]
 }
 \`\`\`
-Đoạn 2
+Paragraph 2
 {
   "interactiveQuestion": {
     "id": "q1",
@@ -591,16 +591,16 @@ Cảm ơn bạn!`;
     "question": "Email?"
   }
 }
-Đoạn 3`;
+Paragraph 3`;
 
       const cleaned = cleanChatResponse(fullResponse);
-      expect(cleaned).toBe('Đoạn 1\n\nĐoạn 2\n\nĐoạn 3');
+      expect(cleaned).toBe('Paragraph 1\n\nParagraph 2\n\nParagraph 3');
     });
 
     it('should preserve regular non-JSON curly braces in text', () => {
-      const fullResponse = 'Template mẫu có chứa {tên_ứng_viên} và {vị_trí_ứng_tuyển}.';
+      const fullResponse = 'Template contains {candidate_name} and {applied_position}.';
       const cleaned = cleanChatResponse(fullResponse);
-      expect(cleaned).toBe('Template mẫu có chứa {tên_ứng_viên} và {vị_trí_ứng_tuyển}.');
+      expect(cleaned).toBe('Template contains {candidate_name} and {applied_position}.');
     });
 
     it('should return empty string when response is purely JSON payload', () => {

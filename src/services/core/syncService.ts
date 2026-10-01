@@ -299,7 +299,7 @@ export const syncService = {
   ): Promise<{ success: boolean; data?: SyncData; message?: string }> => {
     try {
       const result = await apiClient.get<{ data: CompressedSyncData }>(`/sync`, {
-        params: { id, t: Date.now() }, // Thêm timestamp để bypass browser cache
+        params: { id, t: Date.now() }, // Add timestamp to bypass browser cache
         headers: {
           'Cache-Control': 'no-cache',
           Pragma: 'no-cache',

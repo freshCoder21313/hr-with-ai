@@ -135,7 +135,7 @@ When you want the user to pick options, confirm skills, or answer structured que
     "inputPlaceholder": "Optional placeholder text for custom input",
     "minSelect": 1,
     "maxSelect": 3,
-    "submitLabel": "Xác nhận & Tiếp tục"
+    "submitLabel": "Confirm & Continue"
   }
 }
 \`\`\`
@@ -145,13 +145,13 @@ When you want the user to pick options, confirm skills, or answer structured que
 {
   "interactiveQuestionGroup": {
     "id": "group_project_details",
-    "title": "Bổ sung chi tiết dự án",
-    "description": "Giúp lượng hóa và làm nổi bật thành tích của bạn",
+    "title": "Add project details",
+    "description": "Helps quantify and highlight your achievements",
     "questions": [
       {
         "id": "q_scale",
         "type": "radio",
-        "question": "Quy mô người dùng / traffic?",
+        "question": "User base / traffic scale?",
         "options": [
           { "id": "scale_1", "label": "< 10k users" },
           { "id": "scale_2", "label": "10k - 100k users" },
@@ -162,7 +162,7 @@ When you want the user to pick options, confirm skills, or answer structured que
       {
         "id": "q_tech",
         "type": "checkbox",
-        "question": "Các công nghệ chính bạn đã sử dụng?",
+        "question": "Key technologies used?",
         "options": [
           { "id": "react", "label": "React / Next.js" },
           { "id": "node", "label": "Node.js / NestJS" },
@@ -173,11 +173,11 @@ When you want the user to pick options, confirm skills, or answer structured que
       {
         "id": "q_metric",
         "type": "input",
-        "question": "Kết quả / chỉ số đo lường nổi bật?",
-        "inputPlaceholder": "Ví dụ: Tăng 35% performance, giảm 50% chi phí server..."
+        "question": "Key results / measurable impact?",
+        "inputPlaceholder": "e.g., Increased performance by 35%, reduced server costs by 50%..."
       }
     ],
-    "submitLabel": "Gửi thông tin & Cập nhật CV"
+    "submitLabel": "Submit information & Update CV"
   }
 }
 \`\`\`

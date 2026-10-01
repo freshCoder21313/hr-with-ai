@@ -161,7 +161,7 @@ describe('CVChatPanel while a proposed change is saving', () => {
         </TooltipProvider>
       );
 
-      const regenButton = screen.getByRole('button', { name: /tạo lại câu trả lời|regenerate/i });
+      const regenButton = screen.getByRole('button', { name: /regenerate/i });
       expect(regenButton).toBeInTheDocument();
       expect(regenButton).toBeEnabled();
 
@@ -210,7 +210,7 @@ describe('CVChatPanel while a proposed change is saving', () => {
         </TooltipProvider>
       );
 
-      const retryButton = screen.getByRole('button', { name: /thử lại|retry/i });
+      const retryButton = screen.getByRole('button', { name: /retry/i });
       expect(retryButton).toBeInTheDocument();
       expect(retryButton).toBeEnabled();
 
@@ -254,7 +254,7 @@ describe('CVChatPanel while a proposed change is saving', () => {
         </TooltipProvider>
       );
 
-      const regenButton = screen.getByRole('button', { name: /tạo lại câu trả lời|regenerate/i });
+      const regenButton = screen.getByRole('button', { name: /regenerate/i });
       expect(regenButton).toBeDisabled();
     });
   });

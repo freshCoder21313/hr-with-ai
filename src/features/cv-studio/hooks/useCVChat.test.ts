@@ -387,7 +387,7 @@ I have a question for you.
     expect(result.current.activeQuestion).toBeNull();
     expect(streamCVChatMessage).toHaveBeenCalledWith(
       expect.anything(),
-      expect.stringContaining('Tôi chọn: Professional'),
+      expect.stringContaining('I selected: Professional'),
       expect.anything(),
       expect.anything(),
       expect.anything()
@@ -462,7 +462,7 @@ I have a question for you.
         {
           id: 'q1',
           type: 'radio' as const,
-          question: 'Quy mô hệ thống?',
+          question: 'System scale?',
           options: [
             { id: 'opt1', label: '10k+ users' },
             { id: 'opt2', label: '100k+ users' },
@@ -471,7 +471,7 @@ I have a question for you.
         {
           id: 'q2',
           type: 'input' as const,
-          question: 'Chỉ số đo lường?',
+          question: 'Performance metrics?',
           inputPlaceholder: 'e.g. 40%',
         },
       ],
@@ -486,28 +486,28 @@ I have a question for you.
     await act(async () => {
       await result.current.handleAnswerQuestionGroup(group, {
         q1: { selectedOptions: ['opt2'] },
-        q2: { selectedOptions: [], customText: 'Tăng 40% performance' },
+        q2: { selectedOptions: [], customText: '40% performance gain' },
       });
     });
 
     expect(result.current.activeQuestionGroup).toBeNull();
     expect(streamCVChatMessage).toHaveBeenCalledWith(
       expect.anything(),
-      expect.stringContaining('Tôi đã trả lời các câu hỏi sau:'),
+      expect.stringContaining('I answered the following questions:'),
       expect.anything(),
       expect.anything(),
       expect.anything()
     );
     expect(streamCVChatMessage).toHaveBeenCalledWith(
       expect.anything(),
-      expect.stringContaining('1. Quy mô hệ thống?: 100k+ users'),
+      expect.stringContaining('1. System scale?: 100k+ users'),
       expect.anything(),
       expect.anything(),
       expect.anything()
     );
     expect(streamCVChatMessage).toHaveBeenCalledWith(
       expect.anything(),
-      expect.stringContaining('2. Chỉ số đo lường?: Tăng 40% performance'),
+      expect.stringContaining('2. Performance metrics?: 40% performance gain'),
       expect.anything(),
       expect.anything(),
       expect.anything()

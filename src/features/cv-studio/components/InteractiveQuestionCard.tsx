@@ -214,11 +214,11 @@ export const InteractiveQuestionCard: React.FC<InteractiveQuestionCardProps> = (
         <div className="flex items-center gap-1.5 font-medium text-primary">
           <CheckCircle2 className="w-3.5 h-3.5 text-primary shrink-0" />
           <span className="font-semibold">
-            {group.title || (isMulti ? 'Đã hoàn thành bộ câu hỏi' : group.questions[0].question)}
+            {group.title || (isMulti ? 'Interactive Questions Completed' : group.questions[0].question)}
           </span>
           {isMulti && (
             <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/15 text-primary font-normal">
-              {group.questions.length} câu
+              {group.questions.length} questions
             </span>
           )}
         </div>
@@ -240,7 +240,7 @@ export const InteractiveQuestionCard: React.FC<InteractiveQuestionCardProps> = (
                     {idx + 1}. {q.question}:
                   </span>
                 )}
-                {!isMulti && <span className="font-semibold text-foreground">Đã chọn:</span>}
+                {!isMulti && <span className="font-semibold text-foreground">Selected:</span>}
                 {labels.map((lbl, i) => (
                   <span
                     key={i}
@@ -267,10 +267,12 @@ export const InteractiveQuestionCard: React.FC<InteractiveQuestionCardProps> = (
   const submitText =
     group.submitLabel ||
     (isMulti
-      ? answeredCount > 0
-        ? `Gửi ${answeredCount} câu trả lời`
-        : 'Gửi câu trả lời'
-      : group.questions[0].submitLabel || 'Xác nhận & Tiếp tục');
+      ? answeredCount > 1
+        ? `Submit ${answeredCount} answers`
+        : answeredCount === 1
+          ? 'Submit 1 answer'
+          : 'Submit answer'
+      : group.questions[0].submitLabel || 'Confirm & Continue');
 
   return (
     <div
@@ -286,11 +288,11 @@ export const InteractiveQuestionCard: React.FC<InteractiveQuestionCardProps> = (
           <div className="flex items-center gap-1.5 font-semibold text-xs md:text-sm text-foreground">
             <Sparkles className="w-3.5 h-3.5 text-primary shrink-0 animate-pulse" />
             <span>
-              {group.title || (isMulti ? 'Bộ câu hỏi cần làm rõ' : group.questions[0].question)}
+              {group.title || (isMulti ? 'Interactive Questions' : group.questions[0].question)}
             </span>
             {isMulti && (
               <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium border border-primary/20">
-                Bộ {group.questions.length} câu hỏi
+                {group.questions.length} Questions
               </span>
             )}
           </div>
@@ -301,7 +303,7 @@ export const InteractiveQuestionCard: React.FC<InteractiveQuestionCardProps> = (
               size="icon"
               className="h-6 w-6 text-muted-foreground hover:text-foreground shrink-0 -mt-1 -mr-1"
               onClick={onSkip}
-              title={isMulti ? 'Bỏ qua tất cả' : 'Bỏ qua câu hỏi'}
+              title={isMulti ? 'Skip all' : 'Skip question'}
               aria-label="Skip question"
             >
               <X className="w-3.5 h-3.5" />
@@ -431,7 +433,7 @@ export const InteractiveQuestionCard: React.FC<InteractiveQuestionCardProps> = (
                     }}
                     placeholder={
                       q.inputPlaceholder ||
-                      (isInputOnly ? 'Nhập câu trả lời của bạn...' : 'Hoặc nhập tuỳ chọn khác...')
+                      (isInputOnly ? 'Type your answer...' : 'Other (Custom input)...')
                     }
                     className="h-8 text-xs bg-background"
                     disabled={disabled}
@@ -445,10 +447,10 @@ export const InteractiveQuestionCard: React.FC<InteractiveQuestionCardProps> = (
                   <HelpCircle className="w-3 h-3 text-muted-foreground/60" />
                   <span>
                     {q.minSelect && q.maxSelect
-                      ? `Chọn ${q.minSelect} - ${q.maxSelect} mục`
+                      ? `Select ${q.minSelect} - ${q.maxSelect} items`
                       : q.maxSelect
-                        ? `Tối đa ${q.maxSelect} mục`
-                        : `Chọn ít nhất ${q.minSelect} mục`}
+                        ? `Maximum ${q.maxSelect} items`
+                        : `Select at least ${q.minSelect} items`}
                   </span>
                 </div>
               )}
@@ -461,15 +463,15 @@ export const InteractiveQuestionCard: React.FC<InteractiveQuestionCardProps> = (
       <div className="flex items-center justify-between gap-2 pt-1 border-t border-border/40">
         <div className="text-[10px] text-muted-foreground">
           {isMulti
-            ? `Đã trả lời ${answeredCount}/${group.questions.length} câu hỏi`
+            ? `Answered ${answeredCount}/${group.questions.length} questions`
             : group.questions[0].minSelect && group.questions[0].maxSelect
-              ? `Chọn ${group.questions[0].minSelect} - ${group.questions[0].maxSelect} mục`
+              ? `Select ${group.questions[0].minSelect} - ${group.questions[0].maxSelect} items`
               : group.questions[0].maxSelect
-                ? `Tối đa ${group.questions[0].maxSelect} mục`
+                ? `Maximum ${group.questions[0].maxSelect} items`
                 : group.questions[0].minSelect
-                  ? `Chọn ít nhất ${group.questions[0].minSelect} mục`
+                  ? `Select at least ${group.questions[0].minSelect} items`
                   : group.questions[0].type === 'radio'
-                    ? 'Chọn 1 mục'
+                    ? 'Select 1 item'
                     : ''}
         </div>
         <div className="flex items-center gap-1.5">
@@ -482,7 +484,7 @@ export const InteractiveQuestionCard: React.FC<InteractiveQuestionCardProps> = (
               onClick={onSkip}
               disabled={disabled}
             >
-              {isMulti ? 'Bỏ qua tất cả' : 'Bỏ qua'}
+              {isMulti ? 'Skip all' : 'Skip'}
             </Button>
           )}
           <Button

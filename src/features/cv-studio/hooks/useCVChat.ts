@@ -163,8 +163,8 @@ export const useCVChat = ({
           if (interactiveQuestionGroup) {
             cleaned =
               interactiveQuestionGroup.questions.length > 1
-                ? 'Tôi có một số câu hỏi tương tác để giúp hoàn thiện thông tin CV của bạn:'
-                : 'Tôi có câu hỏi tương tác để giúp hoàn thiện thông tin CV của bạn:';
+                ? 'I have a few interactive questions to help improve your CV:'
+                : 'I have an interactive question to help improve your CV:';
           } else if (changes?.length) {
             cleaned =
               "I've analyzed your request and prepared some updates for your CV. Please review the changes above.";
@@ -276,23 +276,23 @@ export const useCVChat = ({
             const found = q.options?.find((o) => o.id === optId);
             return found ? found.label : optId;
           });
-          parts.push(`Tôi chọn: ${optionLabels.join(', ')}`);
+          parts.push(`I selected: ${optionLabels.join(', ')}`);
         }
         if (a.customText?.trim()) {
           if (a.selectedOptions.length > 0) {
-            parts.push(`Ghi chú/Bổ sung: ${a.customText.trim()}`);
+            parts.push(`Note: ${a.customText.trim()}`);
           } else {
-            parts.push(`Câu trả lời: ${a.customText.trim()}`);
+            parts.push(`Answer: ${a.customText.trim()}`);
           }
         }
-        const text = parts.length > 0 ? parts.join('\n') : 'Đã xác nhận.';
+        const text = parts.length > 0 ? parts.join('\n') : 'Information confirmed.';
         setActiveQuestionGroup(null);
         await handleSendMessage(text);
         return;
       }
 
       // Multi-questions formatting
-      const lines: string[] = ['Tôi đã trả lời các câu hỏi sau:'];
+      const lines: string[] = ['I answered the following questions:'];
       let idx = 1;
       group.questions.forEach((q) => {
         const a = answers[q.id];
@@ -309,7 +309,7 @@ export const useCVChat = ({
         }
         if (a.customText?.trim()) {
           if (optionLabels.length > 0) {
-            answerSegments.push(`Ghi chú: ${a.customText.trim()}`);
+            answerSegments.push(`Note: ${a.customText.trim()}`);
           } else {
             answerSegments.push(a.customText.trim());
           }
@@ -319,7 +319,7 @@ export const useCVChat = ({
         idx++;
       });
 
-      const text = lines.length > 1 ? lines.join('\n') : 'Đã xác nhận thông tin.';
+      const text = lines.length > 1 ? lines.join('\n') : 'Information confirmed.';
       setActiveQuestionGroup(null);
       await handleSendMessage(text);
     },
