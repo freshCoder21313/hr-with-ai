@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
-import { buildRadarData, FeedbackScoreHeader } from './FeedbackScoreHeader';
+import { FeedbackScoreHeader } from './FeedbackScoreHeader';
+import { buildRadarData } from './radarData';
 import { Interview, InterviewFeedback, InterviewStatus } from '@/types';
 
 const feedback: InterviewFeedback = {

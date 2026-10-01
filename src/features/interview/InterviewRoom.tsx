@@ -4,7 +4,7 @@ import { logger } from '@/lib/logger';
 import { notificationService } from '@/services/core/notificationService';
 import { useNavigate, useParams } from 'react-router-dom';
 import type { Editor, TLShapeId } from 'tldraw';
-import { useInterview } from '@/hooks/useInterview';
+import { useInterview } from '@/features/interview/hooks/useInterview';
 import { useInterviewLoader } from '@/features/interview/hooks/useInterviewLoader';
 import { svgToPngBase64 } from '@/lib/svgUtils';
 import { useInterviewStore } from './interviewStore';
@@ -44,10 +44,7 @@ const InterviewRoom: React.FC = () => {
     isLoading: isProcessing,
   } = useInterview();
   const { setInterview, updateCode, updateWhiteboard } = useInterviewStore();
-  const {
-    isLoading: isInterviewLoading,
-    error: interviewLoadError,
-  } = useInterviewLoader();
+  const { isLoading: isInterviewLoading, error: interviewLoadError } = useInterviewLoader();
 
   const [inputValue, setInputValue] = useState('');
   const [isEndingSession, setIsEndingSession] = useState(false);
@@ -66,16 +63,17 @@ const InterviewRoom: React.FC = () => {
   } = useInterviewRoomBootstrap(currentInterview, showSettings);
 
   const tools = useToolHandlers(currentInterview, isSubmitting, setIsSubmitting);
+  const { setIsCodeOpen, setIsWhiteboardOpen } = tools;
   const { suggestedAction, setSuggestedAction } = useSuggestedAction(currentInterview?.messages);
   const { hints, setHints, isLoadingHints, handleGetHints } = useInterviewHints(currentInterview);
 
   useEffect(() => {
-    if (autoOpenCode) tools.setIsCodeOpen(true);
-  }, [autoOpenCode]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (autoOpenCode) setIsCodeOpen(true);
+  }, [autoOpenCode, setIsCodeOpen]);
 
   useEffect(() => {
-    if (autoOpenWhiteboard) tools.setIsWhiteboardOpen(true);
-  }, [autoOpenWhiteboard]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (autoOpenWhiteboard) setIsWhiteboardOpen(true);
+  }, [autoOpenWhiteboard, setIsWhiteboardOpen]);
 
   const handleSendMessage = useCallback(
     async (overrideText?: string) => {
@@ -149,7 +147,10 @@ const InterviewRoom: React.FC = () => {
 
   if (interviewLoadError) {
     return (
-      <div className="h-[100dvh] flex flex-col items-center justify-center gap-4 px-6 text-center">
+      <div
+        data-app-fill
+        className="flex-1 min-h-0 flex flex-col items-center justify-center gap-4 px-6 text-center"
+      >
         <AlertCircle className="h-8 w-8 text-destructive" aria-hidden="true" />
         <div className="space-y-1">
           <h2 className="text-lg font-semibold text-foreground">Could not open this interview</h2>
@@ -165,7 +166,10 @@ const InterviewRoom: React.FC = () => {
 
   if (!currentInterview || isInterviewLoading) {
     return (
-      <div className="h-[100dvh] flex flex-col items-center justify-center gap-3 text-muted-foreground">
+      <div
+        data-app-fill
+        className="flex-1 min-h-0 flex flex-col items-center justify-center gap-3 text-muted-foreground"
+      >
         <Loader2 className="animate-spin h-6 w-6 text-primary" />
         Loading room...
       </div>
@@ -176,17 +180,26 @@ const InterviewRoom: React.FC = () => {
 
   if (viewMode === 'voice') {
     return (
-      <VoiceInterviewRoom
-        onSwitchToText={
-          interaction === 'hybrid' || interaction === 'text' ? () => setViewMode('text') : undefined
-        }
-        onEndInterview={handleEndInterview}
-      />
+      // The voice room is already `flex-1 min-h-0`; it only gets a definite
+      // height from the fill contract on this wrapper.
+      <div data-app-fill className="flex-1 min-h-0 flex flex-col">
+        <VoiceInterviewRoom
+          onSwitchToText={
+            interaction === 'hybrid' || interaction === 'text'
+              ? () => setViewMode('text')
+              : undefined
+          }
+          onEndInterview={handleEndInterview}
+        />
+      </div>
     );
   }
 
   return (
-    <div className="flex flex-col h-[calc(100dvh-56px)] md:h-[calc(100vh-80px)] w-full md:max-w-7xl mx-auto bg-background rounded-none md:rounded-xl shadow-none md:shadow-lg border-x-0 md:border border-border overflow-hidden md:my-4 relative">
+    <div
+      data-app-fill
+      className="flex flex-1 min-h-0 flex-col w-full max-w-7xl mx-auto bg-background border-x-0 md:border border-border overflow-hidden relative"
+    >
       <SEO
         title="Interview Room - HR With AI"
         description="Live AI mock interview regarding your target role. Receive real-time hints and feedback."

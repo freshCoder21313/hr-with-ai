@@ -41,7 +41,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
           acceptSuggestionOnEnter: isHardcore ? 'off' : 'on',
           tabCompletion: isHardcore ? 'off' : 'on',
           wordBasedSuggestions: isHardcore ? 'off' : 'currentDocument',
-          hover: { enabled: !isHardcore },
+          hover: { enabled: isHardcore ? 'off' : 'on' },
         }}
       />
 

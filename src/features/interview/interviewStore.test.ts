@@ -1,10 +1,53 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { useInterviewStore } from './interviewStore';
+import { useInterviewStore, INTERRUPTED_MESSAGE } from './interviewStore';
 import { InterviewStatus } from '@/types';
 
 describe('useInterviewStore', () => {
   beforeEach(() => {
+    useInterviewStore.setState({ activeGenerationId: null, streamingMessageId: null });
     useInterviewStore.getState().clearInterview();
+  });
+
+  it('resolves an undelivered turn when a newer generation claims', () => {
+    useInterviewStore.setState({
+      currentInterview: {
+        id: 1,
+        messages: [
+          { content: 'q', role: 'user', timestamp: 1 },
+          { content: 'half an ans', role: 'model', timestamp: 2 },
+        ],
+      } as never,
+      streamingMessageId: 2,
+    });
+
+    useInterviewStore.getState().beginGeneration();
+
+    const messages = useInterviewStore.getState().currentInterview!.messages;
+    expect(messages[1]).toEqual({
+      content: INTERRUPTED_MESSAGE,
+      role: 'model',
+      timestamp: 2,
+      isError: true,
+    });
+    expect(useInterviewStore.getState().streamingMessageId).toBeNull();
+  });
+
+  it('leaves a delivered turn alone when a newer generation claims', () => {
+    // "Undelivered" is decided by stream completion, so a claim made after
+    // the answer landed must not retroactively fail it.
+    useInterviewStore.setState({
+      currentInterview: {
+        id: 1,
+        messages: [{ content: 'delivered', role: 'model', timestamp: 2 }],
+      } as never,
+      streamingMessageId: null,
+    });
+
+    useInterviewStore.getState().beginGeneration();
+
+    const message = useInterviewStore.getState().currentInterview!.messages[0];
+    expect(message.isError).toBeUndefined();
+    expect(message.content).toBe('delivered');
   });
 
   it('should initialize with default state', () => {
@@ -24,35 +67,38 @@ describe('useInterviewStore', () => {
     const mockInterview = { id: 1, messages: [] } as any;
     const store = useInterviewStore.getState();
     store.setInterview(mockInterview);
-    
+
     const msg = { role: 'user', content: 'hello', timestamp: 123 } as any;
     useInterviewStore.getState().addMessage(msg);
-    
+
     expect(useInterviewStore.getState().currentInterview?.messages).toHaveLength(1);
     expect(useInterviewStore.getState().currentInterview?.messages[0]).toEqual(msg);
   });
 
   it('should update last message', () => {
-    const mockInterview = { id: 1, messages: [{ content: 'old', role: 'user', timestamp: 1 }] } as any;
+    const mockInterview = {
+      id: 1,
+      messages: [{ content: 'old', role: 'user', timestamp: 1 }],
+    } as any;
     useInterviewStore.getState().setInterview(mockInterview);
-    
+
     useInterviewStore.getState().updateLastMessage('new');
-    
+
     expect(useInterviewStore.getState().currentInterview?.messages[0].content).toBe('new');
   });
 
   it('should update message by timestamp', () => {
-    const mockInterview = { 
-      id: 1, 
+    const mockInterview = {
+      id: 1,
       messages: [
         { content: 'm1', timestamp: 100, role: 'user' },
-        { content: 'm2', timestamp: 200, role: 'user' }
-      ] 
+        { content: 'm2', timestamp: 200, role: 'user' },
+      ],
     } as any;
     useInterviewStore.getState().setInterview(mockInterview);
-    
+
     useInterviewStore.getState().updateMessageByTimestamp(200, 'updated');
-    
+
     expect(useInterviewStore.getState().currentInterview?.messages[1].content).toBe('updated');
     expect(useInterviewStore.getState().currentInterview?.messages[0].content).toBe('m1');
   });
@@ -77,11 +123,14 @@ describe('useInterviewStore', () => {
   });
 
   it('should mark message as error', () => {
-    const mockInterview = { id: 1, messages: [{ timestamp: 100, role: 'model', content: 'wait' }] } as any;
+    const mockInterview = {
+      id: 1,
+      messages: [{ timestamp: 100, role: 'model', content: 'wait' }],
+    } as any;
     useInterviewStore.getState().setInterview(mockInterview);
-    
+
     useInterviewStore.getState().markMessageAsError(100, 'fail');
-    
+
     const msg = useInterviewStore.getState().currentInterview?.messages[0];
     expect(msg?.content).toBe('fail');
     expect(msg?.isError).toBe(true);
@@ -97,7 +146,7 @@ describe('useInterviewStore', () => {
     useInterviewStore.getState().setInterview({ id: 1, messages: [] } as any);
     useInterviewStore.getState().updateCode('const x = 1');
     useInterviewStore.getState().updateWhiteboard('data:image');
-    
+
     expect(useInterviewStore.getState().currentInterview?.code).toBe('const x = 1');
     expect(useInterviewStore.getState().currentInterview?.whiteboard).toBe('data:image');
   });

@@ -81,11 +81,7 @@ export const VoiceSettingsDialog: React.FC<VoiceSettingsDialogProps> = ({ open, 
         </DialogHeader>
 
         <div className="flex flex-col gap-6 py-2">
-          <div
-            className="flex flex-col gap-3"
-            role="group"
-            aria-label="Speech rate"
-          >
+          <div className="flex flex-col gap-3" role="group" aria-label="Speech rate">
             <div className="flex items-center justify-between">
               <Label>Speech rate</Label>
               <span className="text-sm tabular-nums text-muted-foreground">
@@ -93,6 +89,7 @@ export const VoiceSettingsDialog: React.FC<VoiceSettingsDialogProps> = ({ open, 
               </span>
             </div>
             <Slider
+              aria-label="Speech rate"
               min={0.5}
               max={2}
               step={0.1}
@@ -145,11 +142,7 @@ export const VoiceSettingsDialog: React.FC<VoiceSettingsDialogProps> = ({ open, 
             />
           </div>
 
-          <div
-            className="flex flex-col gap-3"
-            role="group"
-            aria-label="Silence timeout"
-          >
+          <div className="flex flex-col gap-3" role="group" aria-label="Silence timeout">
             <div className="flex items-center justify-between">
               <Label>Silence timeout</Label>
               <span className="text-sm tabular-nums text-muted-foreground">
@@ -157,6 +150,7 @@ export const VoiceSettingsDialog: React.FC<VoiceSettingsDialogProps> = ({ open, 
               </span>
             </div>
             <Slider
+              aria-label="Silence timeout"
               min={SILENCE_TIMEOUT_MIN}
               max={SILENCE_TIMEOUT_MAX}
               step={SILENCE_TIMEOUT_STEP}

@@ -20,8 +20,9 @@ const InterviewHintView: React.FC<InterviewHintViewProps> = ({ hints, onClose })
         </CardTitle>
         <Button
           variant="ghost"
-          size="sm"
-          className="h-6 w-6 p-0 text-amber-800/50 dark:text-amber-400/60 hover:text-amber-900 dark:hover:text-amber-300"
+          size="icon-sm"
+          aria-label="Close hints"
+          className="text-amber-800 dark:text-amber-400 hover:text-amber-900 dark:hover:text-amber-300"
           onClick={onClose}
         >
           <X className="w-4 h-4" />

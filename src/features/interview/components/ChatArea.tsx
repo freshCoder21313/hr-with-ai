@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useId, useRef, useState } from 'react';
 import {
   User,
   Bot,
@@ -43,6 +43,10 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
   // Track which feedback items are expanded
   const [expandedFeedback, setExpandedFeedback] = useState<Record<number, boolean>>({});
   const [isNearBottom, setIsNearBottom] = useState(true);
+  const idPrefix = useId();
+  // Expanding/collapsing swaps the pill for the card header (and back), so the
+  // focused toggle unmounts; remember which one to refocus after the commit.
+  const pendingFocusIdx = useRef<number | null>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -61,11 +65,18 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
   }, [messages, isNearBottom]);
 
   const toggleFeedback = (idx: number) => {
+    pendingFocusIdx.current = idx;
     setExpandedFeedback((prev) => ({
       ...prev,
       [idx]: !prev[idx],
     }));
   };
+
+  useEffect(() => {
+    if (pendingFocusIdx.current === null) return;
+    document.getElementById(`${idPrefix}-toggle-${pendingFocusIdx.current}`)?.focus();
+    pendingFocusIdx.current = null;
+  }, [expandedFeedback, idPrefix]);
 
   const parseContent = (content: string) => {
     const actionRegex = /<ACTION\s+type="([^"]+)"\s*(?:lang="([^"]+)")?\s*\/>/i;
@@ -152,10 +163,10 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
                           {onRetry && idx === messages.length - 1 && (
                             <Button
                               variant="outline"
-                              size="sm"
+                              size="xs"
                               onClick={onRetry}
                               disabled={isProcessing}
-                              className="self-start mt-1 gap-2 border-destructive/30 hover:bg-destructive/10 text-destructive hover:text-destructive h-8"
+                              className="self-start mt-1 gap-2 border-destructive/30 hover:bg-destructive/10 text-destructive hover:text-destructive"
                             >
                               <RefreshCw size={14} />
                               Retry
@@ -167,8 +178,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
                           <MarkdownRenderer content={cleanContent} />
                           {action && onOpenTool && (
                             <Button
-                              variant="outline"
-                              size="sm"
+                              size="xs"
                               className="self-start gap-2 bg-primary/5 hover:bg-primary/10 border-primary/20 text-primary"
                               onClick={() =>
                                 onOpenTool(action.type === 'CODE' ? 'code' : 'whiteboard')
@@ -180,11 +190,10 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
                           )}
                           {onRegenerate && idx === messages.length - 1 && (
                             <Button
-                              variant="outline"
-                              size="sm"
+                              size="xs"
                               onClick={onRegenerate}
                               disabled={isProcessing}
-                              className="self-start mt-1 gap-2 h-8"
+                              className="self-start mt-1 gap-2"
                             >
                               <RefreshCw size={14} />
                               Regenerate
@@ -208,10 +217,12 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
                 >
                   {!isExpanded ? (
                     <Button
+                      id={`${idPrefix}-toggle-${idx}`}
                       variant="outline"
-                      size="sm"
+                      size="xs"
+                      aria-expanded={false}
                       onClick={() => toggleFeedback(idx)}
-                      className="h-7 text-xs font-medium bg-background/50 border-amber-200/50 text-amber-600 hover:text-amber-700 hover:bg-amber-50/50 hover:border-amber-300 dark:border-amber-800/30 dark:text-amber-500 dark:hover:bg-amber-900/20 rounded-full"
+                      className="text-xs font-medium bg-background/50 border-amber-300 text-amber-700 hover:text-amber-800 hover:bg-amber-50/50 hover:border-amber-400 dark:border-amber-800/30 dark:text-amber-400 dark:hover:bg-amber-900/20 rounded-full"
                     >
                       <Lightbulb className="w-3.5 h-3.5 mr-1.5" />
                       View AI Analysis
@@ -219,23 +230,24 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
                     </Button>
                   ) : (
                     <Card className="bg-amber-50/80 dark:bg-amber-950/10 border-amber-200 dark:border-amber-800/40 shadow-sm overflow-hidden">
-                      <div
-                        className="px-4 py-2 flex items-center justify-between bg-amber-100/50 dark:bg-amber-900/20 border-b border-amber-200/50 dark:border-amber-800/30 cursor-pointer hover:bg-amber-100/70 dark:hover:bg-amber-900/30 transition-colors"
+                      <button
+                        type="button"
+                        id={`${idPrefix}-toggle-${idx}`}
+                        aria-expanded={true}
+                        aria-controls={`${idPrefix}-feedback-${idx}`}
                         onClick={() => toggleFeedback(idx)}
+                        className="w-full min-h-10 px-4 py-2 flex items-center justify-between text-left bg-amber-100/50 dark:bg-amber-900/20 border-b border-amber-200/50 dark:border-amber-800/30 cursor-pointer hover:bg-amber-100/70 dark:hover:bg-amber-900/30 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
                       >
-                        <div className="flex items-center gap-2 text-xs font-bold text-amber-700 dark:text-amber-500 uppercase tracking-wider">
+                        <span className="flex items-center gap-2 text-xs font-bold text-amber-700 dark:text-amber-500 uppercase tracking-wider">
                           <Lightbulb className="w-3.5 h-3.5" />
                           AI Feedback
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-5 w-5 text-amber-700/50 hover:text-amber-800 dark:text-amber-500/50 dark:hover:text-amber-400"
-                        >
-                          <ChevronUp className="w-3.5 h-3.5" />
-                        </Button>
-                      </div>
-                      <CardContent className="p-4 space-y-4 text-sm">
+                        </span>
+                        <ChevronUp className="w-3.5 h-3.5 text-amber-700/50 dark:text-amber-500/50" />
+                      </button>
+                      <CardContent
+                        id={`${idPrefix}-feedback-${idx}`}
+                        className="p-4 space-y-4 text-sm"
+                      >
                         <div className="space-y-1.5">
                           <span className="text-xs font-bold text-amber-700 dark:text-amber-500 uppercase tracking-wider flex items-center gap-1.5">
                             Analysis
@@ -279,7 +291,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
       {!isNearBottom && (
         <button
           type="button"
-          aria-label="Scroll to latest message"
+          aria-label="Jump to latest message"
           onClick={scrollToBottom}
           className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1.5 rounded-full border border-border bg-background/90 backdrop-blur px-3 py-1.5 text-xs shadow-md text-muted-foreground hover:text-foreground transition-colors"
         >

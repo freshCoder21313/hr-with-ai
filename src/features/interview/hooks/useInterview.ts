@@ -13,14 +13,8 @@ import { InterviewStatus, SetupFormData, Interview, Message } from '@/types';
 import { getActiveScenario } from '@/features/interview/scenarios';
 import { openApiKeyModal } from '@/events/apiKeyEvents';
 import { isNonEmptyString, validateInterviewSetup } from '@/lib/validation';
+import { createStreamPersistence } from '@/features/interview/hooks/interviewStreamPersistence';
 import { nextMessageId, withIdleTimeout } from '@/lib/utils';
-
-/**
- * Minimum gap between partial-stream persistence checkpoints. Bounds how much
- * of an in-flight answer is lost to an abrupt tab close, process kill, or
- * WebView suspension without issuing an IndexedDB write per token.
- */
-const STREAM_CHECKPOINT_MS = 2000;
 
 /**
  * Maximum gap between two streamed chunks before the generation is treated as
@@ -49,6 +43,7 @@ export const useInterview = () => {
     beginGeneration,
     isGenerationCurrent,
     endGeneration,
+    setStreamingMessageId,
   } = useInterviewStore();
 
   const startNewInterview = useCallback(
@@ -174,64 +169,29 @@ export const useInterview = () => {
       const latestInterview = useInterviewStore.getState().currentInterview;
       if (!latestInterview) return;
 
+      // Bail before claiming: a send that never reaches the provider must not
+      // invalidate the generation currently streaming an answer, or its
+      // undelivered turn would be interrupted for nothing.
+      const config = getStoredAIConfig();
+      if (!config.apiKey) {
+        openApiKeyModal();
+        return;
+      }
+
       let streamId = 0;
       // Claim write ownership for this generation. Any older in-flight
-      // generation is invalidated and its later writes become no-ops.
+      // generation is invalidated and its later writes become no-ops; the
+      // store resolves its undelivered turn to an explicit error.
       const generationId = beginGeneration();
       const interviewId = latestInterview.id;
-      // Seeded to "now" so a short response is never checkpointed mid-stream:
-      // the final persist already covers it.
-      let lastCheckpointAt = Date.now();
-      let inFlightCheckpoint: Promise<unknown> = Promise.resolve();
-
-      /**
-       * Persists the *live* store snapshot for this interview.
-       *
-       * Reads through `getState()` rather than a captured snapshot so any
-       * mutation that happened during the stream (code editor, whiteboard,
-       * extra messages) is included. Skips the write entirely when the
-       * generation no longer owns write access or the store has moved to a
-       * different interview, so a stale writer can never clobber newer state.
-       */
-      const persistLiveState = async (): Promise<boolean> => {
-        if (!isGenerationCurrent(generationId)) return false;
-
-        const live = useInterviewStore.getState().currentInterview;
-        if (!live) return false;
-        if (live.id !== undefined && live.id !== interviewId) return false;
-        if (interviewId === undefined) return false;
-
-        await db.interviews.update(interviewId, {
-          messages: live.messages,
-          // Explicit undefined check, not `||`: a user who clears the editor
-          // mid-stream must persist that clear, not resurrect the old value.
-          code: live.code !== undefined ? live.code : latestInterview.code,
-          whiteboard: live.whiteboard !== undefined ? live.whiteboard : latestInterview.whiteboard,
-        });
-        return true;
-      };
-
-      // Lifecycle flush. An IndexedDB write started during `pagehide` is
-      // best-effort: this narrows the loss window but cannot make arbitrary
-      // OS-level termination durable. `pagehide` means the document is going
-      // away and always flushes; `visibilitychange` also fires for ordinary
-      // tab switches, so it only flushes when actually backgrounded.
-      const flushOnLifecycle = (event: Event) => {
-        if (event.type !== 'pagehide' && document.visibilityState !== 'hidden') return;
-        void persistLiveState().catch((err: unknown) => {
-          logger.error('Failed to flush interview state on lifecycle event:', err);
-        });
-      };
+      const persistence = createStreamPersistence(latestInterview, {
+        generationId,
+        isGenerationCurrent,
+      });
+      const { persistLiveState } = persistence;
 
       try {
         setLoading(true); // Start loading
-        const config = getStoredAIConfig();
-
-        if (!config.apiKey) {
-          openApiKeyModal();
-          setLoading(false);
-          return;
-        }
 
         // 1. Add User Message
         const userMsg: Message = {
@@ -250,6 +210,9 @@ export const useInterview = () => {
           timestamp: streamId,
         };
         addMessage(aiMsgPlaceholder);
+        // Marks the turn undelivered until its stream completes, which is what
+        // a newer claim reads to decide whether to interrupt it.
+        setStreamingMessageId(streamId);
 
         // 3. Stream Response
         let fullResponse = '';
@@ -278,7 +241,10 @@ export const useInterview = () => {
         // timeout is per-chunk, so a slow but healthy stream still completes.
         const stream = withIdleTimeout(
           streamInterviewMessage(
-            [...latestInterview.messages, userMsg], // Use latest history
+            // Prior turns only: `streamInterviewMessage` appends `newMessage`
+            // itself, so including it here duplicated the user's turn in the
+            // provider payload.
+            latestInterview.messages,
             content,
             latestInterview,
             config,
@@ -294,8 +260,7 @@ export const useInterview = () => {
 
         let shouldAutoEnd = false;
 
-        window.addEventListener('pagehide', flushOnLifecycle);
-        document.addEventListener('visibilitychange', flushOnLifecycle);
+        persistence.attachLifecycleFlush();
 
         for await (const chunk of stream) {
           fullResponse += chunk;
@@ -330,22 +295,21 @@ export const useInterview = () => {
           // Throttled checkpoint: persist partial output so an abrupt tab close
           // or crash loses at most STREAM_CHECKPOINT_MS of the answer, without
           // paying an IndexedDB write per token.
-          const now = Date.now();
-          if (now - lastCheckpointAt >= STREAM_CHECKPOINT_MS) {
-            lastCheckpointAt = now;
-            inFlightCheckpoint = persistLiveState().catch((err: unknown) => {
-              logger.error('Failed to checkpoint interview during streaming:', err);
-            });
-          }
+          persistence.checkpoint();
         }
 
         // Let any in-flight checkpoint land before the authoritative write.
-        await inFlightCheckpoint;
+        await persistence.settleCheckpoints();
 
         // Check if response was empty (silent failure)
         if (!isNonEmptyString(fullResponse)) {
           throw new Error('Received empty response from AI provider.');
         }
+
+        // The answer is delivered. Deciding "undelivered" from stream
+        // completion rather than from claim release means a send that starts
+        // between here and the release cannot retroactively fail this turn.
+        setStreamingMessageId(null);
 
         // 4. Persist final state. This reads the live store rather than
         // rebuilding the message list from the pre-stream snapshot, which is
@@ -403,17 +367,18 @@ export const useInterview = () => {
           }
         }
       } finally {
-        window.removeEventListener('pagehide', flushOnLifecycle);
-        document.removeEventListener('visibilitychange', flushOnLifecycle);
+        persistence.detachLifecycleFlush();
         // Only the owning generation releases ownership and clears the loading
         // flag, so a superseded writer cannot clobber the newer generation.
         if (isGenerationCurrent(generationId)) {
           endGeneration(generationId);
           setLoading(false); // Stop loading
+          setStreamingMessageId(null);
         }
       }
     },
     [
+      setStreamingMessageId,
       addMessage,
       updateMessageByTimestamp,
       markMessageAsError,

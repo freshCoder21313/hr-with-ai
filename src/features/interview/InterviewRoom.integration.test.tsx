@@ -16,7 +16,7 @@ vi.mock('@/components/shared/SEO', () => ({
 }));
 
 const mockSendMessage = vi.fn();
-vi.mock('@/hooks/useInterview', () => ({
+vi.mock('@/features/interview/hooks/useInterview', () => ({
   useInterview: () => ({
     currentInterview: mockInterview,
     sendMessage: mockSendMessage,

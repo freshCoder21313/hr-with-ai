@@ -3,6 +3,7 @@ import { renderHook, act, waitFor } from '@testing-library/react';
 import type { Collection } from 'dexie';
 import { useInterview } from './useInterview';
 import { useInterviewStore } from '@/features/interview/interviewStore';
+import { INTERRUPTED_MESSAGE } from '@/features/interview/interviewStore';
 import { db } from '@/lib/db';
 import {
   streamInterviewMessage,
@@ -75,24 +76,26 @@ function deferredStream() {
 
   return {
     iterable,
-    emit: (chunk: string) => act(async () => {
-      const pending = resolveNext;
-      if (pending) {
-        // A `next()` is already awaiting: resolve it directly. Pushing to the
-        // queue as well would replay the chunk on the following `next()`.
+    emit: (chunk: string) =>
+      act(async () => {
+        const pending = resolveNext;
+        if (pending) {
+          // A `next()` is already awaiting: resolve it directly. Pushing to the
+          // queue as well would replay the chunk on the following `next()`.
+          resolveNext = null;
+          pending({ value: chunk, done: false });
+        } else {
+          queue.push(chunk);
+        }
+        await Promise.resolve();
+      }),
+    finish: () =>
+      act(async () => {
+        done = true;
+        resolveNext?.({ value: undefined as unknown as string, done: true });
         resolveNext = null;
-        pending({ value: chunk, done: false });
-      } else {
-        queue.push(chunk);
-      }
-      await Promise.resolve();
-    }),
-    finish: () => act(async () => {
-      done = true;
-      resolveNext?.({ value: undefined as unknown as string, done: true });
-      resolveNext = null;
-      await Promise.resolve();
-    }),
+        await Promise.resolve();
+      }),
   };
 }
 
@@ -120,6 +123,7 @@ describe('useInterview streaming persistence and concurrency', () => {
       isLoading: false,
       error: null,
       activeGenerationId: null,
+      streamingMessageId: null,
     });
   });
 
@@ -178,7 +182,9 @@ describe('useInterview streaming persistence and concurrency', () => {
     await stream.emit('Answer');
     // Simulate a concurrent mutation arriving mid-stream.
     act(() => {
-      useInterviewStore.getState().addMessage({ role: 'user', content: 'mid-stream note', timestamp: 1 });
+      useInterviewStore
+        .getState()
+        .addMessage({ role: 'user', content: 'mid-stream note', timestamp: 1 });
     });
     await stream.finish();
     await act(async () => {
@@ -329,9 +335,9 @@ describe('useInterview streaming persistence and concurrency', () => {
     const stream = deferredStream();
     vi.mocked(streamInterviewMessage).mockReturnValue(stream.iterable);
     const errored: Message = { role: 'model', content: 'failed', timestamp: 2, isError: true };
-    useInterviewStore.getState().setInterview(
-      makeInterview([{ role: 'user', content: 'q', timestamp: 1 }, errored])
-    );
+    useInterviewStore
+      .getState()
+      .setInterview(makeInterview([{ role: 'user', content: 'q', timestamp: 1 }, errored]));
 
     const { result } = render();
     act(() => {
@@ -351,9 +357,9 @@ describe('useInterview streaming persistence and concurrency', () => {
     const stream = deferredStream();
     vi.mocked(streamInterviewMessage).mockReturnValue(stream.iterable);
     const errored: Message = { role: 'model', content: 'failed', timestamp: 2, isError: true };
-    useInterviewStore.getState().setInterview(
-      makeInterview([{ role: 'user', content: 'q', timestamp: 1 }, errored])
-    );
+    useInterviewStore
+      .getState()
+      .setInterview(makeInterview([{ role: 'user', content: 'q', timestamp: 1 }, errored]));
 
     const { result } = render();
     let sendPromise: Promise<void> | undefined;
@@ -660,12 +666,14 @@ describe('useInterview streaming persistence and concurrency', () => {
     expect(generateInterviewFeedback).toHaveBeenCalledTimes(1);
   });
 
-  it('gives two same-tick sends four distinct message ids', async () => {
-    // The clock is pinned so both sends resolve to the same wall-clock value.
-    // Under the old `Date.now() + 1` allocation, both the user messages and
-    // both placeholders collapse onto one id -- and because
+  it('gives two sends under a pinned clock four distinct message ids', async () => {
+    // The two sends are awaited sequentially, so this proves *allocation*
+    // uniqueness, not concurrent execution. The clock is pinned so both
+    // resolve to the same wall-clock value: under the old
+    // `Date.now()` / `Date.now() + 1` allocation the two user messages and
+    // the two placeholders each collapse onto one id, and because
     // `updateMessageByTimestamp` maps over *every* message, a stream would
-    // then write its answer into the user's own turn as well.
+    // write its answer into the user's own turn as well.
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-01-01T00:00:00.000Z'));
     // A fresh generator per call: `mockReturnValue` would hand back the same
@@ -693,5 +701,273 @@ describe('useInterview streaming persistence and concurrency', () => {
     expect(messages[2].content).toBe('second');
     expect(messages[1].content).toBe('answer');
     expect(messages[3].content).toBe('answer');
+  });
+
+  it('supersedes a streaming send when a second send overlaps it', async () => {
+    // The two sends genuinely overlap: the first is started and left
+    // streaming, then a second is started before the first is awaited.
+    //
+    // `beginGeneration` is newest-wins, not reject-on-entry: the second claim
+    // invalidates the first, whose later writes become no-ops. Generation 2
+    // needs its own generator — handing back the exhausted one would fail it
+    // with a spurious "empty response".
+    const first = deferredStream();
+    vi.mocked(streamInterviewMessage).mockReturnValue(first.iterable);
+    useInterviewStore.getState().setInterview(makeInterview());
+
+    const { result } = render();
+    let firstSend: Promise<void>;
+    act(() => {
+      // Started, not awaited: generation 1 is claimed and streaming.
+      firstSend = result.current.sendMessage('first');
+    });
+    await first.emit('stale partial');
+    const firstGeneration = useInterviewStore.getState().activeGenerationId;
+    expect(firstGeneration).not.toBeNull();
+
+    // Generation 2 claims ownership while generation 1 is still in flight.
+    const second = deferredStream();
+    vi.mocked(streamInterviewMessage).mockReturnValue(second.iterable);
+    let secondSend: Promise<void>;
+    act(() => {
+      secondSend = result.current.sendMessage('second');
+    });
+    expect(useInterviewStore.getState().activeGenerationId).not.toBe(firstGeneration);
+
+    // (a) The superseded turn is resolved to an explicit error state, so the
+    // partial can never be mistaken for a finished answer.
+    const messages = useInterviewStore.getState().currentInterview!.messages;
+    expect(messages).toHaveLength(4);
+    expect(messages[1]).toMatchObject({ content: INTERRUPTED_MESSAGE, isError: true });
+
+    // (b) More chunks from the superseded stream never resurrect that turn.
+    await first.emit('more stale output');
+    await first.finish();
+    await act(async () => {
+      await firstSend!;
+    });
+    const afterFirst = useInterviewStore.getState().currentInterview!.messages;
+    expect(afterFirst[1]).toMatchObject({ content: INTERRUPTED_MESSAGE, isError: true });
+    expect(afterFirst.map((m) => m.content)).not.toContain('more stale output');
+
+    // (b) A superseded generation never released the newer claim nor cleared
+    // the loading flag.
+    expect(useInterviewStore.getState().activeGenerationId).not.toBeNull();
+    expect(useInterviewStore.getState().isLoading).toBe(true);
+
+    await second.emit('fresh answer');
+    await second.finish();
+    await act(async () => {
+      await secondSend!;
+    });
+
+    // (c) The interrupted state reaches Dexie through generation 2's persist.
+    const persisted = updateMock.mock.calls.at(-1)![1] as { messages: Message[] };
+    expect(persisted.messages[1]).toMatchObject({
+      content: INTERRUPTED_MESSAGE,
+      isError: true,
+    });
+    expect(persisted.messages.at(-1)?.content).toBe('fresh answer');
+  });
+
+  it('keeps a superseded turn interrupted when its stream ends quietly', async () => {
+    // (b) Completion without a further chunk is an exit path of its own.
+    const first = deferredStream();
+    vi.mocked(streamInterviewMessage).mockReturnValue(first.iterable);
+    useInterviewStore.getState().setInterview(makeInterview());
+
+    const { result } = render();
+    let firstSend: Promise<void>;
+    act(() => {
+      firstSend = result.current.sendMessage('first');
+    });
+    await first.emit('half an answer');
+
+    const second = deferredStream();
+    vi.mocked(streamInterviewMessage).mockReturnValue(second.iterable);
+    let secondSend: Promise<void>;
+    act(() => {
+      secondSend = result.current.sendMessage('second');
+    });
+
+    await first.finish();
+    await act(async () => {
+      await firstSend!;
+    });
+
+    const messages = useInterviewStore.getState().currentInterview!.messages;
+    expect(messages[1]).toMatchObject({ content: INTERRUPTED_MESSAGE, isError: true });
+    // A superseded generation writes nothing itself.
+    expect(updateMock).not.toHaveBeenCalled();
+
+    await second.emit('ok');
+    await second.finish();
+    await act(async () => {
+      await secondSend!;
+    });
+  });
+
+  it('keeps a superseded turn interrupted when its stream throws', async () => {
+    // (b) The throw path is guarded by `isGenerationCurrent`, so the
+    // interruption must already have happened in the store.
+    let explode: (() => void) | null = null;
+    vi.mocked(streamInterviewMessage).mockImplementation(async function* () {
+      yield 'half an answer';
+      await new Promise<void>((resolve) => {
+        explode = resolve;
+      });
+      throw new Error('stream died');
+    });
+    useInterviewStore.getState().setInterview(makeInterview());
+
+    const { result } = render();
+    let firstSend: Promise<void>;
+    act(() => {
+      firstSend = result.current.sendMessage('first');
+    });
+    await waitFor(() => expect(explode).not.toBeNull());
+
+    const second = deferredStream();
+    vi.mocked(streamInterviewMessage).mockReturnValue(second.iterable);
+    let secondSend: Promise<void>;
+    act(() => {
+      secondSend = result.current.sendMessage('second');
+    });
+
+    await act(async () => {
+      explode!();
+      await firstSend!;
+    });
+
+    const messages = useInterviewStore.getState().currentInterview!.messages;
+    expect(messages[1]).toMatchObject({ content: INTERRUPTED_MESSAGE, isError: true });
+    expect(updateMock).not.toHaveBeenCalled();
+
+    await second.emit('ok');
+    await second.finish();
+    await act(async () => {
+      await secondSend!;
+    });
+  });
+
+  it('keeps a superseded turn interrupted when its stream is empty', async () => {
+    // (b) An empty response throws before the delivery point.
+    const first = deferredStream();
+    vi.mocked(streamInterviewMessage).mockReturnValue(first.iterable);
+    useInterviewStore.getState().setInterview(makeInterview());
+
+    const { result } = render();
+    let firstSend: Promise<void>;
+    act(() => {
+      firstSend = result.current.sendMessage('first');
+    });
+    // The first send must reach the provider before the mock is swapped, or
+    // it would pick up the second generation's generator instead.
+    await first.emit('');
+    await waitFor(() => expect(streamInterviewMessage).toHaveBeenCalledTimes(1));
+    const second = deferredStream();
+    vi.mocked(streamInterviewMessage).mockReturnValue(second.iterable);
+    let secondSend: Promise<void>;
+    act(() => {
+      secondSend = result.current.sendMessage('second');
+    });
+
+    await first.finish();
+    await act(async () => {
+      await firstSend!;
+    });
+
+    const messages = useInterviewStore.getState().currentInterview!.messages;
+    expect(messages[1]).toMatchObject({ content: INTERRUPTED_MESSAGE, isError: true });
+
+    await second.emit('ok');
+    await second.finish();
+    await act(async () => {
+      await secondSend!;
+    });
+  });
+
+  it('does not supersede an in-flight generation when a send has no API key', async () => {
+    // (d) The no-key bail must happen before the claim, or it would strand
+    // the running answer by interrupting its undelivered turn.
+    const first = deferredStream();
+    vi.mocked(streamInterviewMessage).mockReturnValue(first.iterable);
+    useInterviewStore.getState().setInterview(makeInterview());
+
+    const { result } = render();
+    let firstSend: Promise<void>;
+    act(() => {
+      firstSend = result.current.sendMessage('first');
+    });
+    await first.emit('streaming so far');
+    const firstGeneration = useInterviewStore.getState().activeGenerationId;
+
+    vi.mocked(getStoredAIConfig).mockReturnValue({
+      apiKey: '',
+    } as unknown as ReturnType<typeof getStoredAIConfig>);
+    await act(async () => {
+      await result.current.sendMessage('blocked');
+    });
+
+    expect(openApiKeyModal).toHaveBeenCalled();
+    expect(useInterviewStore.getState().activeGenerationId).toBe(firstGeneration);
+    const messages = useInterviewStore.getState().currentInterview!.messages;
+    expect(messages[1]).toMatchObject({ content: 'streaming so far' });
+    expect(messages[1].isError).toBeUndefined();
+
+    await first.emit('and the rest');
+    await first.finish();
+    await act(async () => {
+      await firstSend!;
+    });
+    expect(useInterviewStore.getState().currentInterview!.messages[1].content).toBe(
+      'streaming so farand the rest'
+    );
+  });
+
+  it('does not fail a delivered answer when a newer send claims before release', async () => {
+    // (e) "Undelivered" comes from stream completion, not from claim release.
+    const first = deferredStream();
+    vi.mocked(streamInterviewMessage).mockReturnValue(first.iterable);
+    useInterviewStore.getState().setInterview(makeInterview());
+
+    const { result } = render();
+    let firstSend: Promise<void>;
+    act(() => {
+      firstSend = result.current.sendMessage('first');
+    });
+    await first.emit('complete answer');
+    await first.finish();
+
+    // Claim ownership in the window between delivery and release.
+    useInterviewStore.getState().beginGeneration();
+
+    await act(async () => {
+      await firstSend!;
+    });
+
+    const messages = useInterviewStore.getState().currentInterview!.messages;
+    expect(messages[1]).toMatchObject({ content: 'complete answer' });
+    expect(messages[1].isError).toBeUndefined();
+  });
+
+  it('sends the prior turns only, never duplicating the new user message', async () => {
+    // `streamInterviewMessage` appends `newMessage` to the history itself, so
+    // passing the user turn twice would duplicate it in the provider payload.
+    vi.mocked(streamInterviewMessage).mockImplementation(async function* () {
+      yield 'answer';
+    });
+    useInterviewStore
+      .getState()
+      .setInterview(makeInterview([{ role: 'model', content: 'earlier answer', timestamp: 1 }]));
+
+    const { result } = render();
+    await act(async () => {
+      await result.current.sendMessage('the new question');
+    });
+
+    const history = vi.mocked(streamInterviewMessage).mock.calls[0][0];
+    expect(history.map((m) => m.content)).toEqual(['earlier answer']);
+    expect(vi.mocked(streamInterviewMessage).mock.calls[0][1]).toBe('the new question');
   });
 });

@@ -79,19 +79,19 @@ export const VoiceInterviewRoom: React.FC<VoiceInterviewRoomProps> = ({
     if (onEndInterview) {
       await onEndInterview();
     } else {
-      navigate('/dashboard');
+      navigate('/');
     }
   };
 
   const showSpeechError = !speechSupported || !!speechError || !!permissionError;
 
   return (
-    <div className="flex flex-col h-[100dvh] bg-gradient-to-b from-slate-900 to-slate-950 text-white overflow-hidden relative">
+    <div className="flex flex-col flex-1 min-h-0 bg-gradient-to-b from-slate-900 to-slate-950 text-white overflow-hidden relative">
       {/* Header / Status Bar */}
       <div className="px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between border-b border-white/10 bg-black/20 backdrop-blur-sm z-10 gap-2">
         <div>
           <h2 className="text-lg font-semibold tracking-tight">Voice Interview</h2>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-slate-300">
             {interviewState === 'idle' && 'Ready'}
             {interviewState === 'listening' && 'Listening to you...'}
             {interviewState === 'processing_stt' && 'Processing audio...'}
@@ -105,7 +105,7 @@ export const VoiceInterviewRoom: React.FC<VoiceInterviewRoomProps> = ({
             size="sm"
             onClick={() => setIsChatOpen(!isChatOpen)}
             className={cn(
-              'text-slate-400 hover:text-white gap-1.5 px-2 sm:px-3',
+              'text-slate-300 hover:text-white gap-1.5 px-2 sm:px-3',
               isChatOpen && 'bg-white/10 text-white'
             )}
             aria-label="Toggle chat"
@@ -118,7 +118,7 @@ export const VoiceInterviewRoom: React.FC<VoiceInterviewRoomProps> = ({
               variant="ghost"
               size="sm"
               onClick={onSwitchToText}
-              className="text-slate-400 hover:text-white gap-1.5 px-2 sm:px-3"
+              className="text-slate-300 hover:text-white gap-1.5 px-2 sm:px-3"
               aria-label="Switch to Text Mode"
             >
               <MessageSquare className="w-4 h-4 shrink-0" />
@@ -127,19 +127,14 @@ export const VoiceInterviewRoom: React.FC<VoiceInterviewRoomProps> = ({
           )}
           <Button
             variant="ghost"
-            size="icon"
-            className="text-slate-400 hover:text-white h-8 w-8 sm:h-9 sm:w-9"
+            size="icon-xs"
+            className="text-slate-300 hover:text-white"
             aria-label="Voice interview settings"
             onClick={() => setIsSettingsOpen(true)}
           >
             <Settings className="w-4 h-4 sm:w-5 sm:h-5" />
           </Button>
-          <Button
-            variant="destructive"
-            size="sm"
-            className="gap-2"
-            onClick={handleEndCall}
-          >
+          <Button variant="destructive" size="sm" className="gap-2" onClick={handleEndCall}>
             <PhoneMissed className="w-4 h-4" />
             End Call
           </Button>
@@ -213,7 +208,7 @@ export const VoiceInterviewRoom: React.FC<VoiceInterviewRoomProps> = ({
         <div className="absolute left-8 hidden md:block">
           <Button
             variant="ghost"
-            className="text-slate-400 hover:text-white text-xs uppercase tracking-wider"
+            className="text-slate-300 hover:text-white text-xs uppercase tracking-wider"
             onClick={() => setIsChatOpen(!isChatOpen)}
           >
             {isChatOpen ? 'Hide Chat' : 'Show Chat'}
@@ -223,7 +218,7 @@ export const VoiceInterviewRoom: React.FC<VoiceInterviewRoomProps> = ({
         {/* Mic Control (Center) */}
         <div className="transform -translate-y-4">
           <VoiceMicButton isListening={isListening} onStart={startListening} onStop={stopAndSend} />
-          <p className="text-center text-xs mt-2 text-slate-400 font-medium uppercase tracking-widest">
+          <p className="text-center text-xs mt-2 text-slate-300 font-medium uppercase tracking-widest">
             {isListening ? 'Tap to Send' : 'Tap to Speak'}
           </p>
         </div>
@@ -236,7 +231,7 @@ export const VoiceInterviewRoom: React.FC<VoiceInterviewRoomProps> = ({
       <Sheet open={isChatOpen} onOpenChange={setIsChatOpen}>
         <SheetContent
           side="right"
-          className="w-full sm:max-w-[400px] p-0 flex flex-col bg-background text-foreground"
+          className="w-full sm:max-w-[400px] p-0 flex flex-col bg-background text-foreground [&>button]:hidden"
         >
           <SheetHeader className="h-16 border-b border-border flex flex-row items-center justify-between px-4 py-0 bg-muted/30 space-y-0">
             <SheetTitle className="font-semibold text-foreground">Live Chat</SheetTitle>
@@ -245,10 +240,9 @@ export const VoiceInterviewRoom: React.FC<VoiceInterviewRoomProps> = ({
             </SheetDescription>
             <Button
               variant="ghost"
-              size="icon"
+              size="icon-sm"
               onClick={() => setIsChatOpen(false)}
               aria-label="Close live chat"
-              className="absolute right-12 top-4"
             >
               <X className="w-5 h-5" />
             </Button>
@@ -266,7 +260,12 @@ export const VoiceInterviewRoom: React.FC<VoiceInterviewRoomProps> = ({
                 placeholder="Type a message..."
                 className="flex-1 bg-background text-foreground"
               />
-              <Button type="submit" size="icon" disabled={!isNonEmptyString(textInput)}>
+              <Button
+                type="submit"
+                size="icon"
+                aria-label="Send message"
+                disabled={!isNonEmptyString(textInput)}
+              >
                 <Send className="w-4 h-4" />
               </Button>
             </form>

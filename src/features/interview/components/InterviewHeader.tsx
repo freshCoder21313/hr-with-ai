@@ -72,11 +72,12 @@ export const InterviewHeader: React.FC<InterviewHeaderProps> = ({
           <TooltipTrigger asChild>
             <Button
               variant="ghost"
-              size="icon"
+              size="icon-sm"
               onClick={onOpenSettings}
-              className="h-11 w-11 md:h-11 md:w-11 text-muted-foreground hover:text-foreground"
+              aria-label="Open interview settings"
+              className="text-muted-foreground hover:text-foreground"
             >
-              <SettingsIcon size={18} />
+              <SettingsIcon size={18} aria-hidden="true" />
             </Button>
           </TooltipTrigger>
           <TooltipContent>
@@ -89,10 +90,13 @@ export const InterviewHeader: React.FC<InterviewHeaderProps> = ({
             <TooltipTrigger asChild>
               <Button
                 variant="ghost"
-                size="icon"
+                size="icon-sm"
                 onClick={onSwitchViewMode}
+                aria-label={
+                  viewMode === 'voice' ? 'Switch to text interview' : 'Switch to voice interview'
+                }
                 className={cn(
-                'h-11 w-11 md:h-11 md:w-11 hover:text-foreground',
+                  'hover:text-foreground',
                   viewMode === 'voice' ? 'text-primary animate-pulse' : 'text-muted-foreground'
                 )}
               >
@@ -108,6 +112,7 @@ export const InterviewHeader: React.FC<InterviewHeaderProps> = ({
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
+                    aria-hidden="true"
                     className="lucide lucide-mic"
                   >
                     <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
@@ -128,9 +133,10 @@ export const InterviewHeader: React.FC<InterviewHeaderProps> = ({
           variant="destructive"
           size="sm"
           onClick={onEndSession}
+          aria-label="End session"
           className="gap-2 h-11 px-4 text-xs"
         >
-          <StopCircle className="w-3 h-3" />
+          <StopCircle className="w-3 h-3" aria-hidden="true" />
           <span className="hidden md:inline">End Session</span>
         </Button>
       </div>

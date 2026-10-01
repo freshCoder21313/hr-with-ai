@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { logger } from '@/lib/logger';
 import { SetupFormData, Resume, SavedJob } from '@/types';
-import { useInterview } from '@/hooks/useInterview';
+import { useInterview } from '@/features/interview/hooks/useInterview';
 import { db } from '@/lib/db';
 import { toast } from 'sonner';
 import { validateInterviewSetup } from '@/lib/validation';

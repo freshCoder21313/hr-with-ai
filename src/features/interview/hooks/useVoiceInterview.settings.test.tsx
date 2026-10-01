@@ -17,7 +17,9 @@ vi.mock('@/services/voice/speechToTextService', async () => {
       start: (...a: unknown[]) => start(...a),
       stop: (...a: unknown[]) => stop(...a),
       isSupported: () => true,
-      setOnSilenceCallback: (cb: (() => void) | null) => { silenceCb = cb; },
+      setOnSilenceCallback: (cb: (() => void) | null) => {
+        silenceCb = cb;
+      },
     },
   };
 });
@@ -27,7 +29,9 @@ vi.mock('@/services/voice/textToSpeechService', () => ({
   textToSpeechService: {
     getVoices: () => [],
     speak: (...a: unknown[]) => speak(...a),
-    stop: vi.fn(), pause: vi.fn(), resume: vi.fn(),
+    stop: vi.fn(),
+    pause: vi.fn(),
+    resume: vi.fn(),
   },
 }));
 
@@ -40,7 +44,12 @@ vi.mock('./useAudioRecorder', () => ({
 }));
 
 vi.mock('@/services/voice/voiceInterviewService', () => ({
-  voiceInterviewService: { setOnSentenceCallback: vi.fn(), reset: vi.fn(), feedStreamChunk: vi.fn(), flush: vi.fn() },
+  voiceInterviewService: {
+    setOnSentenceCallback: vi.fn(),
+    reset: vi.fn(),
+    feedStreamChunk: vi.fn(),
+    flush: vi.fn(),
+  },
 }));
 vi.mock('@/services/interview/interviewAIService', () => ({ streamInterviewMessage: vi.fn() }));
 vi.mock('@/services/ai/aiConfigService', () => ({ getStoredAIConfig: vi.fn() }));
@@ -69,20 +78,32 @@ const toastFn = vi.fn();
 vi.mock('sonner', () => ({ toast: { info: (...a: unknown[]) => toastFn(...a), error: vi.fn() } }));
 
 const BASE = {
-  language: 'en-US', sttProvider: 'web-speech' as const, ttsProvider: 'web-speech' as const,
-  speechRate: 1, pitch: 1, volume: 1, autoPlayResponse: true,
-  pushToTalk: false, silenceTimeout: 4000,
+  language: 'en-US',
+  sttProvider: 'web-speech' as const,
+  ttsProvider: 'web-speech' as const,
+  speechRate: 1,
+  pitch: 1,
+  volume: 1,
+  autoPlayResponse: true,
+  pushToTalk: false,
+  silenceTimeout: 4000,
 };
 
 describe('settings actually reach the live interview', () => {
   beforeAll(() => {
-    globalThis.ResizeObserver = class { observe(){} unobserve(){} disconnect(){} } as never;
+    globalThis.ResizeObserver = class {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    } as never;
   });
   beforeEach(() => {
     vi.clearAllMocks();
     silenceCb = null;
     storeState = { currentInterview: { id: 1, language: 'en-US', messages: [] } };
-    act(() => { useVoiceInterviewStore.setState({ voiceSettings: { ...BASE }, currentState: 'idle' }); });
+    act(() => {
+      useVoiceInterviewStore.setState({ voiceSettings: { ...BASE }, currentState: 'idle' });
+    });
   });
 
   it('a silenceTimeout written by the store reaches the STT service config', () => {
@@ -91,7 +112,9 @@ describe('settings actually reach the live interview', () => {
     expect(before).toBe(4000);
 
     // Exactly what VoiceSettingsDialog does on Save.
-    act(() => { useVoiceInterviewStore.getState().setVoiceSettings({ silenceTimeout: 7500 }); });
+    act(() => {
+      useVoiceInterviewStore.getState().setVoiceSettings({ silenceTimeout: 7500 });
+    });
     rerender();
 
     expect(setConfig.mock.calls.at(-1)?.[0]?.silenceTimeout).toBe(7500);
@@ -99,10 +122,14 @@ describe('settings actually reach the live interview', () => {
 
   it('a speechRate written by the store reaches the TTS speak config', () => {
     const { rerender } = renderHook(() => useVoiceInterview());
-    act(() => { useVoiceInterviewStore.getState().setVoiceSettings({ speechRate: 1.8 }); });
+    act(() => {
+      useVoiceInterviewStore.getState().setVoiceSettings({ speechRate: 1.8 });
+    });
     rerender();
 
-    act(() => { useVoiceInterviewStore.setState({ ttsQueue: ['hello'], currentState: 'speaking_tts' }); });
+    act(() => {
+      useVoiceInterviewStore.setState({ ttsQueue: ['hello'], currentState: 'speaking_tts' });
+    });
     rerender();
 
     expect(speak).toHaveBeenCalled();
@@ -111,10 +138,14 @@ describe('settings actually reach the live interview', () => {
 
   it('the silence autostop clears isListening and toasts', () => {
     const { result } = renderHook(() => useVoiceInterview());
-    act(() => { result.current.startListening(); });
+    act(() => {
+      result.current.startListening();
+    });
     expect(result.current.isListening).toBe(true);
 
-    act(() => { silenceCb?.(); });
+    act(() => {
+      silenceCb?.();
+    });
 
     expect(result.current.isListening).toBe(false);
     expect(toastFn).toHaveBeenCalledWith('Stopped listening — no speech detected.');
@@ -122,7 +153,9 @@ describe('settings actually reach the live interview', () => {
 
   it('an empty transcript toasts instead of dropping the turn silently', async () => {
     const { result } = renderHook(() => useVoiceInterview());
-    await act(async () => { await result.current.stopAndSend(); });
+    await act(async () => {
+      await result.current.stopAndSend();
+    });
 
     expect(toastFn).toHaveBeenCalledWith("Didn't catch that — try again.");
     expect(addMessage).not.toHaveBeenCalled();

@@ -11,6 +11,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -45,38 +46,44 @@ export const ResumeSelectStep: React.FC<ResumeSelectStepProps> = ({
         </Alert>
       ) : (
         availableResumes.map((resume, index) => (
-          <div
+          <button
             key={resume.id || `resume-${index}`}
-            className={`p-4 border rounded-lg cursor-pointer transition-colors ${
+            type="button"
+            aria-pressed={selectedResume?.id === resume.id}
+            onClick={() => onSelect(resume)}
+            className={cn(
+              'block w-full p-4 border rounded-lg text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
               selectedResume?.id === resume.id
                 ? 'border-primary bg-primary/5 ring-1 ring-primary/20'
                 : 'border-border hover:border-primary/50 hover:bg-muted/50'
-            }`}
-            onClick={() => onSelect(resume)}
+            )}
           >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div
-                  className={`p-2 rounded-full ${
+            <span className="flex items-center justify-between">
+              <span className="flex items-center gap-3">
+                <span
+                  className={cn(
+                    'p-2 rounded-full',
                     selectedResume?.id === resume.id
                       ? 'bg-primary/10 text-primary'
                       : 'bg-muted text-muted-foreground'
-                  }`}
+                  )}
                 >
-                  <Briefcase className="w-4 h-4" />
-                </div>
-                <div>
-                  <h4 className="font-medium text-foreground">{resume.fileName}</h4>
-                  <p className="text-sm text-muted-foreground">
+                  <Briefcase className="w-4 h-4" aria-hidden="true" />
+                </span>
+                <span>
+                  <span className="block font-medium text-foreground">{resume.fileName}</span>
+                  <span className="block text-sm text-muted-foreground">
                     {resume.createdAt
                       ? new Date(resume.createdAt).toLocaleDateString()
                       : 'Unknown date'}
-                  </p>
-                </div>
-              </div>
-              {selectedResume?.id === resume.id && <CheckCircle className="w-5 h-5 text-primary" />}
-            </div>
-          </div>
+                  </span>
+                </span>
+              </span>
+              {selectedResume?.id === resume.id && (
+                <CheckCircle className="w-5 h-5 text-primary" aria-hidden="true" />
+              )}
+            </span>
+          </button>
         ))
       )}
     </div>
@@ -156,12 +163,12 @@ export const JobResultsStep: React.FC<JobResultsStepProps> = ({
       {jobs.map((job) => (
         <div
           key={job.id}
-          className={`p-4 border rounded-lg cursor-pointer transition-all hover:shadow-md ${
+          className={cn(
+            'relative p-4 border rounded-lg transition-all hover:shadow-md',
             selectedJob?.id === job.id
               ? 'border-primary bg-primary/5 shadow-md ring-1 ring-primary/20'
               : 'border-border bg-card hover:border-primary/50'
-          }`}
-          onClick={() => onSelect(job)}
+          )}
         >
           <div className="space-y-3">
             <div className="flex items-start justify-between">
@@ -196,10 +203,15 @@ export const JobResultsStep: React.FC<JobResultsStepProps> = ({
               <p className="text-sm font-medium text-foreground">Why It Fits:</p>
               <p className="text-sm text-muted-foreground">{job.whyItFits}</p>
             </div>
-            <Button className="w-full" variant={selectedJob?.id === job.id ? 'default' : 'outline'}>
+            <Button
+              className="w-full after:absolute after:inset-0 after:z-10 after:content-['']"
+              variant={selectedJob?.id === job.id ? 'default' : 'outline'}
+              onClick={() => onSelect(job)}
+              aria-label={`Select ${job.title} at ${job.company}`}
+            >
               {selectedJob?.id === job.id ? (
                 <>
-                  <Target className="w-4 h-4 mr-2" />
+                  <Target className="w-4 h-4 mr-2" aria-hidden="true" />
                   Selected
                 </>
               ) : (

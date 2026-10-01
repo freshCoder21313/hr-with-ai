@@ -9,6 +9,13 @@ import { Interview, Message, InterviewStatus } from '@/types';
  */
 let generationCounter = 0;
 
+/**
+ * Content written over a model turn whose stream was cut short by a newer
+ * send. Matches the wording of the ordinary failure path so the transcript
+ * renders the same error card and offers Retry.
+ */
+export const INTERRUPTED_MESSAGE = 'Interrupted by a newer message.';
+
 interface InterviewState {
   currentInterview: Interview | null;
   isLoading: boolean;
@@ -16,8 +23,17 @@ interface InterviewState {
   /**
    * Identity of the AI generation currently allowed to mutate this interview.
    * `null` = idle. See `beginGeneration` for the single-flight contract.
- */
+   */
   activeGenerationId: number | null;
+  /**
+   * Timestamp of the model turn currently being streamed, or `null` when no
+   * answer is in flight. Decides "undelivered": `beginGeneration` interrupts
+   * exactly this turn, because a turn whose stream already delivered a
+   * non-empty answer has cleared it and must survive a later claim.
+   */
+  streamingMessageId: number | null;
+  /** Claims the single in-flight model turn; `null` releases it. */
+  setStreamingMessageId: (timestamp: number | null) => void;
   // Actions
   setInterview: (interview: Interview) => void;
   addMessage: (message: Message) => void;
@@ -50,6 +66,7 @@ export const useInterviewStore = create<InterviewState>()(
       isLoading: false,
       error: null,
       activeGenerationId: null,
+      streamingMessageId: null,
 
       setInterview: (interview) => set({ currentInterview: interview }),
 
@@ -170,10 +187,35 @@ export const useInterviewStore = create<InterviewState>()(
       setLoading: (loading) => set({ isLoading: loading }),
       setError: (error) => set({ error }),
 
+      setStreamingMessageId: (timestamp) => set({ streamingMessageId: timestamp }),
+
       beginGeneration: () => {
         generationCounter += 1;
         const generationId = generationCounter;
-        set({ activeGenerationId: generationId });
+        // One atomic write: a newer claim resolves the previous turn's
+        // undelivered placeholder to an explicit error *and* takes ownership,
+        // so no interleaving can leave a half-answer looking like a finished
+        // model message. The new generation's own persists carry the state
+        // into Dexie, so this never touches the database itself.
+        set((state) => {
+          const interrupted = state.streamingMessageId;
+          let currentInterview = state.currentInterview;
+          if (interrupted !== null && currentInterview) {
+            currentInterview = {
+              ...currentInterview,
+              messages: currentInterview.messages.map((msg) =>
+                msg.timestamp === interrupted
+                  ? { ...msg, content: INTERRUPTED_MESSAGE, isError: true }
+                  : msg
+              ),
+            };
+          }
+          return {
+            activeGenerationId: generationId,
+            streamingMessageId: null,
+            ...(currentInterview !== state.currentInterview ? { currentInterview } : {}),
+          };
+        });
         return generationId;
       },
 

@@ -34,7 +34,8 @@ export const useVoiceInterview = () => {
     setAudioLevel,
   } = useVoiceInterviewStore();
 
-  const { currentInterview, addMessage, updateLastMessage, setLoading } = useInterviewStore();
+  const { currentInterview, addMessage, updateLastMessage, markLastMessageAsError, setLoading } =
+    useInterviewStore();
 
   // Seed the store from persisted sources: the user's saved defaults first, then
   // this interview's own voice settings on top. Runs once per interview so a late
@@ -149,7 +150,9 @@ export const useVoiceInterview = () => {
         isPermissionDenied = errName === 'NotAllowedError' || errName === 'PermissionDeniedError';
       }
       if (isPermissionDenied) {
-        setPermissionError('Microphone permission denied. Please allow microphone access in your browser settings.');
+        setPermissionError(
+          'Microphone permission denied. Please allow microphone access in your browser settings.'
+        );
       } else {
         setPermissionError('Could not access microphone. Please check your audio device.');
       }
@@ -211,6 +214,16 @@ export const useVoiceInterview = () => {
       const currentInterview = useInterviewStore.getState().currentInterview;
       if (!currentInterview) return;
 
+      // `streamInterviewMessage` appends `userText` itself, so history must be the
+      // PRIOR turns only. Both callers add the user message to the store right
+      // before this runs, so the store's tail is that message.
+      const messages = currentInterview.messages;
+      const last = messages[messages.length - 1];
+      const priorMessages =
+        last && last.role === 'user' && last.content === userText
+          ? messages.slice(0, -1)
+          : messages;
+
       setCurrentState('waiting_ai');
       setLoading(true);
 
@@ -238,7 +251,7 @@ export const useVoiceInterview = () => {
         // Stream
         let fullContent = '';
         for await (const chunk of streamInterviewMessage(
-          currentInterview.messages,
+          priorMessages,
           userText,
           currentInterview,
           config,
@@ -256,12 +269,20 @@ export const useVoiceInterview = () => {
         setLoading(false);
       } catch (error: unknown) {
         logger.error(error);
-        updateLastMessage('Error: ' + getErrorMessage(error));
+        markLastMessageAsError(getErrorMessage(error));
         setCurrentState('idle');
         setLoading(false);
       }
     },
-    [addMessage, updateLastMessage, setLoading, clearTTSQueue, addToTTSQueue, setCurrentState]
+    [
+      addMessage,
+      updateLastMessage,
+      markLastMessageAsError,
+      setLoading,
+      clearTTSQueue,
+      addToTTSQueue,
+      setCurrentState,
+    ]
   );
 
   // Action: Send Text Message (Hybrid Mode)

@@ -1,6 +1,14 @@
 import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { AlertCircle, ArrowLeft, BarChart2, FileText, Loader2, MessageSquare, Printer } from 'lucide-react';
+import {
+  AlertCircle,
+  ArrowLeft,
+  BarChart2,
+  FileText,
+  Loader2,
+  MessageSquare,
+  Printer,
+} from 'lucide-react';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -93,7 +101,7 @@ const FeedbackView: React.FC = () => {
           />
         </TabsContent>
 
-        <TabsContent value="transcript" className="h-[calc(100vh-200px)] min-h-[500px]">
+        <TabsContent value="transcript" className="h-[calc(100dvh-200px)] min-h-[500px]">
           <Card className="h-full border-none shadow-md overflow-hidden flex flex-col bg-card">
             <CardHeader className="border-b bg-muted/30 py-4 shrink-0">
               <CardTitle className="flex items-center gap-2 text-lg">

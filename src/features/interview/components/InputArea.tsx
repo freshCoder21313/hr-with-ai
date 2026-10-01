@@ -76,6 +76,10 @@ export const InputArea: React.FC<InputAreaProps> = ({
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
+      // Match the disabled send button: a second send mid-stream supersedes
+      // the running answer and orphans its partial text. The typed text is
+      // left in place so blocking the send never costs the user their input.
+      if (isProcessing) return;
       onSendMessage();
     }
   };
@@ -89,19 +93,21 @@ export const InputArea: React.FC<InputAreaProps> = ({
             {suggestedAction === 'code' && (
               <Button
                 onClick={() => setIsCodeOpen(true)}
-                className="rounded-full shadow-lg bg-indigo-600 hover:bg-indigo-700 text-white gap-2"
-                size="sm"
+                aria-label="AI suggests: open the code editor"
+                className="rounded-full shadow-lg gap-2"
+                size="xs"
               >
-                <Sparkles size={14} /> AI suggests: Open Code Editor
+                <Sparkles size={14} aria-hidden="true" /> AI suggests: Open Code Editor
               </Button>
             )}
             {suggestedAction === 'draw' && (
               <Button
                 onClick={() => setIsWhiteboardOpen(true)}
-                className="rounded-full shadow-lg bg-emerald-600 hover:bg-emerald-700 text-white gap-2"
-                size="sm"
+                aria-label="AI suggests: use the whiteboard"
+                className="rounded-full shadow-lg gap-2"
+                size="xs"
               >
-                <Sparkles size={14} /> AI suggests: Use Whiteboard
+                <Sparkles size={14} aria-hidden="true" /> AI suggests: Use Whiteboard
               </Button>
             )}
           </div>
@@ -122,67 +128,72 @@ export const InputArea: React.FC<InputAreaProps> = ({
               <LoadingButton
                 variant="outline"
                 size="icon"
+                aria-label="Get AI hints"
                 onClick={onGetHints}
                 disabled={isLoadingHints}
                 isLoading={isLoadingHints}
                 className={cn(
-                  'h-[44px] w-[44px] md:h-[50px] md:w-[50px] rounded-xl shrink-0 border-amber-200 bg-amber-50 text-amber-600 hover:bg-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800 dark:hover:bg-amber-900/40',
+                  // Both breakpoints are set deliberately: tailwind-merge
+                  // would keep `md:h-10` from `size="icon"` and invert the
+                  // two sizes.
+                  'h-[44px] w-[44px] md:h-[50px] md:w-[50px] rounded-xl shrink-0 border-warning/40 bg-warning/10 text-warning hover:bg-warning/20',
                   isLoadingHints ? 'animate-pulse' : ''
                 )}
               >
-                <Lightbulb size={20} />
+                <Lightbulb size={20} aria-hidden="true" />
               </LoadingButton>
             </TooltipTrigger>
             <TooltipContent>
               <p>Get AI Hints</p>
             </TooltipContent>
-        </Tooltip>
+          </Tooltip>
         )}
 
         {/* Tools Group (only relevant for coding / system-design interviews) */}
         {showTools && (
-        <div className="flex gap-1 mr-1">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant={isCodeOpen ? 'default' : 'outline'}
-                size="icon"
-                onClick={() => setIsCodeOpen(true)}
-                className={cn(
-                  'h-[44px] w-[44px] md:h-[50px] md:w-[50px] rounded-xl shrink-0',
-                  isCodeOpen
-                    ? 'bg-indigo-600 text-white hover:bg-indigo-700'
-                    : 'text-indigo-600 bg-indigo-50 border-indigo-200 hover:bg-indigo-100 dark:bg-indigo-900/20 dark:text-indigo-400 dark:border-indigo-800 dark:hover:bg-indigo-900/40'
-                )}
-              >
-                <Code2 size={20} />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Open Code Editor</p>
-            </TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant={isWhiteboardOpen ? 'default' : 'outline'}
-                size="icon"
-                onClick={() => setIsWhiteboardOpen(true)}
-                className={cn(
-                  'h-[44px] w-[44px] md:h-[50px] md:w-[50px] rounded-xl shrink-0',
-                  isWhiteboardOpen
-                    ? 'bg-emerald-600 text-white hover:bg-emerald-700'
-                    : 'text-emerald-600 bg-emerald-50 border-emerald-200 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800 dark:hover:bg-emerald-900/40'
-                )}
-              >
-                <PenTool size={20} />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Open Whiteboard</p>
-            </TooltipContent>
-          </Tooltip>
-        </div>
+          <div className="flex gap-1 mr-1">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant={isCodeOpen ? 'default' : 'outline'}
+                  size="icon"
+                  aria-label="Open code editor"
+                  aria-pressed={isCodeOpen}
+                  onClick={() => setIsCodeOpen(true)}
+                  className={cn(
+                    'h-[44px] w-[44px] md:h-[50px] md:w-[50px] rounded-xl shrink-0',
+                    !isCodeOpen && 'text-primary bg-primary/5 border-primary/40 hover:bg-primary/10'
+                  )}
+                >
+                  <Code2 size={20} aria-hidden="true" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Open Code Editor</p>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant={isWhiteboardOpen ? 'default' : 'outline'}
+                  size="icon"
+                  aria-label="Open whiteboard"
+                  aria-pressed={isWhiteboardOpen}
+                  onClick={() => setIsWhiteboardOpen(true)}
+                  className={cn(
+                    'h-[44px] w-[44px] md:h-[50px] md:w-[50px] rounded-xl shrink-0',
+                    !isWhiteboardOpen &&
+                      'text-success bg-success/5 border-success/40 hover:bg-success/10'
+                  )}
+                >
+                  <PenTool size={20} aria-hidden="true" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Open Whiteboard</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
         )}
 
         <div className="relative flex-1">
@@ -203,15 +214,17 @@ export const InputArea: React.FC<InputAreaProps> = ({
               <Button
                 variant="ghost"
                 size="icon"
+                aria-label={isListening ? 'Stop voice input' : 'Start voice input'}
+                aria-pressed={isListening}
                 className={cn(
                   'absolute right-1 bottom-1 h-9 w-9 md:h-10 md:w-10 rounded-xl',
                   isListening
-                    ? 'text-red-500 animate-pulse hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30'
+                    ? 'text-destructive animate-pulse hover:bg-destructive/10'
                     : 'text-muted-foreground hover:text-foreground'
                 )}
                 onClick={handleToggleListening}
               >
-                <Mic size={18} />
+                <Mic size={18} aria-hidden="true" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>
@@ -228,11 +241,12 @@ export const InputArea: React.FC<InputAreaProps> = ({
             <Button
               onClick={() => onSendMessage()}
               disabled={!isNonEmptyString(inputValue) || isProcessing}
+              aria-label="Send message"
               className="h-[44px] w-[44px] md:h-[50px] md:w-[50px] rounded-xl shrink-0"
               size="icon"
               data-testid="send-button"
             >
-              <Send size={18} />
+              <Send size={18} aria-hidden="true" />
             </Button>
           </TooltipTrigger>
           <TooltipContent>

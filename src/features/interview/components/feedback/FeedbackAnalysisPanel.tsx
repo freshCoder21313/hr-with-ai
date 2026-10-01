@@ -4,7 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { InterviewFeedback } from '@/types';
 import { Interview } from '@/types';
 
-const FeedbackScoreHeader = lazy(() => import('./FeedbackScoreHeader').then(m => ({ default: m.FeedbackScoreHeader })));
+const FeedbackScoreHeader = lazy(() =>
+  import('./FeedbackScoreHeader').then((m) => ({ default: m.FeedbackScoreHeader }))
+);
 
 interface FeedbackAnalysisPanelProps {
   interview: Interview;
@@ -20,7 +22,13 @@ export const FeedbackAnalysisPanel: React.FC<FeedbackAnalysisPanelProps> = ({
   mermaidRef2,
 }) => (
   <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
-    <Suspense fallback={<div className="h-48 flex items-center justify-center bg-card rounded-lg border border-border animate-pulse">Loading analysis summary...</div>}>
+    <Suspense
+      fallback={
+        <div className="h-48 flex items-center justify-center bg-card rounded-lg border border-border animate-pulse">
+          Loading analysis summary...
+        </div>
+      }
+    >
       <FeedbackScoreHeader interview={interview} feedback={feedback} />
     </Suspense>
 

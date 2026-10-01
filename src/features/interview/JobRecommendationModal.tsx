@@ -1,5 +1,11 @@
 import React from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Briefcase } from 'lucide-react';
 import { Interview, Resume, JobRecommendation } from '@/types';
 import { ResumeData } from '@/types/resume';
@@ -45,12 +51,16 @@ const JobRecommendationModal: React.FC<JobRecommendationModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90dvh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-foreground">
             <Briefcase className="w-5 h-5 text-primary" />
             Find Job with CV
           </DialogTitle>
+          <DialogDescription className="sr-only">
+            Choose a resume to get matching job recommendations, then pick a job to prefill your
+            interview with a tailored resume.
+          </DialogDescription>
         </DialogHeader>
 
         {flow.step === 'select-resume' && (

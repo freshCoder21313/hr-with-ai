@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react';
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Code2, PenTool, X } from 'lucide-react';
 import type { Editor } from 'tldraw';
@@ -41,24 +41,28 @@ export const ToolModals: React.FC<ToolModalsProps> = ({
     <>
       {/* Code Editor Modal */}
       <Dialog open={isCodeOpen} onOpenChange={setIsCodeOpen}>
-        <DialogContent className="max-w-[95vw] w-[1200px] h-[90vh] max-sm:w-full max-sm:h-[100dvh] max-sm:max-w-none max-sm:rounded-none p-0 gap-0 bg-[#1e1e1e] border-slate-800 flex flex-col overflow-hidden [&>button]:hidden">
+        <DialogContent className="max-w-[95vw] w-[1200px] h-[90dvh] max-sm:w-full max-sm:h-[100dvh] max-sm:max-w-none max-sm:rounded-none p-0 gap-0 bg-[#1e1e1e] border-slate-800 flex flex-col overflow-hidden pt-[var(--safe-top,0px)] [&>button]:hidden">
           <div className="flex items-center justify-between px-4 py-2 bg-[#2d2d2d] border-b border-white/10 shrink-0">
             <DialogTitle className="text-white text-sm font-mono flex items-center gap-2">
               <Code2 size={16} /> Live Code Editor
             </DialogTitle>
+            <DialogDescription className="sr-only">
+              Write your solution in the editor, then submit it to the interviewer.
+            </DialogDescription>
             <div className="flex items-center gap-2">
               <Button
-                size="sm"
-                className="h-7 bg-green-600 hover:bg-green-700 text-white border-0"
+                size="xs"
+                className="bg-green-600 hover:bg-green-700 text-white border-0"
                 onClick={() => onSubmit('code')}
                 disabled={isSubmitting}
               >
                 {isSubmitting ? 'Sending...' : 'Submit Solution'}
               </Button>
               <Button
-                size="sm"
+                size="xs"
                 variant="ghost"
-                className="h-6 text-slate-400 hover:text-white gap-2"
+                className="text-slate-400 hover:text-white gap-2"
+                aria-label="Close code editor"
                 onClick={() => setIsCodeOpen(false)}
               >
                 <X size={16} /> Close
@@ -68,7 +72,7 @@ export const ToolModals: React.FC<ToolModalsProps> = ({
           <div className="flex-1 overflow-hidden relative w-full h-full">
             <Suspense
               fallback={
-                <div className="flex items-center justify-center h-full text-slate-500">
+                <div className="flex items-center justify-center h-full text-slate-300">
                   Loading Editor...
                 </div>
               }
@@ -85,24 +89,28 @@ export const ToolModals: React.FC<ToolModalsProps> = ({
 
       {/* Whiteboard Modal */}
       <Dialog open={isWhiteboardOpen} onOpenChange={setIsWhiteboardOpen}>
-        <DialogContent className="max-w-[95vw] w-[1200px] h-[90vh] p-0 gap-0 bg-background flex flex-col overflow-hidden border-border [&>button]:hidden">
+        <DialogContent className="max-w-[95vw] w-[1200px] h-[90dvh] max-sm:w-full max-sm:h-[100dvh] max-sm:max-w-none max-sm:rounded-none p-0 gap-0 bg-background flex flex-col overflow-hidden border-border pt-[var(--safe-top,0px)] [&>button]:hidden">
           <div className="flex items-center justify-between px-4 py-2 border-b border-border shrink-0">
             <DialogTitle className="text-foreground text-sm font-medium flex items-center gap-2">
               <PenTool size={16} /> Design Whiteboard
             </DialogTitle>
+            <DialogDescription className="sr-only">
+              Sketch your design on the canvas, then submit it to the interviewer.
+            </DialogDescription>
             <div className="flex items-center gap-2">
               <Button
-                size="sm"
-                className="h-7 bg-primary text-primary-foreground hover:bg-primary/90"
+                size="xs"
+                className="bg-primary text-primary-foreground hover:bg-primary/90"
                 onClick={() => onSubmit('whiteboard')}
                 disabled={isSubmitting}
               >
                 {isSubmitting ? 'Sending...' : 'Submit Design'}
               </Button>
               <Button
-                size="sm"
+                size="xs"
                 variant="ghost"
-                className="h-6 text-muted-foreground hover:text-foreground gap-2"
+                className="text-muted-foreground hover:text-foreground gap-2"
+                aria-label="Close whiteboard"
                 onClick={() => setIsWhiteboardOpen(false)}
               >
                 <X size={16} /> Close

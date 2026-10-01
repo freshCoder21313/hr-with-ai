@@ -10,24 +10,7 @@ import {
   PolarRadiusAxis,
   Radar,
 } from 'recharts';
-
-interface RadarAxis {
-  subject: string;
-  A: number;
-  fullMark: number;
-}
-
-/** Only axes with a real score in the feedback schema are plotted; nothing is inferred. */
-export function buildRadarData(feedback: InterviewFeedback): RadarAxis[] {
-  const axes: Array<{ subject: string; value: number | undefined }> = [
-    { subject: 'Overall', value: feedback.score },
-    { subject: 'Culture Fit', value: feedback.cultureFitScore },
-    { subject: 'Resilience', value: feedback.resilienceScore },
-  ];
-  return axes
-    .filter((axis): axis is { subject: string; value: number } => typeof axis.value === 'number')
-    .map((axis) => ({ subject: axis.subject, A: axis.value, fullMark: 10 }));
-}
+import { buildRadarData } from './radarData';
 
 interface FeedbackScoreHeaderProps {
   interview: Interview;
@@ -61,7 +44,7 @@ export const FeedbackScoreHeader: React.FC<FeedbackScoreHeaderProps> = ({
               {(feedback.badges || []).map((badge, idx) => (
                 <div
                   key={idx}
-                  className="flex items-center px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-bold border border-amber-200"
+                  className="flex items-center px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-bold border border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-500/40"
                 >
                   <Medal className="w-3 h-3 mr-1" />
                   {badge}
@@ -107,7 +90,9 @@ export const FeedbackScoreHeader: React.FC<FeedbackScoreHeaderProps> = ({
             <span className="flex items-center gap-2">
               <Building2 className="w-4 h-4 text-blue-500" /> Culture Fit
             </span>
-            <span className="text-blue-600 dark:text-blue-400 font-bold">{feedback.cultureFitScore || 'N/A'}/10</span>
+            <span className="text-blue-600 dark:text-blue-400 font-bold">
+              {feedback.cultureFitScore || 'N/A'}/10
+            </span>
           </div>
           <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
             <div
@@ -122,7 +107,10 @@ export const FeedbackScoreHeader: React.FC<FeedbackScoreHeaderProps> = ({
             <ResponsiveContainer width="100%" height="100%">
               <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
                 <PolarGrid stroke="hsl(var(--border))" />
-                <PolarAngleAxis dataKey="subject" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} />
+                <PolarAngleAxis
+                  dataKey="subject"
+                  tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }}
+                />
                 <PolarRadiusAxis angle={30} domain={[0, 10]} tick={false} axisLine={false} />
                 <Radar
                   name="Candidate"

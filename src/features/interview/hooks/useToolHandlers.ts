@@ -34,7 +34,6 @@ export const useToolHandlers = (
   const [isWhiteboardOpen, setIsWhiteboardOpen] = useState(false);
   const editorRef = useRef<Editor | null>(null);
 
-
   const handleToolSubmit = useCallback(
     async (
       type: 'code' | 'whiteboard',

@@ -31,7 +31,7 @@ export const VoiceMicButton: React.FC<VoiceMicButtonProps> = ({
         className={cn(
           'relative z-10 w-16 h-16 rounded-full transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-lg flex items-center justify-center',
           isListening
-            ? 'bg-red-500 hover:bg-red-600 text-white shadow-red-500/30 ring-4 ring-red-100'
+            ? 'bg-red-500 hover:bg-red-600 text-white shadow-red-500/30 ring-4 ring-red-100 dark:ring-red-500/30'
             : 'bg-primary hover:bg-primary/90 text-white shadow-primary/30',
           disabled && 'opacity-50 cursor-not-allowed'
         )}
