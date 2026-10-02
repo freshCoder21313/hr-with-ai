@@ -21,8 +21,15 @@ vi.mock('@/services/ai/aiConfigService', () => ({
 }));
 
 vi.mock('@/services/resume/resumeAIService', () => ({
-  tailorResumeV2: vi.fn().mockResolvedValue({ basics: { name: 'Tailored' } }),
+  tailorResumeV2: vi.fn().mockResolvedValue({
+    basics: { name: 'Candidate' },
+    work: [],
+    education: [],
+    skills: [],
+    projects: [],
+  }),
   parseResumeToJSON: vi.fn(),
+  analyzeResume: vi.fn().mockResolvedValue({ missingKeywords: [] }),
 }));
 
 vi.mock('@/events/apiKeyEvents', () => ({
@@ -86,9 +93,15 @@ describe('useCVTailoring', () => {
         createdAt: 1,
         fileName: 'cv',
         rawText: '',
-        parsedData: { basics: {} },
+        parsedData: {
+          basics: { name: 'Candidate' },
+          work: [],
+          education: [],
+          skills: [],
+          projects: [],
+        },
       },
-    ] as unknown as Parameters<typeof result.current.handleStartTailoring>[0];
+    ] satisfies Parameters<typeof result.current.handleStartTailoring>[0];
 
     await act(async () => {
       await result.current.handleStartTailoring(resumes);
@@ -96,6 +109,7 @@ describe('useCVTailoring', () => {
 
     // A rejected toArray must not leave the panel stuck on "Tailoring...".
     expect(result.current.isProcessing).toBe(false);
+    expect(result.current.processingStatus['job-1']).toEqual({ status: 'completed', resultId: 99 });
     expect(toastError).toHaveBeenCalledWith('Could not refresh the CV list. Please try again.');
   });
 });

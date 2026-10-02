@@ -2,6 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useCVStudio } from './useCVStudio';
 import { useJobStore } from '../stores/useJobStore';
+import type { Mock } from 'vitest';
+import { db } from '@/lib/db';
 
 vi.mock('@/lib/db', () => ({
   db: {
@@ -13,6 +15,7 @@ vi.mock('@/lib/db', () => ({
       delete: vi.fn(),
     },
     getMainCV: vi.fn().mockResolvedValue(null),
+    setMainCV: vi.fn().mockResolvedValue(undefined),
   },
 }));
 
@@ -166,5 +169,69 @@ describe('useCVStudio', () => {
     const { result } = await renderReadyCVStudio();
     act(() => result.current.actions.handleImportJobs());
     expect(useJobStore.getState().globalPrompt).toBe('default');
+  });
+
+  it('switches preview, tailor source, and main flag when a CV is set as main', async () => {
+    const resumesApi = db.resumes as unknown as { toArray: Mock };
+    const setMainCV = db.setMainCV as unknown as Mock;
+    resumesApi.toArray.mockResolvedValue([
+      {
+        id: 2,
+        createdAt: 2,
+        fileName: 'Newer',
+        rawText: '',
+        formatted: true,
+        isMain: true,
+        parsedData: { basics: { name: 'Newer' }, work: [], education: [], skills: [], projects: [] },
+      },
+      {
+        id: 1,
+        createdAt: 1,
+        fileName: 'Older',
+        rawText: '',
+        formatted: true,
+        isMain: false,
+        parsedData: { basics: { name: 'Older' }, work: [], education: [], skills: [], projects: [] },
+      },
+    ]);
+
+    const { result } = await renderReadyCVStudio();
+    // Default focus is the newest CV (id 2).
+    expect(result.current.state.previewData?.basics.name).toBe('Newer');
+
+    await act(async () => {
+      await result.current.actions.handleSetMainResume(1);
+    });
+
+    expect(setMainCV).toHaveBeenCalledWith(1);
+    expect(result.current.state.previewData?.basics.name).toBe('Older');
+    expect(result.current.state.selectedResumeId).toBe(1);
+    expect(result.current.state.resumes.filter((r) => r.isMain).map((r) => r.id)).toEqual([1]);
+  });
+
+  it('does not reset the chat thread when re-marking the already-focused main CV', async () => {
+    const resumesApi = db.resumes as unknown as { toArray: Mock };
+    resumesApi.toArray.mockResolvedValue([
+      {
+        id: 1,
+        createdAt: 1,
+        fileName: 'Only',
+        rawText: '',
+        formatted: true,
+        isMain: true,
+        parsedData: { basics: { name: 'Only' }, work: [], education: [], skills: [], projects: [] },
+      },
+    ]);
+
+    const { result } = await renderReadyCVStudio();
+    const messagesBefore = result.current.state.messages;
+
+    await act(async () => {
+      await result.current.actions.handleSetMainResume(1);
+    });
+
+    // CV 1 is already the focused chat CV, so the thread must be left intact.
+    expect(result.current.state.messages).toBe(messagesBefore);
+    expect(result.current.state.selectedResumeId).toBe(1);
   });
 });

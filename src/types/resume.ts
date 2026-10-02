@@ -129,6 +129,11 @@ export interface ResumeData {
       globalText?: { color?: string };
       spacing?: { sectionGap?: string; itemGap?: string };
     };
+    // Tailoring lineage — set by CV Studio when a resume is derived from another.
+    tailoredFromResumeId?: number;
+    tailoredForJobId?: string;
+    tailoredForJobCompany?: string;
+    tailoredForJobTitle?: string;
   };
 }
 

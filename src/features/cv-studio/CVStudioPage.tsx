@@ -100,6 +100,7 @@ const CVStudioPage: React.FC = () => {
               onStartTailoring={actions.handleStartTailoring}
               onSelectResume={actions.setSelectedResumeId}
               onRenameResume={actions.handleRenameCV}
+              onSetMainResume={actions.handleSetMainResume}
               onToggleJobSelection={actions.handleToggleJobSelection}
               onTogglePanel={() => ui.setIsJobPanelOpen(!ui.isJobPanelOpen)}
               onOpenPromptModal={() => ui.setIsPromptModalOpen(true)}

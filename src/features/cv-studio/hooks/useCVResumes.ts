@@ -100,6 +100,20 @@ export const useCVResumes = () => {
     [mainCV?.id]
   );
 
+  const handleSetMainCV = useCallback(async (id: number) => {
+    try {
+      await db.setMainCV(id);
+    } catch (err) {
+      logger.error('Failed to set main CV', err);
+      toast.error('Could not set the main CV. Please try again.');
+      return false;
+    }
+    // db.setMainCV is single-main by contract; mirror that in state so the ★ and
+    // the default tailor source both reflect the new selection without a reload.
+    setResumes((prev) => prev.map((r) => ({ ...r, isMain: r.id === id })));
+    return true;
+  }, []);
+
   const handleChatCVChange = useCallback(
     (id: number) => {
       const cv = resumes.find((r) => r.id === id);
@@ -201,5 +215,6 @@ export const useCVResumes = () => {
     handleCreateNewCV,
     handleDeleteCurrentCV,
     updateResumeParsedData,
+    handleSetMainCV,
   };
 };

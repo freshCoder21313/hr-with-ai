@@ -106,3 +106,15 @@ A persistent note will be displayed in the "Actions" section:
     ```
 
     If the `customPrompt` is empty, the "Job-Specific Instructions" section will be omitted.
+
+### 4.4. Tailoring Contract (T3, 2026-10-02)
+
+The batch tailoring pipeline (per job, in `useCVTailoring.handleStartTailoring`) now follows:
+
+1. **Pre-analysis (gap feed):** `analyzeResume(sourceResume.rawText, job.description, config, sourceResume.id)` runs per job and feeds `analysis.missingKeywords` into the prompt builder (`getTailoredResumePrompt`).
+2. **Prompt:** inline `extraInstructions` = trimmed `[globalPrompt, job.customPrompt]` joined by `\n\n\n`; `getTailoredResumePrompt(parsedSourceData, job.description, missingKeywords, extraInstructions)` produces the prompt; `tailorResumeV2(config, prompt)` calls the AI.
+3. **Faithfulness guard:** `assertTailorFaithful(parsedSourceData, tailored)` validates no fabricated entities; on issues it logs `{ jobId, issues }` and falls back to `filterFaithfulResume(...)`.
+4. **rawText fix:** the new CV's `rawText` is the serialized tailored JSON (`JSON.stringify(tailored)`), so the CV editor previews the tailored content — not the source's raw text.
+5. **Lineage metadata:** `parsedData.meta` records `tailoredFromResumeId`, `tailoredForJobId`, `tailoredForJobCompany`, `tailoredForJobTitle`.
+6. **Persistence:** `db.resumes.add` stores the tailored CV; per-job status lands in `processingStatus[job.id]` (`completed` with `resultId`).
+7. If no AI key is configured, `openApiKeyModal` triggers instead of calling the AI.

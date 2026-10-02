@@ -5,6 +5,7 @@ import ModernTemplate from './templates/ModernTemplate';
 import CreativeTemplate from './templates/CreativeTemplate';
 import MinimalistTemplate from './templates/MinimalistTemplate';
 import AcademicTemplate from './templates/AcademicTemplate';
+import { withResumeDefaults } from '@/lib/resumeDefaults';
 
 interface ResumePreviewProps {
   data: ResumeData;
@@ -14,11 +15,15 @@ interface ResumePreviewProps {
 }
 
 const ResumePreview: React.FC<ResumePreviewProps> = ({
-  data,
+  data: rawData,
   template = 'modern',
   className,
   onUpdate,
 }) => {
+  // Tailored/imported CVs can arrive without `basics` or section arrays; every
+  // template dereferences them directly, so guarantee a complete shape here
+  // rather than guarding each `basics.*` / `.map` call across five templates.
+  const data = useMemo<ResumeData>(() => withResumeDefaults(rawData), [rawData]);
   const themeColor = data.meta?.themeColor;
   const fontFamily = data.meta?.fontFamily || 'sans';
 

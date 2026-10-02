@@ -1,4 +1,5 @@
 import { Resume } from '@/types';
+import { cn } from '@/lib/utils';
 import { Job } from '../stores/useJobStore';
 import { JobWithStatus } from '../hooks/useCVTailoring';
 import { CVJobCard } from './CVJobCard';
@@ -31,6 +32,7 @@ import {
   PanelLeftOpen,
   Pencil,
   Sparkles,
+  Star,
 } from 'lucide-react';
 import { SmartJDImportModal } from './SmartJDImportModal';
 
@@ -51,6 +53,7 @@ interface CVJobPanelProps {
   onStartTailoring: () => void;
   onSelectResume: (id: number) => void;
   onRenameResume: (id: number, newName: string) => void;
+  onSetMainResume: (id: number) => void;
   onToggleJobSelection: (id: string) => void;
   onTogglePanel: () => void;
   onOpenPromptModal: () => void;
@@ -76,6 +79,7 @@ export const CVJobPanel: React.FC<CVJobPanelProps> = ({
   onStartTailoring,
   onSelectResume,
   onRenameResume,
+  onSetMainResume,
   onToggleJobSelection,
   onTogglePanel,
   onOpenPromptModal,
@@ -84,6 +88,7 @@ export const CVJobPanel: React.FC<CVJobPanelProps> = ({
   onOpenSmartJDModal,
 }) => {
   const selectedResumeName = resumes.find((r) => r.id === selectedResumeId)?.fileName;
+  const isSelectedMain = resumes.find((r) => r.id === selectedResumeId)?.isMain ?? false;
   const [renameOpen, setRenameOpen] = useState(false);
   const [renameValue, setRenameValue] = useState('');
   const [isSmartJDModalOpen, setIsSmartJDModalOpen] = useState(false);
@@ -187,6 +192,38 @@ export const CVJobPanel: React.FC<CVJobPanelProps> = ({
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>Rename CV</TooltipContent>
+              </Tooltip>
+              <Tooltip delayDuration={0}>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    className={cn(
+                      'shrink-0 hover:bg-amber-500/10',
+                      isSelectedMain
+                        ? 'text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300'
+                        : 'text-muted-foreground hover:text-amber-600 dark:hover:text-amber-400'
+                    )}
+                    onClick={() => {
+                      if (selectedResumeId) onSetMainResume(selectedResumeId);
+                    }}
+                    disabled={!selectedResumeId}
+                    aria-label={
+                      isSelectedMain
+                        ? `${selectedResumeName} is your Main CV`
+                        : `Mark ${selectedResumeName} as Main CV`
+                    }
+                  >
+                    <Star
+                      className="w-4 h-4"
+                      fill={isSelectedMain ? 'currentColor' : 'none'}
+                      aria-hidden="true"
+                    />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {isSelectedMain ? 'This is your Main CV' : 'Mark as Main CV'}
+                </TooltipContent>
               </Tooltip>
             </div>
             {selectedResumeName && (

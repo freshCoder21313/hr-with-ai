@@ -217,3 +217,52 @@ describe('db resumes creating hook', () => {
     expect('compressedData' in callerObject).toBe(false);
   });
 });
+
+type ReadHookEvent = {
+  fire: (obj: unknown) => unknown;
+};
+
+function getResumesReadingHook(): ReadHookEvent {
+  const table = db.resumes as unknown as { hook?: { reading?: unknown } };
+  const event = table.hook?.reading;
+  if (typeof event !== 'object' || event === null || !('fire' in event)) {
+    throw new Error('resumes reading hook is not a Dexie hook event');
+  }
+  return event as ReadHookEvent;
+}
+
+describe('db resumes reading hook', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('heals a stored row whose parsedData lacks basics and section arrays', () => {
+    const row = { id: 1, fileName: 'cv.pdf', parsedData: { work: [{ name: 'Acme' }] } };
+    const healed = getResumesReadingHook().fire(row) as {
+      parsedData: {
+        basics: { name: string; email: string; label: string; summary: string };
+        work: unknown[];
+        education: unknown[];
+        skills: unknown[];
+        projects: unknown[];
+      };
+    };
+
+    expect(healed.parsedData.basics).toEqual({ name: '', email: '', label: '', summary: '' });
+    expect(healed.parsedData.education).toEqual([]);
+    expect(healed.parsedData.skills).toEqual([]);
+    expect(healed.parsedData.projects).toEqual([]);
+    // Existing content is preserved, not overwritten by defaults.
+    expect(healed.parsedData.work).toEqual([{ name: 'Acme' }]);
+  });
+
+  it('returns the row (never undefined) when there is no parsedData to heal', () => {
+    decompressResumeData.mockReturnValue(undefined);
+    const row = { id: 2, fileName: 'cv.pdf', compressedData: 'blob' };
+
+    const result = getResumesReadingHook().fire(row);
+
+    // Guards the `return obj;` contract — a missing return drops the record.
+    expect(result).toBe(row);
+  });
+});

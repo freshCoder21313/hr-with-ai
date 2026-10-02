@@ -53,6 +53,19 @@ export const useCVStudio = () => {
     [resumeState, chatState]
   );
 
+  const handleSetMainResume = useCallback(
+    async (id: number) => {
+      const ok = await resumeState.handleSetMainCV(id);
+      if (!ok) return;
+      // The main CV is both the AI tailoring source and the focused CV, so the
+      // preview (which prefers `mainCV`) and chat follow the selection. Skip the
+      // chat switch when it is already focused — re-marking must not wipe the thread.
+      tailoring.setSelectedResumeId(id);
+      if (resumeState.chatResumeId !== id) handleChatCVChange(id);
+    },
+    [resumeState, tailoring, handleChatCVChange]
+  );
+
   const handleGitHubImportComplete = useCallback(async () => {
     const cv = await resumeState.handleGitHubImportComplete();
     if (cv) {
@@ -183,6 +196,7 @@ export const useCVStudio = () => {
       handleRenameCV: resumeState.handleRenameCV,
       handleReTailorJob: tailoring.handleReTailorJob,
       handleChatCVChange,
+      handleSetMainResume,
       handleGitHubImportComplete,
       handleAddJob,
       handleRemoveJob,

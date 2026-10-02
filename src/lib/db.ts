@@ -3,6 +3,7 @@ import { Interview, UserSettings, Resume, SavedJob } from '@/types';
 import { DBJobRecommendation } from '@/types';
 import { compressResumeData, decompressResumeData } from '@/lib/resumeCompression';
 import { logger } from '@/lib/logger';
+import { withResumeDefaults } from '@/lib/resumeDefaults';
 
 /**
  * IndexedDB via Dexie.
@@ -117,6 +118,11 @@ class HRDatabase extends Dexie {
         } else {
           logger.error('Failed to decompress parsedData for resume:', obj.id);
         }
+      }
+      // Heal legacy rows whose parsedData is missing `basics`/section arrays so
+      // the form, chat, and preview paths can all dereference them safely.
+      if (obj && obj.parsedData) {
+        obj.parsedData = withResumeDefaults(obj.parsedData);
       }
       return obj;
     });

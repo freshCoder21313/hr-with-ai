@@ -16,6 +16,7 @@ vi.mock('@/lib/db', () => ({
       delete: vi.fn().mockResolvedValue(undefined),
     },
     getMainCV: vi.fn().mockResolvedValue(null),
+    setMainCV: vi.fn().mockResolvedValue(undefined),
   },
 }));
 
@@ -40,6 +41,7 @@ const mockResumes = db.resumes as unknown as {
   delete: Mock;
 };
 const mockGetMainCV = db.getMainCV as unknown as Mock;
+const mockSetMainCV = db.setMainCV as unknown as Mock;
 const resumesApi = mockResumes;
 
 const confirm = vi.mocked(notificationService.confirm);
@@ -162,5 +164,40 @@ describe('useCVResumes', () => {
       expect.objectContaining({ id: 'cv-manual-update-error' })
     );
     expect(result.current.mainCV?.parsedData?.basics.name).toBe('Ada');
+  });
+
+  it('persists exactly one main CV and flags it in state', async () => {
+    resumesApi.toArray.mockResolvedValue([
+      { id: 1, createdAt: 2, fileName: 'A', rawText: '', formatted: true, isMain: true },
+      { id: 2, createdAt: 1, fileName: 'B', rawText: '', formatted: true, isMain: false },
+    ]);
+    const { result } = renderHook(() => useCVResumes());
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    let ok: unknown;
+    await act(async () => {
+      ok = await result.current.handleSetMainCV(2);
+    });
+
+    expect(ok).toBe(true);
+    expect(mockSetMainCV).toHaveBeenCalledWith(2);
+    const mains = result.current.resumes.filter((r) => r.isMain);
+    expect(mains).toHaveLength(1);
+    expect(mains[0].id).toBe(2);
+  });
+
+  it('reports a failed set-main without flipping flags', async () => {
+    const { result } = renderHook(() => useCVResumes());
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    mockSetMainCV.mockRejectedValueOnce(new Error('db offline'));
+
+    let ok: unknown;
+    await act(async () => {
+      ok = await result.current.handleSetMainCV(1);
+    });
+
+    expect(ok).toBe(false);
+    expect(toastError).toHaveBeenCalledWith('Could not set the main CV. Please try again.');
   });
 });

@@ -48,6 +48,7 @@ describe('CVJobPanel', () => {
     onStartTailoring: vi.fn(),
     onSelectResume: vi.fn(),
     onRenameResume: vi.fn(),
+    onSetMainResume: vi.fn(),
     onToggleJobSelection: vi.fn(),
     onTogglePanel: vi.fn(),
     onOpenPromptModal: vi.fn(),
@@ -88,5 +89,27 @@ describe('CVJobPanel', () => {
 
     fireEvent.click(autoFillBtn);
     expect(screen.getByText(/Auto-fill from Raw JD/i)).toBeInTheDocument();
+  });
+
+  it('shows the main-CV star as filled and enabled for the selected main CV', () => {
+    renderWithProviders(<CVJobPanel {...defaultProps} />);
+
+    // defaultProps selects resume 1, which is isMain.
+    const star = screen.getByRole('button', { name: /My_Resume\.pdf is your Main CV/i });
+    expect(star).toBeInTheDocument();
+    // Matches ResumeList: the main star stays re-clickable, not disabled.
+    expect(star).not.toBeDisabled();
+  });
+
+  it('marks a non-main selected CV as main when the star is clicked', () => {
+    const onSetMainResume = vi.fn();
+    const resumes: Resume[] = [{ ...mockResumes[0], isMain: false }];
+    renderWithProviders(
+      <CVJobPanel {...defaultProps} resumes={resumes} onSetMainResume={onSetMainResume} />
+    );
+
+    const star = screen.getByRole('button', { name: /Mark My_Resume\.pdf as Main CV/i });
+    fireEvent.click(star);
+    expect(onSetMainResume).toHaveBeenCalledWith(1);
   });
 });

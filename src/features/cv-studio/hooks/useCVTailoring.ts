@@ -6,8 +6,9 @@ import { Resume } from '@/types';
 import { ResumeData } from '@/types/resume';
 import { getStoredAIConfig } from '@/services/ai/aiConfigService';
 import { openApiKeyModal } from '@/events/apiKeyEvents';
-import { tailorResumeV2, parseResumeToJSON } from '@/services/resume/resumeAIService';
-import { ROOT_PROMPT } from '@/services/ai/rootPrompt';
+import { tailorResumeV2, parseResumeToJSON, analyzeResume } from '@/services/resume/resumeAIService';
+import { getTailoredResumePrompt } from '@/services/prompts';
+import { assertTailorFaithful, filterFaithfulResume } from '@/services/resume/tailorGuard';
 import { Job } from '../stores/useJobStore';
 
 export type JobProcessStatus = 'idle' | 'processing' | 'completed' | 'error';
@@ -112,13 +113,37 @@ export const useCVTailoring = ({ jobs, globalPrompt, onResumesUpdated }: UseCVTa
         await Promise.all(
           batch.map(async (job) => {
             try {
-              const finalPrompt = `${ROOT_PROMPT}\n\nYou are an expert Resume Strategist.\n${globalPrompt}${job.customPrompt ? `\n\n--- Job-Specific ---\n${job.customPrompt}` : ''}\n\nSOURCE RESUME:\n${JSON.stringify(parsedSourceData, null, 2)}\n\nTARGET JD:\n${job.description}\n\nReturn valid JSON only, no markdown.`;
-              const tailored = await tailorResumeV2(config, finalPrompt);
+              const analysis = await analyzeResume(
+                sourceResume.rawText,
+                job.description,
+                config,
+                sourceResume.id
+              ).catch(() => null);
+              const extra = [globalPrompt, job.customPrompt].filter(Boolean).join('\n\n') || undefined;
+              const prompt = getTailoredResumePrompt(
+                parsedSourceData,
+                job.description,
+                analysis?.missingKeywords,
+                extra
+              );
+              const tailored = await tailorResumeV2(config, prompt);
+              const { valid, issues } = assertTailorFaithful(parsedSourceData, tailored);
+              if (!valid) {
+                logger.warn('tailor guard rejected fabricated entries', { jobId: job.id, issues });
+              }
+              const safe = valid ? tailored : filterFaithfulResume(parsedSourceData, tailored);
+              safe.meta = {
+                ...(safe.meta || {}),
+                tailoredFromResumeId: sourceResume.id,
+                tailoredForJobId: job.id,
+                tailoredForJobCompany: job.company,
+                tailoredForJobTitle: job.title,
+              };
               const newId = await db.resumes.add({
                 createdAt: Date.now(),
                 fileName: `[${job.company}] ${job.title} - ${sourceResume.fileName}`,
-                rawText: sourceResume.rawText,
-                parsedData: tailored,
+                rawText: JSON.stringify(safe, null, 2),
+                parsedData: safe,
                 formatted: true,
                 isMain: false,
               });
