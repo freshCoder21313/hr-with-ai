@@ -155,18 +155,19 @@ export const LanguageCoachingTab: React.FC<LanguageCoachingTabProps> = ({
             </label>
 
             {/* Language Preset Chips */}
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2" role="group" aria-label="Target language options">
               {COACHING_LANGUAGES.map((lang) => {
                 const isSelected = !isCustomMode && selectedLangCode === lang.code;
                 return (
                   <button
                     key={lang.code}
                     type="button"
+                    aria-pressed={isSelected}
                     onClick={() => {
                       setSelectedLangCode(lang.code);
                       setIsCustomMode(false);
                     }}
-                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all border ${
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
                       isSelected
                         ? 'bg-primary text-primary-foreground border-primary shadow-xs'
                         : 'bg-card text-muted-foreground border-border hover:border-primary/50 hover:text-foreground'
@@ -179,8 +180,9 @@ export const LanguageCoachingTab: React.FC<LanguageCoachingTabProps> = ({
               })}
               <button
                 type="button"
+                aria-pressed={isCustomMode}
                 onClick={() => setIsCustomMode(true)}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all border ${
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
                   isCustomMode
                     ? 'bg-primary text-primary-foreground border-primary shadow-xs'
                     : 'bg-card text-muted-foreground border-border hover:border-primary/50 hover:text-foreground'
@@ -195,6 +197,8 @@ export const LanguageCoachingTab: React.FC<LanguageCoachingTabProps> = ({
             {isCustomMode && (
               <div className="pt-2 space-y-2">
                 <Input
+                  id="custom-target-language"
+                  aria-label="Custom target practice language"
                   placeholder="Enter any target language (e.g., Swedish, Russian, Italian, Business Japanese)..."
                   value={customLanguage}
                   onChange={(e) => setCustomLanguage(e.target.value)}
@@ -209,7 +213,7 @@ export const LanguageCoachingTab: React.FC<LanguageCoachingTabProps> = ({
                       key={item.code}
                       type="button"
                       onClick={() => setCustomLanguage(item.code)}
-                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground border border-border/50 transition-colors"
+                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground border border-border/50 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                     >
                       <span>{item.flag}</span>
                       <span>{item.label}</span>
@@ -222,7 +226,7 @@ export const LanguageCoachingTab: React.FC<LanguageCoachingTabProps> = ({
                   const check = inspectTargetLanguage(customLanguage);
                   if (!check.isValid) {
                     return (
-                      <p className="text-xs text-destructive flex items-center gap-1.5 pt-0.5 font-medium">
+                      <p role="alert" className="text-xs text-destructive flex items-center gap-1.5 pt-0.5 font-medium">
                         <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
                         {check.warningMessage}
                       </p>
@@ -230,7 +234,7 @@ export const LanguageCoachingTab: React.FC<LanguageCoachingTabProps> = ({
                   }
                   if (!check.isRecognized) {
                     return (
-                      <p className="text-xs text-warning flex items-center gap-1.5 pt-0.5">
+                      <p role="alert" className="text-xs text-warning flex items-center gap-1.5 pt-0.5">
                         <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
                         {check.warningMessage}
                       </p>
@@ -411,20 +415,25 @@ export const LanguageCoachingTab: React.FC<LanguageCoachingTabProps> = ({
         onValueChange={(v) => setCoachingSubTab(v as 'bilingual' | 'grammar' | 'fluency')}
         className="w-full"
       >
-        <TabsList className="bg-muted p-1 mb-6">
-          <TabsTrigger value="bilingual" className="gap-2 text-xs sm:text-sm">
-            <Languages className="w-4 h-4" />
-            Multilingual Transformation
-          </TabsTrigger>
-          <TabsTrigger value="grammar" className="gap-2 text-xs sm:text-sm">
-            <BookOpen className="w-4 h-4" />
-            Grammar & Word Choices
-          </TabsTrigger>
-          <TabsTrigger value="fluency" className="gap-2 text-xs sm:text-sm">
-            <TrendingUp className="w-4 h-4" />
-            Delivery & Filler Words
-          </TabsTrigger>
-        </TabsList>
+        <div className="w-full overflow-x-auto pb-1 mb-6">
+          <TabsList className="bg-muted p-1 w-full sm:w-auto inline-flex justify-start sm:justify-center">
+            <TabsTrigger value="bilingual" className="gap-2 text-xs sm:text-sm whitespace-nowrap">
+              <Languages className="w-4 h-4" />
+              <span className="hidden sm:inline">Multilingual Transformation</span>
+              <span className="sm:hidden">Transformation</span>
+            </TabsTrigger>
+            <TabsTrigger value="grammar" className="gap-2 text-xs sm:text-sm whitespace-nowrap">
+              <BookOpen className="w-4 h-4" />
+              <span className="hidden sm:inline">Grammar & Word Choices</span>
+              <span className="sm:hidden">Grammar</span>
+            </TabsTrigger>
+            <TabsTrigger value="fluency" className="gap-2 text-xs sm:text-sm whitespace-nowrap">
+              <TrendingUp className="w-4 h-4" />
+              <span className="hidden sm:inline">Delivery & Filler Words</span>
+              <span className="sm:hidden">Delivery</span>
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         {/* SUBTAB 1: MULTILINGUAL TRANSFORMATION */}
         <TabsContent value="bilingual" className="space-y-6">

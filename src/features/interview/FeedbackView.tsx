@@ -80,24 +80,32 @@ const FeedbackView: React.FC = () => {
         description={`AI detailed feedback for ${interview.jobTitle} at ${interview.company}. Score: ${feedback.score}/10.`}
       />
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <div className="flex justify-between items-center mb-6 print:hidden">
-          <TabsList className="bg-muted p-1">
-            <TabsTrigger value="analysis" className="gap-2">
-              <BarChart2 className="w-4 h-4" />
-              Analysis
-            </TabsTrigger>
-            <TabsTrigger value="coaching" className="gap-2">
-              <Languages className="w-4 h-4" />
-              Language & Delivery Coach
-            </TabsTrigger>
-            <TabsTrigger value="transcript" className="gap-2">
-              <MessageSquare className="w-4 h-4" />
-              Transcript
-            </TabsTrigger>
-          </TabsList>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 print:hidden">
+          <div className="w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
+            <TabsList className="bg-muted p-1 w-full sm:w-auto inline-flex justify-start sm:justify-center">
+              <TabsTrigger value="analysis" className="gap-2 text-xs sm:text-sm">
+                <BarChart2 className="w-4 h-4" />
+                Analysis
+              </TabsTrigger>
+              <TabsTrigger value="coaching" className="gap-2 text-xs sm:text-sm whitespace-nowrap">
+                <Languages className="w-4 h-4" />
+                <span className="hidden sm:inline">Language & Delivery Coach</span>
+                <span className="sm:hidden">Language Coach</span>
+              </TabsTrigger>
+              <TabsTrigger value="transcript" className="gap-2 text-xs sm:text-sm">
+                <MessageSquare className="w-4 h-4" />
+                Transcript
+              </TabsTrigger>
+            </TabsList>
+          </div>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="outline" className="gap-2" onClick={() => window.print()}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2 self-end sm:self-auto shrink-0"
+                onClick={() => window.print()}
+              >
                 <Printer className="w-4 h-4" />
                 Save as PDF
               </Button>

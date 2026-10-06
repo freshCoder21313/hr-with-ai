@@ -88,7 +88,12 @@ export function useFeedbackData(id: string | undefined) {
       }
       try {
         const { default: mermaid } = await import('mermaid');
-        mermaid.initialize({ startOnLoad: false, theme: 'default' });
+        const isDarkMode =
+          typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
+        mermaid.initialize({
+          startOnLoad: false,
+          theme: isDarkMode ? 'dark' : 'default',
+        });
 
         mermaidRef1.current.innerHTML = '';
         mermaidRef2.current.innerHTML = '';
@@ -103,7 +108,7 @@ export function useFeedbackData(id: string | undefined) {
         logger.error('Mermaid rendering failed:', error);
         if (mermaidRef1.current) {
           mermaidRef1.current.innerHTML =
-            '<p class="text-red-500 text-sm">Error rendering chart</p>';
+            '<p class="text-destructive text-sm font-medium">Error rendering chart</p>';
         }
       }
     };

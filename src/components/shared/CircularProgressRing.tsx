@@ -30,7 +30,14 @@ export const CircularProgressRing: React.FC<CircularProgressRingProps> = ({
   const strokeDashoffset = circumference - (circumference * clampedProgress) / 100;
 
   return (
-    <div className={cn('flex flex-col items-center justify-center text-center space-y-4', className)}>
+    <div
+      role="progressbar"
+      aria-valuenow={Math.round(clampedProgress)}
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-label={title || 'Analyzing progress'}
+      className={cn('flex flex-col items-center justify-center text-center space-y-4', className)}
+    >
       {/* Circular Progress Ring */}
       <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
         <svg
@@ -80,7 +87,7 @@ export const CircularProgressRing: React.FC<CircularProgressRingProps> = ({
 
       {/* Badge & Description */}
       {(badge || title || subtitle) && (
-        <div className="space-y-1.5 max-w-md px-2">
+        <div className="space-y-1.5 max-w-md px-2" aria-live="polite">
           {badge && <div className="flex justify-center">{badge}</div>}
           {title && (
             <h3 className="text-base sm:text-lg font-bold tracking-tight text-foreground">

@@ -25,4 +25,14 @@ describe('CircularProgressRing', () => {
     rerender(<CircularProgressRing progress={120} />);
     expect(screen.getByText('100')).toBeInTheDocument();
   });
+
+  it('provides accessible progressbar semantics and live region', () => {
+    render(<CircularProgressRing progress={65} title="Analyzing interview" subtitle="Extracting turns" />);
+    const progressbar = screen.getByRole('progressbar');
+    expect(progressbar).toBeInTheDocument();
+    expect(progressbar).toHaveAttribute('aria-valuenow', '65');
+    expect(progressbar).toHaveAttribute('aria-valuemin', '0');
+    expect(progressbar).toHaveAttribute('aria-valuemax', '100');
+    expect(progressbar).toHaveAttribute('aria-label', 'Analyzing interview');
+  });
 });
