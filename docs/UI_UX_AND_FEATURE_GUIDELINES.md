@@ -98,3 +98,69 @@ Before marking any feature as complete:
    ```bash
    npm run build
    ```
+
+---
+
+## 5. User Input Validation, Recognition & Defensive AI Fallback Rules
+
+When features accept user-defined parameters (such as custom languages, arbitrary job roles, keywords, or freeform prompts) to drive AI generation:
+
+### 5.1. Client-Side Gatekeeping & Sanitization
+1. **Never pass raw garbage directly to AI:**
+   - Always run pre-flight validation on user inputs:
+     - Check for empty strings or whitespace-only inputs.
+     - Reject pure numbers (`123456`) or special symbols (`!@#$%`) without letters using Unicode-safe regex (`\p{L}`).
+     - Enforce minimum sensible length (e.g. at least 2 characters).
+   - Display immediate, friendly error messages (`text-destructive` with `AlertTriangle`) and block submissions that are destined to fail or produce garbage output.
+2. **Provide Quick-Pick Suggestion Chips:**
+   - For freeform inputs (such as Custom Target Language or Skill Keywords), always offer a row of popular, 1-click preset chips with icons/flags (e.g. Russian, Italian, Swedish, etc.). This minimizes typos and cognitive friction.
+3. **Live Validation Feedback:**
+   - As the user types in custom text fields, provide real-time visual feedback:
+     - Red (`text-destructive`) when syntax is invalid.
+     - Amber/Yellow (`text-warning`) when the input is uncatalogued/novel, advising that AI will evaluate and default to a fallback if unrecognized.
+     - Green (`text-success`) when matched against recognized catalog entities.
+
+### 5.2. Graceful AI Recognition & Fallback
+1. **Defensive Schema Design:**
+   - AI structured schemas for freeform parameters MUST include recognition status fields:
+     ```ts
+     isTargetLanguageRecognized: z.boolean().default(true),
+     unrecognizedLanguageMessage: z.string().optional(),
+     ```
+2. **Deterministic Prompt Fallback Rules:**
+   - Always explicitly instruct the AI model on how to handle unrecognized or gibberish input.
+   - The model must NOT crash, invent non-existent languages, or fail Zod validation. Instead, it must:
+     1. Set `isTargetLanguageRecognized = false`.
+     2. Provide an informative `unrecognizedLanguageMessage` in Vietnamese/English.
+     3. Apply a deterministic fallback (e.g., default to `English (US / International)`).
+     4. Note the fallback in the summary takeaway.
+
+### 5.3. Actionable Warning Banners in Result Views
+- If the AI reports that an input could not be recognized (`isTargetLanguageRecognized === false`):
+  - Do NOT silently swallow the issue.
+  - Render an elevated warning banner (`bg-warning/10 border-warning/40 text-foreground`) at the top of the report view.
+  - Explain clearly what happened and what fallback was applied.
+  - Include an immediate action button (e.g., `<Button onClick={...}><RefreshCw /> Chọn lại ngôn ngữ khác</Button>`) to allow the user to correct their input in 1 click.
+
+---
+
+## 6. Information Architecture, Tab Hierarchy & Comparison Views
+
+Complex analytical views (such as Interview Feedback, Language & Communication Coach, or CV Review) must structure information logically:
+
+### 6.1. Domain Tab Separation vs Sub-Tabs
+1. **Top-Level Tabs (`FeedbackView` / Page Level):**
+   - Reserve top-level tabs for distinct major functional domains (e.g., `Performance Analysis`, `Language & Delivery Coach`, `Full Transcript`).
+   - Do NOT dump disparate coaching tools into endless vertical scrolls on a single tab.
+2. **Sub-Tabs for Multi-Dimensional Analysis:**
+   - Within a specialized coaching/analysis feature, divide deep metrics into focused sub-tabs:
+     - **Bilingual / Transformation Tab:** Before vs. After comparative views, executive upgrades.
+     - **Grammar & Lexical Refinement Tab:** Micro-corrections, casual-to-professional vocabulary substitutions.
+     - **Delivery & Fluency Tab:** Quantitative metrics, pacing, filler words cloud with context snippets.
+
+### 6.2. Before / After Comparative Cards
+- When displaying AI-upgraded content, always provide side-by-side or stacked comparative cards:
+  - **Original Input:** Clearly labeled, styled with muted/card surface and italic quotes (`&ldquo;...&rdquo;`).
+  - **Executive / Upgraded Output:** Highlighted with subtle brand tint (`bg-primary/5 border-primary/30`), badge icon, and STAR framework breakdown (`Situation`, `Task`, `Action`, `Result`).
+- Always escape typography quotes in JSX (`&ldquo;...&rdquo;` or `&quot;...&quot;`). Never leave raw unescaped quotes in JSX text.
+

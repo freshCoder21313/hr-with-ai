@@ -5,6 +5,7 @@ import {
   ArrowLeft,
   BarChart2,
   FileText,
+  Languages,
   Loader2,
   MessageSquare,
   Printer,
@@ -17,13 +18,16 @@ import { ChatArea } from './components/ChatArea';
 import SEO from '@/components/shared/SEO';
 import { useFeedbackData } from './hooks/useFeedbackData';
 import { FeedbackAnalysisPanel } from './components/feedback/FeedbackAnalysisPanel';
+import { LanguageCoachingTab } from './components/coaching/LanguageCoachingTab';
 
 const FeedbackView: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const {
     interview,
+    setInterview,
     feedback,
+    setFeedback,
     loading,
     error,
     activeTab,
@@ -32,6 +36,14 @@ const FeedbackView: React.FC = () => {
     mermaidRef1,
     mermaidRef2,
   } = useFeedbackData(id);
+
+  const currentInterview = React.useMemo(() => {
+    if (!interview) return null;
+    return {
+      ...interview,
+      feedback: feedback ?? interview.feedback,
+    };
+  }, [interview, feedback]);
 
   if (loading) {
     return (
@@ -45,7 +57,7 @@ const FeedbackView: React.FC = () => {
     );
   }
 
-  if (error || !feedback || !interview) {
+  if (error || !feedback || !interview || !currentInterview) {
     return (
       <div className="flex flex-col items-center justify-center gap-4 px-6 py-16 text-center">
         <AlertCircle className="h-8 w-8 text-destructive" aria-hidden="true" />
@@ -74,6 +86,10 @@ const FeedbackView: React.FC = () => {
               <BarChart2 className="w-4 h-4" />
               Analysis
             </TabsTrigger>
+            <TabsTrigger value="coaching" className="gap-2">
+              <Languages className="w-4 h-4" />
+              Language & Delivery Coach
+            </TabsTrigger>
             <TabsTrigger value="transcript" className="gap-2">
               <MessageSquare className="w-4 h-4" />
               Transcript
@@ -94,10 +110,41 @@ const FeedbackView: React.FC = () => {
 
         <TabsContent value="analysis">
           <FeedbackAnalysisPanel
-            interview={interview}
+            interview={currentInterview}
             feedback={feedback}
             mermaidRef1={mermaidRef1}
             mermaidRef2={mermaidRef2}
+          />
+        </TabsContent>
+
+        <TabsContent value="coaching">
+          <LanguageCoachingTab
+            interview={currentInterview}
+            onReportUpdated={(updatedReport) => {
+              setFeedback((prev) =>
+                prev ? { ...prev, communicationCoach: updatedReport } : prev
+              );
+              setInterview((prev) =>
+                prev
+                  ? {
+                      ...prev,
+                      feedback: prev.feedback
+                        ? { ...prev.feedback, communicationCoach: updatedReport }
+                        : {
+                            score: 7,
+                            summary: 'Interview feedback',
+                            strengths: [],
+                            weaknesses: [],
+                            keyQuestionAnalysis: [],
+                            mermaidGraphCurrent: '',
+                            mermaidGraphPotential: '',
+                            recommendedResources: [],
+                            communicationCoach: updatedReport,
+                          },
+                    }
+                  : prev
+              );
+            }}
           />
         </TabsContent>
 

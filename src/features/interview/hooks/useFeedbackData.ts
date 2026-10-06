@@ -112,7 +112,9 @@ export function useFeedbackData(id: string | undefined) {
 
   return {
     interview,
+    setInterview,
     feedback,
+    setFeedback,
     loading,
     error,
     activeTab,

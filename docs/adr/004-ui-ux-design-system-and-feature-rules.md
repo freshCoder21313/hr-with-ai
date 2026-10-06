@@ -34,6 +34,16 @@ As `hr-with-ai` expanded across multiple domains (Interview Simulator, CV Studio
    - Mandate management parity (search/filter, review, deletion with confirmation) in History or Studio views.
    - Require full pass of verification gates (`npm run typecheck`, `npm run lint`, `npm test`, `npm run build`) before considering a feature done.
 
+4. **Defensive AI Input Handling & Fallbacks**:
+   - Freeform user inputs (custom language, arbitrary keywords, parameters) must undergo client-side validation before triggering AI calls to prevent token waste on garbage/symbols.
+   - Structured AI schemas must include recognition flags (`isTargetLanguageRecognized`). Prompts must specify deterministic fallback behavior (e.g. defaulting to English) rather than failing validation.
+   - UI must display clear, actionable warning banners with re-selection CTAs when fallback is triggered.
+
+5. **Information Architecture & Analytical Sub-Tabs**:
+   - Reserve top-level tabs for distinct major functional domains (e.g. Performance Analysis, Language & Delivery Coach, Full Transcript).
+   - Divide deep analytical features into intuitive sub-tabs (Bilingual Transformation, Grammar & Word Choice, Delivery & Fluency) rather than monolithic vertical scrolling.
+   - Use structured comparative cards (Original vs. Executive STAR Upgrade) with strict typography escaping (`&ldquo;...&rdquo;`).
+
 ---
 
 ## Consequences

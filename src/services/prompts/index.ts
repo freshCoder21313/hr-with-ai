@@ -14,3 +14,4 @@ export {
 } from './jobs';
 export { getCompanyIntelPrompt } from './company';
 export { getCareerKnowledgeResumeTailoringPrompt } from './careerKnowledgeTailoring';
+export { getCommunicationCoachPrompt } from './communicationCoach';

@@ -110,6 +110,71 @@ export interface InterviewFeedback {
   resilienceScore?: number; // 0-10 for Hardcore mode
   cultureFitScore?: number; // 0-10 based on Company Status
   badges?: string[]; // E.g., "Survivor", "Culture Fit King"
+  communicationCoach?: CommunicationCoachingReport;
+}
+
+export interface FillerWordMetric {
+  word: string;
+  count: number;
+  contextSnippets: string[];
+}
+
+export interface TargetLanguageTransformation {
+  targetLanguage: string;
+  directTranslation: string;
+  professionalUpgrade: string;
+  frameworkBreakdown?: {
+    situation?: string;
+    task?: string;
+    action?: string;
+    result?: string;
+  };
+  keyVocabulary: Array<{
+    term: string;
+    phonetic?: string;
+    meaning: string;
+    sampleUsage: string;
+  }>;
+}
+
+export interface AnswerLanguageAnalysis {
+  questionIndex: number;
+  question: string;
+  originalAnswer: string;
+  grammarIssues: Array<{
+    originalSnippet: string;
+    correction: string;
+    explanation: string;
+  }>;
+  vocabularyUpgrades: Array<{
+    casualWord: string;
+    professionalAlternative: string;
+    reason: string;
+  }>;
+  languageTransformation: TargetLanguageTransformation;
+}
+
+export interface CommunicationCoachingReport {
+  generatedAt: number;
+  sourceLanguage: string;
+  targetLanguage: string;
+  requestedLanguage?: string;
+  isTargetLanguageRecognized?: boolean;
+  unrecognizedLanguageMessage?: string;
+  overallScore: {
+    fluencyScore: number;
+    vocabularyScore: number;
+    professionalismScore: number;
+  };
+  summaryTakeaway: string;
+  deliveryMetrics: {
+    totalWords: number;
+    fillerWords: FillerWordMetric[];
+    hedgingPhrasesCount: number;
+    averageAnswerWordCount: number;
+    pacingAssessment: 'too_fast' | 'good' | 'too_slow' | 'unbalanced';
+  };
+  turnAnalyses: AnswerLanguageAnalysis[];
 }
 
 export interface SetupFormData {

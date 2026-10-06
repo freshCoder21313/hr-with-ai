@@ -345,6 +345,87 @@ export const interactiveQuestionGroupSchema = z.object({
 
 export type InteractiveQuestionGroup = z.infer<typeof interactiveQuestionGroupSchema>;
 
+export const fillerWordMetricSchema = z.object({
+  word: z.string(),
+  count: z.number(),
+  contextSnippets: z.array(z.string()),
+});
+
+export const targetLanguageTransformationSchema = z.object({
+  targetLanguage: z.string(),
+  directTranslation: z.string(),
+  professionalUpgrade: z.string(),
+  frameworkBreakdown: z
+    .object({
+      situation: z.string().optional(),
+      task: z.string().optional(),
+      action: z.string().optional(),
+      result: z.string().optional(),
+    })
+    .optional(),
+  keyVocabulary: z.array(
+    z.object({
+      term: z.string(),
+      phonetic: z.string().optional(),
+      meaning: z.string(),
+      sampleUsage: z.string(),
+    })
+  ),
+});
+
+export const answerLanguageAnalysisSchema = z.object({
+  questionIndex: z.number(),
+  question: z.string(),
+  originalAnswer: z.string(),
+  grammarIssues: z.array(
+    z.object({
+      originalSnippet: z.string(),
+      correction: z.string(),
+      explanation: z.string(),
+    })
+  ),
+  vocabularyUpgrades: z.array(
+    z.object({
+      casualWord: z.string(),
+      professionalAlternative: z.string(),
+      reason: z.string(),
+    })
+  ),
+  languageTransformation: targetLanguageTransformationSchema,
+});
+
+export const communicationCoachingSchema = z.object({
+  generatedAt: z.number().optional(),
+  sourceLanguage: z.string(),
+  targetLanguage: z.string(),
+  isTargetLanguageRecognized: z
+    .boolean()
+    .default(true)
+    .describe('Whether the requested target language was recognized as a valid human language'),
+  unrecognizedLanguageMessage: z
+    .string()
+    .optional()
+    .describe(
+      'Warning or explanation message if the requested target language was unrecognized and fallback was used'
+    ),
+  overallScore: z.object({
+    fluencyScore: z.number().min(0).max(10),
+    vocabularyScore: z.number().min(0).max(10),
+    professionalismScore: z.number().min(0).max(10),
+  }),
+  summaryTakeaway: z.string(),
+  deliveryMetrics: z.object({
+    totalWords: z.number(),
+    fillerWords: z.array(fillerWordMetricSchema),
+    hedgingPhrasesCount: z.number(),
+    averageAnswerWordCount: z.number(),
+    pacingAssessment: z.enum(['too_fast', 'good', 'too_slow', 'unbalanced']),
+  }),
+  turnAnalyses: z.array(answerLanguageAnalysisSchema),
+});
+
+export type CommunicationCoachingAIResponse = z.infer<typeof communicationCoachingSchema>;
+
 // Career Knowledge (Phase 1) schemas are defined in the domain layer and
 // re-exported here so the AI layer depends on the domain (ai -> domain),
 // honoring ADR 000 dependency direction.

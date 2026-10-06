@@ -108,11 +108,14 @@ Setup file: `src/setupTests.ts`.
 - **History Navigation:** Back buttons should check `window.history.length > 1 ? navigate(-1) : navigate(fallback)` and have accurate labels ("Back to Home" for `/`, "Back to CV Studio" for `/studio`).
 - **No Modal Flashing:** Never close Modal A and use `setTimeout` to open Modal B. Consolidate into unified tabbed dialogs (e.g. `SettingsModal`).
 - **Wired Triggers:** Never render modals without discoverable UI trigger buttons.
+- **Information Architecture & Tabs:** Keep top-level tabs for distinct high-level domains (e.g., Performance, Coaching, Transcript). Split complex multi-dimensional analytics into intuitive sub-tabs (`bilingual`, `grammar`, `fluency`).
+- **Comparative Cards & Quotes:** Before/after comparisons must pair the original statement (italic quotes) with an executive upgrade (STAR breakdown). Always escape JSX quotes (`&ldquo;...&rdquo;`).
 
 ### Feature Development & Data Persistence
-- **Offline-First Persistence:** User outcomes, scores, and records (interviews, tailored CVs, quiz scores, career facts) MUST be persisted in IndexedDB via Dexie (`src/lib/db.ts`). No ephemeral session loss upon reload.
+- **Offline-First Persistence:** User outcomes, scores, and records (interviews, tailored CVs, quiz scores, career facts, coaching reports) MUST be persisted in IndexedDB via Dexie (`src/lib/db.ts`). No ephemeral session loss upon reload.
 - **Dexie Migrations:** Every schema addition must increment `this.version(N).stores({...})` according to `docs/adr/002-dexie-migrations.md`.
 - **Management Parity:** Created records must have viewing, search/filter, and deletion capabilities (with confirmation dialog) in History/Studio.
+- **Defensive Input Validation:** Freeform user inputs driving AI generation (custom languages, arbitrary roles, keywords) must be validated client-side first (rejecting empty/numbers/symbols, minimum length) with quick-pick chips and real-time visual feedback.
 
 ### State Management
 - **Local UI State:** `useState` for component-specific state (modals, tabs, ephemeral form UI).
@@ -187,5 +190,6 @@ When operating in this codebase, adhere to the following workflow:
 - Import from `src/services/ai/` (`AIService`, strategies, schemas). Prefer `@/services/ai` over deprecated `features/ai-provider` shims.
 - Prompts: `@/services/prompts` (or legacy re-export `@/services/interview/promptSystem`).
 - Respect `src/types/index.ts` regarding `AIProviderStrategy`, `InterviewContentType`, and `InterviewInteractionMode`.
+- **Graceful Recognition & Fallbacks:** For freeform user parameters, schemas must include recognition flags (`isTargetLanguageRecognized: z.boolean()`) and prompts must specify deterministic fallback behavior (e.g. English) when given gibberish, paired with an actionable UI warning banner.
 
 (End of Guide)
