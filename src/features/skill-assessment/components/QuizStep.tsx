@@ -125,7 +125,7 @@ export const QuizStep: React.FC = () => {
         <div
           role="status"
           aria-busy="true"
-          className="flex flex-col items-center justify-center gap-3 max-w-6xl mx-auto mt-4 md:mt-8 px-4 min-h-[40dvh]"
+          className="flex flex-col items-center justify-center gap-3 w-full mt-4 md:mt-8 min-h-[40dvh]"
         >
           <Loader2 className="w-8 h-8 animate-spin text-primary" aria-hidden="true" />
           <span className="sr-only">Loading questions…</span>
@@ -139,7 +139,7 @@ export const QuizStep: React.FC = () => {
     return (
       <div
         role="alert"
-        className="flex flex-col items-center justify-center gap-4 max-w-6xl mx-auto mt-4 md:mt-8 px-4 min-h-[40dvh] text-center"
+        className="flex flex-col items-center justify-center gap-4 w-full mt-4 md:mt-8 min-h-[40dvh] text-center"
       >
         <AlertCircle className="w-8 h-8 text-destructive" aria-hidden="true" />
         <div className="space-y-1">
@@ -173,7 +173,7 @@ export const QuizStep: React.FC = () => {
   const isAllAnswered = answeredCount === totalCount;
 
   return (
-    <div className="max-w-6xl mx-auto mt-4 md:mt-8 px-4">
+    <div className="w-full mt-4 md:mt-8">
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         {/* Main Content: Question Card */}
         <div className="lg:col-span-3">

@@ -33,6 +33,7 @@ export const SelectSkillStep: React.FC = () => {
 
   const { generate } = useGenerateQuiz();
   const [manualSkill, setManualSkill] = useState('');
+  const [showManualAdd, setShowManualAdd] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [hasApiKey, setHasApiKey] = useState(() => !!getStoredAIConfig().apiKey);
 
@@ -81,7 +82,7 @@ export const SelectSkillStep: React.FC = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto mt-4 md:mt-8 px-4">
+    <div className="w-full mt-4 md:mt-8">
       <div className="mb-8 text-center sm:text-left">
         <h2 className="text-3xl font-bold tracking-tight">Select Target Skill</h2>
         <p className="text-muted-foreground mt-2">
@@ -143,26 +144,49 @@ export const SelectSkillStep: React.FC = () => {
               </div>
 
               <div className="pt-4 border-t">
-                <Label className="text-sm font-medium mb-2 block">
-                  Skill missing? Add manually:
-                </Label>
-                <div className="flex gap-2">
-                  <Input
-                    value={manualSkill}
-                    onChange={(e) => setManualSkill(e.target.value)}
-                    placeholder="e.g. GraphQL, AWS, Figma"
-                    onKeyDown={(e) => e.key === 'Enter' && handleAddManualSkill()}
-                    disabled={isLoading}
-                    className="flex-1"
-                  />
+                {!showManualAdd ? (
                   <Button
-                    variant="secondary"
-                    onClick={handleAddManualSkill}
-                    disabled={!isNonEmptyString(manualSkill) || isLoading}
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowManualAdd(true)}
+                    className="w-full text-xs text-muted-foreground hover:text-foreground border border-dashed border-border hover:border-primary/50 py-2 gap-1.5"
                   >
-                    <Plus className="w-4 h-4 mr-1" /> Add
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Skill missing? Add custom skill manually</span>
                   </Button>
-                </div>
+                ) : (
+                  <div className="space-y-2 animate-in fade-in-50 duration-200">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-xs font-medium">Add Custom Skill</Label>
+                      <button
+                        type="button"
+                        onClick={() => setShowManualAdd(false)}
+                        className="text-xs text-muted-foreground hover:text-foreground cursor-pointer"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                    <div className="flex gap-2">
+                      <Input
+                        value={manualSkill}
+                        onChange={(e) => setManualSkill(e.target.value)}
+                        placeholder="e.g. GraphQL, AWS, Figma"
+                        onKeyDown={(e) => e.key === 'Enter' && handleAddManualSkill()}
+                        disabled={isLoading}
+                        className="flex-1"
+                        autoFocus
+                      />
+                      <Button
+                        variant="secondary"
+                        onClick={handleAddManualSkill}
+                        disabled={!isNonEmptyString(manualSkill) || isLoading}
+                      >
+                        <Plus className="w-4 h-4 mr-1" /> Add
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -183,7 +207,7 @@ export const SelectSkillStep: React.FC = () => {
                 {selectedSkill ? (
                   <div className="flex items-center gap-2">
                     <span className="text-lg font-bold text-primary">{selectedSkill}</span>
-                    <Check className="w-4 h-4 text-green-500" />
+                    <Check className="w-4 h-4 text-success" />
                   </div>
                 ) : (
                   <span className="text-muted-foreground italic">None selected</span>

@@ -62,7 +62,7 @@ const FeedbackView: React.FC = () => {
   }
 
   return (
-    <div className="max-w-5xl mx-auto space-y-8 pb-12 p-6 md:p-8">
+    <div className="max-w-6xl w-full mx-auto space-y-8 pb-24 md:pb-12 p-4 md:p-8">
       <SEO
         title={`Feedback: ${interview.jobTitle} - HR With AI`}
         description={`AI detailed feedback for ${interview.jobTitle} at ${interview.company}. Score: ${feedback.score}/10.`}

@@ -13,17 +13,22 @@ import {
 import { ThemeToggle } from '@/components/shared/theme-toggle';
 import { CloudSyncModal } from '@/components/shared/CloudSyncModal';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { cn } from '@/lib/utils';
 
 const NavLinks = ({ mobile = false, closeMenu }: { mobile?: boolean; closeMenu?: () => void }) => {
   // Local nav palette (not global tokens): `slate-500`/`blue-600` sit at ~4.4:1 on
   // the white header and fail WCAG AA for body text. slate-600 (7.6:1) and
   // blue-700 (6.7:1) clear 4.5:1 while staying visually distinct.
   const linkClass = ({ isActive }: { isActive: boolean }) =>
-    `text-sm font-medium transition-colors hover:text-blue-700 dark:hover:text-blue-400 ${
+    cn(
+      'font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+      mobile
+        ? 'w-full flex items-center px-3.5 py-2.5 rounded-lg text-base'
+        : 'px-3 py-1.5 rounded-lg text-sm inline-flex items-center justify-center',
       isActive
-        ? 'text-blue-700 dark:text-blue-400 font-semibold'
-        : 'text-slate-600 dark:text-slate-400'
-    } ${mobile ? 'text-lg py-2 border-b border-border' : ''}`;
+        ? 'bg-primary/10 text-blue-700 dark:text-blue-400 font-semibold shadow-2xs'
+        : 'text-slate-600 dark:text-slate-400 hover:bg-muted/80 hover:text-blue-700 dark:hover:text-blue-400'
+    );
 
   return (
     <>
@@ -75,7 +80,7 @@ const Header: React.FC<HeaderProps> = ({ onOpenSettings }) => {
       <CloudSyncModal isOpen={isSyncModalOpen} onClose={() => setIsSyncModalOpen(false)} />
 
       <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 print:hidden">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+        <div className="max-w-6xl w-full mx-auto px-4 md:px-8 h-16 flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center gap-2 font-bold text-xl">
             <Link to="/" aria-label="HR With AI home" className="flex items-center gap-2">
@@ -85,7 +90,7 @@ const Header: React.FC<HeaderProps> = ({ onOpenSettings }) => {
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-6">
+          <nav className="hidden md:flex items-center gap-1 sm:gap-1.5" aria-label="Main Navigation">
             <NavLinks />
           </nav>
 

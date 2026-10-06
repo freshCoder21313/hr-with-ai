@@ -166,9 +166,9 @@ export const CareerOverviewTab: React.FC<CareerOverviewTabProps> = ({
           </CardContent>
         </Card>
 
-        <Card className="bg-purple-50/40 border-purple-200/80 dark:bg-purple-950/20 dark:border-purple-900/50 col-span-2 sm:col-span-1">
+        <Card className="bg-info/10 border-info/20 col-span-2 sm:col-span-1">
           <CardContent className="p-4">
-            <div className="flex items-center justify-between text-purple-700 dark:text-purple-400">
+            <div className="flex items-center justify-between text-info">
               <span className="text-xs font-semibold uppercase tracking-wider">Evidence</span>
               <ShieldCheck className="w-4 h-4" aria-hidden="true" />
             </div>

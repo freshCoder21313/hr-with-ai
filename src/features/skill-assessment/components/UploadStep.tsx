@@ -245,8 +245,8 @@ export const UploadStep: React.FC = () => {
   };
 
   return (
-    <div className="max-w-5xl mx-auto mt-4 md:mt-10">
-      <div className="mb-8 text-center sm:text-left px-2">
+    <div className="w-full mt-4 md:mt-8">
+      <div className="mb-8 text-center sm:text-left">
         <h2 className="text-3xl font-bold tracking-tight">Upload Resume</h2>
         <p className="text-muted-foreground mt-2 mb-4">
           Upload a new CV or select a previously saved one to extract skills and start the
@@ -256,7 +256,7 @@ export const UploadStep: React.FC = () => {
         <ExtractionModeToggle value={extractionMode} onValueChange={setExtractionMode} />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 px-2">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <FileUploadZone
           isLoading={isLoading}
           isExtracting={isExtracting}

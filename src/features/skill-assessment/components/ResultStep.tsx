@@ -73,7 +73,7 @@ export const ResultStep: React.FC = () => {
   };
 
   return (
-    <div className="max-w-5xl mx-auto mt-4 md:mt-8 px-4 pb-12">
+    <div className="w-full mt-4 md:mt-8">
       <div className="text-center mb-8">
         <h2 className="text-3xl font-bold tracking-tight">Assessment Results</h2>
         <p className="text-muted-foreground mt-2">

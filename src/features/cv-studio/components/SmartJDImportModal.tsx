@@ -168,7 +168,7 @@ export const SmartJDImportModal: React.FC<SmartJDImportModalProps> = ({
             <div className="space-y-4 pt-4 border-t border-border animate-in fade-in duration-200">
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-                  <CheckCircle2 className="w-4 h-4 text-green-500" />
+                  <CheckCircle2 className="w-4 h-4 text-success" />
                   <span>Extracted Job Information</span>
                 </div>
                 <div className="flex items-center gap-1.5 flex-wrap">

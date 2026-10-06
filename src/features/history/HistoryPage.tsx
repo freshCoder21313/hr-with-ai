@@ -13,6 +13,8 @@ import {
   Search,
   GraduationCap,
   Share2,
+  ChevronDown,
+  BarChart2,
 } from 'lucide-react';
 import { db } from '@/lib/db';
 import { logger } from '@/lib/logger';
@@ -46,6 +48,7 @@ const HistoryPage: React.FC = () => {
   const [hasMore, setHasMore] = useState(false);
   const [totalCount, setTotalCount] = useState(0);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [showCharts, setShowCharts] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -173,7 +176,7 @@ const HistoryPage: React.FC = () => {
   }, [assessments, searchQuery]);
 
   return (
-    <div className="max-w-5xl mx-auto p-6 md:p-8">
+    <div className="max-w-6xl w-full mx-auto p-4 md:p-8 pb-24 md:pb-12">
       <SEO
         title="History - HR With AI"
         description="Track your interview progress and skill assessment history. Analyze your improvement over time."
@@ -260,26 +263,54 @@ const HistoryPage: React.FC = () => {
             </div>
           )}
 
-          {/* Progress Charts Section */}
+          {/* Progress Charts Section - Progressive Disclosure */}
           {interviews.length > 0 && (
-            <div className="mb-8 animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-8">
-              <React.Suspense
-                fallback={
-                  <div className="h-48 flex items-center justify-center bg-card rounded-lg border border-border animate-pulse">
-                    Loading charts...
-                  </div>
-                }
-              >
-                <ProgressCharts interviews={interviews} />
-                <div className="flex flex-col gap-8 w-full">
-                  <div className="w-full">
-                    <SkillRadarChart interviews={interviews} />
-                  </div>
-                  <div className="w-full">
-                    <LearningPath interviews={interviews} />
-                  </div>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowCharts((prev) => !prev)}
+                  className="gap-2 text-xs text-muted-foreground hover:text-foreground border-border hover:border-primary/40 transition-colors"
+                  aria-expanded={showCharts}
+                >
+                  <BarChart2 className="w-3.5 h-3.5 text-primary" />
+                  <span>
+                    {showCharts
+                      ? 'Hide Performance Analytics'
+                      : 'Show Performance Analytics & Growth (3 Charts)'}
+                  </span>
+                  <ChevronDown
+                    className={cn(
+                      'w-3.5 h-3.5 transition-transform duration-200',
+                      showCharts ? 'rotate-180' : ''
+                    )}
+                  />
+                </Button>
+              </div>
+
+              {showCharts && (
+                <div className="mb-8 animate-in fade-in slide-in-from-top-2 duration-300 space-y-8">
+                  <React.Suspense
+                    fallback={
+                      <div className="h-48 flex items-center justify-center bg-card rounded-lg border border-border animate-pulse">
+                        Loading charts...
+                      </div>
+                    }
+                  >
+                    <ProgressCharts interviews={interviews} />
+                    <div className="flex flex-col gap-8 w-full">
+                      <div className="w-full">
+                        <SkillRadarChart interviews={interviews} />
+                      </div>
+                      <div className="w-full">
+                        <LearningPath interviews={interviews} />
+                      </div>
+                    </div>
+                  </React.Suspense>
                 </div>
-              </React.Suspense>
+              )}
             </div>
           )}
 
