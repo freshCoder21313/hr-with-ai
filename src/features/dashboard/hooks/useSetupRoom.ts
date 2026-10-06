@@ -152,6 +152,10 @@ export const useSetupRoom = () => {
     [resumes, ai]
   );
 
+  const applyPreset = useCallback((preset: Partial<SetupFormData>) => {
+    setFormData((prev) => ({ ...prev, ...preset }));
+  }, []);
+
   return {
     state: {
       isParsing: resumes.isParsing,
@@ -175,6 +179,7 @@ export const useSetupRoom = () => {
     actions: {
       handleChange,
       handleSubmit,
+      applyPreset,
       handleResumeSelect: resumes.handleResumeSelect,
       handleSaveJob: jobs.handleSaveJob,
       handleDeleteJob: jobs.handleDeleteJob,

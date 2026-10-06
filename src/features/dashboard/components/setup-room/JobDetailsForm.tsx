@@ -47,6 +47,7 @@ interface JobDetailsFormProps {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => void;
   onAutoFillFromRawJD?: (parsed: ParsedJobData) => void;
+  section?: 'role' | 'persona' | 'all';
 }
 
 export const JobDetailsForm: React.FC<JobDetailsFormProps> = ({
@@ -61,6 +62,7 @@ export const JobDetailsForm: React.FC<JobDetailsFormProps> = ({
   onTogglePanel,
   onChange,
   onAutoFillFromRawJD,
+  section = 'all',
 }) => {
   const [isAutoFillOpen, setIsAutoFillOpen] = useState(false);
   const [rawJdText, setRawJdText] = useState('');
@@ -127,10 +129,17 @@ export const JobDetailsForm: React.FC<JobDetailsFormProps> = ({
 
     toast.success('Job details auto-filled from raw JD!');
   };
+
+  const isRoleSection = section === 'all' || section === 'role';
+  const isPersonaSection = section === 'all' || section === 'persona';
+
   return (
     <div className="space-y-4 md:space-y-8">
-      {/* Saved Jobs Selector */}
-      <div className="flex items-center gap-4 bg-muted/30 p-4 rounded-lg border border-border">
+      {/* Role & Company Section */}
+      {isRoleSection && (
+        <div className="space-y-4 md:space-y-8">
+          {/* Saved Jobs Selector */}
+          <div className="flex items-center gap-4 bg-muted/30 p-4 rounded-lg border border-border">
         <div className="flex-1">
           <Label htmlFor="savedJob" className="mb-2 block">
             Load Saved Job
@@ -349,9 +358,13 @@ export const JobDetailsForm: React.FC<JobDetailsFormProps> = ({
           )}
         </div>
       </div>
+        </div>
+      )}
 
-      {/* Persona, Language, Type, Mode, Panel */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
+      {/* Persona, Language, Type, Mode, Panel & Difficulty Section */}
+      {isPersonaSection && (
+        <div className="space-y-4 md:space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
         <div className="space-y-2 md:space-y-3">
           <Label htmlFor="interviewerPersona">Interviewer Persona</Label>
           <Textarea
@@ -449,6 +462,8 @@ export const JobDetailsForm: React.FC<JobDetailsFormProps> = ({
           />
         </div>
       </div>
+        </div>
+      )}
     </div>
   );
 };
