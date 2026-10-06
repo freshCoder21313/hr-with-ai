@@ -91,14 +91,28 @@ Setup file: `src/setupTests.ts`.
 - **Constants:** `UPPER_CASE` for global constants.
 - **Types/Interfaces:** `PascalCase` (e.g., `User`, `AuthResponse`)
 
-### Styling (Tailwind CSS)
+### Styling & Design Tokens (Tailwind CSS)
 - Use standard utility classes.
 - **Conditional Classes:** Use `cn()` from `@/lib/utils` (merges `clsx` and `tailwind-merge`).
   ```tsx
-  <div className={cn("flex p-4", isActive && "bg-blue-500", className)} />
+  <div className={cn("flex p-4", isActive && "bg-primary text-primary-foreground", className)} />
   ```
-- **Colors:** Use CSS variables defined in `index.css` / tailwind config (e.g., `bg-primary`, `text-muted-foreground`).
+- **Semantic Colors:** STRICTLY use CSS variables defined in `index.css` / Tailwind config (`bg-primary`, `bg-card`, `bg-muted`, `bg-success/10`, `text-success`, `bg-warning/10`, `text-warning`, `bg-info/10`, `text-info`, `bg-destructive`, `text-destructive`).
+- **No Hardcoded Raw Colors:** Avoid arbitrary palette colors like `bg-purple-600`, `bg-emerald-700`, `bg-amber-500` for standard UI elements.
+- **Dark Mode Contrast:** Elevated surfaces (sheets, dialogs, cards) must specify `border-border` and surface tokens. Never use unstyled raw borders that cause bright white lines in Dark Mode. In alerts, pair `bg-<token>/10` with `text-<token>`.
 - Avoid inline `style={{ ... }}` unless dynamic values (coordinates, user colors) require it.
+- **Full Guide:** see `docs/UI_UX_AND_FEATURE_GUIDELINES.md` and `docs/adr/004-ui-ux-design-system-and-feature-rules.md`.
+
+### Navigation & Modals
+- **No Dead Routes:** Ensure all routes exist or redirect cleanly (e.g. `<Route path="/cv-chat" element={<Navigate to="/studio" replace />} />`).
+- **History Navigation:** Back buttons should check `window.history.length > 1 ? navigate(-1) : navigate(fallback)` and have accurate labels ("Back to Home" for `/`, "Back to CV Studio" for `/studio`).
+- **No Modal Flashing:** Never close Modal A and use `setTimeout` to open Modal B. Consolidate into unified tabbed dialogs (e.g. `SettingsModal`).
+- **Wired Triggers:** Never render modals without discoverable UI trigger buttons.
+
+### Feature Development & Data Persistence
+- **Offline-First Persistence:** User outcomes, scores, and records (interviews, tailored CVs, quiz scores, career facts) MUST be persisted in IndexedDB via Dexie (`src/lib/db.ts`). No ephemeral session loss upon reload.
+- **Dexie Migrations:** Every schema addition must increment `this.version(N).stores({...})` according to `docs/adr/002-dexie-migrations.md`.
+- **Management Parity:** Created records must have viewing, search/filter, and deletion capabilities (with confirmation dialog) in History/Studio.
 
 ### State Management
 - **Local UI State:** `useState` for component-specific state (modals, tabs, ephemeral form UI).
@@ -109,7 +123,8 @@ Setup file: `src/setupTests.ts`.
 ### Error Handling
 - **Async Operations:** Wrap `await` calls in `try/catch`.
 - **UI Feedback:** Display user-friendly error messages (toasts, alerts) rather than just logging.
-- **Logging:** Use `console.error` for debugging unexpected failures.
+- **Destructive Confirmations:** Prompt user confirmation via `notificationService.confirm` before deleting items.
+- **Logging:** Use `logger` from `@/lib/logger` (ESLint strictly forbids `console.log`). Use `console.error` only for unexpected failures.
 
 ## 4. Project Structure
 
