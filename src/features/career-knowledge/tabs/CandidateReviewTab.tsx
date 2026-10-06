@@ -73,7 +73,7 @@ export const CandidateReviewTab: React.FC<CandidateReviewTabProps> = ({
 
       {candidates.length === 0 ? (
         <EmptyState
-          icon={<CheckCircle2 className="w-10 h-10 text-emerald-600" aria-hidden="true" />}
+          icon={<CheckCircle2 className="w-10 h-10 text-success" aria-hidden="true" />}
           title="All candidates reviewed!"
           message="No claims currently need confirmation. You can import a resume or acquire external evidence to discover new candidates."
           action={

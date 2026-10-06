@@ -1,15 +1,19 @@
-import React, { useMemo } from 'react';
-import { useSkillAssessmentStore } from '@/features/skill-assessment/stores/useSkillAssessmentStore';
+import React, { useMemo, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { CheckCircle, XCircle, ArrowRight, BrainCircuit, RefreshCw, BarChart2 } from 'lucide-react';
+import { db } from '@/lib/db';
+import { logger } from '@/lib/logger';
+import { SkillAssessmentRecord } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { CheckCircle, XCircle, ArrowRight, BrainCircuit, RefreshCw, BarChart2 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useSkillAssessmentStore } from '@/features/skill-assessment/stores/useSkillAssessmentStore';
 
 export const ResultStep: React.FC = () => {
   const { quizScore, reset, testAnotherSkill, selectedSkill, quizQuestions, userAnswers } =
     useSkillAssessmentStore();
   const navigate = useNavigate();
+  const hasSavedRef = useRef(false);
 
   // Score each sub-skill separately
   const subSkillScores = useMemo(() => {
@@ -36,7 +40,26 @@ export const ResultStep: React.FC = () => {
   }, [quizQuestions, userAnswers]);
 
   // Sub-skills scoring under 70% count as weaknesses
-  const weaknesses = subSkillScores.filter((s) => s.score < 70);
+  const weaknesses = useMemo(() => subSkillScores.filter((s) => s.score < 70), [subSkillScores]);
+
+  useEffect(() => {
+    if (hasSavedRef.current) return;
+    if (quizScore === null || quizQuestions.length === 0) return;
+
+    hasSavedRef.current = true;
+    const record: SkillAssessmentRecord = {
+      skill: selectedSkill || 'General',
+      score: Math.round(quizScore),
+      totalQuestions: quizQuestions.length,
+      subSkillScores,
+      weaknesses: weaknesses.map((w) => w.name),
+      createdAt: Date.now(),
+    };
+
+    db.skillAssessments?.add(record).catch((err) => {
+      logger.error('Failed to save skill assessment to database', err);
+    });
+  }, [quizScore, quizQuestions.length, selectedSkill, subSkillScores, weaknesses]);
 
   const handleDeepDive = () => {
     const weaknessList = weaknesses.map((w) => w.name);
@@ -63,7 +86,7 @@ export const ResultStep: React.FC = () => {
         {/* Left Column: Score & Summary */}
         <div className="lg:col-span-1 space-y-6">
           <Card className="border-border/50 shadow-sm overflow-hidden relative">
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-emerald-500"></div>
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-success"></div>
             <CardHeader className="pb-2 text-center">
               <CardTitle className="text-lg text-muted-foreground font-medium">
                 Overall Score

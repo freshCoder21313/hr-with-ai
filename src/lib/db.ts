@@ -1,5 +1,5 @@
 import Dexie, { Table } from 'dexie';
-import { Interview, UserSettings, Resume, SavedJob } from '@/types';
+import { Interview, UserSettings, Resume, SavedJob, SkillAssessmentRecord } from '@/types';
 import { DBJobRecommendation } from '@/types';
 import { compressResumeData, decompressResumeData } from '@/lib/resumeCompression';
 import { logger } from '@/lib/logger';
@@ -14,7 +14,7 @@ import type {
 
 /**
  * IndexedDB via Dexie.
- * Schema versions 2→14 are cumulative — see docs/adr/002-dexie-migrations.md
+ * Schema versions 2→16 are cumulative — see docs/adr/002-dexie-migrations.md
  */
 
 class HRDatabase extends Dexie {
@@ -29,6 +29,7 @@ class HRDatabase extends Dexie {
   careerEvidence!: Table<CareerEvidence, string>;
   factEvidenceLinks!: Table<FactEvidenceLink, [string, string]>;
   careerNotes!: Table<CareerNote, string>;
+  skillAssessments!: Table<SkillAssessmentRecord, number>;
 
   constructor() {
     super('VietPhongDB');
@@ -126,6 +127,11 @@ class HRDatabase extends Dexie {
       careerEvidence: 'id, profileId, sourceType, capturedAt',
       factEvidenceLinks: '[factId+evidenceId], factId, evidenceId',
       careerNotes: 'id, factId, createdAt, updatedAt',
+    });
+
+    // Version 16: Skill Assessment history persistence
+    this.version(16).stores({
+      skillAssessments: '++id, createdAt, skill, score',
     });
 
     // Add hooks to auto-update updatedAt

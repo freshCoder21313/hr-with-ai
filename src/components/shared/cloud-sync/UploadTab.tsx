@@ -153,8 +153,8 @@ export const UploadTab: React.FC<UploadTabProps> = ({
             className={cn(
               'text-[11px] leading-relaxed rounded-xl p-3 border',
               includeApiKey
-                ? 'bg-amber-500/10 border-amber-500/30 text-amber-900 dark:text-amber-100'
-                : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-900 dark:text-emerald-100'
+                ? 'bg-warning/10 border-warning/30 text-warning'
+                : 'bg-success/10 border-success/20 text-success'
             )}
           >
             {includeApiKey ? (

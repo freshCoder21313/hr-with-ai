@@ -226,42 +226,42 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
                       size="xs"
                       aria-expanded={false}
                       onClick={() => toggleFeedback(idx)}
-                      className="text-xs font-medium bg-background/50 border-amber-300 text-amber-700 hover:text-amber-800 hover:bg-amber-50/50 hover:border-amber-400 dark:border-amber-800/30 dark:text-amber-400 dark:hover:bg-amber-900/20 rounded-full"
+                      className="text-xs font-medium bg-background/50 border-warning/30 text-warning hover:bg-warning/10 rounded-full"
                     >
                       <Lightbulb className="w-3.5 h-3.5 mr-1.5" />
                       View AI Analysis
                       <ChevronDown className="w-3 h-3 ml-1" />
                     </Button>
                   ) : (
-                    <Card className="bg-amber-50/80 dark:bg-amber-950/10 border-amber-200 dark:border-amber-800/40 shadow-sm overflow-hidden">
+                    <Card className="bg-warning/5 border-warning/20 shadow-sm overflow-hidden">
                       <button
                         type="button"
                         id={`${idPrefix}-toggle-${idx}`}
                         aria-expanded={true}
                         aria-controls={`${idPrefix}-feedback-${idx}`}
                         onClick={() => toggleFeedback(idx)}
-                        className="w-full min-h-10 px-4 py-2 flex items-center justify-between text-left bg-amber-100/50 dark:bg-amber-900/20 border-b border-amber-200/50 dark:border-amber-800/30 cursor-pointer hover:bg-amber-100/70 dark:hover:bg-amber-900/30 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+                        className="w-full min-h-10 px-4 py-2 flex items-center justify-between text-left bg-warning/10 border-b border-warning/20 cursor-pointer hover:bg-warning/15 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
                       >
-                        <span className="flex items-center gap-2 text-xs font-bold text-amber-700 dark:text-amber-500 uppercase tracking-wider">
+                        <span className="flex items-center gap-2 text-xs font-bold text-warning uppercase tracking-wider">
                           <Lightbulb className="w-3.5 h-3.5" />
                           AI Feedback
                         </span>
-                        <ChevronUp className="w-3.5 h-3.5 text-amber-700/50 dark:text-amber-500/50" />
+                        <ChevronUp className="w-3.5 h-3.5 text-warning/70" />
                       </button>
                       <CardContent
                         id={`${idPrefix}-feedback-${idx}`}
                         className="p-4 space-y-4 text-sm"
                       >
                         <div className="space-y-1.5">
-                          <span className="text-xs font-bold text-amber-700 dark:text-amber-500 uppercase tracking-wider flex items-center gap-1.5">
+                          <span className="text-xs font-bold text-warning uppercase tracking-wider flex items-center gap-1.5">
                             Analysis
                           </span>
                           <div className="text-muted-foreground leading-relaxed">
                             <MarkdownRenderer content={feedback.analysis} />
                           </div>
                         </div>
-                        <div className="space-y-1.5 pt-3 border-t border-amber-200/30 dark:border-amber-800/30">
-                          <span className="text-xs font-bold text-emerald-700 dark:text-emerald-500 uppercase tracking-wider flex items-center gap-1.5">
+                        <div className="space-y-1.5 pt-3 border-t border-border">
+                          <span className="text-xs font-bold text-success uppercase tracking-wider flex items-center gap-1.5">
                             Better Approach
                           </span>
                           <div className="text-muted-foreground leading-relaxed">

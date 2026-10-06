@@ -133,11 +133,12 @@ export const GitHubEvidenceScanModal: React.FC<GitHubEvidenceScanModalProps> = (
               </label>
             </div>
 
-            <div className="p-3 bg-blue-50 border border-blue-200 dark:bg-blue-950/30 dark:border-blue-900 rounded-lg text-blue-900 dark:text-blue-300 text-xs flex items-start gap-2">
-              <Info className="w-4 h-4 mt-0.5 shrink-0" aria-hidden="true" />
-              <span>
-                <strong>Evidence is not confirmation:</strong> Code repositories represent observed
-                external evidence, not automatically verified professional skill.
+            <div className="p-3 bg-info/10 border border-info/30 rounded-lg text-info text-xs flex items-start gap-2">
+              <Info className="w-4 h-4 mt-0.5 shrink-0 text-info" aria-hidden="true" />
+              <span className="text-foreground">
+                <strong className="text-foreground">Evidence is not confirmation:</strong> Code
+                repositories represent observed external evidence, not automatically verified
+                professional skill.
               </span>
             </div>
           </div>

@@ -158,24 +158,24 @@ export const ResumeImportModal: React.FC<ResumeImportModalProps> = ({
 
             {/* Preview Summary */}
             {preview && (
-              <div className="p-3.5 rounded-lg border bg-muted/20 space-y-3">
+              <div className="p-3.5 rounded-lg border border-border bg-muted/20 space-y-3">
                 <div className="text-xs font-semibold text-foreground uppercase tracking-wider">
                   Migration Preview
                 </div>
                 <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div className="p-2 bg-card border rounded">
+                  <div className="p-2 bg-card border border-border rounded">
                     <span className="text-muted-foreground">Extractable Facts:</span>{' '}
                     <strong className="text-foreground">{preview.facts.length}</strong>
                   </div>
-                  <div className="p-2 bg-card border rounded">
+                  <div className="p-2 bg-card border border-border rounded">
                     <span className="text-muted-foreground">Deferred/Skipped:</span>{' '}
                     <strong className="text-foreground">{preview.skipped.length}</strong>
                   </div>
                 </div>
 
-                <div className="p-2.5 bg-amber-50 border border-amber-200 dark:bg-amber-950/30 dark:border-amber-900 rounded text-amber-800 dark:text-amber-300 text-xs flex items-start gap-2">
-                  <Info className="w-4 h-4 mt-0.5 shrink-0" aria-hidden="true" />
-                  <span>
+                <div className="p-2.5 bg-warning/10 border border-warning/30 rounded text-warning text-xs flex items-start gap-2">
+                  <Info className="w-4 h-4 mt-0.5 shrink-0 text-warning" aria-hidden="true" />
+                  <span className="text-foreground">
                     Imported items enter <strong>Needs confirmation</strong>. They will not become
                     canonical facts until you explicitly confirm them.
                   </span>

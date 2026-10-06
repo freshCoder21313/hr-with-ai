@@ -8,14 +8,7 @@ import {
 } from '@/components/ui/sheet';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import {
-  Loader2,
-  BookOpen,
-  CheckSquare,
-  Layers,
-  ShieldCheck,
-  HelpCircle,
-} from 'lucide-react';
+import { Loader2, BookOpen, CheckSquare, Layers, ShieldCheck, HelpCircle } from 'lucide-react';
 import { careerKnowledgeAppService } from '@/services/careerKnowledge/careerKnowledgeAppService';
 import { CareerOverviewTab } from '@/features/career-knowledge/tabs/CareerOverviewTab';
 import { CandidateReviewTab } from '@/features/career-knowledge/tabs/CandidateReviewTab';
@@ -177,7 +170,7 @@ export const CareerKnowledgeDrawer: React.FC<CareerKnowledgeDrawerProps> = ({
                     {candidates.length > 0 && (
                       <Badge
                         variant="default"
-                        className="px-1.5 py-0 text-[10px] h-4 bg-amber-600 text-white rounded-full font-bold ml-0.5"
+                        className="px-1.5 py-0 text-[10px] h-4 bg-warning text-warning-foreground rounded-full font-bold ml-0.5"
                         aria-label={`${candidates.length} candidate facts awaiting confirmation`}
                       >
                         {candidates.length}

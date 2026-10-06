@@ -32,16 +32,16 @@ export const DownloadTab: React.FC<DownloadTabProps> = ({
         />
       </div>
 
-      <div className="p-5 bg-amber-500/10 rounded-2xl border border-amber-500/30 flex gap-4">
-        <div className="p-2 bg-amber-500/20 rounded-xl h-fit">
-          <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+      <div className="p-5 bg-warning/10 rounded-2xl border border-warning/30 flex gap-4">
+        <div className="p-2 bg-warning/20 rounded-xl h-fit">
+          <AlertCircle className="h-5 w-5 text-warning" />
         </div>
         <div className="space-y-1.5">
-          <h3 className="text-sm font-bold text-amber-900 dark:text-amber-200 uppercase tracking-tight">
+          <h3 className="text-sm font-bold text-foreground uppercase tracking-tight">
             Warning
           </h3>
-          <p className="text-xs text-amber-800 dark:text-amber-300 leading-relaxed opacity-90">
-            Data will be <span className="font-bold">smartly merged</span>. Newer versions from
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            Data will be <span className="font-bold text-foreground">smartly merged</span>. Newer versions from
             cloud will update local records. Unique local data is preserved.
           </p>
         </div>

@@ -58,7 +58,7 @@ export const CareerOverviewTab: React.FC<CareerOverviewTabProps> = ({
   return (
     <div className="space-y-6">
       {/* Profile Header Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl border bg-card shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl border border-border bg-card shadow-sm">
         <div className="space-y-1">
           <div className="text-xs uppercase font-bold text-muted-foreground tracking-wider">
             Active Career Profile
@@ -68,7 +68,7 @@ export const CareerOverviewTab: React.FC<CareerOverviewTabProps> = ({
               aria-label="Active Career Profile"
               value={profile?.id || ''}
               onChange={(e) => onSelectProfile(e.target.value)}
-              className="px-3 py-1.5 rounded-lg border bg-background text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary"
+              className="px-3 py-1.5 rounded-lg border border-input bg-background text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary"
             >
               {profiles.map((p, idx) => (
                 <option key={p.id} value={p.id}>
@@ -87,18 +87,18 @@ export const CareerOverviewTab: React.FC<CareerOverviewTabProps> = ({
       {needsConfirmationCount > 0 && (
         <div
           role="alert"
-          className="p-4 bg-amber-50 border border-amber-200 dark:bg-amber-950/30 dark:border-amber-900 rounded-xl flex items-center justify-between gap-4 flex-wrap"
+          className="p-4 bg-warning/10 border border-warning/30 rounded-xl flex items-center justify-between gap-4 flex-wrap"
         >
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/60 flex items-center justify-center text-amber-700 dark:text-amber-300 shrink-0">
+            <div className="w-10 h-10 rounded-full bg-warning/20 flex items-center justify-center text-warning shrink-0">
               <AlertCircle className="w-5 h-5" aria-hidden="true" />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-amber-900 dark:text-amber-200">
+              <h2 className="text-sm font-bold text-foreground">
                 {needsConfirmationCount} Candidate Fact{needsConfirmationCount === 1 ? '' : 's'}{' '}
                 Awaiting Confirmation
               </h2>
-              <p className="text-xs text-amber-800/80 dark:text-amber-300/80">
+              <p className="text-xs text-muted-foreground">
                 Candidate claims imported from Resumes, questions, or external sources require your
                 explicit confirmation.
               </p>
@@ -108,7 +108,7 @@ export const CareerOverviewTab: React.FC<CareerOverviewTabProps> = ({
             variant="default"
             size="sm"
             onClick={() => onNavigateTab('confirmations')}
-            className="bg-amber-600 hover:bg-amber-700 text-white gap-1.5 shadow-sm"
+            className="bg-warning text-warning-foreground hover:bg-warning/90 gap-1.5 shadow-sm font-semibold"
           >
             Review Candidates <ArrowRight className="w-4 h-4" aria-hidden="true" />
           </Button>
@@ -120,9 +120,9 @@ export const CareerOverviewTab: React.FC<CareerOverviewTabProps> = ({
         aria-label="Career Knowledge Metrics"
         className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3"
       >
-        <Card className="bg-emerald-50/40 border-emerald-200/80 dark:bg-emerald-950/20 dark:border-emerald-900/50">
+        <Card className="bg-success/5 border-success/20 dark:bg-success/10 dark:border-success/30">
           <CardContent className="p-4">
-            <div className="flex items-center justify-between text-emerald-700 dark:text-emerald-400">
+            <div className="flex items-center justify-between text-success">
               <span className="text-xs font-semibold uppercase tracking-wider">Confirmed</span>
               <CheckCircle2 className="w-4 h-4" aria-hidden="true" />
             </div>
@@ -131,9 +131,9 @@ export const CareerOverviewTab: React.FC<CareerOverviewTabProps> = ({
           </CardContent>
         </Card>
 
-        <Card className="bg-amber-50/40 border-amber-200/80 dark:bg-amber-950/20 dark:border-amber-900/50">
+        <Card className="bg-warning/5 border-warning/20 dark:bg-warning/10 dark:border-warning/30">
           <CardContent className="p-4">
-            <div className="flex items-center justify-between text-amber-700 dark:text-amber-400">
+            <div className="flex items-center justify-between text-warning">
               <span className="text-xs font-semibold uppercase tracking-wider">
                 Needs Confirmation
               </span>
@@ -144,9 +144,9 @@ export const CareerOverviewTab: React.FC<CareerOverviewTabProps> = ({
           </CardContent>
         </Card>
 
-        <Card className="bg-blue-50/40 border-blue-200/80 dark:bg-blue-950/20 dark:border-blue-900/50">
+        <Card className="bg-info/5 border-info/20 dark:bg-info/10 dark:border-info/30">
           <CardContent className="p-4">
-            <div className="flex items-center justify-between text-blue-700 dark:text-blue-400">
+            <div className="flex items-center justify-between text-info">
               <span className="text-xs font-semibold uppercase tracking-wider">Observed</span>
               <Eye className="w-4 h-4" aria-hidden="true" />
             </div>
@@ -155,7 +155,7 @@ export const CareerOverviewTab: React.FC<CareerOverviewTabProps> = ({
           </CardContent>
         </Card>
 
-        <Card className="bg-slate-50 border-slate-200/80 dark:bg-slate-900/30 dark:border-slate-800">
+        <Card className="bg-muted/40 border-border">
           <CardContent className="p-4">
             <div className="flex items-center justify-between text-muted-foreground">
               <span className="text-xs font-semibold uppercase tracking-wider">Rejected</span>
@@ -310,7 +310,7 @@ export const CareerOverviewTab: React.FC<CareerOverviewTabProps> = ({
               </div>
             </div>
           ) : (
-            <div className="divide-y border rounded-lg overflow-hidden">
+            <div className="divide-y divide-border border border-border rounded-lg overflow-hidden">
               {recentFacts.map((fact) => (
                 <div
                   key={fact.id}

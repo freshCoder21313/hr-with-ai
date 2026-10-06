@@ -125,7 +125,7 @@ export const ProjectToResumeModal: React.FC<ProjectToResumeModalProps> = ({
             <label className="text-xs font-semibold text-foreground uppercase tracking-wider">
               Include Categories
             </label>
-            <div className="space-y-2 border p-3 rounded-lg bg-card">
+            <div className="space-y-2 border border-border p-3 rounded-lg bg-card">
               {CATEGORIES.map((cat) => (
                 <div key={cat.key} className="flex items-center space-x-2">
                   <Checkbox

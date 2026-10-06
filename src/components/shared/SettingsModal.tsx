@@ -18,12 +18,14 @@ import { CollapsibleSection } from '@/components/ui/collapsible-section';
 import { toast } from 'sonner';
 import { Settings2, Sparkles, RotateCcw } from 'lucide-react';
 
-import { openApiKeyModal } from '@/events/apiKeyEvents';
+import { AIProviderProfilesEditor } from '@/features/settings/AIProviderProfilesEditor';
 import { emitSettingsChanged } from '@/events/settingsEvents';
 
 interface SettingsModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  defaultTab?: string;
+  initialTab?: string;
   /**
    * Optional per-instance callback fired after save. Independent of the global
    * SETTINGS_CHANGED broadcast, which every instance emits so a running
@@ -42,6 +44,8 @@ interface SettingsModalProps {
 const SettingsModal: React.FC<SettingsModalProps> = ({
   open,
   onOpenChange,
+  defaultTab = 'general',
+  initialTab,
   onSettingsChanged,
   restoreFocusTarget,
 }) => {
@@ -59,7 +63,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   });
   const [isLoading, setIsLoading] = useState(true);
 
-  const [activeTab, setActiveTab] = useState('general');
+  const resolvedDefaultTab = initialTab ?? defaultTab;
+  const [activeTab, setActiveTab] = useState(resolvedDefaultTab);
   const focusReturnRef = useRef<HTMLElement | null>(null);
   useEffect(() => {
     if (restoreFocusTarget) focusReturnRef.current = restoreFocusTarget;
@@ -68,6 +73,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   // Load settings on open
   useEffect(() => {
     if (open) {
+      setActiveTab(resolvedDefaultTab);
       const loadSettings = async () => {
         try {
           const stored = await loadUserSettings();
@@ -84,7 +90,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
       setIsLoading(true);
       loadSettings();
     }
-  }, [open]);
+  }, [open, resolvedDefaultTab]);
 
   const handleSave = async () => {
     try {
@@ -112,17 +118,13 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   };
 
   const handleManageProfiles = () => {
-    onOpenChange(false);
-    // Use a small delay to ensure the current dialog is closed before opening the next one
-    setTimeout(() => {
-      openApiKeyModal();
-    }, 100);
+    setActiveTab('ai-profiles');
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="sm:max-w-[500px] max-h-[85vh] overflow-y-auto"
+        className="sm:max-w-2xl max-h-[85vh] overflow-y-auto"
         onCloseAutoFocus={(e) => {
           const target = focusReturnRef.current;
           if (!target?.isConnected) return;
@@ -143,9 +145,12 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
           </div>
         ) : (
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-1">
+            <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="general" className="gap-2">
                 <Settings2 className="w-4 h-4" /> General
+              </TabsTrigger>
+              <TabsTrigger value="ai-profiles" className="gap-2">
+                <Sparkles className="w-4 h-4" /> AI Providers
               </TabsTrigger>
             </TabsList>
 
@@ -303,15 +308,24 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                     </Button>
                   </div>
                 </div>
+
+                <Button
+                  onClick={handleSave}
+                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground mt-2"
+                >
+                  Save Configuration
+                </Button>
+              </TabsContent>
+
+              <TabsContent value="ai-profiles" className="mt-0">
+                <AIProviderProfilesEditor
+                  onSave={(saved) => {
+                    if (onSettingsChanged) onSettingsChanged(saved);
+                    onOpenChange(false);
+                  }}
+                />
               </TabsContent>
             </div>
-
-            <Button
-              onClick={handleSave}
-              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground mt-2"
-            >
-              Save Configuration
-            </Button>
           </Tabs>
         )}
       </DialogContent>

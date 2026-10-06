@@ -88,4 +88,48 @@ describe('SettingsModal', () => {
 
     expect(screen.queryByText('AI Interview Hints')).toBeNull();
   });
+
+  it('renders both General and AI Providers tab triggers', async () => {
+    render(<SettingsModal open onOpenChange={vi.fn()} />);
+
+    await waitFor(() => expect(screen.getByRole('tab', { name: /General/i })).toBeDefined());
+    expect(screen.getByRole('tab', { name: /AI Providers/i })).toBeDefined();
+  });
+
+  it('switches to the AI Providers tab when Manage AI Profiles is clicked without closing modal', async () => {
+    const onOpenChange = vi.fn();
+    render(<SettingsModal open onOpenChange={onOpenChange} />);
+
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Manage AI Profiles' })).toBeDefined()
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Manage AI Profiles' }));
+
+    expect(onOpenChange).not.toHaveBeenCalled();
+    await waitFor(() => {
+      expect(screen.getByRole('tab', { name: /AI Providers/i })).toHaveAttribute(
+        'data-state',
+        'active'
+      );
+    });
+    // Wait for AIProviderProfilesEditor async load
+    await waitFor(() => {
+      expect(screen.getByText(/Keys stay/i)).toBeDefined();
+    });
+  });
+
+  it('opens directly to ai-profiles tab when defaultTab is specified', async () => {
+    render(<SettingsModal open onOpenChange={vi.fn()} defaultTab="ai-profiles" />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('tab', { name: /AI Providers/i })).toHaveAttribute(
+        'data-state',
+        'active'
+      );
+    });
+    await waitFor(() => {
+      expect(screen.getByText(/Keys stay/i)).toBeDefined();
+    });
+  });
 });

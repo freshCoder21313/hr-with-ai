@@ -31,7 +31,7 @@ export const FactCard: React.FC<FactCardProps> = ({
               </span>
               <VerificationBadge state={fact.verificationState} />
               {fact.supersededBy && (
-                <span className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-600 bg-amber-50 dark:bg-amber-950/40 px-1.5 py-0.5 rounded border border-amber-200 dark:border-amber-800">
+                <span className="inline-flex items-center gap-1 text-[11px] font-medium text-warning bg-warning/10 px-1.5 py-0.5 rounded border border-warning/30">
                   <History className="w-3 h-3" /> Superseded
                 </span>
               )}
@@ -61,7 +61,7 @@ export const FactCard: React.FC<FactCardProps> = ({
                     size="sm"
                     onClick={() => onConfirm(fact)}
                     aria-label={`Confirm fact "${fact.subject}"`}
-                    className="h-8 px-2 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
+                    className="h-8 px-2 text-success hover:bg-success/10"
                   >
                     <Check className="w-4 h-4" />
                   </Button>
@@ -75,7 +75,7 @@ export const FactCard: React.FC<FactCardProps> = ({
                 onClick={() => onInvalidate(fact)}
                 aria-label={`Re-review fact "${fact.subject}"`}
                 title="Move back to needs confirmation"
-                className="h-8 px-2 text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/40"
+                className="h-8 px-2 text-warning hover:bg-warning/10"
               >
                 <Undo2 className="w-4 h-4" />
               </Button>

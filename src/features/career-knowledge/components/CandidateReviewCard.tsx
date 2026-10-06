@@ -61,7 +61,7 @@ export const CandidateReviewCard: React.FC<CandidateReviewCardProps> = ({
   };
 
   return (
-    <Card className="border-amber-200/80 dark:border-amber-900/50 bg-card shadow-sm">
+    <Card className="border-warning/30 bg-card shadow-sm">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-2">
@@ -90,7 +90,7 @@ export const CandidateReviewCard: React.FC<CandidateReviewCardProps> = ({
           <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
             Claim Assertion
           </div>
-          <div className="p-3 bg-muted/30 border rounded-lg text-sm leading-relaxed text-foreground font-medium">
+          <div className="p-3 bg-muted/30 border border-border rounded-lg text-sm leading-relaxed text-foreground font-medium">
             {`"${candidate.claim}"`}
           </div>
         </div>
@@ -117,7 +117,10 @@ export const CandidateReviewCard: React.FC<CandidateReviewCardProps> = ({
           ) : (
             <div className="space-y-2">
               {evidenceList.map((ev) => (
-                <div key={ev.id} className="p-3 bg-muted/20 border rounded-lg text-xs space-y-1.5">
+                <div
+                  key={ev.id}
+                  className="p-3 bg-muted/20 border border-border rounded-lg text-xs space-y-1.5"
+                >
                   <div className="flex items-center justify-between text-muted-foreground flex-wrap gap-2">
                     <span className="font-semibold text-foreground uppercase tracking-wide px-1.5 py-0.5 bg-muted rounded">
                       Source: {ev.sourceType.replace('_', ' ')}
@@ -171,7 +174,7 @@ export const CandidateReviewCard: React.FC<CandidateReviewCardProps> = ({
               onClick={handleConfirm}
               disabled={disabled || processing}
               aria-label={`Confirm candidate "${candidate.subject}"`}
-              className="gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white"
+              className="gap-1.5 bg-success hover:bg-success/90 text-success-foreground"
             >
               <Check className="w-4 h-4" aria-hidden="true" /> Confirm as Fact
             </Button>

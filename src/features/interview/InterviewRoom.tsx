@@ -169,7 +169,7 @@ const InterviewRoom: React.FC = () => {
         </div>
         <Button onClick={() => navigate('/')} className="gap-2">
           <ArrowLeft className="w-4 h-4" />
-          Back to Dashboard
+          Back to Home
         </Button>
       </div>
     );

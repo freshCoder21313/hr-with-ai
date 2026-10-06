@@ -52,7 +52,7 @@ export const ToolModals: React.FC<ToolModalsProps> = ({
             <div className="flex items-center gap-2">
               <Button
                 size="xs"
-                className="bg-green-600 hover:bg-green-700 text-white border-0"
+                className="bg-success text-success-foreground hover:bg-success/90 border-0"
                 onClick={() => onSubmit('code')}
                 disabled={isSubmitting}
               >
@@ -61,7 +61,7 @@ export const ToolModals: React.FC<ToolModalsProps> = ({
               <Button
                 size="xs"
                 variant="ghost"
-                className="text-slate-400 hover:text-white gap-2"
+                className="text-muted-foreground hover:text-foreground gap-2"
                 aria-label="Close code editor"
                 onClick={() => setIsCodeOpen(false)}
               >
@@ -72,7 +72,7 @@ export const ToolModals: React.FC<ToolModalsProps> = ({
           <div className="flex-1 overflow-hidden relative w-full h-full">
             <Suspense
               fallback={
-                <div className="flex items-center justify-center h-full text-slate-300">
+                <div className="flex items-center justify-center h-full text-muted-foreground">
                   Loading Editor...
                 </div>
               }

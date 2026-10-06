@@ -198,6 +198,12 @@
 }
 
 /* Base styles using the variables */
+*,
+::before,
+::after {
+  border-color: hsl(var(--border));
+}
+
 body {
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));

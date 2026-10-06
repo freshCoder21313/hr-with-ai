@@ -180,7 +180,7 @@ export const SmartJDImportModal: React.FC<SmartJDImportModalProps> = ({
                   {parsedData?.salary && (
                     <Badge
                       variant="secondary"
-                      className="text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-500/10"
+                      className="text-xs font-medium text-success bg-success/10 border-success/30"
                     >
                       💰 {parsedData.salary}
                     </Badge>

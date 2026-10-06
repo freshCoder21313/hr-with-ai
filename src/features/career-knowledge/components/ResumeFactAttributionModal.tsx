@@ -72,7 +72,7 @@ export const ResumeFactAttributionModal: React.FC<ResumeFactAttributionModalProp
               <span className="sr-only">Loading fact provenance...</span>
             </div>
           ) : details.length === 0 ? (
-            <div className="p-3 text-xs text-muted-foreground border rounded-lg bg-muted/20">
+            <div className="p-3 text-xs text-muted-foreground border border-border rounded-lg bg-muted/20">
               No fact identifiers linked to this item.
             </div>
           ) : (
@@ -82,7 +82,7 @@ export const ResumeFactAttributionModal: React.FC<ResumeFactAttributionModalProp
                 return (
                   <div
                     key={factId}
-                    className="p-3 border rounded-lg bg-muted/20 text-xs text-muted-foreground space-y-1"
+                    className="p-3 border border-border rounded-lg bg-muted/20 text-xs text-muted-foreground space-y-1"
                   >
                     <div className="font-semibold text-foreground">Source Fact Not Found</div>
                     <div>
@@ -96,7 +96,10 @@ export const ResumeFactAttributionModal: React.FC<ResumeFactAttributionModalProp
 
               const { fact, evidence } = item;
               return (
-                <div key={fact.id} className="p-3.5 border rounded-lg bg-card space-y-2.5">
+                <div
+                  key={fact.id}
+                  className="p-3.5 border border-border rounded-lg bg-card space-y-2.5"
+                >
                   <div className="flex items-center justify-between gap-2 flex-wrap">
                     <div className="flex items-center gap-1.5">
                       <span className="text-[11px] uppercase font-bold text-muted-foreground px-1.5 py-0.5 bg-muted rounded">

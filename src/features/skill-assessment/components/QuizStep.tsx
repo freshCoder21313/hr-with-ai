@@ -223,7 +223,7 @@ export const QuizStep: React.FC = () => {
                       aria-expanded={hintOpen}
                       aria-controls={hintId}
                       onClick={() => setHintOpen((open) => !open)}
-                      className="shrink-0 rounded-full text-amber-500 hover:text-amber-600 hover:bg-amber-100/50"
+                      className="shrink-0 rounded-full text-warning hover:text-warning hover:bg-warning/10"
                     >
                       <Lightbulb className="h-5 w-5" aria-hidden="true" />
                     </Button>
@@ -232,9 +232,9 @@ export const QuizStep: React.FC = () => {
                 {question.hint && hintOpen && (
                   <div
                     id={hintId}
-                    className="mt-3 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-foreground"
+                    className="mt-3 rounded-lg border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-foreground"
                   >
-                    <span className="mr-1 font-semibold text-amber-700 dark:text-amber-300">
+                    <span className="mr-1 font-semibold text-warning">
                       Hint:
                     </span>
                     {question.hint}
@@ -250,7 +250,7 @@ export const QuizStep: React.FC = () => {
                   return (
                     <label
                       key={index}
-                      className={`flex items-center space-x-4 border rounded-xl p-5 cursor-pointer transition-all duration-300 group ${
+                      className={`flex items-center space-x-4 border border-border rounded-xl p-5 cursor-pointer transition-all duration-300 group ${
                         isSelected
                           ? 'border-primary bg-primary/5 shadow-sm shadow-primary/10'
                           : 'border-border hover:bg-muted/50 hover:border-primary/30'
@@ -265,7 +265,7 @@ export const QuizStep: React.FC = () => {
                             : 'border-muted-foreground group-hover:border-primary/50'
                         }`}
                       >
-                        {isSelected && <div className="w-2 h-2 rounded-full bg-white" />}
+                        {isSelected && <div className="w-2 h-2 rounded-full bg-primary-foreground" />}
                       </div>
                       <input
                         type="radio"

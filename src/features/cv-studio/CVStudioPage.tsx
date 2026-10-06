@@ -128,7 +128,7 @@ const CVStudioPage: React.FC = () => {
             {candidateFactCount > 0 && (
               <Badge
                 variant="default"
-                className="px-1.5 py-0 text-[10px] h-4 bg-amber-600 text-white rounded-full font-bold"
+                className="px-1.5 py-0 text-[10px] h-4 bg-warning text-warning-foreground rounded-full font-bold"
               >
                 {candidateFactCount}
               </Badge>

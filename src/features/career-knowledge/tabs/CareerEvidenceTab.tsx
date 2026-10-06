@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/ui/empty-state';
 import { ShieldCheck, ExternalLink, Github, FileText, User, MessageSquare } from 'lucide-react';
 import type { CareerEvidence, EvidenceSourceType } from '@/types/careerKnowledge';
 
@@ -34,13 +35,13 @@ export const CareerEvidenceTab: React.FC<CareerEvidenceTabProps> = ({
   const getSourceIcon = (source: EvidenceSourceType) => {
     switch (source) {
       case 'github':
-        return <Github className="w-4 h-4 text-slate-800 dark:text-slate-200" aria-hidden="true" />;
+        return <Github className="w-4 h-4 text-foreground/80" aria-hidden="true" />;
       case 'user':
-        return <User className="w-4 h-4 text-emerald-600" aria-hidden="true" />;
+        return <User className="w-4 h-4 text-success" aria-hidden="true" />;
       case 'ai_conversation':
-        return <MessageSquare className="w-4 h-4 text-purple-600" aria-hidden="true" />;
+        return <MessageSquare className="w-4 h-4 text-primary" aria-hidden="true" />;
       case 'uploaded_document':
-        return <FileText className="w-4 h-4 text-blue-600" aria-hidden="true" />;
+        return <FileText className="w-4 h-4 text-info" aria-hidden="true" />;
       default:
         return <FileText className="w-4 h-4 text-muted-foreground" aria-hidden="true" />;
     }
@@ -79,7 +80,7 @@ export const CareerEvidenceTab: React.FC<CareerEvidenceTabProps> = ({
       </div>
 
       {/* Info Callout */}
-      <div className="p-3.5 bg-muted/40 border rounded-xl text-xs flex items-start gap-3">
+      <div className="p-3.5 bg-muted/40 border border-border rounded-xl text-xs flex items-start gap-3">
         <ShieldCheck className="w-5 h-5 text-primary shrink-0 mt-0.5" aria-hidden="true" />
         <div className="space-y-0.5">
           <div className="font-semibold text-foreground">Immutable Provenance Invariant</div>
@@ -103,7 +104,7 @@ export const CareerEvidenceTab: React.FC<CareerEvidenceTabProps> = ({
           aria-label="Filter Evidence by Source"
           value={selectedSource}
           onChange={(e) => setSelectedSource(e.target.value as EvidenceSourceType | 'all')}
-          className="px-3 py-1.5 rounded-lg border bg-background text-xs font-medium focus:outline-none focus:ring-2 focus:ring-primary"
+          className="px-3 py-1.5 rounded-lg border border-input bg-background text-xs font-medium focus:outline-none focus:ring-2 focus:ring-primary"
         >
           {SOURCE_TYPES.map((s) => (
             <option key={s.value} value={s.value}>
@@ -115,51 +116,44 @@ export const CareerEvidenceTab: React.FC<CareerEvidenceTabProps> = ({
 
       {/* Evidence List or Empty States */}
       {evidence.length === 0 ? (
-        <div className="py-12 text-center text-muted-foreground border rounded-xl bg-card space-y-4 p-6">
-          <ShieldCheck className="w-10 h-10 mx-auto text-primary/60" aria-hidden="true" />
-          <div className="space-y-1">
-            <h4 className="text-base font-bold text-foreground">No evidence found</h4>
-            <p className="text-xs max-w-md mx-auto text-muted-foreground">
-              Evidence will appear when imported or acquired. Scan GitHub repositories or import
-              existing resumes to capture immutable evidence records.
-            </p>
-          </div>
-          <div className="flex flex-wrap justify-center gap-2 pt-2">
-            {onOpenResumeImport && (
-              <Button onClick={onOpenResumeImport} size="sm" className="text-xs gap-1.5">
-                <FileText className="w-3.5 h-3.5" aria-hidden="true" /> Import from Resume
+        <EmptyState
+          icon={<ShieldCheck className="w-10 h-10 text-primary/70" aria-hidden="true" />}
+          title="No evidence found"
+          message="Evidence will appear when imported or acquired. Scan GitHub repositories or import existing resumes to capture immutable evidence records."
+          action={
+            <div className="flex flex-wrap justify-center gap-2 pt-1">
+              {onOpenResumeImport && (
+                <Button onClick={onOpenResumeImport} size="sm" className="text-xs gap-1.5">
+                  <FileText className="w-3.5 h-3.5" aria-hidden="true" /> Import from Resume
+                </Button>
+              )}
+              <Button
+                onClick={onOpenGitHubScan}
+                variant="outline"
+                size="sm"
+                className="text-xs gap-1.5"
+              >
+                <Github className="w-3.5 h-3.5" aria-hidden="true" /> Scan GitHub Evidence
               </Button>
-            )}
+            </div>
+          }
+        />
+      ) : filteredEvidence.length === 0 ? (
+        <EmptyState
+          icon={<ShieldCheck className="w-8 h-8 text-muted-foreground/60" aria-hidden="true" />}
+          title="No matching evidence records found"
+          message={`No evidence records recorded under the "${selectedSource}" source filter.`}
+          action={
             <Button
-              onClick={onOpenGitHubScan}
               variant="outline"
               size="sm"
-              className="text-xs gap-1.5"
+              onClick={() => setSelectedSource('all')}
+              className="text-xs"
             >
-              <Github className="w-3.5 h-3.5" aria-hidden="true" /> Scan GitHub Evidence
+              Show All Sources
             </Button>
-          </div>
-        </div>
-      ) : filteredEvidence.length === 0 ? (
-        <div className="py-12 text-center text-muted-foreground border rounded-xl bg-card space-y-3 p-6">
-          <ShieldCheck className="w-8 h-8 mx-auto text-muted-foreground/60" aria-hidden="true" />
-          <div className="space-y-1">
-            <h4 className="text-sm font-semibold text-foreground">
-              No matching evidence records found
-            </h4>
-            <p className="text-xs">
-              No evidence records recorded under the &quot;{selectedSource}&quot; source filter.
-            </p>
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setSelectedSource('all')}
-            className="text-xs"
-          >
-            Show All Sources
-          </Button>
-        </div>
+          }
+        />
       ) : (
         <div className="space-y-3">
           {filteredEvidence.map((ev) => (

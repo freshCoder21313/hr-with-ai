@@ -13,7 +13,7 @@ import { Toaster } from 'sonner';
 import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
 import { GlobalErrorHandler } from '@/components/shared/GlobalErrorHandler';
 import { db } from '@/lib/db';
-import { hasActiveProfile, openApiKeyModal, subscribeToApiKeyModal } from '@/events/apiKeyEvents';
+import { hasActiveProfile, subscribeToApiKeyModal } from '@/events/apiKeyEvents';
 import { useFocusReturn } from '@/components/shared/useFocusReturn';
 import { subscribeToSettingsChanged } from '@/events/settingsEvents';
 import { Button } from '@/components/ui/button';
@@ -41,6 +41,7 @@ const TOAST_MOBILE_OFFSET = { bottom: 'calc(16px + var(--safe-bottom, 0px))' } a
 
 const App: React.FC = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [settingsDefaultTab, setSettingsDefaultTab] = useState('general');
   const settingsFocus = useFocusReturn();
 
   const [showConfigBanner, setShowConfigBanner] = useState(() => {
@@ -79,8 +80,9 @@ const App: React.FC = () => {
     localStorage.setItem('ai_setup_banner_dismissed', 'true');
     setShowConfigBanner(false);
   };
-  const openSettings = (trigger: HTMLElement) => {
+  const openSettings = (trigger: HTMLElement, tab = 'general') => {
     settingsFocus.capture(trigger);
+    setSettingsDefaultTab(tab);
     setIsSettingsOpen(true);
   };
 
@@ -104,6 +106,7 @@ const App: React.FC = () => {
                   <SettingsModal
                     open={isSettingsOpen}
                     onOpenChange={handleSettingsOpenChange}
+                    defaultTab={settingsDefaultTab}
                     restoreFocusTarget={settingsFocus.triggerRef.current}
                   />
                   <Header onOpenSettings={openSettings} />
@@ -118,7 +121,7 @@ const App: React.FC = () => {
                             variant="link"
                             size="sm"
                             className="h-auto p-0 text-warning font-semibold underline underline-offset-2 ml-1"
-                            onClick={() => openApiKeyModal()}
+                            onClick={(e) => openSettings(e.currentTarget, 'ai-profiles')}
                           >
                             Set up now
                           </Button>
@@ -156,6 +159,7 @@ const App: React.FC = () => {
                           path="/career-knowledge"
                           element={<Navigate to="/studio" replace />}
                         />
+                        <Route path="/cv-chat" element={<Navigate to="/studio" replace />} />
                         <Route path="/interview/:id" element={<InterviewRoom />} />
                         <Route path="/feedback/:id" element={<FeedbackView />} />
                         <Route path="*" element={<Navigate to="/" replace />} />

@@ -23,7 +23,13 @@ const ResumeBuilder: React.FC = () => {
   // loading finishes, and React 18's types don't declare the attribute.
   const [exportHost, setExportHost] = useState<HTMLDivElement | null>(null);
 
-  const handleBack = useCallback(() => navigate('/setup'), [navigate]);
+  const handleBack = useCallback(() => {
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate('/studio');
+    }
+  }, [navigate]);
 
   useEffect(() => {
     exportHost?.setAttribute('inert', '');
@@ -74,7 +80,7 @@ const ResumeBuilder: React.FC = () => {
           message="This resume may have been deleted, or the link is no longer valid."
           action={
             <Button onClick={handleBack}>
-              <ChevronLeft className="w-4 h-4" aria-hidden="true" /> Back to dashboard
+              <ChevronLeft className="w-4 h-4" aria-hidden="true" /> Back
             </Button>
           }
         />
@@ -116,7 +122,7 @@ const ResumeBuilder: React.FC = () => {
         continuous
         showSkipButton
         showProgress
-        styles={{ options: { primaryColor: '#8b5cf6' } }}
+        styles={{ options: { primaryColor: '#2563eb' } }}
         callback={(d) => handleTourCallback(d.status)}
       />
 

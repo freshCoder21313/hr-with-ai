@@ -206,8 +206,8 @@ export const QuestionClarificationCard: React.FC<QuestionClarificationCardProps>
         )}
 
         {result && (
-          <div className="p-4 bg-emerald-50 border border-emerald-200 dark:bg-emerald-950/30 dark:border-emerald-900 rounded-lg space-y-3">
-            <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300 font-semibold text-sm">
+          <div className="p-4 bg-success/10 border border-success/30 rounded-lg space-y-3">
+            <div className="flex items-center gap-2 text-success font-semibold text-sm">
               <CheckCircle2 className="w-4 h-4" aria-hidden="true" />
               <span>Answer Recorded and Normalized</span>
             </div>
@@ -222,8 +222,8 @@ export const QuestionClarificationCard: React.FC<QuestionClarificationCardProps>
                 </li>
               ))}
             </ul>
-            <div className="flex items-center justify-between gap-2 pt-2 border-t border-emerald-200 dark:border-emerald-800 flex-wrap">
-              <span className="text-[11px] text-emerald-800 dark:text-emerald-300">
+            <div className="flex items-center justify-between gap-2 pt-2 border-t border-success/30 flex-wrap">
+              <span className="text-[11px] text-muted-foreground">
                 Go to Candidate Review to explicitly confirm these facts.
               </span>
               {onNavigateToReview && (
@@ -231,7 +231,7 @@ export const QuestionClarificationCard: React.FC<QuestionClarificationCardProps>
                   variant="outline"
                   size="sm"
                   onClick={onNavigateToReview}
-                  className="text-xs bg-white dark:bg-slate-900 text-emerald-700 dark:text-emerald-300 border-emerald-300 hover:bg-emerald-50"
+                  className="text-xs bg-background text-success border-success/30 hover:bg-success/10"
                 >
                   Go to Candidate Review
                 </Button>

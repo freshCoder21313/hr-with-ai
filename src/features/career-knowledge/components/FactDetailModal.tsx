@@ -137,11 +137,13 @@ export const FactDetailModal: React.FC<FactDetailModalProps> = ({
           <div className="space-y-6 py-2">
             {/* Superseded Warning */}
             {fact.supersededBy && (
-              <div className="p-3 bg-amber-50 border border-amber-200 dark:bg-amber-950/30 dark:border-amber-900 rounded-lg text-amber-800 dark:text-amber-300 text-sm flex items-start gap-2">
+              <div className="p-3 bg-warning/10 border border-warning/30 rounded-lg text-warning text-sm flex items-start gap-2">
                 <History className="w-4 h-4 mt-0.5 shrink-0" aria-hidden="true" />
                 <div>
-                  <div className="font-semibold">This claim has been superseded</div>
-                  <div className="text-xs mt-0.5">
+                  <div className="font-semibold text-foreground">
+                    This claim has been superseded
+                  </div>
+                  <div className="text-xs mt-0.5 text-muted-foreground">
                     A newer version of this fact was created. This historical record is preserved
                     for provenance.
                   </div>
@@ -154,7 +156,7 @@ export const FactDetailModal: React.FC<FactDetailModalProps> = ({
               <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Canonical Claim
               </label>
-              <div className="p-3 rounded-lg border bg-card text-card-foreground text-base leading-relaxed">
+              <div className="p-3 rounded-lg border border-border bg-card text-card-foreground text-base leading-relaxed">
                 {fact.claim}
               </div>
             </div>
@@ -165,7 +167,7 @@ export const FactDetailModal: React.FC<FactDetailModalProps> = ({
                 <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
                   <Tag className="w-3.5 h-3.5" /> Structured Properties
                 </label>
-                <div className="p-3 rounded-lg border bg-muted/40 font-mono text-xs overflow-x-auto space-y-1">
+                <div className="p-3 rounded-lg border border-border bg-muted/40 font-mono text-xs overflow-x-auto space-y-1">
                   {Object.entries(fact.structured).map(([k, v]) => (
                     <div key={k} className="flex gap-2">
                       <span className="font-semibold text-primary">{k}:</span>
@@ -179,7 +181,7 @@ export const FactDetailModal: React.FC<FactDetailModalProps> = ({
             )}
 
             {/* Timestamps */}
-            <div className="grid grid-cols-2 gap-4 text-xs text-muted-foreground p-3 rounded-lg border bg-muted/20">
+            <div className="grid grid-cols-2 gap-4 text-xs text-muted-foreground p-3 rounded-lg border border-border bg-muted/20">
               <div className="flex items-center gap-1.5">
                 <Calendar className="w-3.5 h-3.5" />
                 <span>Created: {new Date(fact.createdAt).toLocaleString()}</span>
@@ -197,13 +199,16 @@ export const FactDetailModal: React.FC<FactDetailModalProps> = ({
                 {detail.evidence.length})
               </label>
               {detail.evidence.length === 0 ? (
-                <div className="p-3 text-xs text-muted-foreground border rounded-lg bg-muted/10 italic">
+                <div className="p-3 text-xs text-muted-foreground border border-border rounded-lg bg-muted/10 italic">
                   No external or resume evidence explicitly attached.
                 </div>
               ) : (
                 <div className="space-y-2">
                   {detail.evidence.map((ev) => (
-                    <div key={ev.id} className="p-3 border rounded-lg bg-card text-sm space-y-1.5">
+                    <div
+                      key={ev.id}
+                      className="p-3 border border-border rounded-lg bg-card text-sm space-y-1.5"
+                    >
                       <div className="flex items-center justify-between flex-wrap gap-2 text-xs">
                         <span className="font-semibold uppercase tracking-wide px-1.5 py-0.5 bg-muted rounded text-primary">
                           {ev.sourceType.replace('_', ' ')}
@@ -246,7 +251,10 @@ export const FactDetailModal: React.FC<FactDetailModalProps> = ({
                 </label>
                 <div className="space-y-1.5">
                   {detail.notes.map((note) => (
-                    <div key={note.id} className="p-2.5 border rounded-lg bg-muted/20 text-xs">
+                    <div
+                      key={note.id}
+                      className="p-2.5 border border-border rounded-lg bg-muted/20 text-xs"
+                    >
                       {note.text}
                     </div>
                   ))}
@@ -263,7 +271,7 @@ export const FactDetailModal: React.FC<FactDetailModalProps> = ({
                 variant="outline"
                 size="sm"
                 onClick={handleInvalidate}
-                className="gap-1.5 text-amber-700 border-amber-300 hover:bg-amber-50 dark:text-amber-400"
+                className="gap-1.5 text-warning border-warning/30 hover:bg-warning/10"
               >
                 <Undo2 className="w-3.5 h-3.5" /> Request Re-review
               </Button>
@@ -284,7 +292,7 @@ export const FactDetailModal: React.FC<FactDetailModalProps> = ({
                   variant="default"
                   size="sm"
                   onClick={handleConfirm}
-                  className="gap-1 bg-emerald-600 hover:bg-emerald-700 text-white"
+                  className="gap-1 bg-success hover:bg-success/90 text-success-foreground"
                 >
                   <Check className="w-3.5 h-3.5" /> Confirm
                 </Button>

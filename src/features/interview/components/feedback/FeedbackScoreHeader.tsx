@@ -23,10 +23,10 @@ export const FeedbackScoreHeader: React.FC<FeedbackScoreHeaderProps> = ({
 }) => {
   const scoreClass =
     feedback.score >= 8
-      ? 'border-emerald-500 text-emerald-600 bg-emerald-50 dark:border-emerald-500/60 dark:text-emerald-400 dark:bg-emerald-950/30'
+      ? 'border-success text-success bg-success/10'
       : feedback.score >= 6
-        ? 'border-yellow-500 text-yellow-600 bg-yellow-50 dark:border-yellow-500/60 dark:text-yellow-400 dark:bg-yellow-950/30'
-        : 'border-red-500 text-red-600 bg-red-50 dark:border-red-500/60 dark:text-red-400 dark:bg-red-950/30';
+        ? 'border-warning text-warning bg-warning/10'
+        : 'border-destructive text-destructive bg-destructive/10';
 
   const radarData = buildRadarData(feedback);
   const hasRadarData = radarData.length >= 3;
@@ -44,7 +44,7 @@ export const FeedbackScoreHeader: React.FC<FeedbackScoreHeaderProps> = ({
               {(feedback.badges || []).map((badge, idx) => (
                 <div
                   key={idx}
-                  className="flex items-center px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-bold border border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-500/40"
+                  className="flex items-center px-3 py-1 bg-warning/15 text-warning rounded-full text-xs font-bold border border-warning/30"
                 >
                   <Medal className="w-3 h-3 mr-1" />
                   {badge}
@@ -71,15 +71,13 @@ export const FeedbackScoreHeader: React.FC<FeedbackScoreHeaderProps> = ({
         <div className="space-y-2">
           <div className="flex justify-between items-center text-sm font-medium text-muted-foreground">
             <span className="flex items-center gap-2">
-              <Zap className="w-4 h-4 text-purple-500" /> Resilience
+              <Zap className="w-4 h-4 text-primary" /> Resilience
             </span>
-            <span className="text-purple-600 dark:text-purple-400 font-bold">
-              {feedback.resilienceScore || 'N/A'}/10
-            </span>
+            <span className="text-primary font-bold">{feedback.resilienceScore || 'N/A'}/10</span>
           </div>
           <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
             <div
-              className="h-full bg-purple-500"
+              className="h-full bg-primary"
               style={{ width: `${(feedback.resilienceScore || 0) * 10}%` }}
             />
           </div>
@@ -88,15 +86,13 @@ export const FeedbackScoreHeader: React.FC<FeedbackScoreHeaderProps> = ({
         <div className="space-y-2">
           <div className="flex justify-between items-center text-sm font-medium text-muted-foreground">
             <span className="flex items-center gap-2">
-              <Building2 className="w-4 h-4 text-blue-500" /> Culture Fit
+              <Building2 className="w-4 h-4 text-info" /> Culture Fit
             </span>
-            <span className="text-blue-600 dark:text-blue-400 font-bold">
-              {feedback.cultureFitScore || 'N/A'}/10
-            </span>
+            <span className="text-info font-bold">{feedback.cultureFitScore || 'N/A'}/10</span>
           </div>
           <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
             <div
-              className="h-full bg-blue-500"
+              className="h-full bg-info"
               style={{ width: `${(feedback.cultureFitScore || 0) * 10}%` }}
             />
           </div>

@@ -199,10 +199,10 @@ export const CVJobPanel: React.FC<CVJobPanelProps> = ({
                     variant="ghost"
                     size="icon-sm"
                     className={cn(
-                      'shrink-0 hover:bg-amber-500/10',
+                      'shrink-0 hover:bg-warning/10',
                       isSelectedMain
-                        ? 'text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300'
-                        : 'text-muted-foreground hover:text-amber-600 dark:hover:text-amber-400'
+                        ? 'text-warning hover:text-warning'
+                        : 'text-muted-foreground hover:text-warning'
                     )}
                     onClick={() => {
                       if (selectedResumeId) onSetMainResume(selectedResumeId);

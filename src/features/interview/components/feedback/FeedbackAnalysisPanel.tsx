@@ -45,7 +45,7 @@ export const FeedbackAnalysisPanel: React.FC<FeedbackAnalysisPanelProps> = ({
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <BarChart2 className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+            <BarChart2 className="w-5 h-5 text-primary" />
             Current Performance Flow
           </CardTitle>
         </CardHeader>
@@ -59,7 +59,7 @@ export const FeedbackAnalysisPanel: React.FC<FeedbackAnalysisPanelProps> = ({
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <BarChart2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+            <BarChart2 className="w-5 h-5 text-success" />
             Potential & Improvement Path
           </CardTitle>
         </CardHeader>
@@ -73,37 +73,34 @@ export const FeedbackAnalysisPanel: React.FC<FeedbackAnalysisPanelProps> = ({
     </div>
 
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <Card className="bg-emerald-500/10 border-emerald-500/20">
+      <Card className="bg-success/10 border-success/20">
         <CardHeader>
-          <CardTitle className="flex items-center text-emerald-800 dark:text-emerald-400">
+          <CardTitle className="flex items-center text-success">
             <CheckCircle2 className="w-5 h-5 mr-2" /> Strengths
           </CardTitle>
         </CardHeader>
         <CardContent>
           <ul className="space-y-3">
             {feedback.strengths.map((s, i) => (
-              <li
-                key={i}
-                className="flex items-start text-emerald-700 dark:text-emerald-100 text-sm"
-              >
-                <span className="mr-2 text-emerald-800 dark:text-emerald-400 font-bold">•</span>
+              <li key={i} className="flex items-start text-foreground text-sm">
+                <span className="mr-2 text-success font-bold">•</span>
                 {s}
               </li>
             ))}
           </ul>
         </CardContent>
       </Card>
-      <Card className="bg-red-500/10 border-red-500/20">
+      <Card className="bg-destructive/10 border-destructive/20">
         <CardHeader>
-          <CardTitle className="flex items-center text-red-800 dark:text-red-400">
+          <CardTitle className="flex items-center text-destructive">
             <AlertCircle className="w-5 h-5 mr-2" /> Areas for Improvement
           </CardTitle>
         </CardHeader>
         <CardContent>
           <ul className="space-y-3">
             {feedback.weaknesses.map((w, i) => (
-              <li key={i} className="flex items-start text-red-700 dark:text-red-100 text-sm">
-                <span className="mr-2 text-red-800 dark:text-red-400 font-bold">•</span> {w}
+              <li key={i} className="flex items-start text-foreground text-sm">
+                <span className="mr-2 text-destructive font-bold">•</span> {w}
               </li>
             ))}
           </ul>
@@ -115,7 +112,7 @@ export const FeedbackAnalysisPanel: React.FC<FeedbackAnalysisPanelProps> = ({
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <BookOpen className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+            <BookOpen className="w-5 h-5 text-primary" />
             Recommended Learning Resources
           </CardTitle>
         </CardHeader>
@@ -127,9 +124,9 @@ export const FeedbackAnalysisPanel: React.FC<FeedbackAnalysisPanelProps> = ({
                 href={`https://www.google.com/search?q=${encodeURIComponent(res.searchQuery)}`}
                 target="_blank"
                 rel="noreferrer"
-                className="group block p-4 rounded-lg border border-border hover:border-purple-500 hover:bg-purple-500/10 transition-all text-left"
+                className="group block p-4 rounded-lg border border-border hover:border-primary hover:bg-primary/5 transition-all text-left"
               >
-                <h4 className="font-semibold text-foreground mb-1 group-hover:text-purple-500 flex items-center justify-between text-sm">
+                <h4 className="font-semibold text-foreground mb-1 group-hover:text-primary flex items-center justify-between text-sm">
                   {res.topic}
                   <ExternalLink
                     size={14}
@@ -159,8 +156,8 @@ export const FeedbackAnalysisPanel: React.FC<FeedbackAnalysisPanelProps> = ({
                 </span>
                 {item.analysis}
               </div>
-              <div className="text-sm text-blue-900 dark:text-blue-100 bg-blue-500/10 p-4 rounded-lg border border-blue-500/20">
-                <span className="font-semibold block mb-2 text-blue-700 dark:text-blue-300 uppercase text-xs tracking-wider">
+              <div className="text-sm text-foreground bg-primary/10 p-4 rounded-lg border border-primary/20">
+                <span className="font-semibold block mb-2 text-primary uppercase text-xs tracking-wider">
                   Better Approach
                 </span>
                 {item.improvement}

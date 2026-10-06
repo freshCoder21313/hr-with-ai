@@ -21,15 +21,12 @@ export const VerificationBadge: React.FC<VerificationBadgeProps> = ({
         <Badge
           variant="outline"
           className={cn(
-            'bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800 font-medium gap-1.5',
+            'bg-success/10 text-success border-success/30 font-medium gap-1.5',
             className
           )}
         >
           {showIcon && (
-            <CheckCircle2
-              className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0"
-              aria-hidden="true"
-            />
+            <CheckCircle2 className="w-3.5 h-3.5 text-success shrink-0" aria-hidden="true" />
           )}
           <span>Confirmed</span>
         </Badge>
@@ -39,15 +36,12 @@ export const VerificationBadge: React.FC<VerificationBadgeProps> = ({
         <Badge
           variant="outline"
           className={cn(
-            'bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800 font-medium gap-1.5',
+            'bg-warning/10 text-warning border-warning/30 font-medium gap-1.5',
             className
           )}
         >
           {showIcon && (
-            <AlertCircle
-              className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0"
-              aria-hidden="true"
-            />
+            <AlertCircle className="w-3.5 h-3.5 text-warning shrink-0" aria-hidden="true" />
           )}
           <span>Needs confirmation</span>
         </Badge>
@@ -56,17 +50,9 @@ export const VerificationBadge: React.FC<VerificationBadgeProps> = ({
       return (
         <Badge
           variant="outline"
-          className={cn(
-            'bg-blue-50 text-blue-700 border-blue-300 dark:bg-blue-950/40 dark:text-blue-400 dark:border-blue-800 font-medium gap-1.5',
-            className
-          )}
+          className={cn('bg-info/10 text-info border-info/30 font-medium gap-1.5', className)}
         >
-          {showIcon && (
-            <Eye
-              className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0"
-              aria-hidden="true"
-            />
-          )}
+          {showIcon && <Eye className="w-3.5 h-3.5 text-info shrink-0" aria-hidden="true" />}
           <span>Observed</span>
         </Badge>
       );
@@ -75,15 +61,12 @@ export const VerificationBadge: React.FC<VerificationBadgeProps> = ({
         <Badge
           variant="outline"
           className={cn(
-            'bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700 font-medium gap-1.5',
+            'bg-muted text-muted-foreground border-border font-medium gap-1.5',
             className
           )}
         >
           {showIcon && (
-            <XCircle
-              className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 shrink-0"
-              aria-hidden="true"
-            />
+            <XCircle className="w-3.5 h-3.5 text-muted-foreground shrink-0" aria-hidden="true" />
           )}
           <span>Rejected</span>
         </Badge>

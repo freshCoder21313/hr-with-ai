@@ -1,6 +1,16 @@
 import React, { useState } from 'react';
 import { Resume } from '@/types';
-import { FileText, Trash2, Check, Clock, Edit, Wand2, Star, MessageSquare } from 'lucide-react';
+import {
+  FileText,
+  Trash2,
+  Check,
+  Clock,
+  Edit,
+  Wand2,
+  Star,
+  MessageSquare,
+  Github,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { GitHubImportModal } from '@/features/resume-builder';
@@ -28,17 +38,6 @@ const ResumeList: React.FC<ResumeListProps> = ({
   const navigate = useNavigate();
   const [isGitHubModalOpen, setIsGitHubModalOpen] = useState(false);
 
-  if (resumes.length === 0) {
-    return (
-      <div className="border border-dashed border-border rounded-lg p-4 bg-muted/20 text-center my-3">
-        <p className="text-xs text-muted-foreground leading-relaxed">
-          No saved CVs yet. Upload a PDF above or paste your text below — it will be saved for
-          future sessions.
-        </p>
-      </div>
-    );
-  }
-
   const formatDate = (timestamp: number) => {
     return new Intl.DateTimeFormat('en-US', {
       month: 'short',
@@ -50,182 +49,206 @@ const ResumeList: React.FC<ResumeListProps> = ({
 
   return (
     <div className="space-y-3 mt-4">
-      <h3 className="text-sm font-medium text-foreground">Saved Resumes</h3>
+      <div className="flex items-center justify-between gap-2">
+        <h3 className="text-sm font-medium text-foreground">Saved Resumes</h3>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => setIsGitHubModalOpen(true)}
+          className="h-8 gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+        >
+          <Github className="w-3.5 h-3.5" />
+          <span>Import from GitHub</span>
+        </Button>
+      </div>
 
-      <div className="border rounded-md bg-muted/50 p-2 max-h-[min(50dvh,20rem)] md:max-h-[200px] overflow-y-auto space-y-2 border-border">
-        {resumes.map((resume) => {
-          const displayName = resume.fileName || 'Untitled Resume';
-          const isSelected = selectedResumeId === resume.id;
-          return (
-            <div
-              key={resume.id}
-              className={`flex flex-wrap items-center justify-between gap-2 p-3 rounded-md border transition-colors ${
-                isSelected
-                  ? 'bg-primary/5 border-primary/20 ring-1 ring-primary/20'
-                  : 'bg-card border-border hover:border-primary/20 hover:bg-muted'
-              }`}
-              onClick={(e) => {
-                if ((e.target as HTMLElement).closest('button')) return;
-                onSelect(resume);
-              }}
-            >
-              <button
-                type="button"
-                aria-pressed={isSelected}
-                aria-label={`${isSelected ? 'Deselect' : 'Select'} resume ${displayName}`}
-                onClick={() => onSelect(resume)}
-                className="flex flex-1 min-w-0 items-start gap-3 overflow-hidden text-left rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+      {resumes.length === 0 ? (
+        <div className="border border-dashed border-border rounded-lg p-4 bg-muted/20 text-center my-3">
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            No saved CVs yet. Upload a PDF above, import from GitHub, or paste your text below — it
+            will be saved for future sessions.
+          </p>
+        </div>
+      ) : (
+        <div className="border rounded-md bg-muted/50 p-2 max-h-[min(50dvh,20rem)] md:max-h-[200px] overflow-y-auto space-y-2 border-border">
+          {resumes.map((resume) => {
+            const displayName = resume.fileName || 'Untitled Resume';
+            const isSelected = selectedResumeId === resume.id;
+            return (
+              <div
+                key={resume.id}
+                className={`flex flex-wrap items-center justify-between gap-2 p-3 rounded-md border transition-colors ${
+                  isSelected
+                    ? 'bg-primary/5 border-primary/20 ring-1 ring-primary/20'
+                    : 'bg-card border-border hover:border-primary/20 hover:bg-muted'
+                }`}
+                onClick={(e) => {
+                  if ((e.target as HTMLElement).closest('button')) return;
+                  onSelect(resume);
+                }}
               >
-                <div
-                  className={`mt-1 p-1.5 rounded-full shrink-0 ${isSelected ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}
+                <button
+                  type="button"
+                  aria-pressed={isSelected}
+                  aria-label={`${isSelected ? 'Deselect' : 'Select'} resume ${displayName}`}
+                  onClick={() => onSelect(resume)}
+                  className="flex flex-1 min-w-0 items-start gap-3 overflow-hidden text-left rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                 >
-                  <FileText className="w-4 h-4" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p
-                    className={`text-sm font-medium truncate ${isSelected ? 'text-primary' : 'text-foreground'}`}
+                  <div
+                    className={`mt-1 p-1.5 rounded-full shrink-0 ${isSelected ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}
                   >
-                    {displayName}
-                  </p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <Clock className="w-3 h-3 text-muted-foreground" />
-                    <span className="text-xs text-muted-foreground">
-                      {formatDate(resume.createdAt)}
-                    </span>
+                    <FileText className="w-4 h-4" />
                   </div>
-                </div>
-              </button>
+                  <div className="flex-1 min-w-0">
+                    <p
+                      className={`text-sm font-medium truncate ${isSelected ? 'text-primary' : 'text-foreground'}`}
+                    >
+                      {displayName}
+                    </p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Clock className="w-3 h-3 text-muted-foreground" />
+                      <span className="text-xs text-muted-foreground">
+                        {formatDate(resume.createdAt)}
+                      </span>
+                    </div>
+                  </div>
+                </button>
 
-              <div className="flex items-center gap-2 ml-auto">
-                {/* Main CV Toggle */}
-                {onToggleMain && (
+                <div className="flex items-center gap-2 ml-auto">
+                  {/* Main CV Toggle */}
+                  {onToggleMain && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon-sm"
+                          aria-label={
+                            resume.isMain
+                              ? `${displayName} is your Main CV`
+                              : `Mark ${displayName} as Main CV`
+                          }
+                          className={
+                            resume.isMain
+                              ? 'text-warning hover:text-warning hover:bg-warning/10'
+                              : 'text-muted-foreground hover:text-warning hover:bg-warning/10'
+                          }
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            onToggleMain(resume);
+                          }}
+                        >
+                          <Star
+                            className="w-4 h-4"
+                            fill={resume.isMain ? 'currentColor' : 'none'}
+                          />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{resume.isMain ? 'This is your Main CV' : 'Mark as Main CV'}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
+
+                  {/* Main CV Actions */}
+                  {resume.isMain && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon-sm"
+                          aria-label={`Chat with AI to update ${displayName}`}
+                          className="text-primary hover:text-primary hover:bg-primary/10"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            navigate('/studio');
+                          }}
+                        >
+                          <MessageSquare className="w-4 h-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Chat with AI to Update</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
+
+                  {onTailor && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon-sm"
+                          aria-label={`Tailor ${displayName} to job`}
+                          className="text-muted-foreground hover:text-primary hover:bg-primary/10"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            onTailor(resume);
+                          }}
+                        >
+                          <Wand2 className="w-4 h-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Tailor to Job</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
                         type="button"
                         variant="ghost"
                         size="icon-sm"
-                        aria-label={
-                          resume.isMain
-                            ? `${displayName} is your Main CV`
-                            : `Mark ${displayName} as Main CV`
-                        }
-                        className={
-                          resume.isMain
-                            ? 'text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 hover:bg-amber-500/10'
-                            : 'text-muted-foreground hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-500/10'
-                        }
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          onToggleMain(resume);
-                        }}
-                      >
-                        <Star className="w-4 h-4" fill={resume.isMain ? 'currentColor' : 'none'} />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>{resume.isMain ? 'This is your Main CV' : 'Mark as Main CV'}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                )}
-
-                {/* Main CV Actions */}
-                {resume.isMain && (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon-sm"
-                        aria-label={`Chat with AI to update ${displayName}`}
-                        className="text-primary hover:text-primary hover:bg-primary/10"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          navigate('/cv-chat');
-                        }}
-                      >
-                        <MessageSquare className="w-4 h-4" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Chat with AI to Update</p>
-                    </TooltipContent>
-                  </Tooltip>
-                )}
-
-                {onTailor && (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon-sm"
-                        aria-label={`Tailor ${displayName} to job`}
+                        aria-label={`Edit ${displayName}`}
                         className="text-muted-foreground hover:text-primary hover:bg-primary/10"
                         onClick={(e) => {
-                          e.preventDefault();
+                          e.preventDefault(); // Prevent form submission
                           e.stopPropagation();
-                          onTailor(resume);
+                          if (resume.id) navigate(`/resumes/${resume.id}/edit`);
                         }}
                       >
-                        <Wand2 className="w-4 h-4" />
+                        <Edit className="w-4 h-4" />
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>Tailor to Job</p>
+                      <p>Edit Resume</p>
                     </TooltipContent>
                   </Tooltip>
-                )}
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon-sm"
-                      aria-label={`Edit ${displayName}`}
-                      className="text-muted-foreground hover:text-primary hover:bg-primary/10"
-                      onClick={(e) => {
-                        e.preventDefault(); // Prevent form submission
-                        e.stopPropagation();
-                        if (resume.id) navigate(`/resumes/${resume.id}/edit`);
-                      }}
-                    >
-                      <Edit className="w-4 h-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Edit Resume</p>
-                  </TooltipContent>
-                </Tooltip>
-                {isSelected && <Check className="w-4 h-4 text-primary" />}
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon-sm"
-                      aria-label={`Delete ${displayName}`}
-                      className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                      onClick={(e) => {
-                        e.preventDefault(); // Prevent form submission
-                        e.stopPropagation();
-                        if (resume.id) onDelete(resume.id);
-                      }}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Delete Resume</p>
-                  </TooltipContent>
-                </Tooltip>
+                  {isSelected && <Check className="w-4 h-4 text-primary" />}
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon-sm"
+                        aria-label={`Delete ${displayName}`}
+                        className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                        onClick={(e) => {
+                          e.preventDefault(); // Prevent form submission
+                          e.stopPropagation();
+                          if (resume.id) onDelete(resume.id);
+                        }}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Delete Resume</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
               </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
 
       <GitHubImportModal
         isOpen={isGitHubModalOpen}

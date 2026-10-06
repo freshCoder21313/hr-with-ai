@@ -134,7 +134,7 @@ export const CVChatPanel: React.FC<CVChatPanelProps> = ({
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
           {pendingChanges && (
-            <span className="text-[10px] bg-amber-500/10 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-full animate-pulse shrink-0">
+            <span className="text-[10px] bg-warning/10 text-warning px-2 py-0.5 rounded-full animate-pulse shrink-0 font-medium">
               {pendingChanges.length} pending
             </span>
           )}
@@ -154,7 +154,7 @@ export const CVChatPanel: React.FC<CVChatPanelProps> = ({
                   {candidateFactCount !== undefined && candidateFactCount > 0 && (
                     <Badge
                       variant="default"
-                      className="px-1.5 py-0 text-[10px] h-4 bg-amber-600 text-white rounded-full font-bold ml-0.5"
+                      className="px-1.5 py-0 text-[10px] h-4 bg-warning text-warning-foreground rounded-full font-bold ml-0.5"
                       aria-label={`${candidateFactCount} facts to review`}
                     >
                       {candidateFactCount}
@@ -256,7 +256,7 @@ export const CVChatPanel: React.FC<CVChatPanelProps> = ({
 
         <div className="grid grid-cols-2 gap-2">
           <div className="relative flex items-center group">
-            <div className="absolute left-2.5 text-amber-500 opacity-60 group-focus-within:opacity-100 transition-opacity pointer-events-none">
+            <div className="absolute left-2.5 text-warning opacity-70 group-focus-within:opacity-100 transition-opacity pointer-events-none">
               <FileSearch className="w-3.5 h-3.5" />
             </div>
             <select
@@ -280,7 +280,7 @@ export const CVChatPanel: React.FC<CVChatPanelProps> = ({
           </div>
 
           <div className="relative flex items-center group">
-            <div className="absolute left-2.5 text-emerald-500 opacity-60 group-focus-within:opacity-100 transition-opacity pointer-events-none">
+            <div className="absolute left-2.5 text-success opacity-70 group-focus-within:opacity-100 transition-opacity pointer-events-none">
               <Target className="w-3.5 h-3.5" />
             </div>
             <select
@@ -309,8 +309,8 @@ export const CVChatPanel: React.FC<CVChatPanelProps> = ({
       />
 
       {pendingChanges && pendingChanges.length > 0 && (
-        <div className="border-t border-border bg-amber-500/5 p-3 space-y-2 max-h-48 overflow-y-auto shrink-0">
-          <div className="flex items-center gap-1.5 text-xs text-amber-700 dark:text-amber-400 font-medium">
+        <div className="border-t border-border bg-warning/5 p-3 space-y-2 max-h-48 overflow-y-auto shrink-0">
+          <div className="flex items-center gap-1.5 text-xs text-warning font-medium">
             <AlertCircle size={13} />
             <span>Proposed Changes — review before accepting</span>
           </div>

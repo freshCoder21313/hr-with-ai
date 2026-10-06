@@ -92,7 +92,7 @@ export const CVJobCard: React.FC<CVJobCardProps> = ({
             </Button>
           )}
           {isDone && (
-            <Badge className="bg-emerald-700 text-white hover:bg-emerald-700/90 dark:bg-emerald-500 dark:text-emerald-950 text-[10px] h-5 px-1.5">
+            <Badge className="bg-success text-success-foreground hover:bg-success/90 text-[10px] h-5 px-1.5">
               <CheckCircle2 className="w-2.5 h-2.5 mr-0.5" aria-hidden="true" /> Done
             </Badge>
           )}

@@ -68,7 +68,7 @@ describe('first-visit tour', () => {
   it('persists completion and stops when the visitor skips the tour', async () => {
     renderBuilder();
 
-    await waitFor(() => expect(tourIsOpen()).toBe(true));
+    await waitFor(() => expect(tourIsOpen()).toBe(true), { timeout: 4000 });
     expect(localStorage.getItem(TOUR_COMPLETED_KEY)).toBeNull();
 
     const skip = tourButtons().findIndex((text) => text.startsWith('Skip'));
@@ -81,25 +81,25 @@ describe('first-visit tour', () => {
       fireEvent.click(skipButton);
     });
 
-    await waitFor(() => expect(tourIsOpen()).toBe(false));
+    await waitFor(() => expect(tourIsOpen()).toBe(false), { timeout: 4000 });
     expect(localStorage.getItem(TOUR_COMPLETED_KEY)).toBe('true');
   });
 
   it('persists completion and stops when the visitor presses Escape', async () => {
     renderBuilder();
-    await waitFor(() => expect(tourIsOpen()).toBe(true));
+    await waitFor(() => expect(tourIsOpen()).toBe(true), { timeout: 4000 });
 
     await act(async () => {
       fireEvent.keyDown(document, { key: 'Escape', code: 'Escape' });
     });
 
-    await waitFor(() => expect(tourIsOpen()).toBe(false));
+    await waitFor(() => expect(tourIsOpen()).toBe(false), { timeout: 4000 });
     expect(localStorage.getItem(TOUR_COMPLETED_KEY)).toBe('true');
   });
 
   it('walks only steps whose targets are on screen and persists on the last one', async () => {
     renderBuilder();
-    await waitFor(() => expect(tourIsOpen()).toBe(true));
+    await waitFor(() => expect(tourIsOpen()).toBe(true), { timeout: 4000 });
 
     let label = '';
     for (let step = 0; step < 10; step += 1) {

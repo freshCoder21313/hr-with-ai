@@ -65,32 +65,32 @@ export const ChangeReviewCard: React.FC<ChangeReviewCardProps> = ({
           icon: Plus,
           label: 'Add',
           color:
-            'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/30',
-          accent: 'border-l-emerald-500',
+            'bg-success/10 text-success border-success/30',
+          accent: 'border-l-success',
         };
       case 'delete':
         return {
           icon: Trash2,
           label: 'Delete',
           color:
-            'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-500/15 dark:text-rose-300 dark:border-rose-500/30',
-          accent: 'border-l-rose-500',
+            'bg-destructive/10 text-destructive border-destructive/30',
+          accent: 'border-l-destructive',
         };
       case 'rewrite':
         return {
           icon: RefreshCw,
           label: 'Rewrite',
           color:
-            'bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-500/15 dark:text-violet-300 dark:border-violet-500/30',
-          accent: 'border-l-violet-500',
+            'bg-primary/10 text-primary border-primary/30',
+          accent: 'border-l-primary',
         };
       default:
         return {
           icon: RefreshCw,
           label: 'Update',
           color:
-            'bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-500/15 dark:text-sky-300 dark:border-sky-500/30',
-          accent: 'border-l-sky-500',
+            'bg-info/10 text-info border-info/30',
+          accent: 'border-l-info',
         };
     }
   };
@@ -191,7 +191,7 @@ export const ChangeReviewCard: React.FC<ChangeReviewCardProps> = ({
                     {status === 'added' && (
                       <Badge
                         variant="outline"
-                        className="text-[10px] h-4 px-1 border-emerald-500 text-emerald-700 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-950/20"
+                        className="text-[10px] h-4 px-1 border-success/30 text-success bg-success/10"
                       >
                         Added
                       </Badge>
@@ -199,7 +199,7 @@ export const ChangeReviewCard: React.FC<ChangeReviewCardProps> = ({
                     {status === 'changed' && (
                       <Badge
                         variant="outline"
-                        className="text-[10px] h-4 px-1 border-blue-500 text-blue-700 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-950/20"
+                        className="text-[10px] h-4 px-1 border-info/30 text-info bg-info/10"
                       >
                         Changed
                       </Badge>
@@ -234,21 +234,21 @@ export const ChangeReviewCard: React.FC<ChangeReviewCardProps> = ({
                     <div
                       className={`w-1.5 h-1.5 rounded-full shrink-0 ${
                         status === 'added'
-                          ? 'bg-emerald-500'
+                          ? 'bg-success'
                           : status === 'changed'
-                            ? 'bg-blue-500'
+                            ? 'bg-info'
                             : 'bg-muted-foreground/60'
                       }`}
                     />
                     <span className="truncate max-w-[170px] font-medium">{title}</span>
                   </div>
                   {status === 'added' && (
-                    <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-medium shrink-0">
+                    <span className="text-[10px] text-success font-medium shrink-0">
                       Added
                     </span>
                   )}
                   {status === 'changed' && (
-                    <span className="text-[10px] text-blue-600 dark:text-blue-400 font-medium shrink-0">
+                    <span className="text-[10px] text-info font-medium shrink-0">
                       Changed
                     </span>
                   )}

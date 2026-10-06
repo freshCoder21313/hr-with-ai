@@ -144,7 +144,7 @@ export const CareerQuestionsTab: React.FC<CareerQuestionsTabProps> = ({
             {requirements.map((r) => (
               <div
                 key={r.key}
-                className="p-2.5 border rounded-lg bg-card text-xs flex items-center justify-between gap-2"
+                className="p-2.5 border border-border rounded-lg bg-card text-xs flex items-center justify-between gap-2"
               >
                 <div className="truncate">
                   <div className="font-semibold text-foreground truncate">{r.key}</div>
@@ -159,7 +159,7 @@ export const CareerQuestionsTab: React.FC<CareerQuestionsTabProps> = ({
 
           <form
             onSubmit={handleAddRequirement}
-            className="pt-2 border-t flex flex-col sm:flex-row gap-2"
+            className="pt-2 border-t border-border flex flex-col sm:flex-row gap-2"
           >
             <Input
               value={newKey}
@@ -177,7 +177,7 @@ export const CareerQuestionsTab: React.FC<CareerQuestionsTabProps> = ({
               aria-label="Requirement Category"
               value={newCat}
               onChange={(e) => setNewCat(e.target.value)}
-              className="px-2 py-1 rounded border text-xs bg-background"
+              className="px-2 py-1 rounded border border-input text-xs bg-background"
             >
               <option value="skill">Skill</option>
               <option value="experience">Experience</option>
@@ -210,10 +210,12 @@ export const CareerQuestionsTab: React.FC<CareerQuestionsTabProps> = ({
           </div>
 
           {gaps.length === 0 ? (
-            <div className="p-6 bg-emerald-50 border border-emerald-200 dark:bg-emerald-950/20 dark:border-emerald-900 rounded-xl text-center space-y-1 text-emerald-800 dark:text-emerald-300">
-              <CheckCircle2 className="w-8 h-8 mx-auto text-emerald-600 mb-2" aria-hidden="true" />
-              <div className="font-bold text-sm">No questions currently needed.</div>
-              <div className="text-xs">
+            <div className="p-6 bg-success/10 border border-success/30 rounded-xl text-center space-y-1 text-success">
+              <CheckCircle2 className="w-8 h-8 mx-auto text-success mb-2" aria-hidden="true" />
+              <div className="font-bold text-sm text-foreground">
+                No questions currently needed.
+              </div>
+              <div className="text-xs text-muted-foreground">
                 Your confirmed Career Knowledge covers the current requirements.
               </div>
             </div>
@@ -240,7 +242,7 @@ export const CareerQuestionsTab: React.FC<CareerQuestionsTabProps> = ({
                   );
                 })}
               {gaps.length > 0 && gaps.every((gap) => skippedGapIds.includes(gap.id)) && (
-                <div className="p-6 border rounded-xl bg-card text-center space-y-2 text-muted-foreground">
+                <div className="p-6 border border-border rounded-xl bg-card text-center space-y-2 text-muted-foreground">
                   <p className="text-sm font-medium text-foreground">
                     All active questions skipped
                   </p>
