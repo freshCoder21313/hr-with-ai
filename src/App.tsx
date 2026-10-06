@@ -18,6 +18,7 @@ import { useFocusReturn } from '@/components/shared/useFocusReturn';
 import { subscribeToSettingsChanged } from '@/events/settingsEvents';
 import { Button } from '@/components/ui/button';
 import { Alert } from '@/components/ui/alert';
+import BottomNav from '@/components/layout/BottomNav';
 const SetupRoom = lazy(() => import('@/features/dashboard/SetupRoom'));
 const InterviewRoom = lazy(() => import('@/features/interview/InterviewRoom'));
 const FeedbackView = lazy(() => import('@/features/interview/FeedbackView'));
@@ -34,10 +35,10 @@ const PageLoader = () => (
 );
 
 // Sonner's toaster is `position: fixed`, so the shell's safe-area padding does not
-// reach it. Keep its default gaps (24px desktop / 16px mobile) and add the bottom
-// inset so toasts clear the Android gesture bar / iOS home indicator.
+// reach it. Keep its default gaps (24px desktop). On mobile, add bottom clearance
+// for the fixed BottomNav (h-16 = 64px) plus safe-area insets.
 const TOAST_OFFSET = { bottom: 'calc(24px + var(--safe-bottom, 0px))' } as const;
-const TOAST_MOBILE_OFFSET = { bottom: 'calc(16px + var(--safe-bottom, 0px))' } as const;
+const TOAST_MOBILE_OFFSET = { bottom: 'calc(80px + var(--safe-bottom, 0px))' } as const;
 
 const App: React.FC = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -112,7 +113,7 @@ const App: React.FC = () => {
                   <Header onOpenSettings={openSettings} />
 
                   {showConfigBanner && (
-                    <div className="container mx-auto px-4 pt-3 print:hidden">
+                    <div className="max-w-6xl w-full mx-auto px-4 md:px-8 pt-3 print:hidden">
                       <Alert className="py-2.5 px-4 flex items-center justify-between gap-3 bg-warning/10 border-warning/30 text-warning">
                         <div className="flex items-center gap-2 text-xs sm:text-sm font-medium">
                           <AlertCircle className="w-4 h-4 text-warning shrink-0" />
@@ -166,6 +167,7 @@ const App: React.FC = () => {
                       </Routes>
                     </Suspense>
                   </main>
+                  <BottomNav />
                 </div>
               </ErrorBoundary>
             </HashRouter>
