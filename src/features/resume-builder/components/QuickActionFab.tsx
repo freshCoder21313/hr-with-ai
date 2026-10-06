@@ -67,7 +67,7 @@ const QuickActionFab: React.FC<QuickActionFabProps> = ({
             onClick={() => onAddSection('work')}
             className="cursor-pointer gap-3 p-3"
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-300">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary">
               <Briefcase className="h-4 w-4" />
             </div>
             <div className="flex flex-col">
@@ -80,7 +80,7 @@ const QuickActionFab: React.FC<QuickActionFabProps> = ({
             onClick={() => onAddSection('education')}
             className="cursor-pointer gap-3 p-3"
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100 text-green-600 dark:bg-green-900/50 dark:text-green-300">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-success/10 text-success">
               <GraduationCap className="h-4 w-4" />
             </div>
             <div className="flex flex-col">
@@ -93,7 +93,7 @@ const QuickActionFab: React.FC<QuickActionFabProps> = ({
             onClick={() => onAddSection('skills')}
             className="cursor-pointer gap-3 p-3"
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-100 text-purple-600 dark:bg-purple-900/50 dark:text-purple-300">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-info/10 text-info">
               <Code className="h-4 w-4" />
             </div>
             <div className="flex flex-col">
@@ -106,7 +106,7 @@ const QuickActionFab: React.FC<QuickActionFabProps> = ({
             onClick={() => onAddSection('projects')}
             className="cursor-pointer gap-3 p-3"
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-100 text-orange-600 dark:bg-orange-900/50 dark:text-orange-300">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-warning/10 text-warning">
               <FolderGit2 className="h-4 w-4" />
             </div>
             <div className="flex flex-col">

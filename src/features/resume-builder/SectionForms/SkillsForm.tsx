@@ -24,6 +24,11 @@ const SkillsForm: React.FC<SkillsFormProps> = ({ data, onChange }) => {
       emptyMessage='No skills added yet. Click "Add Category" to start.'
       defaultEntry={defaultEntry}
       getTitle={(entry) => entry.name || '(New Category)'}
+      getSubtitle={(entry) =>
+        entry.keywords && entry.keywords.length > 0
+          ? `${entry.keywords.length} skill${entry.keywords.length > 1 ? 's' : ''}: ${entry.keywords.slice(0, 4).join(', ')}${entry.keywords.length > 4 ? '...' : ''}`
+          : 'No skills added'
+      }
       renderFields={(category, handleChange) => {
         const handleAddKeyword = (keyword: string) => {
           if (!isNonEmptyString(keyword)) return;
@@ -61,7 +66,7 @@ const SkillsForm: React.FC<SkillsFormProps> = ({ data, onChange }) => {
                       type="button"
                       aria-label={`Remove ${kw}`}
                       onClick={() => handleRemoveKeyword(kIndex)}
-                      className="text-muted-foreground hover:text-red-500"
+                      className="text-muted-foreground hover:text-destructive transition-colors"
                     >
                       <X size={12} aria-hidden="true" />
                     </button>

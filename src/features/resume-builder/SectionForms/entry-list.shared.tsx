@@ -1,12 +1,13 @@
 /* eslint-disable react-refresh/only-export-components */
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { LoadingButton } from '@/components/ui/loading-button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { Plus, Trash2, Wand2, BookOpen, Loader2 } from 'lucide-react';
+import { Plus, Trash2, Wand2, BookOpen, Loader2, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 import { createEntry, ensureEntryIds, getEntryKey, WithEntryId } from './entryIds';
 import { analyzeResumeSection } from '@/services/resume/resumeAIService';
 import { getStoredAIConfig } from '@/services/ai/aiConfigService';
@@ -118,18 +119,18 @@ export const EntryCardActions: React.FC<EntryCardActionsProps> = ({
   onRemove,
   analyzeTooltip = 'AI Roast & Fix',
 }) => (
-  <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+  <div className="flex items-center gap-1">
     {onAnalyze && (
       <Tooltip>
         <TooltipTrigger asChild>
           <LoadingButton
-            variant="outline"
+            variant="ghost"
             size="sm"
             onClick={() => onAnalyze(index)}
             disabled={analyzingIndex === index}
             isLoading={analyzingIndex === index}
             loadingText=""
-            className="text-purple-600 border-purple-200 hover:bg-purple-50"
+            className="h-8 w-8 p-0 text-primary hover:bg-primary/10 hover:text-primary transition-colors"
           >
             <Wand2 className="w-4 h-4" />
           </LoadingButton>
@@ -139,7 +140,13 @@ export const EntryCardActions: React.FC<EntryCardActionsProps> = ({
         </TooltipContent>
       </Tooltip>
     )}
-    <Button variant="destructive" size="sm" onClick={() => onRemove(index)}>
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={() => onRemove(index)}
+      className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+      aria-label="Remove entry"
+    >
       <Trash2 className="w-4 h-4" />
     </Button>
   </div>
@@ -147,40 +154,111 @@ export const EntryCardActions: React.FC<EntryCardActionsProps> = ({
 
 interface EntryCardShellProps {
   title: string;
+  subtitle?: string;
   children: React.ReactNode;
   derivedFromFactIds?: string[];
+  isExpanded?: boolean;
+  onToggleExpand?: () => void;
+  actions?: React.ReactNode;
 }
 
 export const EntryCardShell: React.FC<EntryCardShellProps> = ({
   title,
+  subtitle,
   children,
   derivedFromFactIds,
+  isExpanded = true,
+  onToggleExpand,
+  actions,
 }) => {
   const [isAttributionOpen, setIsAttributionOpen] = useState(false);
   const hasAttribution = Array.isArray(derivedFromFactIds) && derivedFromFactIds.length > 0;
 
   return (
     <>
-      <Card className="relative group">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-base flex items-center gap-2">
-            <span>{title}</span>
-            {hasAttribution && (
+      <Card className="relative group transition-all duration-200 border-border hover:border-primary/30">
+        <div
+          className={cn(
+            'flex items-center justify-between p-3.5 sm:p-4 gap-2.5 transition-colors',
+            onToggleExpand && 'cursor-pointer select-none hover:bg-muted/40'
+          )}
+          onClick={onToggleExpand}
+          role={onToggleExpand ? 'button' : undefined}
+          tabIndex={onToggleExpand ? 0 : undefined}
+          onKeyDown={
+            onToggleExpand
+              ? (e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    onToggleExpand();
+                  }
+                }
+              : undefined
+          }
+          aria-expanded={onToggleExpand ? isExpanded : undefined}
+        >
+          <div className="flex items-center gap-2.5 min-w-0 flex-1">
+            {onToggleExpand && (
               <button
                 type="button"
-                onClick={() => setIsAttributionOpen(true)}
-                onMouseEnter={preloadAttributionModal}
-                onFocus={preloadAttributionModal}
-                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-primary/10 text-primary hover:bg-primary/20 transition-colors cursor-pointer"
-                title="View canonical Career Knowledge provenance"
+                aria-label={isExpanded ? 'Collapse entry' : 'Expand entry'}
+                className="p-1 -ml-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors flex-shrink-0"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggleExpand();
+                }}
               >
-                <BookOpen className="w-3 h-3" />
-                <span>From Career Knowledge</span>
+                <ChevronDown
+                  className={cn(
+                    'w-4 h-4 transition-transform duration-200 text-muted-foreground',
+                    isExpanded ? 'rotate-180' : ''
+                  )}
+                />
               </button>
             )}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">{children}</CardContent>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-semibold text-sm sm:text-base text-foreground truncate">
+                  {title}
+                </span>
+                {hasAttribution && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsAttributionOpen(true);
+                    }}
+                    onMouseEnter={preloadAttributionModal}
+                    onFocus={preloadAttributionModal}
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-primary/10 text-primary hover:bg-primary/20 transition-colors cursor-pointer"
+                    title="View canonical Career Knowledge provenance"
+                  >
+                    <BookOpen className="w-3 h-3" />
+                    <span>From Career Knowledge</span>
+                  </button>
+                )}
+              </div>
+              {subtitle && (
+                <p className="text-xs text-muted-foreground truncate mt-0.5">{subtitle}</p>
+              )}
+            </div>
+          </div>
+
+          {actions && (
+            <div
+              className="flex items-center gap-1 flex-shrink-0"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {actions}
+            </div>
+          )}
+        </div>
+
+        {isExpanded && (
+          <CardContent className="space-y-4 pt-2 pb-4 px-3.5 sm:px-4 border-t border-border/60">
+            {children}
+          </CardContent>
+        )}
       </Card>
 
       {hasAttribution && isAttributionOpen && (
@@ -207,14 +285,43 @@ interface EntryListHeaderProps {
   title: string;
   addLabel: string;
   onAdd: () => void;
+  count?: number;
+  allExpanded?: boolean;
+  onToggleAll?: () => void;
 }
 
-export const EntryListHeader: React.FC<EntryListHeaderProps> = ({ title, addLabel, onAdd }) => (
-  <div className="flex justify-between items-center">
-    <h2 className="text-xl font-bold text-foreground">{title}</h2>
-    <Button onClick={onAdd} size="sm" className="gap-2">
-      <Plus className="w-4 h-4" /> {addLabel}
-    </Button>
+export const EntryListHeader: React.FC<EntryListHeaderProps> = ({
+  title,
+  addLabel,
+  onAdd,
+  count,
+  allExpanded,
+  onToggleAll,
+}) => (
+  <div className="flex justify-between items-center gap-2">
+    <div className="flex items-center gap-2">
+      <h2 className="text-lg sm:text-xl font-bold text-foreground">{title}</h2>
+      {count !== undefined && count > 0 && (
+        <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-muted text-muted-foreground border border-border">
+          {count}
+        </span>
+      )}
+    </div>
+    <div className="flex items-center gap-2">
+      {onToggleAll && count !== undefined && count > 1 && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onToggleAll}
+          className="text-xs h-8 text-muted-foreground hover:text-foreground"
+        >
+          {allExpanded ? 'Collapse All' : 'Expand All'}
+        </Button>
+      )}
+      <Button onClick={onAdd} size="sm" className="gap-1.5 h-8">
+        <Plus className="w-4 h-4" /> {addLabel}
+      </Button>
+    </div>
   </div>
 );
 

@@ -29,6 +29,13 @@ const EducationForm: React.FC<EducationFormProps> = ({ data, onChange }) => {
       emptyMessage="No education history added yet."
       defaultEntry={defaultEntry}
       getTitle={(entry) => entry.institution || '(New School)'}
+      getSubtitle={(entry) => {
+        const degreeArea = [entry.studyType, entry.area].filter(Boolean).join(' in ');
+        const dateRange = entry.startDate
+          ? `${entry.startDate} - ${entry.endDate || 'Present'}`
+          : null;
+        return [degreeArea, dateRange].filter(Boolean).join(' • ');
+      }}
       onAnalyze={handleAnalyze}
       analyzeTooltip="AI Check"
       renderFields={(entry, handleChange) => (

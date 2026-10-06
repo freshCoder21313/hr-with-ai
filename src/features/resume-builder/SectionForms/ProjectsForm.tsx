@@ -29,6 +29,13 @@ const ProjectsForm: React.FC<ProjectsFormProps> = ({ data, onChange }) => {
       emptyMessage="No projects added yet."
       defaultEntry={defaultEntry}
       getTitle={(entry) => entry.name || '(New Project)'}
+      getSubtitle={(entry) => {
+        const parts = [
+          entry.url ? 'Link available' : null,
+          entry.startDate ? `${entry.startDate} - ${entry.endDate || 'Present'}` : null,
+        ].filter(Boolean);
+        return parts.join(' • ');
+      }}
       onAnalyze={(idx, entry, setIdx) => handleAnalyze(idx, entry, setIdx, validate)}
       analyzeTooltip="AI Check"
       renderFields={(entry, handleChange) => (

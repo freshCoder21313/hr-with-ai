@@ -28,15 +28,22 @@ const BuilderHeaderBase: React.FC<BuilderHeaderProps> = ({
 }) => {
   return (
     <header className="h-14 sm:h-16 bg-card border-b border-border flex items-center justify-between px-3 sm:px-6 shrink-0 gap-2 sm:gap-4 print:hidden">
-      <div className="flex items-center gap-2 sm:gap-4 min-w-0 max-w-[40%] sm:max-w-none">
+      <div className="flex items-center gap-1.5 sm:gap-3 min-w-0 max-w-[45%] sm:max-w-none">
         <Button
           variant="ghost"
           size="sm"
           onClick={onBack}
-          className="shrink-0 h-8 px-2 sm:h-9 sm:px-3 text-xs sm:text-sm"
+          className="shrink-0 h-8 px-2 sm:h-9 sm:px-3 text-xs sm:text-sm font-medium hover:bg-muted"
+          aria-label="Back to CV Studio"
+          title="Return to CV Studio workspace"
         >
-          <ChevronLeft className="w-4 h-4 mr-0.5 sm:mr-1" /> Back
+          <ChevronLeft className="w-4 h-4 mr-0.5 sm:mr-1" />
+          <span className="hidden sm:inline">CV Studio</span>
+          <span className="sm:hidden">Back</span>
         </Button>
+        <span className="text-muted-foreground/40 hidden sm:inline select-none" aria-hidden="true">
+          /
+        </span>
         <h1
           className="font-bold text-sm sm:text-lg text-foreground truncate"
           title={resume.fileName}

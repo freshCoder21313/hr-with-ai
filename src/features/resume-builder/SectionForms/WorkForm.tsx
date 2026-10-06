@@ -31,6 +31,13 @@ const WorkForm: React.FC<WorkFormProps> = ({ data, onChange }) => {
       emptyMessage='No work experience added yet. Click "Add Job" to start.'
       defaultEntry={defaultEntry}
       getTitle={(entry) => entry.name || '(New Position)'}
+      getSubtitle={(entry) => {
+        const parts = [
+          entry.position,
+          entry.startDate ? `${entry.startDate} - ${entry.endDate || 'Present'}` : null,
+        ].filter(Boolean);
+        return parts.join(' • ');
+      }}
       onAnalyze={(idx, entry, setIdx) => handleAnalyze(idx, entry, setIdx, validate)}
       renderFields={(entry, handleChange) => (
         <>

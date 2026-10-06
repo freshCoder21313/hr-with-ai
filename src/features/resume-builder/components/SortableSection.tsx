@@ -27,7 +27,7 @@ export const SortableSection: React.FC<SortableSectionProps> = ({ id, children, 
       <div
         {...attributes}
         {...listeners}
-        className="absolute -left-6 top-2 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab hover:text-blue-500 text-slate-400 z-10 print:hidden p-1 rounded backdrop-blur-sm"
+        className="absolute -left-6 top-2 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab text-muted-foreground hover:text-primary z-10 print:hidden p-1 rounded backdrop-blur-sm"
         title="Drag to reorder"
       >
         <GripVertical size={16} />
