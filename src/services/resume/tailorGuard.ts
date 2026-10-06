@@ -11,7 +11,8 @@ export interface TailorIssue {
 const norm = (value: string | undefined | null): string => (value ?? '').trim().toLowerCase();
 
 const workKey = (w: Work): string => `${norm(w.name)}::${norm(w.position)}`;
-const educationKey = (e: Education): string => `${norm(e.institution)}::${norm(e.area || e.studyType)}`;
+const educationKey = (e: Education): string =>
+  `${norm(e.institution)}::${norm(e.area || e.studyType)}`;
 const projectKey = (p: Project): string => norm(p.name);
 const skillKey = (s: Skill): string => norm(s.name);
 
@@ -25,7 +26,7 @@ function diffEntries<T>(
   sourceList: T[] | undefined | null,
   tailoredList: T[] | undefined | null,
   key: (entry: T) => string,
-  detail: (entry: T) => string,
+  detail: (entry: T) => string
 ): TailorIssue[] {
   if (!sourceList || sourceList.length === 0) return [];
   if (!tailoredList) return [];
@@ -43,14 +44,36 @@ function diffEntries<T>(
 /** Fabricated entities introduced by a tailoring pass, relative to the original resume. */
 export function diffTailorOutput(source: ResumeData, tailored: ResumeData): TailorIssue[] {
   return [
-    ...diffEntries<Work>('work', source.work, tailored.work, workKey, (w) => `${w.name} — ${w.position}`),
-    ...diffEntries<Education>('education', source.education, tailored.education, educationKey, (e) => `${e.institution} — ${e.area || e.studyType}`),
-    ...diffEntries<Project>('project', source.projects, tailored.projects, projectKey, (p) => p.name),
+    ...diffEntries<Work>(
+      'work',
+      source.work,
+      tailored.work,
+      workKey,
+      (w) => `${w.name} — ${w.position}`
+    ),
+    ...diffEntries<Education>(
+      'education',
+      source.education,
+      tailored.education,
+      educationKey,
+      (e) => `${e.institution} — ${e.area || e.studyType}`
+    ),
+    ...diffEntries<Project>(
+      'project',
+      source.projects,
+      tailored.projects,
+      projectKey,
+      (p) => p.name
+    ),
     ...diffEntries<Skill>('skill', source.skills, tailored.skills, skillKey, (s) => s.name),
   ];
 }
 
-function partition<T>(sourceList: T[] | undefined | null, tailoredList: T[] | undefined | null, key: (e: T) => string): T[] {
+function partition<T>(
+  sourceList: T[] | undefined | null,
+  tailoredList: T[] | undefined | null,
+  key: (e: T) => string
+): T[] {
   if (!tailoredList) return [];
   if (!sourceList || sourceList.length === 0) return [...tailoredList];
   const known = new Set(sourceList.map(key));
@@ -71,7 +94,10 @@ export function filterFaithfulResume(source: ResumeData, tailored: ResumeData): 
   };
 }
 
-export function assertTailorFaithful(source: ResumeData, tailored: ResumeData): { valid: boolean; issues: TailorIssue[] } {
+export function assertTailorFaithful(
+  source: ResumeData,
+  tailored: ResumeData
+): { valid: boolean; issues: TailorIssue[] } {
   const issues = diffTailorOutput(source, tailored);
   return { valid: issues.length === 0, issues };
 }

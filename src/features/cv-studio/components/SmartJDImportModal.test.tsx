@@ -29,9 +29,7 @@ describe('SmartJDImportModal', () => {
     render(<SmartJDImportModal isOpen={true} onClose={vi.fn()} />);
 
     expect(screen.getByText(/Auto-fill from Raw JD/i)).toBeInTheDocument();
-    expect(
-      screen.getByPlaceholderText(/Paste raw JD here/i)
-    ).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/Paste raw JD here/i)).toBeInTheDocument();
 
     const parseButton = screen.getByRole('button', { name: /Parse & Extract/i });
     expect(parseButton).toBeDisabled();
@@ -72,13 +70,7 @@ describe('SmartJDImportModal', () => {
     const onJobAdded = vi.fn();
     const onClose = vi.fn();
 
-    render(
-      <SmartJDImportModal
-        isOpen={true}
-        onClose={onClose}
-        onJobAdded={onJobAdded}
-      />
-    );
+    render(<SmartJDImportModal isOpen={true} onClose={onClose} onJobAdded={onJobAdded} />);
 
     const textarea = screen.getByPlaceholderText(/Paste raw JD here/i);
     fireEvent.change(textarea, { target: { value: sampleJD } });
@@ -144,13 +136,7 @@ Requirements:
 - 7+ years of DevOps experience.
     `;
 
-    render(
-      <SmartJDImportModal
-        isOpen={true}
-        onClose={onClose}
-        onJobAdded={onJobAdded}
-      />
-    );
+    render(<SmartJDImportModal isOpen={true} onClose={onClose} onJobAdded={onJobAdded} />);
 
     const textarea = screen.getByPlaceholderText(/Paste raw JD here/i);
     fireEvent.change(textarea, { target: { value: sampleWithUrl } });

@@ -5,7 +5,12 @@ import type { ResumeData } from '../../types/resume';
 const base = (): ResumeData => ({
   basics: { name: 'Nam Nguyen', label: 'Frontend Engineer', email: 'nam@example.com' },
   work: [
-    { name: 'Acme Corp', position: 'Frontend Engineer', startDate: '2022-01', highlights: ['Built UI'] },
+    {
+      name: 'Acme Corp',
+      position: 'Frontend Engineer',
+      startDate: '2022-01',
+      highlights: ['Built UI'],
+    },
     { name: 'Globex', position: 'Junior Developer', startDate: '2020-01' },
   ],
   education: [{ institution: 'HUST', area: 'Computer Science', studyType: 'Bachelor' }],
@@ -53,30 +58,43 @@ describe('tailorGuard', () => {
     const { valid, issues } = assertTailorFaithful(source, tailored);
     expect(valid).toBe(false);
     expect(issues[0].kind).toBe('skill');
-    expect(filterFaithfulResume(source, tailored).skills.map((s) => s.name)).toEqual(['React', 'TypeScript']);
+    expect(filterFaithfulResume(source, tailored).skills.map((s) => s.name)).toEqual([
+      'React',
+      'TypeScript',
+    ]);
   });
 
   it('flags a fabricated project and removes it', () => {
     const source = base();
-    const tailored: ResumeData = { ...source, projects: [{ name: 'Portfolio' }, { name: 'Blockchain Wallet' }] };
+    const tailored: ResumeData = {
+      ...source,
+      projects: [{ name: 'Portfolio' }, { name: 'Blockchain Wallet' }],
+    };
 
     const { valid, issues } = assertTailorFaithful(source, tailored);
     expect(valid).toBe(false);
     expect(issues[0].kind).toBe('project');
-    expect(filterFaithfulResume(source, tailored).projects.map((p) => p.name)).toEqual(['Portfolio']);
+    expect(filterFaithfulResume(source, tailored).projects.map((p) => p.name)).toEqual([
+      'Portfolio',
+    ]);
   });
 
   it('flags a fabricated education entry and removes it', () => {
     const source = base();
     const tailored: ResumeData = {
       ...source,
-      education: [...source.education, { institution: 'Stanford', area: 'MBA', studyType: 'Master' }],
+      education: [
+        ...source.education,
+        { institution: 'Stanford', area: 'MBA', studyType: 'Master' },
+      ],
     };
 
     const { valid, issues } = assertTailorFaithful(source, tailored);
     expect(valid).toBe(false);
     expect(issues[0].kind).toBe('education');
-    expect(filterFaithfulResume(source, tailored).education.map((e) => e.institution)).toEqual(['HUST']);
+    expect(filterFaithfulResume(source, tailored).education.map((e) => e.institution)).toEqual([
+      'HUST',
+    ]);
   });
 
   it('does not flag additions when the source section is empty', () => {
@@ -107,7 +125,10 @@ describe('tailorGuard', () => {
     const source = base();
     const tailored: ResumeData = {
       ...source,
-      work: [{ name: 'Acme Corp', position: 'Architect' }, { name: 'Acme Corp', position: 'Frontend Engineer' }],
+      work: [
+        { name: 'Acme Corp', position: 'Architect' },
+        { name: 'Acme Corp', position: 'Frontend Engineer' },
+      ],
     };
 
     const issues = diffTailorOutput(source, tailored);

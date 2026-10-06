@@ -152,6 +152,10 @@ const App: React.FC = () => {
                         <Route path="/resumes/:id/edit" element={<ResumeBuilder />} />
                         <Route path="/studio" element={<CVStudioPage />} />
                         <Route path="/skill-assessment" element={<SkillAssessmentPage />} />
+                        <Route
+                          path="/career-knowledge"
+                          element={<Navigate to="/studio" replace />}
+                        />
                         <Route path="/interview/:id" element={<InterviewRoom />} />
                         <Route path="/feedback/:id" element={<FeedbackView />} />
                         <Route path="*" element={<Navigate to="/" replace />} />

@@ -12,7 +12,16 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Sparkles, Building2, Briefcase, FileText, MessageSquareText, CheckCircle2, RotateCcw, Link2 } from 'lucide-react';
+import {
+  Sparkles,
+  Building2,
+  Briefcase,
+  FileText,
+  MessageSquareText,
+  CheckCircle2,
+  RotateCcw,
+  Link2,
+} from 'lucide-react';
 import { parseRawJobDescription, ParsedJobData } from '@/services/jobs/jdParser';
 import { useJobStore, Job } from '../stores/useJobStore';
 import { toast } from 'sonner';
@@ -103,7 +112,8 @@ export const SmartJDImportModal: React.FC<SmartJDImportModalProps> = ({
             <div>
               <DialogTitle className="text-xl font-bold">Auto-fill from Raw JD</DialogTitle>
               <DialogDescription className="text-xs text-muted-foreground mt-0.5">
-                Paste raw Job Description text to automatically extract company, title, requirements, and custom tailoring prompt.
+                Paste raw Job Description text to automatically extract company, title,
+                requirements, and custom tailoring prompt.
               </DialogDescription>
             </div>
           </div>
@@ -113,7 +123,10 @@ export const SmartJDImportModal: React.FC<SmartJDImportModalProps> = ({
           {/* Step 1: Raw Textarea */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="raw-jd-textarea" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <Label
+                htmlFor="raw-jd-textarea"
+                className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+              >
                 Raw Job Description Text
               </Label>
               {rawText && (
@@ -165,7 +178,10 @@ export const SmartJDImportModal: React.FC<SmartJDImportModalProps> = ({
                     </Badge>
                   )}
                   {parsedData?.salary && (
-                    <Badge variant="secondary" className="text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-500/10">
+                    <Badge
+                      variant="secondary"
+                      className="text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-500/10"
+                    >
                       💰 {parsedData.salary}
                     </Badge>
                   )}
@@ -262,7 +278,10 @@ export const SmartJDImportModal: React.FC<SmartJDImportModalProps> = ({
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="extracted-description" className="text-xs flex items-center gap-1.5">
+                <Label
+                  htmlFor="extracted-description"
+                  className="text-xs flex items-center gap-1.5"
+                >
                   <FileText className="w-3.5 h-3.5 text-muted-foreground" />
                   Cleaned Description
                 </Label>
@@ -277,7 +296,10 @@ export const SmartJDImportModal: React.FC<SmartJDImportModalProps> = ({
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="extracted-custom-prompt" className="text-xs flex items-center gap-1.5">
+                <Label
+                  htmlFor="extracted-custom-prompt"
+                  className="text-xs flex items-center gap-1.5"
+                >
                   <MessageSquareText className="w-3.5 h-3.5 text-muted-foreground" />
                   Suggested Custom Prompt
                 </Label>

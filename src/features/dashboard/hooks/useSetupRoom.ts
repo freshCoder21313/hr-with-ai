@@ -121,7 +121,8 @@ export const useSetupRoom = () => {
     setFormData((prev) => ({
       ...prev,
       company: parsed.company !== 'Target Company' ? parsed.company : prev.company,
-      companyName: parsed.company !== 'Target Company' ? parsed.company : (prev.companyName || prev.company),
+      companyName:
+        parsed.company !== 'Target Company' ? parsed.company : prev.companyName || prev.company,
       jobTitle: parsed.title || prev.jobTitle,
       jobDescription: parsed.description || prev.jobDescription,
       difficulty: mappedDifficulty || prev.difficulty,

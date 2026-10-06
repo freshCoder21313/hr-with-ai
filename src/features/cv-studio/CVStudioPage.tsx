@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SEO from '@/components/shared/SEO';
 import { ResumePreview, SectionReorderDialog, GitHubImportModal } from '@/features/resume-builder';
@@ -6,18 +6,55 @@ import { EditGlobalPromptModal } from './components/EditGlobalPromptModal';
 import { CVJobPanel } from './components/CVJobPanel';
 import { CVChatPanel } from './components/CVChatPanel';
 import { CVPreviewPanel } from './components/CVPreviewPanel';
+import { CareerKnowledgeDrawer } from './components/CareerKnowledgeDrawer';
 import { useCVStudio } from './hooks/useCVStudio';
-import { Loader2 } from 'lucide-react';
+import { Loader2, BookOpen } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { exportElementToPdf } from '@/services/resume/pdfExportService';
 import { logger } from '@/lib/logger';
+import { careerKnowledgeAppService } from '@/services/careerKnowledge/careerKnowledgeAppService';
 
 const CVStudioPage: React.FC = () => {
   const navigate = useNavigate();
   const { state, ui, actions } = useCVStudio();
   const [mobileTab, setMobileTab] = useState<'jobs' | 'chat' | 'preview'>('chat');
+  const [isCareerKnowledgeOpen, setIsCareerKnowledgeOpen] = useState(false);
+  const [candidateFactCount, setCandidateFactCount] = useState<number>(0);
   const exportRef = useRef<HTMLDivElement>(null);
+
+  const refreshCandidateCount = useCallback(async () => {
+    try {
+      const pid = await careerKnowledgeAppService.getActiveProfileId();
+      const facts = await careerKnowledgeAppService.listFacts(pid);
+      const candidates = facts.filter((f) => f.verificationState === 'needs_confirmation');
+      setCandidateFactCount(candidates.length);
+    } catch {
+      // Ignore background fetch error
+    }
+  }, []);
+
+  useEffect(() => {
+    let mounted = true;
+    const fetchCandidateCount = async () => {
+      try {
+        const pid = await careerKnowledgeAppService.getActiveProfileId();
+        const facts = await careerKnowledgeAppService.listFacts(pid);
+        const candidates = facts.filter((f) => f.verificationState === 'needs_confirmation');
+        if (mounted) {
+          setCandidateFactCount(candidates.length);
+        }
+      } catch {
+        // Ignore background fetch error
+      }
+    };
+    fetchCandidateCount();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const handleViewResult = useCallback(
     (id: number) => {
@@ -60,23 +97,43 @@ const CVStudioPage: React.FC = () => {
           description="Unified CV editing, tailoring, and AI chat."
         />
 
-        <div className="flex md:hidden border-b border-border shrink-0">
-          {(['jobs', 'chat', 'preview'] as const).map((tab) => (
-            <button
-              key={tab}
-              type="button"
-              onClick={() => setMobileTab(tab)}
-              aria-pressed={mobileTab === tab}
-              className={cn(
-                'flex-1 py-2.5 text-sm font-medium capitalize transition-colors',
-                mobileTab === tab
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-card text-muted-foreground hover:bg-muted'
-              )}
-            >
-              {tab}
-            </button>
-          ))}
+        <div className="flex md:hidden border-b border-border shrink-0 items-stretch bg-card">
+          <div className="flex flex-1">
+            {(['jobs', 'chat', 'preview'] as const).map((tab) => (
+              <button
+                key={tab}
+                type="button"
+                onClick={() => setMobileTab(tab)}
+                aria-pressed={mobileTab === tab}
+                className={cn(
+                  'flex-1 py-2.5 text-sm font-medium capitalize transition-colors',
+                  mobileTab === tab
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-card text-muted-foreground hover:bg-muted'
+                )}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsCareerKnowledgeOpen(true)}
+            className="h-auto rounded-none px-3 border-l border-border flex items-center gap-1.5 text-xs font-semibold hover:bg-muted text-primary shrink-0"
+            aria-label="Open Career Knowledge"
+          >
+            <BookOpen className="w-3.5 h-3.5" />
+            <span className="hidden xs:inline">Knowledge</span>
+            {candidateFactCount > 0 && (
+              <Badge
+                variant="default"
+                className="px-1.5 py-0 text-[10px] h-4 bg-amber-600 text-white rounded-full font-bold"
+              >
+                {candidateFactCount}
+              </Badge>
+            )}
+          </Button>
         </div>
 
         <div className="flex flex-1 overflow-hidden min-h-0">
@@ -125,6 +182,8 @@ const CVStudioPage: React.FC = () => {
               contextResumeId={state.contextResumeId}
               contextJobId={state.contextJobId}
               jobs={state.jobs}
+              candidateFactCount={candidateFactCount}
+              onOpenCareerKnowledge={() => setIsCareerKnowledgeOpen(true)}
               onSendMessage={actions.handleSendMessage}
               onRetryLastResponse={actions.handleRetryLastResponse}
               onAnswerQuestionGroup={actions.handleAnswerQuestionGroup}
@@ -230,6 +289,12 @@ const CVStudioPage: React.FC = () => {
           isOpen={ui.isGitHubModalOpen}
           onClose={() => ui.setIsGitHubModalOpen(false)}
           onImportComplete={actions.handleGitHubImportComplete}
+        />
+
+        <CareerKnowledgeDrawer
+          isOpen={isCareerKnowledgeOpen}
+          onClose={() => setIsCareerKnowledgeOpen(false)}
+          onFactUpdated={refreshCandidateCount}
         />
       </div>
     </>

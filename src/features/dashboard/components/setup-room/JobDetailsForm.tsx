@@ -208,9 +208,13 @@ export const JobDetailsForm: React.FC<JobDetailsFormProps> = ({
         </div>
 
         {isAutoFillOpen && (
-          <div id="raw-jd-autofill-section" className="mt-3 space-y-3 pt-2 border-t border-primary/10">
+          <div
+            id="raw-jd-autofill-section"
+            className="mt-3 space-y-3 pt-2 border-t border-primary/10"
+          >
             <Label htmlFor="rawJobDescriptionInput" className="text-xs text-muted-foreground">
-              Paste raw JD text to automatically fill Company, Title, Description, Requirements &amp; Level:
+              Paste raw JD text to automatically fill Company, Title, Description, Requirements
+              &amp; Level:
             </Label>
             <Textarea
               id="rawJobDescriptionInput"

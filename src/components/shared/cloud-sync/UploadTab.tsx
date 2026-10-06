@@ -42,10 +42,10 @@ export const UploadTab: React.FC<UploadTabProps> = ({
       <div className="space-y-3">
         <div className="flex justify-between items-end px-1">
           <Label htmlFor="upload-id" className="text-sm font-bold text-foreground">
-            Sync Identity <span className="text-destructive">*</span>
+            Account / Sync Identity <span className="text-destructive">*</span>
           </Label>
           <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-            Unique Key
+            Email or ID
           </span>
         </div>
         <div className="group relative flex items-center">
@@ -53,9 +53,8 @@ export const UploadTab: React.FC<UploadTabProps> = ({
             id="upload-id"
             value={uploadId}
             onChange={(e) => setUploadId(e.target.value)}
-            placeholder="ID will appear here"
-            maxLength={16}
-            className="h-14 pl-4 pr-24 bg-muted/50 border-input rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all font-mono text-lg tracking-[0.2em] uppercase text-foreground"
+            placeholder="user@example.com or account_id"
+            className="h-14 pl-4 pr-24 bg-muted/50 border-input rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all font-mono text-base text-foreground"
           />
           <div className="absolute right-2 flex gap-1">
             <Tooltip>

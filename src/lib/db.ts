@@ -4,6 +4,13 @@ import { DBJobRecommendation } from '@/types';
 import { compressResumeData, decompressResumeData } from '@/lib/resumeCompression';
 import { logger } from '@/lib/logger';
 import { withResumeDefaults } from '@/lib/resumeDefaults';
+import type {
+  CareerProfile,
+  CareerFact,
+  CareerEvidence,
+  FactEvidenceLink,
+  CareerNote,
+} from '@/types/careerKnowledge';
 
 /**
  * IndexedDB via Dexie.
@@ -16,6 +23,12 @@ class HRDatabase extends Dexie {
   resumes!: Table<Resume, number>;
   job_recommendations!: Table<DBJobRecommendation, number>;
   jobs!: Table<SavedJob, number>;
+  // Career Knowledge (Phase 2) — normalized local persistence, string UUID PKs.
+  careerProfiles!: Table<CareerProfile, string>;
+  careerFacts!: Table<CareerFact, string>;
+  careerEvidence!: Table<CareerEvidence, string>;
+  factEvidenceLinks!: Table<FactEvidenceLink, [string, string]>;
+  careerNotes!: Table<CareerNote, string>;
 
   constructor() {
     super('VietPhongDB');
@@ -100,6 +113,20 @@ class HRDatabase extends Dexie {
             }
           });
       });
+
+    // Version 15: Career Knowledge (Phase 2) normalized local persistence.
+    // New tables only; existing tables are unchanged and no data migration
+    // runs (Resume -> Career Knowledge mapping is a deferred follow-up phase).
+    // All PKs are client-authoritative string UUIDs (no `++id`), and
+    // timestamps are owned by the domain layer, so no creating/updating hooks
+    // are attached to these tables.
+    this.version(15).stores({
+      careerProfiles: 'id, createdAt, updatedAt',
+      careerFacts: 'id, profileId, category, verificationState, supersededBy, createdAt, updatedAt',
+      careerEvidence: 'id, profileId, sourceType, capturedAt',
+      factEvidenceLinks: '[factId+evidenceId], factId, evidenceId',
+      careerNotes: 'id, factId, createdAt, updatedAt',
+    });
 
     // Add hooks to auto-update updatedAt
     this.interviews.hook('creating', (_primKey, obj) => {

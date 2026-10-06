@@ -214,7 +214,8 @@ export const InteractiveQuestionCard: React.FC<InteractiveQuestionCardProps> = (
         <div className="flex items-center gap-1.5 font-medium text-primary">
           <CheckCircle2 className="w-3.5 h-3.5 text-primary shrink-0" />
           <span className="font-semibold">
-            {group.title || (isMulti ? 'Interactive Questions Completed' : group.questions[0].question)}
+            {group.title ||
+              (isMulti ? 'Interactive Questions Completed' : group.questions[0].question)}
           </span>
           {isMulti && (
             <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/15 text-primary font-normal">

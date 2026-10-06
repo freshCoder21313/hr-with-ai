@@ -344,3 +344,38 @@ export const interactiveQuestionGroupSchema = z.object({
 });
 
 export type InteractiveQuestionGroup = z.infer<typeof interactiveQuestionGroupSchema>;
+
+// Career Knowledge (Phase 1) schemas are defined in the domain layer and
+// re-exported here so the AI layer depends on the domain (ai -> domain),
+// honoring ADR 000 dependency direction.
+export {
+  careerFactCategorySchema,
+  verificationStateSchema,
+  factOriginSchema,
+  evidenceSourceTypeSchema,
+  factEvidenceRelationSchema,
+  careerFactSchema,
+  careerEvidenceSchema,
+  careerNoteSchema,
+  candidateCareerFactSchema,
+  factNormalizationSchema,
+  questionWordingSchema,
+  normalizedAnswerFactSchema,
+  answerNormalizationSchema,
+  jdRequirementCategorySchema,
+  jdRequirementImportanceSchema,
+  jdRequirementExtractionStatusSchema,
+  jdRequirementProvenanceSchema,
+  extractedJDRequirementSchema,
+  jdRequirementExtractionSchema,
+} from '@/services/careerKnowledge/schemas';
+export type {
+  CareerFactAIResponse,
+  CandidateCareerFact,
+  FactNormalizationAIResponse,
+  QuestionWordingAIResponse,
+  NormalizedAnswerFact,
+  AnswerNormalizationAIResponse,
+  ExtractedJDRequirementAIResponse,
+  JDRequirementExtractionAIResponse,
+} from '@/services/careerKnowledge/schemas';

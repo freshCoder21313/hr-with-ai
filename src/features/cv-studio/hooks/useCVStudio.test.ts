@@ -182,7 +182,13 @@ describe('useCVStudio', () => {
         rawText: '',
         formatted: true,
         isMain: true,
-        parsedData: { basics: { name: 'Newer' }, work: [], education: [], skills: [], projects: [] },
+        parsedData: {
+          basics: { name: 'Newer' },
+          work: [],
+          education: [],
+          skills: [],
+          projects: [],
+        },
       },
       {
         id: 1,
@@ -191,7 +197,13 @@ describe('useCVStudio', () => {
         rawText: '',
         formatted: true,
         isMain: false,
-        parsedData: { basics: { name: 'Older' }, work: [], education: [], skills: [], projects: [] },
+        parsedData: {
+          basics: { name: 'Older' },
+          work: [],
+          education: [],
+          skills: [],
+          projects: [],
+        },
       },
     ]);
 

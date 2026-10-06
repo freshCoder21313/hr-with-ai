@@ -6,9 +6,8 @@ import { Resume } from '@/types';
 import { ResumeData } from '@/types/resume';
 import { getStoredAIConfig } from '@/services/ai/aiConfigService';
 import { openApiKeyModal } from '@/events/apiKeyEvents';
-import { tailorResumeV2, parseResumeToJSON, analyzeResume } from '@/services/resume/resumeAIService';
-import { getTailoredResumePrompt } from '@/services/prompts';
-import { assertTailorFaithful, filterFaithfulResume } from '@/services/resume/tailorGuard';
+import { parseResumeToJSON } from '@/services/resume/resumeAIService';
+import { careerKnowledgeAppService } from '@/services/careerKnowledge/careerKnowledgeAppService';
 import { Job } from '../stores/useJobStore';
 
 export type JobProcessStatus = 'idle' | 'processing' | 'completed' | 'error';
@@ -113,45 +112,58 @@ export const useCVTailoring = ({ jobs, globalPrompt, onResumesUpdated }: UseCVTa
         await Promise.all(
           batch.map(async (job) => {
             try {
-              const analysis = await analyzeResume(
-                sourceResume.rawText,
-                job.description,
-                config,
-                sourceResume.id
-              ).catch(() => null);
-              const extra = [globalPrompt, job.customPrompt].filter(Boolean).join('\n\n') || undefined;
-              const prompt = getTailoredResumePrompt(
-                parsedSourceData,
-                job.description,
-                analysis?.missingKeywords,
-                extra
-              );
-              const tailored = await tailorResumeV2(config, prompt);
-              const { valid, issues } = assertTailorFaithful(parsedSourceData, tailored);
-              if (!valid) {
-                logger.warn('tailor guard rejected fabricated entries', { jobId: job.id, issues });
-              }
-              const safe = valid ? tailored : filterFaithfulResume(parsedSourceData, tailored);
-              safe.meta = {
-                ...(safe.meta || {}),
-                tailoredFromResumeId: sourceResume.id,
-                tailoredForJobId: job.id,
-                tailoredForJobCompany: job.company,
-                tailoredForJobTitle: job.title,
-              };
-              const newId = await db.resumes.add({
-                createdAt: Date.now(),
-                fileName: `[${job.company}] ${job.title} - ${sourceResume.fileName}`,
-                rawText: JSON.stringify(safe, null, 2),
-                parsedData: safe,
-                formatted: true,
-                isMain: false,
+              const activeProfileId = await careerKnowledgeAppService.getActiveProfileId();
+              const reqs = await careerKnowledgeAppService.extractJDRequirements(job.description, {
+                jdContext: job.id,
               });
+              const jdMatchReport = await careerKnowledgeAppService.matchJDRequirements(
+                activeProfileId,
+                reqs,
+                job.id
+              );
+              const additionalInstructions = [globalPrompt?.trim(), job.customPrompt?.trim()]
+                .filter(Boolean)
+                .join('\n\n');
+              const tailorResult = await careerKnowledgeAppService.tailorResumeForJD({
+                profileId: activeProfileId,
+                jdMatchReport,
+                baseResume: parsedSourceData,
+                targetJobDescription: job.description,
+                targetJobTitle: job.title,
+                targetCompany: job.company,
+                ...(additionalInstructions ? { additionalInstructions } : {}),
+              });
+
+              if (!tailorResult.success) {
+                const reason =
+                  tailorResult.error || 'No eligible confirmed facts found matching target JD.';
+                logger.warn(`Tailoring aborted for job ${job.id}: ${reason}`);
+                toast.error(reason);
+                setProcessingStatus((prev) => ({
+                  ...prev,
+                  [job.id]: { status: 'error', error: reason },
+                }));
+                return;
+              }
+
+              const newId = await careerKnowledgeAppService.saveTailoredResumeDraft(
+                tailorResult,
+                `[${job.company}] ${job.title} - ${sourceResume.fileName}`,
+                sourceResume.id,
+                {
+                  jobId: job.id,
+                  jobTitle: job.title,
+                  company: job.company,
+                  profileId: activeProfileId,
+                }
+              );
+
               setProcessingStatus((prev) => ({
                 ...prev,
                 [job.id]: { status: 'completed', resultId: newId },
               }));
-            } catch {
+            } catch (err) {
+              logger.error(`Failed to tailor CV for job ${job.id}`, err);
               setProcessingStatus((prev) => ({
                 ...prev,
                 [job.id]: { status: 'error', error: 'Failed.' },

@@ -41,7 +41,11 @@ const TITLE_SENIORITY_MAP: Array<{
     level: 'fresher',
   },
   { regex: /\b(team\s*lead|tech\s*lead|technical\s*lead|trưởng\s*nhóm)\b/i, level: 'lead' },
-  { regex: /\b(engineering\s*manager|general\s*manager|trưởng\s*phòng|quản\s*lý|giám\s*đốc|head\s*of|director|manager)\b/i, level: 'manager' },
+  {
+    regex:
+      /\b(engineering\s*manager|general\s*manager|trưởng\s*phòng|quản\s*lý|giám\s*đốc|head\s*of|director|manager)\b/i,
+    level: 'manager',
+  },
   { regex: /\b(senior|sr\.?|chuyên\s*viên\s*cao\s*cấp|kỹ\s*sư\s*cao\s*cấp)\b/i, level: 'senior' },
   { regex: /\b(junior|jr\.?)\b/i, level: 'junior' },
   { regex: /\b(middle|mid-level|mid\s*level)\b/i, level: 'mid' },
@@ -51,18 +55,24 @@ const BODY_SENIORITY_RULES: Array<{
   regex: RegExp;
   level: ParsedJobData['experienceLevel'];
 }> = [
-  { regex: /(?:^|[^a-zA-Z0-9À-ỹ])(thực\s*tập\s*sinh|sinh\s*viên\s*năm\s*cuối|thực\s*tập\s*tốt\s*nghiệp)(?:$|[^a-zA-Z0-9À-ỹ])/i, level: 'intern' },
+  {
+    regex:
+      /(?:^|[^a-zA-Z0-9À-ỹ])(thực\s*tập\s*sinh|sinh\s*viên\s*năm\s*cuối|thực\s*tập\s*tốt\s*nghiệp)(?:$|[^a-zA-Z0-9À-ỹ])/i,
+    level: 'intern',
+  },
   {
     regex:
       /(?:^|[^a-zA-Z0-9À-ỹ])(không\s*yêu\s*cầu\s*kinh\s*nghiệm|chưa\s*có\s*kinh\s*nghiệm|được\s*đào\s*tạo\s*(?:từ\s*đầu|100%|bài\s*bản)|sinh\s*viên\s*mới\s*tốt\s*nghiệp|no\s*experience\s*required|0\s*[-–]\s*1\s*(?:năm|years?))(?:$|[^a-zA-Z0-9À-ỹ])/i,
     level: 'fresher',
   },
   {
-    regex: /(?:^|[^a-zA-Z0-9À-ỹ])(vị\s*trí\s*quản\s*lý|kinh\s*nghiệm\s*quản\s*lý|vai\s*trò\s*quản\s*lý|trưởng\s*phòng|giám\s*đốc|management\s*experience|lead\s*and\s*manage)(?:$|[^a-zA-Z0-9À-ỹ])/i,
+    regex:
+      /(?:^|[^a-zA-Z0-9À-ỹ])(vị\s*trí\s*quản\s*lý|kinh\s*nghiệm\s*quản\s*lý|vai\s*trò\s*quản\s*lý|trưởng\s*phòng|giám\s*đốc|management\s*experience|lead\s*and\s*manage)(?:$|[^a-zA-Z0-9À-ỹ])/i,
     level: 'manager',
   },
   {
-    regex: /(?:^|[^a-zA-Z0-9À-ỹ])(trưởng\s*nhóm|tech\s*lead|team\s*lead|technical\s*lead|lead\s*a\s*team)(?:$|[^a-zA-Z0-9À-ỹ])/i,
+    regex:
+      /(?:^|[^a-zA-Z0-9À-ỹ])(trưởng\s*nhóm|tech\s*lead|team\s*lead|technical\s*lead|lead\s*a\s*team)(?:$|[^a-zA-Z0-9À-ỹ])/i,
     level: 'lead',
   },
   {
@@ -71,7 +81,8 @@ const BODY_SENIORITY_RULES: Array<{
     level: 'senior',
   },
   {
-    regex: /(?:^|[^a-zA-Z0-9À-ỹ])(1\s*[-–]\s*2\s*(?:năm|years?)|từ\s*1\s*(?:đến|-)\s*2\s*năm|dưới\s*2\s*năm|1\+\s*(?:năm|years?)|1\s*năm\s*kinh\s*nghiệm)(?:$|[^a-zA-Z0-9À-ỹ])/i,
+    regex:
+      /(?:^|[^a-zA-Z0-9À-ỹ])(1\s*[-–]\s*2\s*(?:năm|years?)|từ\s*1\s*(?:đến|-)\s*2\s*năm|dưới\s*2\s*năm|1\+\s*(?:năm|years?)|1\s*năm\s*kinh\s*nghiệm)(?:$|[^a-zA-Z0-9À-ỹ])/i,
     level: 'junior',
   },
   {
@@ -362,7 +373,12 @@ function cleanBulletList(text: string): string[] {
     .map((line) => line.trim())
     .filter((line) => line.length > 0)
     .filter((line) => !isBoilerplate(line))
-    .map((line) => line.replace(/^[-*•·–—+]\s*/, '').replace(/^\d+[.)]\s*/, '').trim())
+    .map((line) =>
+      line
+        .replace(/^[-*•·–—+]\s*/, '')
+        .replace(/^\d+[.)]\s*/, '')
+        .trim()
+    )
     .filter((line) => line.length > 3 && !line.startsWith('#'));
 }
 
@@ -383,7 +399,10 @@ function extractSeniorityLevel(title: string, rawText: string): ParsedJobData['e
     .replace(/mentor(?:ing)?\s+junior\s+(?:developers?|engineers?|members?)/gi, '')
     .replace(/(?:Google\s+Tag\s+Manager|Tag\s+Manager)/gi, '')
     .replace(/(?:Hiring\s+Manager|Project\s+Manager|Product\s+Manager|Account\s+Manager)/gi, '')
-    .replace(/(?:báo\s*cáo\s*(?:cho|trực\s*tiếp\s*cho)?\s*quản\s*lý|phân\s*công\s*của\s*quản\s*lý|report\s*to\s*manager)/gi, '');
+    .replace(
+      /(?:báo\s*cáo\s*(?:cho|trực\s*tiếp\s*cho)?\s*quản\s*lý|phân\s*công\s*của\s*quản\s*lý|report\s*to\s*manager)/gi,
+      ''
+    );
 
   for (const { regex, level } of BODY_SENIORITY_RULES) {
     if (regex.test(sanitizedText)) {
@@ -397,7 +416,10 @@ function extractSeniorityLevel(title: string, rawText: string): ParsedJobData['e
 /**
  * Extract Job Title and detect seniority
  */
-function extractJobTitle(lines: string[], rawText: string): { title: string; level?: ParsedJobData['experienceLevel'] } {
+function extractJobTitle(
+  lines: string[],
+  rawText: string
+): { title: string; level?: ParsedJobData['experienceLevel'] } {
   // 1. Check explicit prefix
   const prefixMatch = rawText.match(TITLE_PREFIX_REGEX);
   let rawTitle = prefixMatch ? prefixMatch[1].trim() : '';
@@ -445,7 +467,11 @@ function extractCompanyName(lines: string[], rawText: string, detectedTitle: str
   // 1. Check explicit prefix: "Company: ...", "Công ty: ..."
   const prefixMatch = rawText.match(COMPANY_PREFIX_REGEX);
   if (prefixMatch && prefixMatch[1].trim().length > 1) {
-    const candidate = prefixMatch[1].trim().replace(/[*_#`]/g, '').replace(/[,;:.]$/, '').trim();
+    const candidate = prefixMatch[1]
+      .trim()
+      .replace(/[*_#`]/g, '')
+      .replace(/[,;:.]$/, '')
+      .trim();
     if (candidate.length < 80) return candidate;
   }
 
@@ -474,7 +500,9 @@ function extractCompanyName(lines: string[], rawText: string, detectedTitle: str
       candidate.length >= 2 &&
       candidate.length < 60 &&
       !NON_COMPANY_START_WORDS.includes(cleanWord) &&
-      !/(?:vnđ|vnd|\$|usd|lương|pay|tháng|month|vietnamworks|indeed|linkedin|hồ chí minh|hà nội|đà nẵng|responsibilities|requirements|qualifications)/i.test(candidate) &&
+      !/(?:vnđ|vnd|\$|usd|lương|pay|tháng|month|vietnamworks|indeed|linkedin|hồ chí minh|hà nội|đà nẵng|responsibilities|requirements|qualifications)/i.test(
+        candidate
+      ) &&
       !candidate.includes(':') &&
       /^[A-ZÀ-Ỹ]/.test(candidate)
     ) {
@@ -483,27 +511,58 @@ function extractCompanyName(lines: string[], rawText: string, detectedTitle: str
   }
 
   // 3. Check single-line "Hiring pattern": "[Company Name] đang tuyển dụng", "[Company] is hiring"
-  const hiringMatch = rawText.match(/(?:^|\n)\s*([A-ZÀ-Ỹa-zà-ỹ0-9\s&.,'-]{2,50})\s+(?:đang tuyển dụng|tuyển dụng|is hiring|is looking for)/i);
+  const hiringMatch = rawText.match(
+    /(?:^|\n)\s*([A-ZÀ-Ỹa-zà-ỹ0-9\s&.,'-]{2,50})\s+(?:đang tuyển dụng|tuyển dụng|is hiring|is looking for)/i
+  );
   if (hiringMatch && hiringMatch[1]) {
-    const candidate = hiringMatch[1].trim().replace(/[*_#`]/g, '').replace(/[,;:.]$/, '').trim();
+    const candidate = hiringMatch[1]
+      .trim()
+      .replace(/[*_#`]/g, '')
+      .replace(/[,;:.]$/, '')
+      .trim();
     const forbidden = ['chúng tôi', 'công ty', 'hiện tại', 'we', 'our team', 'team'];
-    if (!forbidden.includes(candidate.toLowerCase()) && candidate.length > 2 && candidate.length < 60) {
+    if (
+      !forbidden.includes(candidate.toLowerCase()) &&
+      candidate.length > 2 &&
+      candidate.length < 60
+    ) {
       return candidate;
     }
   }
 
   // 4. Check "About [Company]" pattern
-  const aboutMatch = rawText.match(/(?:about\s+(?:the\s+)?([A-ZÀ-Ỹ0-9][A-Za-zÀ-ỹ0-9\s&.,'-]{2,40}))(?:\s*[:\n]|\s+is|\s+we)/i);
+  const aboutMatch = rawText.match(
+    /(?:about\s+(?:the\s+)?([A-ZÀ-Ỹ0-9][A-Za-zÀ-ỹ0-9\s&.,'-]{2,40}))(?:\s*[:\n]|\s+is|\s+we)/i
+  );
   if (aboutMatch && aboutMatch[1]) {
-    const candidate = aboutMatch[1].trim().replace(/[*_#`]/g, '').replace(/[,;:.]$/, '').trim();
-    const forbidden = ['company', 'the company', 'us', 'our team', 'this role', 'the role', 'the position', 'position'];
+    const candidate = aboutMatch[1]
+      .trim()
+      .replace(/[*_#`]/g, '')
+      .replace(/[,;:.]$/, '')
+      .trim();
+    const forbidden = [
+      'company',
+      'the company',
+      'us',
+      'our team',
+      'this role',
+      'the role',
+      'the position',
+      'position',
+    ];
     if (!forbidden.includes(candidate.toLowerCase()) && candidate.length < 50) return candidate;
   }
 
   // 5. Check "At [Company], we are...", "Join [Company] to..."
-  const atMatch = rawText.match(/(?:^|\s)(?:at|join|joining|welcome to)\s+([A-ZÀ-Ỹ0-9][A-Za-zÀ-ỹ0-9\s&'-]{1,35})(?:\s+to|\s+is|\s+we|\s+team|[,;:.])/i);
+  const atMatch = rawText.match(
+    /(?:^|\s)(?:at|join|joining|welcome to)\s+([A-ZÀ-Ỹ0-9][A-Za-zÀ-ỹ0-9\s&'-]{1,35})(?:\s+to|\s+is|\s+we|\s+team|[,;:.])/i
+  );
   if (atMatch && atMatch[1]) {
-    const candidate = atMatch[1].trim().replace(/[*_#`]/g, '').replace(/[,;:.]$/, '').trim();
+    const candidate = atMatch[1]
+      .trim()
+      .replace(/[*_#`]/g, '')
+      .replace(/[,;:.]$/, '')
+      .trim();
     const forbidden = ['the', 'our', 'a', 'this', 'an', 'your', 'us', 'scale', 'build'];
     if (!forbidden.includes(candidate.toLowerCase()) && candidate.length < 40) {
       return candidate;
@@ -517,7 +576,10 @@ function extractCompanyName(lines: string[], rawText: string, detectedTitle: str
 /**
  * Extract Metadata: Salary, Location, Employment Type
  */
-function extractJobMetadata(rawLines: string[], rawText: string): {
+function extractJobMetadata(
+  rawLines: string[],
+  rawText: string
+): {
   salary?: string;
   location?: string;
   employmentType?: string;
@@ -543,7 +605,10 @@ function extractJobMetadata(rawLines: string[], rawText: string): {
     location = locationPrefixMatch[1].trim().replace(/[*_#`]/g, '');
   } else {
     for (const loc of KNOWN_LOCATIONS) {
-      const regex = new RegExp(`(?:^|\\n)\\s*${loc.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')}\\s*(?:\\n|$)`, 'i');
+      const regex = new RegExp(
+        `(?:^|\\n)\\s*${loc.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')}\\s*(?:\\n|$)`,
+        'i'
+      );
       if (regex.test(rawText)) {
         location = loc;
         break;
@@ -557,7 +622,10 @@ function extractJobMetadata(rawLines: string[], rawText: string): {
     employmentType = empPrefixMatch[1].trim().replace(/[*_#`]/g, '');
   } else {
     for (const emp of KNOWN_EMPLOYMENT_TYPES) {
-      const regex = new RegExp(`(?:^|\\n)\\s*${emp.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')}\\s*(?:\\n|$)`, 'i');
+      const regex = new RegExp(
+        `(?:^|\\n)\\s*${emp.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')}\\s*(?:\\n|$)`,
+        'i'
+      );
       if (regex.test(rawText)) {
         employmentType = emp;
         break;
@@ -617,7 +685,8 @@ export function parseRawJobDescription(rawText: string): ParsedJobData {
       responsibilities: [],
       benefits: [],
       careerGrowth: [],
-      suggestedCustomPrompt: 'Emphasize relevant technical experience, quantifiable achievements, and leadership skills.',
+      suggestedCustomPrompt:
+        'Emphasize relevant technical experience, quantifiable achievements, and leadership skills.',
       detectedSkills: [],
       url: undefined,
     };
@@ -644,7 +713,13 @@ export function parseRawJobDescription(rawText: string): ParsedJobData {
   const careerGrowthLines: string[] = [];
   const overviewLines: string[] = [];
 
-  type CurrentSection = 'overview' | 'responsibilities' | 'requirements' | 'benefits' | 'careerGrowth' | 'other';
+  type CurrentSection =
+    | 'overview'
+    | 'responsibilities'
+    | 'requirements'
+    | 'benefits'
+    | 'careerGrowth'
+    | 'other';
   let currentSection: CurrentSection = 'overview';
 
   for (const line of rawLines) {
@@ -698,16 +773,20 @@ export function parseRawJobDescription(rawText: string): ParsedJobData {
     cleanDescription += overviewLines.join('\n') + '\n\n';
   }
   if (cleanedResponsibilities.length > 0) {
-    cleanDescription += 'Key Responsibilities:\n' + cleanedResponsibilities.map((r) => `• ${r}`).join('\n') + '\n\n';
+    cleanDescription +=
+      'Key Responsibilities:\n' + cleanedResponsibilities.map((r) => `• ${r}`).join('\n') + '\n\n';
   }
   if (cleanedRequirements.length > 0) {
-    cleanDescription += 'Requirements:\n' + cleanedRequirements.map((r) => `• ${r}`).join('\n') + '\n\n';
+    cleanDescription +=
+      'Requirements:\n' + cleanedRequirements.map((r) => `• ${r}`).join('\n') + '\n\n';
   }
   if (cleanedBenefits.length > 0) {
-    cleanDescription += 'Benefits & Perks:\n' + cleanedBenefits.map((b) => `• ${b}`).join('\n') + '\n\n';
+    cleanDescription +=
+      'Benefits & Perks:\n' + cleanedBenefits.map((b) => `• ${b}`).join('\n') + '\n\n';
   }
   if (cleanedCareerGrowth.length > 0) {
-    cleanDescription += 'Career Development:\n' + cleanedCareerGrowth.map((g) => `• ${g}`).join('\n');
+    cleanDescription +=
+      'Career Development:\n' + cleanedCareerGrowth.map((g) => `• ${g}`).join('\n');
   }
 
   if (!cleanDescription.trim()) {
@@ -728,11 +807,14 @@ export function parseRawJobDescription(rawText: string): ParsedJobData {
     suggestedCustomPrompt += ` Prioritize and highlight strong hands-on expertise in ${highlighted}.`;
   }
   if (level === 'senior' || level === 'lead' || level === 'manager') {
-    suggestedCustomPrompt += ' Emphasize system architecture design, performance optimization, and technical mentorship impact.';
+    suggestedCustomPrompt +=
+      ' Emphasize system architecture design, performance optimization, and technical mentorship impact.';
   } else if (level === 'intern' || level === 'fresher') {
-    suggestedCustomPrompt += ' Highlight academic foundation, eagerness to learn, project capstones, and problem-solving mindset.';
+    suggestedCustomPrompt +=
+      ' Highlight academic foundation, eagerness to learn, project capstones, and problem-solving mindset.';
   } else {
-    suggestedCustomPrompt += ' Highlight practical project contributions, problem-solving skills, and clean coding practices.';
+    suggestedCustomPrompt +=
+      ' Highlight practical project contributions, problem-solving skills, and clean coding practices.';
   }
 
   return {

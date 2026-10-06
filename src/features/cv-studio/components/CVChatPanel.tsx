@@ -23,6 +23,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { useState } from 'react';
+import { Badge } from '@/components/ui/badge';
 import {
   MessageSquare,
   Plus,
@@ -34,6 +35,7 @@ import {
   Target,
   ChevronDown,
   AlertCircle,
+  BookOpen,
 } from 'lucide-react';
 
 interface CVChatPanelProps {
@@ -50,6 +52,8 @@ interface CVChatPanelProps {
   contextResumeId: number | undefined;
   contextJobId: string | undefined;
   jobs: Job[];
+  candidateFactCount?: number;
+  onOpenCareerKnowledge?: () => void;
   onSendMessage: (text: string, image?: string) => void;
   onRetryLastResponse?: () => void;
   onAnswerQuestionGroup?: (
@@ -83,6 +87,8 @@ export const CVChatPanel: React.FC<CVChatPanelProps> = ({
   contextResumeId,
   contextJobId,
   jobs,
+  candidateFactCount,
+  onOpenCareerKnowledge,
   onSendMessage,
   onRetryLastResponse,
   onAnswerQuestionGroup,
@@ -131,6 +137,33 @@ export const CVChatPanel: React.FC<CVChatPanelProps> = ({
             <span className="text-[10px] bg-amber-500/10 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-full animate-pulse shrink-0">
               {pendingChanges.length} pending
             </span>
+          )}
+          {onOpenCareerKnowledge && (
+            <Tooltip delayDuration={0}>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-xs gap-1.5 relative font-medium text-foreground hover:text-primary hover:border-primary/40"
+                  onClick={onOpenCareerKnowledge}
+                  aria-label="Career Knowledge"
+                >
+                  <BookOpen size={12} className="text-primary" />
+                  <span className="hidden sm:inline">Career Knowledge</span>
+                  <span className="inline sm:hidden">Knowledge</span>
+                  {candidateFactCount !== undefined && candidateFactCount > 0 && (
+                    <Badge
+                      variant="default"
+                      className="px-1.5 py-0 text-[10px] h-4 bg-amber-600 text-white rounded-full font-bold ml-0.5"
+                      aria-label={`${candidateFactCount} facts to review`}
+                    >
+                      {candidateFactCount}
+                    </Badge>
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Open Career Knowledge Base & Review</TooltipContent>
+            </Tooltip>
           )}
           <Tooltip delayDuration={0}>
             <TooltipTrigger asChild>

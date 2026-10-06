@@ -10,5 +10,7 @@ export {
   getExtractJDInfoPrompt,
   getJobRecommendationsPrompt,
   getJobTailoredResumePrompt,
+  getExtractJDRequirementsPrompt,
 } from './jobs';
 export { getCompanyIntelPrompt } from './company';
+export { getCareerKnowledgeResumeTailoringPrompt } from './careerKnowledgeTailoring';

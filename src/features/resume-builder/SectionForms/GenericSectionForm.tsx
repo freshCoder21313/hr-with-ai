@@ -54,6 +54,9 @@ export function GenericSectionForm<T>({
         <EntryCardShell
           key={getEntryKey(entry as { _entryId?: string }, index)}
           title={getTitle(entry)}
+          derivedFromFactIds={
+            (entry as Record<string, unknown>).derivedFromFactIds as string[] | undefined
+          }
         >
           <EntryCardActions
             analyzingIndex={analyzingIndex}

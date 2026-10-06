@@ -277,4 +277,20 @@ Dự án xây dựng một kim tự tháp kiểm thử ba lớp vô cùng chặt
 3.  **Tích hợp PWA cho môi trường Web:** Bổ sung cấu hình PWA trong Vite (`vite-plugin-pwa`) để sinh tự động Service Worker, hỗ trợ lưu cache tài nguyên tĩnh cho trình duyệt web, biến bản Web thành một trải nghiệm offline-first trọn vẹn giống bản di động.
 
 ---
-*Báo cáo được tổng hợp và phân tích chi tiết dựa trên mã nguồn thực tế của dự án hr-with-ai.*
+
+## 8. KIẾN TRÚC CANONICAL CAREER KNOWLEDGE & RELEASE FREEZE (PHASE 1-15)
+
+Dự án đã hoàn thiện và đóng băng kiến trúc (Architecture Freeze) cho toàn bộ hệ thống **Career Knowledge** với 15 giai đoạn hoàn chỉnh:
+
+*   **Canonical Career Knowledge Base (Phases 1-2):** Nền tảng tri thức nghề nghiệp chuẩn hóa cục bộ với Dexie schema v15, định danh UUID bất biến, máy trạng thái xác thực (`observed`, `needs_confirmation`, `confirmed`, `rejected`), và ràng buộc bất biến không tự động xác nhận.
+*   **Resume Migration & Candidate Verification (Phases 3-4):** Di trú CV một chiều sang các sự thật ứng viên cần người dùng xác nhận (`needs_confirmation`), kết hợp Question Engine phát hiện lỗ hổng tri thức và tạo câu hỏi làm rõ tương tác.
+*   **Evidence Provenance & Fact Attribution (Phases 5-6):** Thu thập bằng chứng bất biến từ GitHub và phỏng vấn, liên kết nguồn gốc đa chiều (`derivedFromFactIds`), và chiếu tri thức chuẩn xác sang CV.
+*   **PostgreSQL/Neon Cloud Synchronization (Phases 7-9):** Đồng bộ hóa đám mây mã hóa, có kiểm soát tốc độ (rate limiting), bảo vệ ranh giới tin cậy và tích hợp giao diện điều khiển toàn diện.
+*   **JD Matching & AI Tailoring Safety Harness (Phases 10-12):** Đối sánh yêu cầu JD tất định không sinh điểm ảo / xác suất trúng tuyển, sinh bản nháp CV may đo chỉ từ các sự thật đã được xác thực, và bộ kiểm thử chất lượng 11 lớp đạt 100% tỷ lệ phát hiện tấn công ảo giác (12/12 adversarial attacks).
+*   **Production UX & Data Lifecycle Hardening (Phases 13-15):** Trải nghiệm người dùng cao cấp, phục hồi sao lưu toàn vẹn ngữ nghĩa, di trú an toàn và bộ kiểm thử End-to-End Release Acceptance hoàn chỉnh.
+
+**Quy chế Thay đổi Sau Đóng Băng (Post-Freeze Change Policy):**  
+Mọi thay đổi trong tương lai được phân loại chặt chẽ thành: `feature`, `bug fix`, `security fix`, `migration`, hoặc `architecture change` (bắt buộc phải có ADR mới theo [ADR 003](file:///run/media/tr3cyos/SantaSSD/SKS/Sources/repos/aistudio/hr-with-ai/docs/adr/003-career-knowledge-architecture-freeze.md)).
+
+---
+*Báo cáo được tổng hợp và phân tích chi tiết dựa trên mã nguồn thực tế của dự án hr-with-ai (Phiên bản Phase 15 Architecture Freeze).*

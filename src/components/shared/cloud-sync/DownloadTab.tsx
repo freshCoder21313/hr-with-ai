@@ -21,15 +21,14 @@ export const DownloadTab: React.FC<DownloadTabProps> = ({
     <>
       <div className="space-y-3">
         <Label htmlFor="download-id" className="text-sm font-bold text-foreground px-1">
-          Identity Key <span className="text-destructive">*</span>
+          Account / Sync Identity <span className="text-destructive">*</span>
         </Label>
         <Input
           id="download-id"
           value={downloadId}
           onChange={(e) => setDownloadId(e.target.value)}
-          placeholder="Paste your 16-character ID"
-          maxLength={16}
-          className="h-14 px-4 bg-muted/50 border-input rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all font-mono text-center text-lg tracking-[0.2em] uppercase text-foreground"
+          placeholder="Enter your Email, Username, or ID"
+          className="h-14 px-4 bg-muted/50 border-input rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all font-mono text-base text-foreground"
         />
       </div>
 

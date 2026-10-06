@@ -187,7 +187,9 @@ Requirements:
     fireEvent.click(screen.getByRole('button', { name: /^Auto-fill$/i }));
 
     const changeCalls = onChange.mock.calls.map((call) => call[0].target);
-    const companyCalls = changeCalls.filter((c) => c.name === 'company' || c.name === 'companyName');
+    const companyCalls = changeCalls.filter(
+      (c) => c.name === 'company' || c.name === 'companyName'
+    );
     expect(companyCalls).toHaveLength(0); // Should not overwrite existing company
   });
 
@@ -255,7 +257,9 @@ Requirements:
     expect(urlInput.value).toBe('https://careers.google.com/jobs/results/123');
 
     // Test editing URL
-    fireEvent.change(urlInput, { target: { value: 'https://careers.google.com/jobs/results/456' } });
+    fireEvent.change(urlInput, {
+      target: { value: 'https://careers.google.com/jobs/results/456' },
+    });
     expect(onChange).toHaveBeenCalled();
 
     // Test Open Job Link button

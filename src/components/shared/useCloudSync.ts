@@ -2,6 +2,9 @@ import { useState, useEffect, useRef } from 'react';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
 import { syncService } from '@/services/core/syncService';
+import { vaultService } from '@/services/core/vaultService';
+
+const STORAGE_ACCOUNT_ID = 'career_sync_id';
 
 export function useCloudSync() {
   const [activeTab, setActiveTab] = useState<'upload' | 'download' | 'offline'>('upload');
@@ -10,17 +13,31 @@ export function useCloudSync() {
   const [success, setSuccess] = useState<string | null>(null);
 
   // Upload State
-  const [uploadId, setUploadId] = useState('');
+  const [uploadId, setUploadId] = useState(() => localStorage.getItem(STORAGE_ACCOUNT_ID) || '');
   const [uploadPassword, setUploadPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [includeApiKey, setIncludeApiKey] = useState(false);
 
   // Download State
-  const [downloadId, setDownloadId] = useState('');
+  const [downloadId, setDownloadId] = useState(
+    () => localStorage.getItem(STORAGE_ACCOUNT_ID) || ''
+  );
 
   // Offline State
   const [offlineIncludeApiKey, setOfflineIncludeApiKey] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (uploadId.trim()) {
+      localStorage.setItem(STORAGE_ACCOUNT_ID, uploadId.trim());
+    }
+  }, [uploadId]);
+
+  useEffect(() => {
+    if (downloadId.trim()) {
+      localStorage.setItem(STORAGE_ACCOUNT_ID, downloadId.trim());
+    }
+  }, [downloadId]);
 
   useEffect(() => {
     if (activeTab === 'upload' && !uploadId) {
@@ -41,7 +58,7 @@ export function useCloudSync() {
   const handleCopyId = async () => {
     try {
       await navigator.clipboard.writeText(uploadId);
-      setSuccess('ID copied to clipboard');
+      setSuccess('Account ID copied to clipboard');
     } catch (err: unknown) {
       logger.error('useCloudSync: clipboard write failed', err);
       toast.error('Could not copy to clipboard. Copy the ID manually.');
@@ -53,7 +70,7 @@ export function useCloudSync() {
   const handleUpload = async () => {
     resetStatus();
     if (!uploadId || !syncService.validateId(uploadId)) {
-      setError('Invalid ID format. Must be 16 alphanumeric characters.');
+      setError('Invalid Account format. Please enter an email, username, or valid ID.');
       return;
     }
     if (!uploadPassword) {
@@ -67,7 +84,11 @@ export function useCloudSync() {
 
     setIsLoading(true);
     try {
-      const data = await syncService.exportData({ includeSensitive: includeApiKey });
+      // Legacy blob backup excludes Career Knowledge (size cap); CK syncs via its own relational path.
+      const data = await syncService.exportData({
+        includeSensitive: includeApiKey,
+        excludeCareerKnowledge: true,
+      });
       const result = await syncService.uploadToCloud(uploadId, uploadPassword, data);
 
       if (result.success) {
@@ -90,7 +111,7 @@ export function useCloudSync() {
   const handleDownload = async () => {
     resetStatus();
     if (!downloadId || !syncService.validateId(downloadId)) {
-      setError('Invalid ID format. Must be 16 alphanumeric characters.');
+      setError('Invalid Account format. Must be an email, username, or valid ID.');
       return;
     }
 
@@ -117,28 +138,17 @@ export function useCloudSync() {
     resetStatus();
     setIsLoading(true);
     try {
-      const data = await syncService.exportData({ includeSensitive: offlineIncludeApiKey });
-      const jsonString = JSON.stringify(data, null, 2);
-      const blob = new Blob([jsonString], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-
-      const a = document.createElement('a');
-      a.href = url;
-      const date = new Date().toISOString().split('T')[0];
-      a.download = `hr-inv-backup-${date}.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-
+      const fileName = await vaultService.downloadVaultFile({
+        includeSensitive: offlineIncludeApiKey,
+      });
       setSuccess(
         offlineIncludeApiKey
-          ? 'Backup file downloaded (includes API keys). Store it securely.'
-          : 'Backup file downloaded. API keys and tokens were excluded.'
+          ? `Full Career Vault (${fileName}) exported including API keys. Store it securely.`
+          : `Full Career Vault (${fileName}) exported. API keys were excluded.`
       );
     } catch (err: unknown) {
-      logger.error('useCloudSync: offline export failed', err);
-      setError('Failed to export data.');
+      logger.error('useCloudSync: offline vault export failed', err);
+      setError('Failed to export vault file.');
     } finally {
       setIsLoading(false);
     }
@@ -154,27 +164,21 @@ export function useCloudSync() {
 
     resetStatus();
     setIsLoading(true);
-    let data: unknown;
-    // syncService owns the shape; parsing only proves the file is JSON.
-    type SyncPayload = Parameters<typeof syncService.importData>[0];
-    try {
-      data = JSON.parse(await file.text());
-    } catch {
-      logger.error('useCloudSync: offline import file was not valid JSON');
-      setError('This file is not valid JSON. Export a fresh backup and try again.');
-      setIsLoading(false);
-      if (fileInputRef.current) fileInputRef.current.value = '';
-      return;
-    }
 
     try {
-      await syncService.importData(data as SyncPayload);
-      setSuccess('Data imported successfully! The page will reload momentarily.');
-      setTimeout(() => window.location.reload(), 2000);
+      const fileText = await file.text();
+      const res = await vaultService.importVault(fileText);
+
+      if (res.success) {
+        setSuccess(
+          'Vault restored and merged into local database successfully! The page will reload momentarily.'
+        );
+        setTimeout(() => window.location.reload(), 2000);
+      } else {
+        setError(res.error || 'Failed to import vault file.');
+      }
     } catch (err: unknown) {
       logger.error('useCloudSync: offline import merge failed', err);
-      // No rollback is promised: the merge writes across several tables, so a
-      // failure part-way through can leave some records applied.
       setError(
         err instanceof Error
           ? `The file parsed, but applying it failed: ${err.message}`

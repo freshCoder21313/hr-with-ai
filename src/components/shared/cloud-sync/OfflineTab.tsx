@@ -32,8 +32,8 @@ export const OfflineTab: React.FC<OfflineTabProps> = ({
             <Download className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <h3 className="text-sm font-bold text-foreground">Export Data</h3>
-            <p className="text-xs text-muted-foreground">Download as JSON file</p>
+            <h3 className="text-sm font-bold text-foreground">Export Data Vault</h3>
+            <p className="text-xs text-muted-foreground">Download full .hrvault package</p>
           </div>
         </div>
 
@@ -53,8 +53,8 @@ export const OfflineTab: React.FC<OfflineTabProps> = ({
           </div>
           <p className="text-[11px] text-muted-foreground leading-relaxed">
             {offlineIncludeApiKey
-              ? 'File will contain secrets — store offline backups securely.'
-              : 'Default: keys excluded. Interviews & resumes still export.'}
+              ? 'File will contain secrets — store offline vault backups securely.'
+              : 'Default: keys excluded. Includes Resumes, Career Facts, Evidence & Interviews.'}
           </p>
 
           <LoadingButton
@@ -66,7 +66,7 @@ export const OfflineTab: React.FC<OfflineTabProps> = ({
             className="w-full"
             leftIcon={<FileJson className="h-4 w-4" />}
           >
-            Download Backup File
+            Export Full Vault (.hrvault)
           </LoadingButton>
         </div>
       </div>
@@ -86,8 +86,8 @@ export const OfflineTab: React.FC<OfflineTabProps> = ({
             <Laptop className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <h3 className="text-sm font-bold text-foreground">Import Data</h3>
-            <p className="text-xs text-muted-foreground">Restore from JSON file</p>
+            <h3 className="text-sm font-bold text-foreground">Import Data Vault</h3>
+            <p className="text-xs text-muted-foreground">Restore from .hrvault or JSON file</p>
           </div>
         </div>
 
@@ -95,7 +95,7 @@ export const OfflineTab: React.FC<OfflineTabProps> = ({
           type="file"
           ref={fileInputRef}
           onChange={handleFileChange}
-          accept=".json"
+          accept=".hrvault,.json"
           className="hidden"
         />
 
@@ -107,7 +107,7 @@ export const OfflineTab: React.FC<OfflineTabProps> = ({
           className="w-full"
           leftIcon={<Upload className="h-4 w-4" />}
         >
-          Select Backup File
+          Select Vault File (.hrvault)
         </LoadingButton>
       </div>
     </div>

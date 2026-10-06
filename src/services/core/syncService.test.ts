@@ -34,6 +34,36 @@ vi.mock('@/lib/db', () => ({
       add: vi.fn(),
       put: vi.fn(),
     },
+    careerProfiles: {
+      toArray: vi.fn(),
+      add: vi.fn(),
+      put: vi.fn(),
+      get: vi.fn(),
+    },
+    careerFacts: {
+      toArray: vi.fn(),
+      add: vi.fn(),
+      put: vi.fn(),
+      get: vi.fn(),
+    },
+    careerEvidence: {
+      toArray: vi.fn(),
+      add: vi.fn(),
+      put: vi.fn(),
+      get: vi.fn(),
+    },
+    factEvidenceLinks: {
+      toArray: vi.fn(),
+      add: vi.fn(),
+      put: vi.fn(),
+      get: vi.fn(),
+    },
+    careerNotes: {
+      toArray: vi.fn(),
+      add: vi.fn(),
+      put: vi.fn(),
+      get: vi.fn(),
+    },
     transaction: vi.fn((...args: unknown[]) => {
       const fn = args[args.length - 1] as () => unknown;
       return fn();
@@ -63,13 +93,25 @@ describe('syncService', () => {
       expect(syncService.validateId('a1b2c3d4e5f6g7h8')).toBe(true);
     });
 
-    it('should reject IDs with special characters', () => {
-      expect(syncService.validateId('a1b2c3d4e5f6g7h!')).toBe(false);
+    it('should validate email accounts', () => {
+      expect(syncService.validateId('developer@example.com')).toBe(true);
+      expect(syncService.validateId('user.name+sync@company.org')).toBe(true);
     });
 
-    it('should reject IDs with incorrect length', () => {
-      expect(syncService.validateId('a1b2c3')).toBe(false);
-      expect(syncService.validateId('a1b2c3d4e5f6g7h8i9j0')).toBe(false);
+    it('should validate usernames (3-64 characters)', () => {
+      expect(syncService.validateId('john_doe-99')).toBe(true);
+      expect(syncService.validateId('dev')).toBe(true);
+    });
+
+    it('should reject IDs with illegal special characters or spaces', () => {
+      expect(syncService.validateId('a1b2c3d4e5f6g7h!')).toBe(false);
+      expect(syncService.validateId('user @example.com')).toBe(false);
+      expect(syncService.validateId('invalid#user$')).toBe(false);
+    });
+
+    it('should reject IDs with invalid length (< 3 chars)', () => {
+      expect(syncService.validateId('ab')).toBe(false);
+      expect(syncService.validateId('')).toBe(false);
     });
   });
 
@@ -501,6 +543,75 @@ describe('syncService', () => {
 
       expect(db.jobs.add).not.toHaveBeenCalled();
       expect(db.job_recommendations.add).not.toHaveBeenCalled();
+    });
+
+    it('round-trips Career Knowledge entities with verification invariant preservation', async () => {
+      const mockProfile = {
+        id: 'p1',
+        schemaVersion: 1,
+        createdAt: '2026-01-01T00:00:00.000Z',
+        updatedAt: '2026-01-01T00:00:00.000Z',
+      };
+      const mockFact = {
+        id: 'f1',
+        profileId: 'p1',
+        category: 'skill' as const,
+        subject: 'TypeScript',
+        claim: 'TypeScript 5',
+        verificationState: 'confirmed' as const,
+        origin: 'user' as const,
+        createdAt: '2026-01-01T00:00:00.000Z',
+        updatedAt: '2026-01-01T00:00:00.000Z',
+      };
+      const mockEvidence = {
+        id: 'e1',
+        profileId: 'p1',
+        sourceType: 'github' as const,
+        capturedAt: '2026-01-01T00:00:00.000Z',
+      };
+      const mockLink = { factId: 'f1', evidenceId: 'e1', relation: 'supports' as const };
+      const mockNote = {
+        id: 'n1',
+        factId: 'f1',
+        scope: 'global' as const,
+        text: 'Note 1',
+        createdAt: '2026-01-01T00:00:00.000Z',
+        updatedAt: '2026-01-01T00:00:00.000Z',
+      };
+
+      vi.mocked(db.careerProfiles.toArray).mockResolvedValue([mockProfile]);
+      vi.mocked(db.careerFacts.toArray).mockResolvedValue([mockFact]);
+      vi.mocked(db.careerEvidence.toArray).mockResolvedValue([mockEvidence]);
+      vi.mocked(db.factEvidenceLinks.toArray).mockResolvedValue([mockLink]);
+      vi.mocked(db.careerNotes.toArray).mockResolvedValue([mockNote]);
+      vi.mocked(db.userSettings.toArray).mockResolvedValue([]);
+      vi.mocked(db.interviews.toArray).mockResolvedValue([]);
+      vi.mocked(db.resumes.toArray).mockResolvedValue([]);
+      vi.mocked(db.jobs.toArray).mockResolvedValue([]);
+      vi.mocked(db.job_recommendations.toArray).mockResolvedValue([]);
+
+      const exported = await syncService.exportData();
+      expect(exported.formatVersion).toBe(2);
+      expect(exported.careerProfiles).toHaveLength(1);
+      expect(exported.careerFacts).toHaveLength(1);
+      expect(exported.careerEvidence).toHaveLength(1);
+      expect(exported.factEvidenceLinks).toHaveLength(1);
+      expect(exported.careerNotes).toHaveLength(1);
+
+      // Now test importing it
+      vi.mocked(db.careerProfiles.get).mockResolvedValue(undefined);
+      vi.mocked(db.careerFacts.get).mockResolvedValue(undefined);
+      vi.mocked(db.careerEvidence.get).mockResolvedValue(undefined);
+      vi.mocked(db.factEvidenceLinks.get).mockResolvedValue(undefined);
+      vi.mocked(db.careerNotes.get).mockResolvedValue(undefined);
+
+      await syncService.importData(exported);
+
+      expect(db.careerProfiles.add).toHaveBeenCalledWith(mockProfile);
+      expect(db.careerFacts.add).toHaveBeenCalledWith(mockFact);
+      expect(db.careerEvidence.add).toHaveBeenCalledWith(mockEvidence);
+      expect(db.factEvidenceLinks.put).toHaveBeenCalledWith(mockLink);
+      expect(db.careerNotes.add).toHaveBeenCalledWith(mockNote);
     });
   });
 

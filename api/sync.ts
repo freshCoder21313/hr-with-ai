@@ -1,116 +1,50 @@
-// Cloud sync API handler for Neon database
-// This serverless function handles backup and restore operations
+// Cloud sync API handler for Neon database (Phase 8 Production Hardened)
+// This serverless function delegates to modular handlers for backup and Career Knowledge sync.
 // Threat model: docs/SECURITY.md
 
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { neon } from '@neondatabase/serverless';
-import bcrypt from 'bcryptjs';
+import {
+  SUPPORTED_SCHEMA_VERSION,
+  MIN_PASSWORD_LENGTH,
+  checkRateLimit,
+  isValidSyncId,
+  logOperationalEvent,
+  allowCors,
+  authenticateOrInitAccount,
+} from './_handlers/shared';
+import { handleHealthCheck } from './_handlers/healthHandler';
+import { handleBackupGet, handleBackupPost } from './_handlers/backupHandler';
+import {
+  handleCareerKnowledgeGet,
+  handleListCareerProfiles,
+  handleDeleteCareerProfile,
+  handlePullCareerKnowledge,
+  handlePushCareerKnowledge,
+} from './_handlers/careerKnowledgeHandler';
 
 // neon() throws synchronously without a connection string; create the client only when configured
 // so the handler can answer 503 instead of the whole function crashing at import.
 const sql = process.env.DATABASE_URL ? neon(process.env.DATABASE_URL) : null;
 
-// In-memory rate limiter (per-instance). Prefer edge/Redis limits at scale.
-const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
-/**
- * Strict positive-integer env parsing. A typo must never silently disable a
- * protection: parseInt('abc') and parseInt('2MB') both yield a number that
- * makes every comparison false (NaN) or absurdly small (2). Anything that is
- * not a positive integer falls back to the default and logs one warning.
- */
-function readPositiveInt(name: string, fallback: number): number {
-  const raw = process.env[name];
-  if (raw === undefined || raw.trim() === '') return fallback;
-  const parsed = Number(raw.trim());
-  if (Number.isInteger(parsed) && parsed > 0) return parsed;
-  console.warn(`[sync] ignoring invalid ${name}=${JSON.stringify(raw)}; using ${fallback}`);
-  return fallback;
-}
-
-const RATE_LIMIT = readPositiveInt('RATE_LIMIT', 20);
-const RATE_WINDOW_MS = 60 * 1000;
-const MAX_RATE_MAP_SIZE = 10_000;
-
-/** Max serialized backup payload (~2 MiB) */
-const MAX_PAYLOAD_BYTES = readPositiveInt('MAX_SYNC_PAYLOAD_BYTES', 2 * 1024 * 1024);
-const MIN_PASSWORD_LENGTH = readPositiveInt('MIN_SYNC_PASSWORD_LENGTH', 8);
-const SYNC_ID_RE = /^[a-zA-Z0-9]{16}$/;
-
-function checkRateLimit(ip: string): boolean {
-  const now = Date.now();
-  const record = rateLimitMap.get(ip);
-
-  if (!record || now > record.resetTime) {
-    // Prevent unbounded growth of the map
-    if (rateLimitMap.size > MAX_RATE_MAP_SIZE) {
-      for (const [key, value] of rateLimitMap) {
-        if (now > value.resetTime) rateLimitMap.delete(key);
-      }
-    }
-    rateLimitMap.set(ip, { count: 1, resetTime: now + RATE_WINDOW_MS });
-    return true;
-  }
-
-  if (record.count >= RATE_LIMIT) {
-    return false;
-  }
-
-  record.count++;
-  return true;
-}
-
-function isValidSyncId(id: unknown): id is string {
-  return typeof id === 'string' && SYNC_ID_RE.test(id);
-}
-
-function payloadByteSize(data: unknown): number {
-  try {
-    return Buffer.byteLength(JSON.stringify(data), 'utf8');
-  } catch {
-    return Number.MAX_SAFE_INTEGER;
-  }
-}
-
-/** Accept compressed wrapper or legacy SyncData-shaped object */
-function isPlausibleBackupPayload(data: unknown): boolean {
-  if (!data || typeof data !== 'object') return false;
-  const obj = data as Record<string, unknown>;
-  if (typeof obj.compressed === 'string' && obj.compressed.length > 0) return true;
-  if (
-    Array.isArray(obj.interviews) ||
-    Array.isArray(obj.resumes) ||
-    Array.isArray(obj.userSettings)
-  ) {
-    return true;
-  }
-  return false;
-}
-
-function logServerError(context: string, err: unknown): void {
-  // Never log request bodies / passwords
-  const message = err instanceof Error ? err.message : 'unknown error';
-  console.error(`[sync] ${context}:`, message);
-}
-
-const allowCors =
-  (fn: (req: VercelRequest, res: VercelResponse) => Promise<void>) =>
-  async (req: VercelRequest, res: VercelResponse) => {
-    const allowedOrigin = process.env.ALLOWED_ORIGIN || 'https://hr-with-ai.vercel.app';
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
-    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST');
-    res.setHeader(
-      'Access-Control-Allow-Headers',
-      'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, x-sync-id'
-    );
-    if (req.method === 'OPTIONS') {
-      res.status(200).end();
-      return;
-    }
-    return await fn(req, res);
-  };
+export { SUPPORTED_SCHEMA_VERSION };
 
 const handler = async (req: VercelRequest, res: VercelResponse): Promise<void> => {
+  const startTime = Date.now();
+  const requestId =
+    (req.headers['x-request-id'] as string) ||
+    (req.headers['x-correlation-id'] as string) ||
+    (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+      ? crypto.randomUUID()
+      : `req-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`);
+
+  res.setHeader('x-request-id', requestId);
+
+  // 0. Health Diagnostics Endpoint
+  if (req.method === 'GET' && (req.query.health === '1' || req.query.resource === 'health')) {
+    return handleHealthCheck(req, res, sql, requestId);
+  }
+
   if (!sql) {
     res.status(503).json({ error: 'Sync service unavailable' });
     return;
@@ -125,10 +59,19 @@ const handler = async (req: VercelRequest, res: VercelResponse): Promise<void> =
   if (!checkRateLimit(ip)) {
     res.setHeader('Retry-After', '60');
     res.status(429).json({ error: 'Rate limit exceeded. Please try again later.' });
+    logOperationalEvent({
+      tag: 'operational_telemetry',
+      requestId,
+      accountId: syncId,
+      action: req.method || 'UNKNOWN',
+      statusCode: 429,
+      durationMs: Date.now() - startTime,
+      errorClass: 'rate_limited',
+    });
     return;
   }
 
-  // 1. GET (Download) — possession of sync ID is the capability
+  // 1. GET (Download)
   if (req.method === 'GET') {
     if (!syncId) {
       res.status(400).json({ error: 'Missing ID' });
@@ -139,28 +82,20 @@ const handler = async (req: VercelRequest, res: VercelResponse): Promise<void> =
       return;
     }
 
-    try {
-      const result = await sql`SELECT data FROM backups WHERE id = ${syncId}`;
-
-      if (result.length === 0) {
-        res.status(404).json({ error: 'Backup not found' });
-        return;
-      }
-
-      res.status(200).json({ data: result[0].data });
-      return;
-    } catch (err) {
-      logServerError('GET', err);
-      res.status(500).json({ error: 'Database error' });
-      return;
+    // Structured Career Knowledge GET
+    if (req.query.resource === 'career_knowledge') {
+      return handleCareerKnowledgeGet(req, res, sql, requestId, startTime, syncId);
     }
+
+    // Legacy backup GET
+    return handleBackupGet(req, res, sql, requestId, syncId);
   }
 
-  // 2. POST (Upload/Sync)
+  // 2. POST (Upload / Actions)
   if (req.method === 'POST') {
-    const { password, data: backupData } = req.body ?? {};
+    const { action, password, profileId, data: payloadData } = req.body ?? {};
 
-    if (!syncId || !password || backupData === undefined || backupData === null) {
+    if (!syncId || !password) {
       res.status(400).json({ error: 'Missing required fields' });
       return;
     }
@@ -177,43 +112,80 @@ const handler = async (req: VercelRequest, res: VercelResponse): Promise<void> =
       return;
     }
 
-    if (!isPlausibleBackupPayload(backupData)) {
-      res.status(400).json({ error: 'Invalid backup payload shape' });
+    // Legacy Backup POST (when no action is specified)
+    if (!action) {
+      return handleBackupPost(
+        req,
+        res,
+        sql,
+        requestId,
+        startTime,
+        ip,
+        syncId,
+        password,
+        payloadData
+      );
+    }
+
+    // Reject unknown actions BEFORE authenticateOrInitAccount: auth creates a
+    // backups row as a side effect, so an unrecognized action must not mint one.
+    const KNOWN_CK_ACTIONS = new Set([
+      'list_career_profiles',
+      'delete_career_profile',
+      'pull_career_knowledge',
+      'push_career_knowledge',
+    ]);
+    if (!KNOWN_CK_ACTIONS.has(action)) {
+      res.status(400).json({ error: 'Unsupported action' });
       return;
     }
 
-    const size = payloadByteSize(backupData);
-    if (size > MAX_PAYLOAD_BYTES) {
-      res.status(413).json({
-        error: `Backup too large (max ${Math.floor(MAX_PAYLOAD_BYTES / 1024)} KiB)`,
-      });
+    // Authenticate or initialize account in backups table for Career Knowledge actions
+    const authOk = await authenticateOrInitAccount(
+      sql,
+      syncId,
+      password,
+      ip,
+      requestId,
+      startTime,
+      action,
+      res
+    );
+    if (!authOk) {
       return;
     }
 
-    try {
-      const existing = await sql`SELECT password_hash FROM backups WHERE id = ${syncId}`;
-
-      if (existing.length > 0) {
-        const isValid = await bcrypt.compare(password, existing[0].password_hash);
-        if (!isValid) {
-          res.status(401).json({ error: 'Invalid password' });
-          return;
-        }
-
-        await sql`UPDATE backups SET data = ${backupData}, updated_at = NOW(), last_ip = ${ip} WHERE id = ${syncId}`;
-        res.status(200).json({ success: true, message: 'Updated successfully' });
-        return;
-      }
-
-      const hash = await bcrypt.hash(password, 10);
-      await sql`INSERT INTO backups (id, password_hash, data, last_ip) VALUES (${syncId}, ${hash}, ${backupData}, ${ip})`;
-      res.status(201).json({ success: true, message: 'Created successfully' });
-      return;
-    } catch (err) {
-      logServerError('POST', err);
-      res.status(500).json({ error: 'Database error' });
-      return;
+    // A. List Career Profiles
+    if (action === 'list_career_profiles') {
+      return handleListCareerProfiles(req, res, sql, requestId, startTime, syncId);
     }
+
+    // B. Delete Career Profile
+    if (action === 'delete_career_profile') {
+      return handleDeleteCareerProfile(req, res, sql, requestId, startTime, syncId, profileId);
+    }
+
+    // C. Pull Career Knowledge
+    if (action === 'pull_career_knowledge') {
+      return handlePullCareerKnowledge(req, res, sql, requestId, startTime, syncId, profileId);
+    }
+
+    // D. Push Career Knowledge
+    if (action === 'push_career_knowledge') {
+      return handlePushCareerKnowledge(
+        req,
+        res,
+        sql,
+        requestId,
+        startTime,
+        syncId,
+        profileId,
+        payloadData
+      );
+    }
+
+    // Unreachable: unknown actions return early above.
+    return;
   }
 
   res.setHeader('Allow', 'GET, OPTIONS, POST');

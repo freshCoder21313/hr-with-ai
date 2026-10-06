@@ -6,6 +6,7 @@ import { convertRepoToProject } from './githubAIService';
 import { Project } from '@/types/resume';
 import { db } from '@/lib/db';
 import { UserSettings } from '@/types';
+import { careerKnowledgeAppService } from '@/services/careerKnowledge/careerKnowledgeAppService';
 
 type Step = 'credentials' | 'selection' | 'processing' | 'review';
 
@@ -221,6 +222,25 @@ export function useGitHubImport({ isOpen, onClose, onImportComplete }: UseGitHub
         parsedData,
         updatedAt: Date.now(),
       });
+
+      // Seamlessly acquire Career Evidence & candidate facts (observed state) in Career Knowledge
+      try {
+        const activeProfileId = await careerKnowledgeAppService.getActiveProfileId();
+        const usernames = usernamesText
+          .split(',')
+          .map((u) => u.trim())
+          .filter((u) => u.length > 0);
+        for (const username of usernames) {
+          await careerKnowledgeAppService.acquireGitHubEvidence(
+            activeProfileId,
+            username,
+            token,
+            true
+          );
+        }
+      } catch (ckErr) {
+        logger.warn('Failed to register GitHub evidence in Career Knowledge:', ckErr);
+      }
 
       if (onImportComplete) onImportComplete();
       onClose();

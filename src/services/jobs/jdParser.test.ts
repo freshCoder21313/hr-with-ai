@@ -381,7 +381,9 @@ Mục lương: 11.000.000₫ - 13.000.000₫ một tháng
     `;
 
     const result = parseRawJobDescription(rawPortalDump);
-    expect(result.title).toBe('Nhân Viên Thiết Kế Kỹ Thuật (Không Yêu Cầu Kinh Nghiệm, Được Đào Tạo)');
+    expect(result.title).toBe(
+      'Nhân Viên Thiết Kế Kỹ Thuật (Không Yêu Cầu Kinh Nghiệm, Được Đào Tạo)'
+    );
     expect(result.company).toBe('MiTek Vietnam Co., LTD');
     expect(result.experienceLevel).toBe('fresher');
     expect(result.responsibilities.length).toBe(7);
@@ -713,12 +715,17 @@ describe('extractJobUrl standalone helper', () => {
   it('extracts URL with various prefix styles', () => {
     expect(extractJobUrl('URL: https://example.com/job/1')).toBe('https://example.com/job/1');
     expect(extractJobUrl('Link: http://example.com/job/2')).toBe('http://example.com/job/2');
-    expect(extractJobUrl('Nguồn: https://linkedin.com/jobs/view/123')).toBe('https://linkedin.com/jobs/view/123');
-    expect(extractJobUrl('Source: https://indeed.com/viewjob?jk=123')).toBe('https://indeed.com/viewjob?jk=123');
+    expect(extractJobUrl('Nguồn: https://linkedin.com/jobs/view/123')).toBe(
+      'https://linkedin.com/jobs/view/123'
+    );
+    expect(extractJobUrl('Source: https://indeed.com/viewjob?jk=123')).toBe(
+      'https://indeed.com/viewjob?jk=123'
+    );
   });
 
   it('extracts inline URL cleanly', () => {
-    expect(extractJobUrl('Please apply at https://shopee.vn/careers/job/123 (deadline: 30/10)')).toBe('https://shopee.vn/careers/job/123');
+    expect(
+      extractJobUrl('Please apply at https://shopee.vn/careers/job/123 (deadline: 30/10)')
+    ).toBe('https://shopee.vn/careers/job/123');
   });
 });
-

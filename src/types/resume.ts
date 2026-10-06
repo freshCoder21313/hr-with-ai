@@ -26,6 +26,7 @@ export interface Basics {
   summary?: string;
   location?: Location;
   profiles?: Profile[];
+  derivedFromFactIds?: string[];
 }
 
 export interface Work {
@@ -36,6 +37,7 @@ export interface Work {
   endDate?: string;
   summary?: string; // Description
   highlights?: string[]; // Bullet points
+  derivedFromFactIds?: string[];
 }
 
 export interface Education {
@@ -47,12 +49,14 @@ export interface Education {
   endDate?: string;
   score?: string; // GPA
   courses?: string[];
+  derivedFromFactIds?: string[];
 }
 
 export interface Skill {
   name: string; // e.g. Web Development
   level?: string; // e.g. Master
   keywords?: string[]; // e.g. ["HTML", "CSS", "Javascript"]
+  derivedFromFactIds?: string[];
 }
 
 export interface Project {
@@ -69,6 +73,7 @@ export interface Project {
     topics: string[];
     suggestedAnswer: string;
   }>;
+  derivedFromFactIds?: string[];
 }
 
 export interface Volunteer {
@@ -86,6 +91,7 @@ export interface Award {
   date?: string;
   awarder?: string;
   summary?: string;
+  derivedFromFactIds?: string[];
 }
 
 export interface Publication {
@@ -131,6 +137,10 @@ export interface ResumeData {
     };
     // Tailoring lineage — set by CV Studio when a resume is derived from another.
     tailoredFromResumeId?: number;
+    // Career Knowledge profile this draft was tailored from. Unlike
+    // tailoredFromResumeId (a local auto-increment row id), this is a
+    // client-UUID stable across devices — safe to use as a sync/accounting key.
+    tailoredFromProfileId?: string;
     tailoredForJobId?: string;
     tailoredForJobCompany?: string;
     tailoredForJobTitle?: string;

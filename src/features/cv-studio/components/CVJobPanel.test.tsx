@@ -69,9 +69,7 @@ describe('CVJobPanel', () => {
 
   it('opens SmartJDImportModal when clicking Auto-fill JD button', () => {
     const onOpenSmartJDModal = vi.fn();
-    renderWithProviders(
-      <CVJobPanel {...defaultProps} onOpenSmartJDModal={onOpenSmartJDModal} />
-    );
+    renderWithProviders(<CVJobPanel {...defaultProps} onOpenSmartJDModal={onOpenSmartJDModal} />);
 
     const autoFillBtn = screen.getByRole('button', { name: /Auto-fill JD/i });
     fireEvent.click(autoFillBtn);
