@@ -217,6 +217,10 @@ const CVStudioPage: React.FC = () => {
               onSetActiveTab={ui.setActiveTab}
               onManualUpdate={actions.handleManualUpdate}
               onOpenReorderDialog={() => ui.setShowReorderDialog(true)}
+              onOpenFullEditor={() => {
+                const targetId = state.mainCV?.id ?? state.selectedResumeId;
+                if (targetId) handleViewResult(targetId);
+              }}
               onPrint={async () => {
                 if (!exportRef.current) return;
                 try {

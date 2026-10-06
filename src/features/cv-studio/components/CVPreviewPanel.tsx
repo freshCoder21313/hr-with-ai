@@ -27,6 +27,12 @@ import {
   Type as TypeIcon,
   List,
   Printer,
+  ExternalLink,
+  User,
+  Briefcase,
+  GraduationCap,
+  Code,
+  Sparkles,
 } from 'lucide-react';
 
 const THEME_COLORS = [
@@ -58,6 +64,7 @@ interface CVPreviewPanelProps {
   onManualUpdate: (data: ResumeData) => void;
   onOpenReorderDialog: () => void;
   onPrint: () => void;
+  onOpenFullEditor?: () => void;
 }
 
 export const CVPreviewPanel: React.FC<CVPreviewPanelProps> = ({
@@ -72,6 +79,7 @@ export const CVPreviewPanel: React.FC<CVPreviewPanelProps> = ({
   onManualUpdate,
   onOpenReorderDialog,
   onPrint,
+  onOpenFullEditor,
 }) => {
   const selectedThemeColor = (previewData?.meta?.themeColor || '#2563eb').toLowerCase();
 
@@ -143,39 +151,44 @@ export const CVPreviewPanel: React.FC<CVPreviewPanelProps> = ({
     }
 
     return (
-      <div className="flex w-full h-full overflow-hidden flex-col xl:flex-row">
-        <div className="w-full shrink-0 border-b border-border bg-card overflow-x-auto xl:w-44 xl:border-b-0 xl:border-r xl:overflow-y-auto xl:overflow-x-hidden">
-          <Tabs value={activeTab} onValueChange={onSetActiveTab}>
-            <TabsList className="flex flex-row h-auto bg-transparent p-2 gap-1 w-max min-w-full justify-start xl:flex-col xl:w-full">
+      <div className="flex w-full h-full overflow-hidden flex-col">
+        <div className="border-b border-border bg-card/60 px-3 sm:px-4 py-2 shrink-0 flex items-center overflow-x-auto scrollbar-hide">
+          <Tabs value={activeTab} onValueChange={onSetActiveTab} className="w-full">
+            <TabsList className="inline-flex bg-muted p-1 rounded-lg h-auto gap-1">
               <TabsTrigger
                 value="basics"
-                className="justify-start whitespace-nowrap px-3 py-3 text-xs xl:py-2"
+                className="h-7 px-2.5 sm:px-3 text-xs rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-foreground text-muted-foreground hover:text-foreground gap-1.5"
               >
-                Basics
+                <User className="w-3.5 h-3.5" aria-hidden="true" />
+                <span>Basics</span>
               </TabsTrigger>
               <TabsTrigger
                 value="work"
-                className="justify-start whitespace-nowrap px-3 py-3 text-xs xl:py-2"
+                className="h-7 px-2.5 sm:px-3 text-xs rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-foreground text-muted-foreground hover:text-foreground gap-1.5"
               >
-                Work
+                <Briefcase className="w-3.5 h-3.5" aria-hidden="true" />
+                <span>Work</span>
               </TabsTrigger>
               <TabsTrigger
                 value="education"
-                className="justify-start whitespace-nowrap px-3 py-3 text-xs xl:py-2"
+                className="h-7 px-2.5 sm:px-3 text-xs rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-foreground text-muted-foreground hover:text-foreground gap-1.5"
               >
-                Education
+                <GraduationCap className="w-3.5 h-3.5" aria-hidden="true" />
+                <span>Education</span>
               </TabsTrigger>
               <TabsTrigger
                 value="skills"
-                className="justify-start whitespace-nowrap px-3 py-3 text-xs xl:py-2"
+                className="h-7 px-2.5 sm:px-3 text-xs rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-foreground text-muted-foreground hover:text-foreground gap-1.5"
               >
-                Skills
+                <Code className="w-3.5 h-3.5" aria-hidden="true" />
+                <span>Skills</span>
               </TabsTrigger>
               <TabsTrigger
                 value="projects"
-                className="justify-start whitespace-nowrap px-3 py-3 text-xs xl:py-2"
+                className="h-7 px-2.5 sm:px-3 text-xs rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-foreground text-muted-foreground hover:text-foreground gap-1.5"
               >
-                Projects
+                <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />
+                <span>Projects</span>
               </TabsTrigger>
             </TabsList>
           </Tabs>
@@ -261,7 +274,23 @@ export const CVPreviewPanel: React.FC<CVPreviewPanelProps> = ({
           </Button>
         </div>
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 sm:gap-1.5">
+          {onOpenFullEditor && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onOpenFullEditor}
+              disabled={!mainCV?.id && !previewData}
+              className="h-7 px-2 sm:px-2.5 gap-1.5 text-xs text-primary border-primary/20 hover:bg-primary/10 hover:border-primary/40 font-medium"
+              title="Open full distraction-free Resume Builder workspace"
+              aria-label="Open Focus Mode"
+            >
+              <ExternalLink className="w-3.5 h-3.5" aria-hidden="true" />
+              <span className="hidden sm:inline">Focus Mode</span>
+              <span className="sm:hidden">Focus</span>
+            </Button>
+          )}
+
           <DropdownMenu>
             <Tooltip delayDuration={0}>
               <TooltipTrigger asChild>
