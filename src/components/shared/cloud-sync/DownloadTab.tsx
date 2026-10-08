@@ -2,19 +2,27 @@ import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { LoadingButton } from '@/components/ui/loading-button';
-import { Download, AlertCircle } from 'lucide-react';
+import { Download, AlertCircle, Eye, EyeOff } from 'lucide-react';
 
 interface DownloadTabProps {
   downloadId: string;
+  downloadPassword?: string;
+  showPassword?: boolean;
   isLoading: boolean;
   setDownloadId: (value: string) => void;
+  setDownloadPassword?: (value: string) => void;
+  setShowPassword?: (value: boolean) => void;
   handleDownload: () => void;
 }
 
 export const DownloadTab: React.FC<DownloadTabProps> = ({
   downloadId,
+  downloadPassword = '',
+  showPassword = false,
   isLoading,
   setDownloadId,
+  setDownloadPassword,
+  setShowPassword,
   handleDownload,
 }) => {
   return (
@@ -30,6 +38,36 @@ export const DownloadTab: React.FC<DownloadTabProps> = ({
           placeholder="Enter your Email, Username, or ID"
           className="h-14 px-4 bg-muted/50 border-input rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all font-mono text-base text-foreground"
         />
+      </div>
+
+      <div className="space-y-3">
+        <Label htmlFor="download-password" className="text-sm font-bold text-foreground px-1">
+          Protection Password <span className="text-destructive">*</span>
+        </Label>
+        <div className="relative group">
+          <Input
+            id="download-password"
+            type={showPassword ? 'text' : 'password'}
+            value={downloadPassword}
+            onChange={(e) => setDownloadPassword?.(e.target.value)}
+            placeholder="Enter your protection password"
+            className="h-14 px-4 bg-muted/50 border-input rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all pr-12 text-foreground"
+          />
+          {setShowPassword && (
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+              className="absolute right-2 top-1/2 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-xl text-muted-foreground hover:text-primary hover:bg-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              {showPassword ? (
+                <EyeOff className="h-5 w-5" aria-hidden="true" />
+              ) : (
+                <Eye className="h-5 w-5" aria-hidden="true" />
+              )}
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="p-5 bg-warning/10 rounded-2xl border border-warning/30 flex gap-4">

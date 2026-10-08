@@ -10,8 +10,16 @@ import { Progress } from '@/components/ui/progress';
 import { useSkillAssessmentStore } from '@/features/skill-assessment/stores/useSkillAssessmentStore';
 
 export const ResultStep: React.FC = () => {
-  const { quizScore, reset, testAnotherSkill, selectedSkill, quizQuestions, userAnswers } =
-    useSkillAssessmentStore();
+  const {
+    quizScore,
+    reset,
+    testAnotherSkill,
+    selectedSkill,
+    quizQuestions,
+    userAnswers,
+    savedAssessmentId,
+    setSavedAssessmentId,
+  } = useSkillAssessmentStore();
   const navigate = useNavigate();
   const hasSavedRef = useRef(false);
 
@@ -43,6 +51,7 @@ export const ResultStep: React.FC = () => {
   const weaknesses = useMemo(() => subSkillScores.filter((s) => s.score < 70), [subSkillScores]);
 
   useEffect(() => {
+    if (savedAssessmentId !== null) return;
     if (hasSavedRef.current) return;
     if (quizScore === null || quizQuestions.length === 0) return;
 
@@ -56,10 +65,23 @@ export const ResultStep: React.FC = () => {
       createdAt: Date.now(),
     };
 
-    db.skillAssessments?.add(record).catch((err) => {
-      logger.error('Failed to save skill assessment to database', err);
-    });
-  }, [quizScore, quizQuestions.length, selectedSkill, subSkillScores, weaknesses]);
+    db.skillAssessments
+      ?.add(record)
+      .then((id) => {
+        setSavedAssessmentId(typeof id === 'number' ? id : 1);
+      })
+      .catch((err) => {
+        logger.error('Failed to save skill assessment to database', err);
+      });
+  }, [
+    savedAssessmentId,
+    setSavedAssessmentId,
+    quizScore,
+    quizQuestions.length,
+    selectedSkill,
+    subSkillScores,
+    weaknesses,
+  ]);
 
   const handleDeepDive = () => {
     const weaknessList = weaknesses.map((w) => w.name);

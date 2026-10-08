@@ -22,6 +22,8 @@ export function useCloudSync() {
   const [downloadId, setDownloadId] = useState(
     () => localStorage.getItem(STORAGE_ACCOUNT_ID) || ''
   );
+  const [downloadPassword, setDownloadPassword] = useState('');
+  const [showDownloadPassword, setShowDownloadPassword] = useState(false);
 
   // Offline State
   const [offlineIncludeApiKey, setOfflineIncludeApiKey] = useState(false);
@@ -114,10 +116,14 @@ export function useCloudSync() {
       setError('Invalid Account format. Must be an email, username, or valid ID.');
       return;
     }
+    if (!downloadPassword) {
+      setError('Password is required for secure download.');
+      return;
+    }
 
     setIsLoading(true);
     try {
-      const result = await syncService.downloadFromCloud(downloadId);
+      const result = await syncService.downloadFromCloud(downloadId, downloadPassword);
 
       if (result.success && result.data) {
         await syncService.importData(result.data);
@@ -201,6 +207,8 @@ export function useCloudSync() {
       showPassword,
       includeApiKey,
       downloadId,
+      downloadPassword,
+      showDownloadPassword,
       offlineIncludeApiKey,
       fileInputRef,
     },
@@ -211,6 +219,8 @@ export function useCloudSync() {
       setShowPassword,
       setIncludeApiKey,
       setDownloadId,
+      setDownloadPassword,
+      setShowDownloadPassword,
       setOfflineIncludeApiKey,
       generateNewId,
       resetStatus,

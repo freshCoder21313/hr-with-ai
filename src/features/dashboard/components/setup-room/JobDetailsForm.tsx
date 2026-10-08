@@ -47,8 +47,31 @@ interface JobDetailsFormProps {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => void;
   onAutoFillFromRawJD?: (parsed: ParsedJobData) => void;
+  onBatchUpdate?: (values: Partial<SetupFormData>) => void;
   section?: 'role' | 'persona' | 'all';
 }
+
+const createSyntheticChangeEvent = <T extends HTMLElement = HTMLInputElement>(
+  name: string,
+  value: string
+): React.ChangeEvent<T> =>
+  ({
+    target: { name, value } as unknown as EventTarget & T,
+    currentTarget: { name, value } as unknown as EventTarget & T,
+    bubbles: true,
+    cancelable: true,
+    defaultPrevented: false,
+    eventPhase: 0,
+    isTrusted: false,
+    nativeEvent: new Event('change'),
+    preventDefault: () => {},
+    isDefaultPrevented: () => false,
+    stopPropagation: () => {},
+    isPropagationStopped: () => false,
+    persist: () => {},
+    timeStamp: Date.now(),
+    type: 'change',
+  });
 
 export const JobDetailsForm: React.FC<JobDetailsFormProps> = ({
   formData,
@@ -62,6 +85,7 @@ export const JobDetailsForm: React.FC<JobDetailsFormProps> = ({
   onTogglePanel,
   onChange,
   onAutoFillFromRawJD,
+  onBatchUpdate,
   section = 'all',
 }) => {
   const [isAutoFillOpen, setIsAutoFillOpen] = useState(false);
@@ -79,53 +103,50 @@ export const JobDetailsForm: React.FC<JobDetailsFormProps> = ({
 
     const mappedDifficulty = mapExperienceLevelToDifficulty(result.experienceLevel);
 
+    if (onBatchUpdate) {
+      onBatchUpdate({
+        company: result.company !== 'Target Company' ? result.company : undefined,
+        companyName: result.company !== 'Target Company' ? result.company : undefined,
+        jobTitle: result.title || undefined,
+        jobUrl: result.url || undefined,
+        jobDescription: result.description || undefined,
+        requirements: result.requirements ? result.requirements.join(', ') : undefined,
+        experienceLevel: result.experienceLevel || undefined,
+        difficulty: mappedDifficulty,
+      });
+    }
+
     if (onAutoFillFromRawJD) {
       onAutoFillFromRawJD(result);
     }
 
     // Trigger synthetic onChange events for the required target fields
     if (result.company && result.company !== 'Target Company') {
-      onChange({
-        target: { name: 'company', value: result.company },
-      } as unknown as React.ChangeEvent<HTMLInputElement>);
-      onChange({
-        target: { name: 'companyName', value: result.company },
-      } as unknown as React.ChangeEvent<HTMLInputElement>);
+      onChange(createSyntheticChangeEvent('company', result.company));
+      onChange(createSyntheticChangeEvent('companyName', result.company));
     }
 
     if (result.title) {
-      onChange({
-        target: { name: 'jobTitle', value: result.title },
-      } as unknown as React.ChangeEvent<HTMLInputElement>);
+      onChange(createSyntheticChangeEvent('jobTitle', result.title));
     }
 
     if (result.url) {
-      onChange({
-        target: { name: 'jobUrl', value: result.url },
-      } as unknown as React.ChangeEvent<HTMLInputElement>);
+      onChange(createSyntheticChangeEvent('jobUrl', result.url));
     }
 
     if (result.description) {
-      onChange({
-        target: { name: 'jobDescription', value: result.description },
-      } as unknown as React.ChangeEvent<HTMLTextAreaElement>);
+      onChange(createSyntheticChangeEvent<HTMLTextAreaElement>('jobDescription', result.description));
     }
 
     if (result.requirements) {
-      onChange({
-        target: { name: 'requirements', value: result.requirements.join(', ') },
-      } as unknown as React.ChangeEvent<HTMLInputElement>);
+      onChange(createSyntheticChangeEvent('requirements', result.requirements.join(', ')));
     }
 
     if (result.experienceLevel) {
-      onChange({
-        target: { name: 'experienceLevel', value: result.experienceLevel },
-      } as unknown as React.ChangeEvent<HTMLInputElement>);
+      onChange(createSyntheticChangeEvent('experienceLevel', result.experienceLevel));
     }
 
-    onChange({
-      target: { name: 'difficulty', value: mappedDifficulty },
-    } as unknown as React.ChangeEvent<HTMLSelectElement>);
+    onChange(createSyntheticChangeEvent<HTMLSelectElement>('difficulty', mappedDifficulty));
 
     toast.success('Job details auto-filled from raw JD!');
   };

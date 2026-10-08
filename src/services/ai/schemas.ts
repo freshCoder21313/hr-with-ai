@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { ResumeData } from '@/types/resume';
 
 export const jobDescriptionSchema = z.object({
   title: z.string(),
@@ -111,7 +112,7 @@ export const jobRecommendationsSchema = z.array(jobRecommendationItemSchema);
 
 export type JobRecommendationItemAIResponse = z.infer<typeof jobRecommendationItemSchema>;
 
-const resumeSectionArraySchema = z.array(z.record(z.string(), z.unknown()));
+export const resumeSectionArraySchema = z.array(z.record(z.string(), z.unknown()));
 
 export const profileSchema = z
   .object({
@@ -282,15 +283,82 @@ export const validateProposedChange = (change: unknown) => {
 
 export const resumeDataSchema = z
   .object({
-    basics: z.record(z.string(), z.unknown()).optional(),
-    work: resumeSectionArraySchema.optional(),
-    education: resumeSectionArraySchema.optional(),
-    skills: resumeSectionArraySchema.optional(),
-    projects: resumeSectionArraySchema.optional(),
+    basics: basicsSchema.optional(),
+    work: z.array(workSchema).default([]),
+    education: z.array(educationSchema).default([]),
+    skills: z.array(skillSchema).default([]),
+    projects: z.array(projectSchema).default([]),
+    volunteer: z.array(volunteerSchema).optional(),
+    awards: z.array(awardSchema).optional(),
+    publications: z.array(publicationSchema).optional(),
+    languages: z.array(z.object({ language: z.string(), fluency: z.string() })).optional(),
+    interests: z.array(z.object({ name: z.string(), keywords: z.array(z.string()) })).optional(),
+    references: z.array(z.object({ name: z.string(), reference: z.string() })).optional(),
     language: z.enum(['vi', 'en']).optional(),
     meta: z.record(z.string(), z.unknown()).optional(),
   })
   .passthrough();
+
+export function normalizeToResumeData(raw: unknown): ResumeData {
+  const parsed = resumeDataSchema.parse(raw ?? {});
+  return {
+    basics: {
+      name: parsed.basics?.name || '',
+      label: parsed.basics?.label,
+      image: parsed.basics?.image,
+      email: parsed.basics?.email,
+      phone: parsed.basics?.phone,
+      url: parsed.basics?.url,
+      summary: parsed.basics?.summary,
+      location: parsed.basics?.location,
+      profiles: parsed.basics?.profiles,
+    },
+    work: (parsed.work || []).map((w) => ({
+      name: w.name || '',
+      position: w.position || '',
+      url: w.url,
+      startDate: w.startDate,
+      endDate: w.endDate,
+      summary: w.summary,
+      highlights: Array.isArray(w.highlights) ? w.highlights : [],
+    })),
+    education: (parsed.education || []).map((e) => ({
+      institution: e.institution || '',
+      url: e.url,
+      area: e.area || '',
+      studyType: e.studyType || '',
+      startDate: e.startDate,
+      endDate: e.endDate,
+      score: e.score,
+      courses: e.courses,
+    })),
+    skills: (parsed.skills || []).map((s) => ({
+      name: s.name || '',
+      level: s.level,
+      keywords: Array.isArray(s.keywords) ? s.keywords : [],
+    })),
+    projects: (parsed.projects || []).map((p) => ({
+      name: p.name || '',
+      description: p.description,
+      highlights: Array.isArray(p.highlights) ? p.highlights : [],
+      keywords: p.keywords,
+      startDate: p.startDate,
+      endDate: p.endDate,
+      url: p.url,
+      roles: p.roles,
+    })),
+    volunteer: parsed.volunteer as unknown as ResumeData['volunteer'],
+    awards: parsed.awards as unknown as ResumeData['awards'],
+    publications: parsed.publications as unknown as ResumeData['publications'],
+    languages: parsed.languages,
+    interests: parsed.interests,
+    references: parsed.references,
+    language: parsed.language,
+    meta: parsed.meta as unknown as ResumeData['meta'],
+  };
+}
+
+
 
 export const stringArraySchema = z.array(z.string());
 
@@ -429,6 +497,17 @@ export const communicationCoachingSchema = z.object({
 export type CommunicationCoachingAIResponse = z.infer<typeof communicationCoachingSchema>;
 
 // Career Knowledge (Phase 1) schemas are defined in the domain layer and
+export const companyIntelSchema = z.object({
+  culture: z.string().default(''),
+  latestNews: z.string().default(''),
+  techStack: z.array(z.string()).default([]),
+  interviewVibe: z.string().default(''),
+  suggestedStatus: z.string().default(''),
+  suggestedContext: z.string().default(''),
+});
+
+export type CompanyIntelAIResponse = z.infer<typeof companyIntelSchema>;
+
 // re-exported here so the AI layer depends on the domain (ai -> domain),
 // honoring ADR 000 dependency direction.
 export {

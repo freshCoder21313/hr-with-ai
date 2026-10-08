@@ -47,3 +47,4 @@ graphify-out/
 # Throwaway scratch / probe artifacts
 .scratch/
 vitest.probe.config.ts
+.agents/

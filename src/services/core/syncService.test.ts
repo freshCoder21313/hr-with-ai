@@ -864,6 +864,38 @@ describe('syncService', () => {
       expect(result.message).toMatch(/not found/i);
     });
 
+    it('sends x-sync-password header when password is provided', async () => {
+      const original = { interviews: [], userSettings: [], resumes: [] };
+      vi.mocked(apiClient.get).mockResolvedValue({ data: original });
+
+      const result = await syncService.downloadFromCloud('abcdefghijklmnop', 'secret123');
+
+      expect(result.success).toBe(true);
+      expect(apiClient.get).toHaveBeenCalledWith(
+        '/sync',
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            'x-sync-password': 'secret123',
+          }),
+        })
+      );
+    });
+
+    it('maps 401 to invalid password message on download', async () => {
+      const err = {
+        isAxiosError: true,
+        response: { status: 401, statusText: 'Unauthorized' },
+        message: 'Request failed',
+      };
+      vi.spyOn(axios, 'isAxiosError').mockReturnValue(true);
+      vi.mocked(apiClient.get).mockRejectedValue(err);
+
+      const result = await syncService.downloadFromCloud('abcdefghijklmnop', 'wrongpass');
+
+      expect(result.success).toBe(false);
+      expect(result.message).toMatch(/Invalid password/i);
+    });
+
     it('uses error message if statusText is missing on download', async () => {
       const err = {
         isAxiosError: true,

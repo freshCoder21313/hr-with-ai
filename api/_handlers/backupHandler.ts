@@ -10,19 +10,35 @@ import {
 } from './shared';
 
 export async function handleBackupGet(
-  _req: VercelRequest,
+  req: VercelRequest,
   res: VercelResponse,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sql: any,
   requestId: string,
   syncId: string
 ): Promise<void> {
+  const password =
+    (req.headers['x-sync-password'] as string) || (req.query?.password as string);
+
+  if (!password) {
+    res.status(401).json({ error: 'Password required to download backup' });
+    return;
+  }
+
   try {
-    const result = await sql`SELECT data FROM backups WHERE id = ${syncId}`;
+    const result = await sql`SELECT data, password_hash FROM backups WHERE id = ${syncId}`;
 
     if (result.length === 0) {
       res.status(404).json({ error: 'Backup not found' });
       return;
+    }
+
+    if (result[0].password_hash) {
+      const isPasswordValid = await bcrypt.compare(password, result[0].password_hash);
+      if (!isPasswordValid) {
+        res.status(401).json({ error: 'Invalid backup password' });
+        return;
+      }
     }
 
     res.status(200).json({ data: result[0].data });

@@ -78,6 +78,47 @@ describe('ResultStep persistence', () => {
     expect(db.skillAssessments.add).toHaveBeenCalledTimes(1);
   });
 
+  it('does not re-insert record when unmounting and remounting (e.g. reload or route navigation)', async () => {
+    useSkillAssessmentStore.setState({
+      selectedSkill: 'TypeScript',
+      quizQuestions: [
+        {
+          id: 'q1',
+          question: 'Q1',
+          options: ['A', 'B'],
+          correct_answer: 'A',
+          explanation: '',
+          sub_skill: 'Types',
+        },
+      ],
+      userAnswers: { q1: 'A' },
+      quizScore: 100,
+      step: 'result',
+    });
+
+    const { unmount } = render(
+      <MemoryRouter>
+        <ResultStep />
+      </MemoryRouter>
+    );
+
+    await waitFor(() => {
+      expect(db.skillAssessments.add).toHaveBeenCalledTimes(1);
+    });
+
+    unmount();
+
+    // Re-mount simulates navigating away or reload
+    render(
+      <MemoryRouter>
+        <ResultStep />
+      </MemoryRouter>
+    );
+
+    // Should still only have been called once
+    expect(db.skillAssessments.add).toHaveBeenCalledTimes(1);
+  });
+
   it('does not persist when quizScore is null or questions are empty', async () => {
     useSkillAssessmentStore.setState({
       selectedSkill: 'React',

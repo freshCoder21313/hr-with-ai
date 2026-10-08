@@ -42,7 +42,17 @@ export class FallbackAIService implements AIProviderStrategy {
         return await operation(service);
       } catch (error) {
         if (error instanceof AIStructuredOutputError) {
-          // Structured output parsing errors NEVER fallback to avoid burning quota on bad prompts/schemas
+          if (i < this.candidates.length - 1) {
+            logger.warn(
+              `AI Provider ${candidate.provider} produced invalid structured output. Trying fallback candidate...`
+            );
+            errors.push({
+              provider: candidate.provider,
+              model: candidate.modelId,
+              kind: 'structured_error',
+            });
+            continue;
+          }
           throw error;
         }
 

@@ -17,6 +17,9 @@ export class OpenRouterStrategy implements AIProviderStrategy {
   async generateText(messages: ChatMessage[], options?: AIRequestOptions): Promise<AIResponse> {
     const model = options?.modelId || this.modelId;
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
+
     try {
       const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
@@ -35,6 +38,7 @@ export class OpenRouterStrategy implements AIProviderStrategy {
             response_format: { type: 'json_object' },
           }),
         }),
+        signal: controller.signal,
       });
 
       if (!response.ok) {
@@ -51,6 +55,8 @@ export class OpenRouterStrategy implements AIProviderStrategy {
       };
     } catch (error) {
       throw classifyProviderError(error, 'openrouter');
+    } finally {
+      clearTimeout(timeoutId);
     }
   }
 
@@ -80,6 +86,8 @@ export class OpenRouterStrategy implements AIProviderStrategy {
 
   async *streamText(messages: ChatMessage[], options?: AIRequestOptions): AsyncIterable<string> {
     const model = options?.modelId || this.modelId;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
 
     let response: Response;
     try {
@@ -98,6 +106,7 @@ export class OpenRouterStrategy implements AIProviderStrategy {
           temperature: options?.temperature,
           stream: true,
         }),
+        signal: controller.signal,
       });
 
       if (!response.ok) {
@@ -106,6 +115,8 @@ export class OpenRouterStrategy implements AIProviderStrategy {
       }
     } catch (error) {
       throw classifyProviderError(error, 'openrouter');
+    } finally {
+      clearTimeout(timeoutId);
     }
 
     if (!response.body) throw classifyProviderError(new Error('No response body'), 'openrouter');

@@ -15,3 +15,8 @@ export {
 export { getCompanyIntelPrompt } from './company';
 export { getCareerKnowledgeResumeTailoringPrompt } from './careerKnowledgeTailoring';
 export { getCommunicationCoachPrompt } from './communicationCoach';
+export {
+  SKILL_EXTRACTOR_PROMPT,
+  SUB_SKILL_GENERATOR_PROMPT,
+  QUIZ_GENERATOR_PROMPT,
+} from './skillAssessment';

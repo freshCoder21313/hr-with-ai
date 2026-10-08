@@ -27,6 +27,7 @@ import { useToolHandlers } from './hooks/useToolHandlers';
 import { useSuggestedAction } from './hooks/useSuggestedAction';
 import { useInterviewHints } from './hooks/useInterviewHints';
 import { useInterviewRoomBootstrap } from './hooks/useInterviewRoomBootstrap';
+import { useInterviewAutoSave } from './hooks/useInterviewAutoSave';
 
 const InterviewRoom: React.FC = () => {
   const navigate = useNavigate();
@@ -40,6 +41,9 @@ const InterviewRoom: React.FC = () => {
   } = useInterview();
   const { updateCode, updateWhiteboard } = useInterviewStore();
   const { isLoading: isInterviewLoading, error: interviewLoadError } = useInterviewLoader();
+
+  // Debounced auto-save for code and whiteboard to prevent data loss on refresh/crash
+  useInterviewAutoSave();
 
   const [inputValue, setInputValue] = useState('');
   const [isEndingSession, setIsEndingSession] = useState(false);

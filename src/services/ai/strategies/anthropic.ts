@@ -20,6 +20,9 @@ export class AnthropicStrategy implements AIProviderStrategy {
   async generateText(messages: ChatMessage[], options?: AIRequestOptions): Promise<AIResponse> {
     const modelId = options?.modelId || this.defaultModel;
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
+
     try {
       const response = await fetch(`${this.baseUrl}/v1/messages`, {
         method: 'POST',
@@ -37,6 +40,7 @@ export class AnthropicStrategy implements AIProviderStrategy {
             system: options.systemInstruction,
           }),
         }),
+        signal: controller.signal,
       });
 
       if (!response.ok) {
@@ -56,6 +60,8 @@ export class AnthropicStrategy implements AIProviderStrategy {
       };
     } catch (error) {
       throw classifyProviderError(error, 'anthropic');
+    } finally {
+      clearTimeout(timeoutId);
     }
   }
 
@@ -86,6 +92,9 @@ export class AnthropicStrategy implements AIProviderStrategy {
   async *streamText(messages: ChatMessage[], options?: AIRequestOptions): AsyncIterable<string> {
     const modelId = options?.modelId || this.defaultModel;
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
+
     let response: Response;
     try {
       response = await fetch(`${this.baseUrl}/v1/messages`, {
@@ -105,6 +114,7 @@ export class AnthropicStrategy implements AIProviderStrategy {
             system: options.systemInstruction,
           }),
         }),
+        signal: controller.signal,
       });
 
       if (!response.ok) {
@@ -113,6 +123,8 @@ export class AnthropicStrategy implements AIProviderStrategy {
       }
     } catch (error) {
       throw classifyProviderError(error, 'anthropic');
+    } finally {
+      clearTimeout(timeoutId);
     }
 
     if (!response.body) throw classifyProviderError(new Error('No response body'), 'anthropic');

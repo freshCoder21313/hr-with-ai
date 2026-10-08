@@ -3,6 +3,7 @@ import { logger } from '@/lib/logger';
 import { AIService } from '@/services/ai/ai.service';
 import { getStoredAIConfig } from './aiConfigService';
 import { loadUserSettings } from '@/services/core/settingsService';
+import { companyIntelSchema } from '@/services/ai/schemas';
 
 export interface CompanyIntel {
   culture: string;
@@ -43,16 +44,10 @@ export const researchCompany = async (companyName: string): Promise<CompanyIntel
   const prompt = getCompanyIntelPrompt(companyName);
 
   try {
-    const response = await service.generateText([{ role: 'user', content: prompt }], {
-      jsonMode: true,
-    });
-
-    let jsonText = response.text || '';
-    if (!jsonText) throw new Error('No intellectual data generated');
-
-    // Clean JSON if needed
-    jsonText = jsonText.replace(/```json\n?|\n?```/g, '').trim();
-    return JSON.parse(jsonText) as CompanyIntel;
+    return await service.generateStructured(
+      [{ role: 'user', content: prompt }],
+      companyIntelSchema
+    );
   } catch (error) {
     logger.error('Error researching company:', error);
     throw error;

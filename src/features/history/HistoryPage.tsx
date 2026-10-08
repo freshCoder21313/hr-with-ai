@@ -169,9 +169,14 @@ const HistoryPage: React.FC = () => {
       variant: 'destructive',
     });
     if (confirmed) {
-      await db.interviews.delete(interviewId);
-      setInterviews((prev) => prev.filter((i) => i.id !== interviewId));
-      setTotalCount((prev) => Math.max(0, prev - 1));
+      try {
+        await db.interviews.delete(interviewId);
+        setInterviews((prev) => prev.filter((i) => i.id !== interviewId));
+        setTotalCount((prev) => Math.max(0, prev - 1));
+      } catch (err) {
+        logger.error('Failed to delete interview', err);
+        notificationService.error('Failed to delete interview session. Please try again.');
+      }
     }
   };
 
@@ -183,8 +188,13 @@ const HistoryPage: React.FC = () => {
       variant: 'destructive',
     });
     if (confirmed) {
-      await db.skillAssessments.delete(assessmentId);
-      setAssessments((prev) => prev.filter((a) => a.id !== assessmentId));
+      try {
+        await db.skillAssessments.delete(assessmentId);
+        setAssessments((prev) => prev.filter((a) => a.id !== assessmentId));
+      } catch (err) {
+        logger.error('Failed to delete assessment', err);
+        notificationService.error('Failed to delete skill assessment record. Please try again.');
+      }
     }
   };
 
@@ -196,8 +206,13 @@ const HistoryPage: React.FC = () => {
       variant: 'destructive',
     });
     if (confirmed) {
-      await db.jobs.delete(jobId);
-      setJobs((prev) => prev.filter((j) => j.id !== jobId));
+      try {
+        await db.jobs.delete(jobId);
+        setJobs((prev) => prev.filter((j) => j.id !== jobId));
+      } catch (err) {
+        logger.error('Failed to delete saved job', err);
+        notificationService.error('Failed to delete saved job template. Please try again.');
+      }
     }
   };
 

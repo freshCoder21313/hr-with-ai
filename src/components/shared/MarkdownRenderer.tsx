@@ -44,7 +44,10 @@ const MermaidBlock: React.FC<{ code: string }> = ({ code }) => {
       if (!containerRef.current) return;
       setIsRendering(true);
       try {
-        const { default: mermaid } = await import('mermaid');
+        const [{ default: mermaid }, { sanitizeSvg }] = await Promise.all([
+          import('mermaid'),
+          import('@/lib/svgSanitizer'),
+        ]);
         mermaid.initialize({
           startOnLoad: false,
           theme: 'default',
@@ -54,7 +57,7 @@ const MermaidBlock: React.FC<{ code: string }> = ({ code }) => {
         const id = `mermaid-${Math.random().toString(36).substring(2, 9)}`;
         const { svg } = await mermaid.render(id, code);
         if (containerRef.current) {
-          containerRef.current.innerHTML = svg;
+          containerRef.current.innerHTML = sanitizeSvg(svg);
           setError(false);
         }
       } catch (e) {

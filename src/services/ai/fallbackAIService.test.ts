@@ -68,7 +68,25 @@ describe('Fallback AI Service', () => {
     await expect(fallbackService.generateText([])).rejects.toThrow('auth fail');
   });
 
-  it('stops immediately on structured output error', async () => {
+  it('falls back to next candidate on structured output error', async () => {
+    const parseError = new AIStructuredOutputError('parse fail');
+    const service1 = { generateStructured: vi.fn().mockRejectedValue(parseError) };
+    const service2 = { generateStructured: vi.fn().mockResolvedValue({ parsed: true }) };
+
+    let callCount = 0;
+    vi.mocked(AIService).mockImplementation(function () {
+      callCount++;
+      return (callCount === 1 ? service1 : service2) as any;
+    } as any);
+
+    const fallbackService = new FallbackAIService(mockConfig);
+    const result = await fallbackService.generateStructured([], {} as any);
+    expect(result).toEqual({ parsed: true });
+    expect(service1.generateStructured).toHaveBeenCalledTimes(1);
+    expect(service2.generateStructured).toHaveBeenCalledTimes(1);
+  });
+
+  it('throws structured output error when last candidate fails', async () => {
     const parseError = new AIStructuredOutputError('parse fail');
     const service1 = { generateStructured: vi.fn().mockRejectedValue(parseError) };
 

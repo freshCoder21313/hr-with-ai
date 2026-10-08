@@ -31,6 +31,8 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({ isOpen, onClose 
     showPassword,
     includeApiKey,
     downloadId,
+    downloadPassword,
+    showDownloadPassword,
     offlineIncludeApiKey,
     fileInputRef,
   } = state;
@@ -41,6 +43,8 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({ isOpen, onClose 
     setShowPassword,
     setIncludeApiKey,
     setDownloadId,
+    setDownloadPassword,
+    setShowDownloadPassword,
     setOfflineIncludeApiKey,
     generateNewId,
     resetStatus,
@@ -135,8 +139,12 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({ isOpen, onClose 
           >
             <DownloadTab
               downloadId={downloadId}
+              downloadPassword={downloadPassword}
+              showPassword={showDownloadPassword}
               isLoading={isLoading}
               setDownloadId={setDownloadId}
+              setDownloadPassword={setDownloadPassword}
+              setShowPassword={setShowDownloadPassword}
               handleDownload={handleDownload}
             />
           </TabsContent>

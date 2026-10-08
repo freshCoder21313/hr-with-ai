@@ -148,25 +148,27 @@ const App: React.FC = () => {
                   />
 
                   <main className="app-main flex-1 w-full py-0 print:p-0 print:m-0 print:block print:flex-none">
-                    <Suspense fallback={<PageLoader />}>
-                      <Routes>
-                        <Route path="/" element={<LandingPage />} />
-                        <Route path="/setup" element={<SetupRoom />} />
-                        <Route path="/history" element={<HistoryPage />} />
-                        <Route path="/resumes/:id/edit" element={<ResumeBuilder />} />
-                        <Route path="/resumes" element={<Navigate to="/studio" replace />} />
-                        <Route path="/studio" element={<CVStudioPage />} />
-                        <Route path="/skill-assessment" element={<SkillAssessmentPage />} />
-                        <Route
-                          path="/career-knowledge"
-                          element={<Navigate to="/studio" replace />}
-                        />
-                        <Route path="/cv-chat" element={<Navigate to="/studio" replace />} />
-                        <Route path="/interview/:id" element={<InterviewRoom />} />
-                        <Route path="/feedback/:id" element={<FeedbackView />} />
-                        <Route path="*" element={<Navigate to="/" replace />} />
-                      </Routes>
-                    </Suspense>
+                    <ErrorBoundary>
+                      <Suspense fallback={<PageLoader />}>
+                        <Routes>
+                          <Route path="/" element={<LandingPage />} />
+                          <Route path="/setup" element={<SetupRoom />} />
+                          <Route path="/history" element={<HistoryPage />} />
+                          <Route path="/resumes/:id/edit" element={<ResumeBuilder />} />
+                          <Route path="/resumes" element={<Navigate to="/studio" replace />} />
+                          <Route path="/studio" element={<CVStudioPage />} />
+                          <Route path="/skill-assessment" element={<SkillAssessmentPage />} />
+                          <Route
+                            path="/career-knowledge"
+                            element={<Navigate to="/studio" replace />}
+                          />
+                          <Route path="/cv-chat" element={<Navigate to="/studio" replace />} />
+                          <Route path="/interview/:id" element={<InterviewRoom />} />
+                          <Route path="/feedback/:id" element={<FeedbackView />} />
+                          <Route path="*" element={<Navigate to="/" replace />} />
+                        </Routes>
+                      </Suspense>
+                    </ErrorBoundary>
                   </main>
                   <BottomNav />
                 </div>

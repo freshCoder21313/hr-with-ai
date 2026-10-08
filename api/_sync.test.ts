@@ -692,8 +692,12 @@ const SYNC_ID = 'AbCdEfGh12345678';
 const PASSWORD = 'correct-horse-battery';
 const BACKUP = { compressed: 'N4IgLgpgtgFgcgVwEYQDQgCYEsDmCA2EAvkA' };
 
-const get = (handler: Handler, id: string | string[] = SYNC_ID, ip?: string) =>
-  send(handler, { query: { id }, ip });
+const get = (
+  handler: Handler,
+  id: string | string[] = SYNC_ID,
+  ip?: string,
+  headers: Record<string, string> = { 'x-sync-password': PASSWORD }
+) => send(handler, { query: { id }, ip, headers });
 
 const post = (handler: Handler, body: unknown, id: string | null = SYNC_ID) =>
   send(handler, { method: 'POST', headers: id === null ? {} : { 'x-sync-id': id }, body });
@@ -799,7 +803,22 @@ describe('GET (download)', () => {
     expect(res.body).toEqual({ error: 'Backup not found' });
   });
 
-  it('returns only the stored backup to anyone holding the id (no password, no hash)', async () => {
+  it('rejects download when password is missing or invalid', async () => {
+    const handler = await loadHandler();
+    await seedBackup(handler);
+    const noPass = await send(handler, { query: { id: SYNC_ID } });
+    expect(noPass.statusCode).toBe(401);
+    expect(noPass.body).toEqual({ error: 'Password required to download backup' });
+
+    const wrongPass = await send(handler, {
+      query: { id: SYNC_ID },
+      headers: { 'x-sync-password': 'wrong-password' },
+    });
+    expect(wrongPass.statusCode).toBe(401);
+    expect(wrongPass.body).toEqual({ error: 'Invalid backup password' });
+  });
+
+  it('returns the stored backup when correct password is provided', async () => {
     const handler = await loadHandler();
     await seedBackup(handler);
     const res = await get(handler);
@@ -1707,4 +1726,58 @@ describe('Career Knowledge Production Sync Hardening & Operational Telemetry (Ph
     expect(auditParsed.toState).toBe('confirmed');
     expect(auditParsed.actor).toBe('user');
   });
+
+  it('rejects push_career_knowledge when payload collections are not arrays or contain malformed items', async () => {
+    // 1. Non-array facts
+    const res1 = await post(
+      handler,
+      {
+        action: 'push_career_knowledge',
+        password: PASSWORD,
+        profileId: PROFILE_ID,
+        data: {
+          profile: { id: PROFILE_ID, schemaVersion: 1 },
+          facts: 'not an array',
+        },
+      },
+      SYNC_ID
+    );
+    expect(res1.statusCode).toBe(400);
+    expect((res1.body as { error: string }).error).toContain('Invalid facts payload');
+
+    // 2. Non-array links
+    const res2 = await post(
+      handler,
+      {
+        action: 'push_career_knowledge',
+        password: PASSWORD,
+        profileId: PROFILE_ID,
+        data: {
+          profile: { id: PROFILE_ID, schemaVersion: 1 },
+          links: { bad: 'object' },
+        },
+      },
+      SYNC_ID
+    );
+    expect(res2.statusCode).toBe(400);
+    expect((res2.body as { error: string }).error).toContain('Invalid links payload');
+
+    // 3. Malformed fact item
+    const res3 = await post(
+      handler,
+      {
+        action: 'push_career_knowledge',
+        password: PASSWORD,
+        profileId: PROFILE_ID,
+        data: {
+          profile: { id: PROFILE_ID, schemaVersion: 1 },
+          facts: [{ invalid: 'item' }],
+        },
+      },
+      SYNC_ID
+    );
+    expect(res3.statusCode).toBe(400);
+    expect((res3.body as { error: string }).error).toContain('Invalid fact item');
+  });
 });
+

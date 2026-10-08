@@ -14,6 +14,8 @@ interface State {
   extractionMode: ExtractionMode;
   isLoading: boolean;
   error: string | null;
+  savedAssessmentId: number | null;
+  setSavedAssessmentId: (id: number | null) => void;
   setStep: (step: AssessmentStep) => void;
   setExtractedSkills: (skills: string[]) => void;
   setSelectedSkill: (skill: string) => void;
@@ -45,6 +47,7 @@ type PersistedState = Pick<
   | 'userAnswers'
   | 'quizScore'
   | 'extractionMode'
+  | 'savedAssessmentId'
 >;
 
 const INITIAL_QUIZ_QUESTION_COUNT = 5;
@@ -53,6 +56,7 @@ const initialQuizState = {
   quizQuestions: [] as QuizQuestion[],
   userAnswers: {} as Record<string, string>,
   quizScore: null as number | null,
+  savedAssessmentId: null as number | null,
 };
 
 export const useSkillAssessmentStore = create<State>()(
@@ -67,6 +71,7 @@ export const useSkillAssessmentStore = create<State>()(
       isLoading: false,
       error: null,
       ...initialQuizState,
+      setSavedAssessmentId: (id) => set({ savedAssessmentId: id }),
       setStep: (step) => set({ step }),
       setExtractedSkills: (skills) => set({ extractedSkills: skills }),
       setSelectedSkill: (skill) => set({ selectedSkill: skill }),
@@ -74,7 +79,7 @@ export const useSkillAssessmentStore = create<State>()(
       setQuizQuestionCount: (count) => set({ quizQuestionCount: count }),
       setQuizQuestions: (questions) =>
         // New question set => answers to the previous set are meaningless.
-        set({ quizQuestions: questions, userAnswers: {}, quizScore: null }),
+        set({ quizQuestions: questions, userAnswers: {}, quizScore: null, savedAssessmentId: null }),
       setExtractionMode: (mode) => set({ extractionMode: mode }),
       answerQuestion: (qId, answer) =>
         set((state) => ({ userAnswers: { ...state.userAnswers, [qId]: answer } })),
@@ -125,6 +130,7 @@ export const useSkillAssessmentStore = create<State>()(
         userAnswers: state.userAnswers,
         quizScore: state.quizScore,
         extractionMode: state.extractionMode,
+        savedAssessmentId: state.savedAssessmentId,
       }),
       migrate: (persisted) => {
         const state = persisted as Partial<PersistedState> | undefined;

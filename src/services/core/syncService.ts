@@ -536,16 +536,22 @@ export const syncService = {
 
   // Download from Cloud (Decompress)
   downloadFromCloud: async (
-    id: string
+    id: string,
+    password?: string
   ): Promise<{ success: boolean; data?: SyncData; message?: string }> => {
     try {
+      const headers: Record<string, string> = {
+        'Cache-Control': 'no-cache',
+        Pragma: 'no-cache',
+        Expires: '0',
+      };
+      if (password) {
+        headers['x-sync-password'] = password;
+      }
+
       const result = await apiClient.get<{ data: CompressedSyncData }>(`/sync`, {
         params: { id, t: Date.now() }, // Add timestamp to bypass browser cache
-        headers: {
-          'Cache-Control': 'no-cache',
-          Pragma: 'no-cache',
-          Expires: '0',
-        },
+        headers,
       });
 
       // The response interceptor returns 'response.data', but our API structure might be { data: ... }
@@ -580,6 +586,8 @@ export const syncService = {
 
       if (axios.isAxiosError(error)) {
         if (error.response?.status === 404) message = 'Backup not found for this ID.';
+        else if (error.response?.status === 401)
+          message = 'Invalid password for this ID.';
         else if (error.response?.status === 429)
           message = 'Rate limit exceeded. Please try again later.';
         else message = `Download failed: ${error.response?.statusText || error.message}`;

@@ -110,6 +110,9 @@ export const vaultService = {
     let metadata: HRVaultMetadata | undefined;
 
     if (obj.format === 'hr-with-ai-vault' && obj.payload) {
+      if (typeof obj.payload !== 'object' || obj.payload === null) {
+        return { success: false, error: 'Invalid vault file: Corrupted payload.' };
+      }
       payloadToImport = obj.payload as SyncData;
       metadata = obj.metadata as HRVaultMetadata | undefined;
     } else {

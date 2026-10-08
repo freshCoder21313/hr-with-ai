@@ -88,11 +88,13 @@ export function useFeedbackData(id: string | undefined) {
       }
       try {
         const { default: mermaid } = await import('mermaid');
+        const { sanitizeSvg } = await import('@/lib/svgSanitizer');
         const isDarkMode =
           typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
         mermaid.initialize({
           startOnLoad: false,
           theme: isDarkMode ? 'dark' : 'default',
+          securityLevel: 'strict',
         });
 
         mermaidRef1.current.innerHTML = '';
@@ -104,7 +106,7 @@ export function useFeedbackData(id: string | undefined) {
               'mermaid-chart-1',
               feedback.mermaidGraphCurrent
             );
-            mermaidRef1.current.innerHTML = svg1;
+            mermaidRef1.current.innerHTML = sanitizeSvg(svg1);
           } catch (chart1Error) {
             logger.error('Mermaid chart 1 rendering failed:', chart1Error);
             if (mermaidRef1.current) {
@@ -120,7 +122,7 @@ export function useFeedbackData(id: string | undefined) {
               'mermaid-chart-2',
               feedback.mermaidGraphPotential
             );
-            mermaidRef2.current.innerHTML = svg2;
+            mermaidRef2.current.innerHTML = sanitizeSvg(svg2);
           } catch (chart2Error) {
             logger.error('Mermaid chart 2 rendering failed:', chart2Error);
             if (mermaidRef2.current) {

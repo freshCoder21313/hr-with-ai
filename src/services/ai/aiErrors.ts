@@ -100,7 +100,7 @@ export const classifyProviderError = (
     } else if (status === 401 || status === 403) {
       kind = 'auth';
       retryable = false;
-      fallbackEligible = false;
+      fallbackEligible = true;
     } else if (status === 404) {
       kind = 'not_found';
       retryable = false;

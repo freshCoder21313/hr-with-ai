@@ -368,6 +368,26 @@ export async function handlePushCareerKnowledge(
     return;
   }
 
+  if (facts !== undefined && !Array.isArray(facts)) {
+    res.status(400).json({ error: 'Invalid facts payload: must be an array' });
+    return;
+  }
+
+  if (evidence !== undefined && !Array.isArray(evidence)) {
+    res.status(400).json({ error: 'Invalid evidence payload: must be an array' });
+    return;
+  }
+
+  if (links !== undefined && !Array.isArray(links)) {
+    res.status(400).json({ error: 'Invalid links payload: must be an array' });
+    return;
+  }
+
+  if (notes !== undefined && !Array.isArray(notes)) {
+    res.status(400).json({ error: 'Invalid notes payload: must be an array' });
+    return;
+  }
+
   // Schema version compatibility check
   const incomingSchemaVersion = profile.schemaVersion || 1;
   if (incomingSchemaVersion > SUPPORTED_SCHEMA_VERSION) {
@@ -425,6 +445,10 @@ export async function handlePushCareerKnowledge(
 
     if (facts) {
       for (const fact of facts) {
+        if (!fact || typeof fact !== 'object' || typeof fact.id !== 'string' || typeof fact.profileId !== 'string') {
+          res.status(400).json({ error: 'Invalid fact item in payload' });
+          return;
+        }
         if (fact.profileId !== profileId) {
           res
             .status(400)
@@ -437,6 +461,10 @@ export async function handlePushCareerKnowledge(
 
     if (evidence) {
       for (const ev of evidence) {
+        if (!ev || typeof ev !== 'object' || typeof ev.id !== 'string' || typeof ev.profileId !== 'string') {
+          res.status(400).json({ error: 'Invalid evidence item in payload' });
+          return;
+        }
         if (ev.profileId !== profileId) {
           res
             .status(400)
@@ -451,6 +479,12 @@ export async function handlePushCareerKnowledge(
     // Batched scope checks: one ANY() query per entity kind instead of
     // one SELECT per link/note (N+1 reads).
     if (links) {
+      for (const link of links) {
+        if (!link || typeof link !== 'object' || typeof link.factId !== 'string' || typeof link.evidenceId !== 'string') {
+          res.status(400).json({ error: 'Invalid link item in payload' });
+          return;
+        }
+      }
       const neededFactIds = [
         ...new Set(links.map((l) => l.factId).filter((id) => !payloadFactIds.has(id))),
       ];
@@ -488,6 +522,12 @@ export async function handlePushCareerKnowledge(
     }
 
     if (notes) {
+      for (const note of notes) {
+        if (!note || typeof note !== 'object' || typeof note.id !== 'string' || typeof note.factId !== 'string') {
+          res.status(400).json({ error: 'Invalid note item in payload' });
+          return;
+        }
+      }
       const neededFactIds = [
         ...new Set(notes.map((n) => n.factId).filter((id) => !payloadFactIds.has(id))),
       ];

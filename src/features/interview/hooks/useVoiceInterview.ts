@@ -13,7 +13,7 @@ import { streamInterviewMessage } from '@/services/interview/interviewAIService'
 import { getStoredAIConfig } from '@/services/ai/aiConfigService';
 import { voiceInterviewService } from '@/services/voice/voiceInterviewService';
 import { Message, VoiceSettings } from '@/types';
-import { getErrorMessage, nextMessageId } from '@/lib/utils';
+import { getErrorMessage, nextMessageId, withIdleTimeout } from '@/lib/utils';
 import { isNonEmptyString } from '@/lib/validation';
 import { createStreamPersistence } from '@/features/interview/hooks/interviewStreamPersistence';
 
@@ -291,13 +291,18 @@ export const useVoiceInterview = () => {
         // Stream
         let fullContent = '';
         persistence.attachLifecycleFlush();
-        for await (const chunk of streamInterviewMessage(
-          priorMessages,
-          userText,
-          currentInterview,
-          config,
-          currentInterview.code
-        )) {
+        const stream = withIdleTimeout(
+          streamInterviewMessage(
+            priorMessages,
+            userText,
+            currentInterview,
+            config,
+            currentInterview.code
+          ),
+          60000,
+          'Voice AI stream stalled.'
+        );
+        for await (const chunk of stream) {
           fullContent += chunk;
 
           // A superseded generation must not write into the transcript.

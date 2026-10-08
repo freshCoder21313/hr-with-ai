@@ -179,8 +179,13 @@ export const fetchProviderModels = async (config: AIConfig): Promise<string[]> =
     if (provider === 'google') {
       if (baseUrl) {
         const cleanBaseUrl = baseUrl.replace(/\/$/, '');
-        const url = `${cleanBaseUrl}/v1beta/models?key=${apiKey}`;
-        const response = await fetch(url, { signal: controller.signal });
+        const url = `${cleanBaseUrl}/v1beta/models`;
+        const response = await fetch(url, {
+          headers: {
+            'x-goog-api-key': apiKey,
+          },
+          signal: controller.signal,
+        });
         if (!response.ok) {
           throw classifyProviderError(new Error(response.statusText), 'google', response.status);
         }

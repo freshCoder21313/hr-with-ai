@@ -59,7 +59,7 @@ export class GoogleGeminiStrategy implements AIProviderStrategy {
     if (this.baseUrl) {
       try {
         const cleanBaseUrl = this.baseUrl.replace(/\/$/, '');
-        const url = `${cleanBaseUrl}/v1beta/models/${modelId}:generateContent?key=${this.apiKey}`;
+        const url = `${cleanBaseUrl}/v1beta/models/${modelId}:generateContent`;
 
         const payload = {
           contents,
@@ -69,13 +69,23 @@ export class GoogleGeminiStrategy implements AIProviderStrategy {
             : undefined,
         };
 
-        const response = await fetch(url, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(payload),
-        });
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+        let response: Response;
+        try {
+          response = await fetch(url, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-goog-api-key': this.apiKey,
+            },
+            body: JSON.stringify(payload),
+            signal: controller.signal,
+          });
+        } finally {
+          clearTimeout(timeoutId);
+        }
 
         if (!response.ok) {
           throw classifyProviderError(new Error(response.statusText), 'google', response.status);
@@ -162,7 +172,7 @@ export class GoogleGeminiStrategy implements AIProviderStrategy {
     if (this.baseUrl) {
       // Remove trailing slash
       const cleanBaseUrl = this.baseUrl.replace(/\/$/, '');
-      const url = `${cleanBaseUrl}/v1beta/models/${modelId}:streamGenerateContent?key=${this.apiKey}`;
+      const url = `${cleanBaseUrl}/v1beta/models/${modelId}:streamGenerateContent`;
 
       const payload = {
         contents,
@@ -179,7 +189,10 @@ export class GoogleGeminiStrategy implements AIProviderStrategy {
       try {
         response = await fetch(url, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'x-goog-api-key': this.apiKey,
+          },
           body: JSON.stringify(payload),
           signal: controller.signal,
         });

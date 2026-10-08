@@ -176,7 +176,17 @@ export const useCVStudio = () => {
       const reader = new FileReader();
       reader.onload = (ev) => {
         try {
-          const { jobs: importedJobs, globalPrompt: gp } = JSON.parse(ev.target?.result as string);
+          const parsed = JSON.parse(ev.target?.result as string);
+          if (!parsed || typeof parsed !== 'object') {
+            toast.error('Failed to import jobs: invalid file format.');
+            return;
+          }
+          const importedJobs = Array.isArray(parsed.jobs) ? parsed.jobs : [];
+          if (importedJobs.length === 0) {
+            toast.error('No jobs found in imported file.');
+            return;
+          }
+
           jobActions.importJobs(
             importedJobs.map((j: Partial<Job>) => ({
               company: j.company || '',
@@ -192,9 +202,10 @@ export const useCVStudio = () => {
               interviewContext: j.interviewContext,
             }))
           );
-          if (typeof gp === 'string') jobActions.setGlobalPrompt(gp);
+          if (typeof parsed.globalPrompt === 'string') jobActions.setGlobalPrompt(parsed.globalPrompt);
+          toast.success(`Successfully imported ${importedJobs.length} job(s).`);
         } catch {
-          toast.error('Failed to import jobs.');
+          toast.error('Failed to import jobs: file is not valid JSON.');
         }
       };
       reader.readAsText(file);

@@ -8,7 +8,12 @@ import {
 } from '@/services/prompts';
 import { ResumeData } from '@/types/resume';
 import { getService, AIConfigInput, getStoredAIConfig } from '@/services/ai/aiConfigService';
-import { jdExtractSchema, jobRecommendationsSchema, resumeDataSchema } from '@/services/ai/schemas';
+import {
+  jdExtractSchema,
+  jobRecommendationsSchema,
+  normalizeToResumeData,
+  resumeDataSchema,
+} from '@/services/ai/schemas';
 
 export const extractInfoFromJD = async (
   jobDescription: string,
@@ -127,10 +132,11 @@ export const generateTailoredResumeForJob = async (
   const prompt = getJobTailoredResumePrompt(originalResumeData, jobDescription);
 
   try {
-    return (await service.generateStructured(
+    const raw = await service.generateStructured(
       [{ role: 'user', content: prompt }],
       resumeDataSchema
-    )) as unknown as ResumeData;
+    );
+    return normalizeToResumeData(raw);
   } catch (error) {
     logger.error('Error generating tailored resume:', error);
     throw error;

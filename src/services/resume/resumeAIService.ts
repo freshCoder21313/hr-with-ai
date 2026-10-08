@@ -10,6 +10,7 @@ import {
 import { ResumeData } from '@/types/resume';
 import { getService, AIConfigInput } from '@/services/ai/aiConfigService';
 import {
+  normalizeToResumeData,
   resumeAnalysisSchema,
   resumeDataSchema,
   resumeSectionAnalysisSchema,
@@ -71,10 +72,11 @@ export const parseResumeToJSON = async (
   const prompt = getParseResumePrompt(rawText);
 
   try {
-    return (await service.generateStructured(
+    const raw = await service.generateStructured(
       [{ role: 'user', content: prompt }],
       resumeDataSchema
-    )) as unknown as ResumeData;
+    );
+    return normalizeToResumeData(raw);
   } catch (error) {
     logger.error('Error parsing resume:', error);
     throw error;
@@ -110,10 +112,11 @@ export const tailorResumeToJob = async (
   const prompt = finalPrompt || getTailoredResumePrompt(sourceResume, jobDescription);
 
   try {
-    return (await service.generateStructured(
+    const raw = await service.generateStructured(
       [{ role: 'user', content: prompt }],
       resumeDataSchema
-    )) as unknown as ResumeData;
+    );
+    return normalizeToResumeData(raw);
   } catch (error) {
     logger.error('Error tailoring resume:', error);
     throw error;
@@ -127,10 +130,11 @@ export const tailorResumeV2 = async (
   const service = await getService(configInput);
 
   try {
-    return (await service.generateStructured(
+    const raw = await service.generateStructured(
       [{ role: 'user', content: prompt }],
       resumeDataSchema
-    )) as unknown as ResumeData;
+    );
+    return normalizeToResumeData(raw);
   } catch (error) {
     logger.error('Error tailoring resume (V2):', error);
     throw error;
@@ -151,10 +155,11 @@ Resume JSON:
 ${JSON.stringify(resumeData)}`;
 
   try {
-    const translated = (await service.generateStructured(
+    const raw = await service.generateStructured(
       [{ role: 'user', content: prompt }],
       resumeDataSchema
-    )) as unknown as ResumeData;
+    );
+    const translated = normalizeToResumeData(raw);
     translated.language = targetLanguage;
     return translated;
   } catch (error) {
