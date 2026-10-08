@@ -234,9 +234,7 @@ export const QuizStep: React.FC = () => {
                     id={hintId}
                     className="mt-3 rounded-lg border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-foreground"
                   >
-                    <span className="mr-1 font-semibold text-warning">
-                      Hint:
-                    </span>
+                    <span className="mr-1 font-semibold text-warning">Hint:</span>
                     {question.hint}
                   </div>
                 )}
@@ -265,7 +263,9 @@ export const QuizStep: React.FC = () => {
                             : 'border-muted-foreground group-hover:border-primary/50'
                         }`}
                       >
-                        {isSelected && <div className="w-2 h-2 rounded-full bg-primary-foreground" />}
+                        {isSelected && (
+                          <div className="w-2 h-2 rounded-full bg-primary-foreground" />
+                        )}
                       </div>
                       <input
                         type="radio"

@@ -23,6 +23,7 @@ const CVStudioPage: React.FC = () => {
   const [mobileTab, setMobileTab] = useState<'jobs' | 'chat' | 'preview'>('chat');
   const [isCareerKnowledgeOpen, setIsCareerKnowledgeOpen] = useState(false);
   const [candidateFactCount, setCandidateFactCount] = useState<number>(0);
+  const [isExporting, setIsExporting] = useState<boolean>(false);
   const exportRef = useRef<HTMLDivElement>(null);
 
   const refreshCandidateCount = useCallback(async () => {
@@ -221,8 +222,10 @@ const CVStudioPage: React.FC = () => {
                 const targetId = state.mainCV?.id ?? state.selectedResumeId;
                 if (targetId) handleViewResult(targetId);
               }}
+              isExporting={isExporting}
               onPrint={async () => {
-                if (!exportRef.current) return;
+                if (!exportRef.current || isExporting) return;
+                setIsExporting(true);
                 try {
                   const result = await exportElementToPdf(
                     exportRef.current,
@@ -234,6 +237,8 @@ const CVStudioPage: React.FC = () => {
                 } catch (error) {
                   logger.error('PDF export failed:', error);
                   toast.error('Could not export PDF. Please try again.');
+                } finally {
+                  setIsExporting(false);
                 }
               }}
             />

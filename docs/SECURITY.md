@@ -64,7 +64,7 @@ Backups are stored as JSONB — treat the database as sensitive.
 ## 4. Local data (Dexie)
 
 - Database name: `VietPhongDB`
-- Schema versions: **2 → 14** (see `docs/adr/002-dexie-migrations.md`)
+- Schema versions: **2 → 16** (see `docs/adr/002-dexie-migrations.md`)
 - Resume `parsedData` is compressed at rest in IndexedDB (`compressedData`)
 
 ## 5. Reporting

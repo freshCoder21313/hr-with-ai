@@ -83,6 +83,21 @@ const INTERVIEW_PRESETS: PresetItem[] = [
       'Responsibilities:\n- Architect highly available, resilient cloud systems.\n- Evaluate latency vs consistency tradeoffs across distributed storage tiers.\n- Design for horizontal scaling, disaster recovery, and data isolation.',
   },
   {
+    id: 'hr-culture-screen',
+    title: 'HR Screening & Culture Fit',
+    company: 'TechCorp Global',
+    role: 'Senior Software Engineer',
+    difficulty: 'medium',
+    type: 'behavioral',
+    mode: 'hybrid',
+    persona:
+      'Elena, Senior Talent Acquisition Partner at TechCorp. Empathetic, perceptive, and focused on team culture, career motivations, cross-functional collaboration, and alignment with the JD.',
+    tags: ['Culture Fit', 'HR Screen', 'Empathetic'],
+    description: 'Empathetic yet sharp HR conversation evaluating team fit, career drivers, and JD alignment.',
+    jobDescription:
+      'Responsibilities:\n- Partner seamlessly with Product Managers, UX Designers, and engineering peers.\n- Foster psychological safety, mentor junior colleagues, and champion constructive retrospectives.\n- Navigate ambiguity and shifting business priorities with resilience and radical candor.\n- Align with company values: Empathy, Continuous Learning, and Extreme Ownership.',
+  },
+  {
     id: 'warmup',
     title: '10-Min General Warmup',
     company: 'Tech Startup',
@@ -136,7 +151,7 @@ export const InterviewPresets: React.FC<InterviewPresetsProps> = ({
       </div>
 
       {/* Preset Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
         {INTERVIEW_PRESETS.map((preset) => {
           const isSelected = activePresetId === preset.id;
           return (
@@ -170,9 +185,7 @@ export const InterviewPresets: React.FC<InterviewPresetsProps> = ({
                   </Badge>
                 </div>
 
-                <p className="text-[11px] font-medium text-primary mb-1.5">
-                  @{preset.company}
-                </p>
+                <p className="text-[11px] font-medium text-primary mb-1.5">@{preset.company}</p>
 
                 <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed mb-2.5">
                   {preset.description}
@@ -205,7 +218,10 @@ export const InterviewPresets: React.FC<InterviewPresetsProps> = ({
 
       {/* Preset Details Inspection Dialog */}
       {inspectingPreset && (
-        <Dialog open={!!inspectingPreset} onOpenChange={(open) => !open && setInspectingPreset(null)}>
+        <Dialog
+          open={!!inspectingPreset}
+          onOpenChange={(open) => !open && setInspectingPreset(null)}
+        >
           <DialogContent className="max-w-xl max-h-[85vh] overflow-y-auto">
             <DialogHeader>
               <div className="flex items-center gap-2 mb-1">

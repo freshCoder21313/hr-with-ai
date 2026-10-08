@@ -64,6 +64,11 @@ vi.mock('@/lib/db', () => ({
       put: vi.fn(),
       get: vi.fn(),
     },
+    skillAssessments: {
+      toArray: vi.fn(),
+      add: vi.fn(),
+      put: vi.fn(),
+    },
     transaction: vi.fn((...args: unknown[]) => {
       const fn = args[args.length - 1] as () => unknown;
       return fn();
@@ -162,6 +167,29 @@ describe('syncService', () => {
 
       const data = await syncService.exportData({ includeSensitive: true });
       expect(data.userSettings[0].apiKey).toBe('secret-key');
+    });
+
+    it('exports skillAssessments from local db', async () => {
+      vi.mocked(db.interviews.toArray).mockResolvedValue([]);
+      vi.mocked(db.resumes.toArray).mockResolvedValue([]);
+      vi.mocked(db.userSettings.toArray).mockResolvedValue([]);
+      vi.mocked(db.skillAssessments.toArray).mockResolvedValue([
+        {
+          id: 1,
+          skill: 'React',
+          score: 85,
+          totalQuestions: 10,
+          createdAt: 12345678,
+        },
+      ]);
+
+      const data = await syncService.exportData();
+      expect(data.skillAssessments).toHaveLength(1);
+      expect(data.skillAssessments?.[0]).toMatchObject({
+        skill: 'React',
+        score: 85,
+        totalQuestions: 10,
+      });
     });
   });
 
@@ -410,6 +438,65 @@ describe('syncService', () => {
       });
 
       expect(db.userSettings.add).toHaveBeenCalledWith(cloudSetting);
+    });
+
+    it('imports skill assessments and strips local id on insert', async () => {
+      const cloudAssessment = {
+        id: 99,
+        skill: 'TypeScript',
+        score: 90,
+        totalQuestions: 10,
+        createdAt: 2000,
+      };
+
+      vi.mocked(db.skillAssessments.toArray).mockResolvedValue([]);
+      vi.mocked(db.userSettings.toArray).mockResolvedValue([]);
+      vi.mocked(db.interviews.toArray).mockResolvedValue([]);
+      vi.mocked(db.resumes.toArray).mockResolvedValue([]);
+      vi.mocked(db.userSettings.orderBy).mockReturnValue({
+        first: vi.fn().mockResolvedValue(undefined),
+      } as any);
+
+      await syncService.importData({
+        interviews: [],
+        userSettings: [],
+        resumes: [],
+        skillAssessments: [cloudAssessment],
+      });
+
+      expect(db.skillAssessments.add).toHaveBeenCalledWith({
+        skill: 'TypeScript',
+        score: 90,
+        totalQuestions: 10,
+        createdAt: 2000,
+      });
+    });
+
+    it('does not insert duplicate skill assessment if already present locally', async () => {
+      const existingAssessment = {
+        id: 1,
+        skill: 'TypeScript',
+        score: 90,
+        totalQuestions: 10,
+        createdAt: 2000,
+      };
+
+      vi.mocked(db.skillAssessments.toArray).mockResolvedValue([existingAssessment]);
+      vi.mocked(db.userSettings.toArray).mockResolvedValue([]);
+      vi.mocked(db.interviews.toArray).mockResolvedValue([]);
+      vi.mocked(db.resumes.toArray).mockResolvedValue([]);
+      vi.mocked(db.userSettings.orderBy).mockReturnValue({
+        first: vi.fn().mockResolvedValue(undefined),
+      } as any);
+
+      await syncService.importData({
+        interviews: [],
+        userSettings: [],
+        resumes: [],
+        skillAssessments: [{ ...existingAssessment, id: 999 }],
+      });
+
+      expect(db.skillAssessments.add).not.toHaveBeenCalled();
     });
 
     it('does not let an imported baseUrl override the local endpoint', async () => {

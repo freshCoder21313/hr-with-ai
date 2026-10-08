@@ -301,8 +301,7 @@ export const CVJobPanel: React.FC<CVJobPanelProps> = ({
           </div>
 
           <p className="text-[11px] text-muted-foreground leading-relaxed px-3 py-1.5 border-b border-border">
-            <span className="font-semibold">Note:</span> Your Jobs list and Prompts are saved
-            locally in this browser and are not synced to the cloud. Use Export to create backups.
+            <span className="font-semibold">Note:</span> Your Target Jobs are saved in IndexedDB and shared with Mock Interview.
           </p>
 
           <div className="flex-1 overflow-y-auto p-2 space-y-2">
@@ -402,7 +401,7 @@ export const CVJobPanel: React.FC<CVJobPanelProps> = ({
                       aria-label={`${job.title || 'Untitled'}${job.company ? ` @ ${job.company}` : ''} — ${s}`}
                       className={`w-2.5 h-2.5 rounded-full border ${
                         s === 'completed'
-                          ? 'bg-green-500 border-green-500'
+                          ? 'bg-success border-success'
                           : s === 'processing'
                             ? 'bg-primary border-primary animate-pulse'
                             : s === 'error'

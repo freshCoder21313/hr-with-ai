@@ -1,5 +1,6 @@
 import { VoiceSettings } from '@/types';
 import { logger } from '@/lib/logger';
+import { stripVoiceControlTokens } from './voiceInterviewService';
 
 export interface TTSConfig extends VoiceSettings {
   onStart?: () => void;
@@ -41,10 +42,16 @@ class TextToSpeechService {
       return;
     }
 
+    const cleanText = stripVoiceControlTokens(text);
+    if (!cleanText) {
+      config.onEnd?.();
+      return;
+    }
+
     // Cancel any current speaking
     this.synth.cancel();
 
-    const utterance = new SpeechSynthesisUtterance(text);
+    const utterance = new SpeechSynthesisUtterance(cleanText);
 
     // Find voice
     const voice =

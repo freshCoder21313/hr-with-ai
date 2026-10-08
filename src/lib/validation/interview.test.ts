@@ -35,4 +35,42 @@ describe('validateInterviewSetup', () => {
     expect(result.isValid).toBe(false);
     expect(result.errors).toHaveLength(4);
   });
+
+  it('rejects pure numbers in job title and company', () => {
+    const result = validateInterviewSetup({
+      jobTitle: '12345',
+      company: '99999',
+      interviewerPersona: 'Strict engineering manager',
+      resumeText: 'Experienced developer',
+    });
+
+    expect(result.isValid).toBe(false);
+    expect(result.errors).toContain('Job title must contain valid text characters');
+    expect(result.errors).toContain('Company must contain valid text characters');
+  });
+
+  it('rejects only special characters in job title and company', () => {
+    const result = validateInterviewSetup({
+      jobTitle: '!@#$%',
+      company: '---***+++',
+      interviewerPersona: 'Strict engineering manager',
+      resumeText: 'Experienced developer',
+    });
+
+    expect(result.isValid).toBe(false);
+    expect(result.errors).toContain('Job title must contain valid text characters');
+    expect(result.errors).toContain('Company must contain valid text characters');
+  });
+
+  it('accepts job title and company containing letters with numbers, symbols, and Unicode', () => {
+    const result = validateInterviewSetup({
+      jobTitle: 'Web3 Engineer (Level 2)',
+      company: '7-Eleven Việt Nam',
+      interviewerPersona: 'Strict engineering manager',
+      resumeText: 'Experienced developer with 5 years...',
+    });
+
+    expect(result.isValid).toBe(true);
+    expect(result.errors).toEqual([]);
+  });
 });

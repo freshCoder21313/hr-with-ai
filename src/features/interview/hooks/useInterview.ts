@@ -10,7 +10,7 @@ import {
 import { getStoredAIConfig } from '@/services/ai/aiConfigService';
 import { db } from '@/lib/db';
 import { InterviewStatus, SetupFormData, Interview, Message } from '@/types';
-import { getActiveScenario } from '@/features/interview/scenarios';
+import { getActiveScenarioEvent } from '@/features/interview/scenarios';
 import { openApiKeyModal } from '@/events/apiKeyEvents';
 import { isNonEmptyString, validateInterviewSetup } from '@/lib/validation';
 import { createStreamPersistence } from '@/features/interview/hooks/interviewStreamPersistence';
@@ -246,7 +246,24 @@ export const useInterview = () => {
         let systemInjection: string | null = null;
         if (latestInterview.companyStatus) {
           const turnCount = Math.floor(latestInterview.messages.length / 2);
-          systemInjection = getActiveScenario(latestInterview.companyStatus, turnCount);
+          const scenarioEvent = getActiveScenarioEvent(
+            latestInterview.companyStatus,
+            turnCount,
+            latestInterview.executedScenarioIds || []
+          );
+          if (scenarioEvent) {
+            systemInjection = scenarioEvent.systemInjection;
+            const updatedExecuted = [
+              ...(latestInterview.executedScenarioIds || []),
+              scenarioEvent.id,
+            ];
+            latestInterview.executedScenarioIds = updatedExecuted;
+            if (latestInterview.id) {
+              db.interviews
+                .update(latestInterview.id, { executedScenarioIds: updatedExecuted })
+                .catch((err) => logger.error('Failed to persist executed scenario:', err));
+            }
+          }
         }
 
         // The provider opens the stream under a 30s AbortController but clears

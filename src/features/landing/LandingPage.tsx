@@ -76,8 +76,7 @@ export const LandingPage: React.FC = () => {
             : null;
 
         // Find active/unfinished interview if any
-        const inProgress =
-          recentList.find((i) => i.status === InterviewStatus.IN_PROGRESS) || null;
+        const inProgress = recentList.find((i) => i.status === InterviewStatus.IN_PROGRESS) || null;
 
         // Identify active resume (main CV or newest modified)
         let chosenResume = mainCv || null;
@@ -110,8 +109,7 @@ export const LandingPage: React.FC = () => {
     };
   }, []);
 
-  const isReturningUser =
-    stats.interviews > 0 || stats.resumes > 0 || stats.assessments > 0;
+  const isReturningUser = stats.interviews > 0 || stats.resumes > 0 || stats.assessments > 0;
 
   const formatDate = (timestamp?: number) => {
     if (!timestamp) return 'Recent';
@@ -160,18 +158,11 @@ export const LandingPage: React.FC = () => {
             </div>
 
             <div className="flex items-center gap-3">
-              <Button
-                onClick={() => navigate('/setup')}
-                className="gap-2 shadow-sm font-medium"
-              >
+              <Button onClick={() => navigate('/setup')} className="gap-2 shadow-sm font-medium">
                 <Play className="w-4 h-4 fill-current" />
                 New Practice
               </Button>
-              <Button
-                variant="outline"
-                onClick={() => navigate('/studio')}
-                className="gap-2"
-              >
+              <Button variant="outline" onClick={() => navigate('/studio')} className="gap-2">
                 <FileText className="w-4 h-4" />
                 CV Studio
               </Button>
@@ -258,7 +249,10 @@ export const LandingPage: React.FC = () => {
                       <span className="text-xs font-bold uppercase tracking-wider text-warning">
                         In Progress Session
                       </span>
-                      <Badge variant="outline" className="border-warning/40 text-warning text-[10px]">
+                      <Badge
+                        variant="outline"
+                        className="border-warning/40 text-warning text-[10px]"
+                      >
                         Unfinished
                       </Badge>
                     </div>
@@ -470,8 +464,8 @@ export const LandingPage: React.FC = () => {
             </h1>
 
             <p className="text-base sm:text-lg md:text-xl text-muted-foreground leading-relaxed max-w-2xl mx-auto">
-              Practice realistic mock interviews with AI personas from top tech companies.
-              Tailor your resume against real JDs with offline-first privacy.
+              Practice realistic mock interviews with AI personas from top tech companies. Tailor
+              your resume against real JDs with offline-first privacy.
             </p>
 
             <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -535,7 +529,8 @@ export const LandingPage: React.FC = () => {
                   </div>
                   <CardTitle className="text-base">Get Structural Feedback</CardTitle>
                   <CardDescription className="text-xs">
-                    Receive detailed diagnostic scores, STAR alignment, and thought structure graphs.
+                    Receive detailed diagnostic scores, STAR alignment, and thought structure
+                    graphs.
                   </CardDescription>
                 </CardHeader>
               </Card>

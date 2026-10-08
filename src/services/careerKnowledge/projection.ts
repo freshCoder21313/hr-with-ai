@@ -9,7 +9,11 @@
 // verification state, or writes back from a Resume into Career Knowledge.
 
 import type { Award, Education, Project, ResumeData, Skill, Work } from '@/types/resume';
-import type { CareerFact, CareerFactCategory } from '@/types/careerKnowledge';
+import type {
+  CareerFact,
+  CareerFactCategory,
+  ProjectionAttribution,
+} from '@/types/careerKnowledge';
 import { withResumeDefaults } from '@/lib/resumeDefaults';
 
 /** A projected Work entry, attributed back to the fact it came from. */
@@ -31,13 +35,7 @@ export interface ProjectionConfig {
   baseResume?: ResumeData;
 }
 
-export interface ProjectionAttribution {
-  factId: string;
-  /** ResumeData section the fact landed in: work | education | skills | projects | awards | basics. */
-  section: string;
-  /** Index of the projected entity inside that section, after ordering. */
-  index: number;
-}
+export type { ProjectionAttribution } from '@/types/careerKnowledge';
 
 export type ProjectionSkipReason =
   | 'unverified'

@@ -11,7 +11,6 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Interview } from '@/types';
 import { Shield } from 'lucide-react';
-import { useTheme } from '@/hooks/useTheme';
 
 interface SkillRadarChartProps {
   interviews: Interview[];
@@ -34,8 +33,6 @@ const STOP_WORDS = new Set([
 ]);
 
 const SkillRadarChart: React.FC<SkillRadarChartProps> = ({ interviews }) => {
-  const { theme } = useTheme();
-
   const formatSkillLabel = (value: string) => {
     if (value.length > 15) return value.substring(0, 12) + '...';
     return value;
@@ -121,15 +118,11 @@ const SkillRadarChart: React.FC<SkillRadarChartProps> = ({ interviews }) => {
 
   if (data.length < 3) return null;
 
-  const isDark =
-    theme === 'dark' ||
-    (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-
   return (
     <Card className="shadow-lg bg-card border-border">
       <CardHeader>
         <CardTitle className="text-xl font-bold text-foreground flex items-center gap-2">
-          <Shield className="w-5 h-5 text-indigo-500" />
+          <Shield className="w-5 h-5 text-primary" />
           Technical Skill Map
         </CardTitle>
       </CardHeader>
@@ -145,21 +138,21 @@ const SkillRadarChart: React.FC<SkillRadarChartProps> = ({ interviews }) => {
             <RadarChart cx="50%" cy="50%" outerRadius="75%" data={data}>
               <defs>
                 <linearGradient id="radarGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#6366f1" stopOpacity={0.8} />
-                  <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.4} />
+                  <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8} />
+                  <stop offset="95%" stopColor="hsl(var(--primary) / 0.5)" stopOpacity={0.4} />
                 </linearGradient>
               </defs>
-              <PolarGrid stroke={isDark ? '#334155' : '#e2e8f0'} strokeOpacity={0.5} />
+              <PolarGrid stroke="hsl(var(--border))" strokeOpacity={0.5} />
               <PolarAngleAxis
                 dataKey="subject"
-                tick={{ fill: isDark ? '#94a3b8' : '#64748b', fontSize: 11, fontWeight: 500 }}
+                tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11, fontWeight: 500 }}
                 tickFormatter={formatSkillLabel}
               />
               <PolarRadiusAxis angle={30} domain={[0, 10]} tick={false} axisLine={false} />
               <Radar
                 name="Proficiency"
                 dataKey="proficiency"
-                stroke="#6366f1"
+                stroke="hsl(var(--primary))"
                 strokeWidth={2}
                 fill="url(#radarGradient)"
                 fillOpacity={0.6}
@@ -168,9 +161,10 @@ const SkillRadarChart: React.FC<SkillRadarChartProps> = ({ interviews }) => {
               />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: isDark ? '#1e293b' : '#fff',
+                  backgroundColor: 'hsl(var(--card))',
                   borderRadius: '8px',
-                  border: 'none',
+                  border: '1px solid hsl(var(--border))',
+                  color: 'hsl(var(--card-foreground))',
                 }}
               />
             </RadarChart>

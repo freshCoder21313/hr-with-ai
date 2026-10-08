@@ -188,7 +188,7 @@ When operating in this codebase, adhere to the following workflow:
 ### AI Integration
 - This app uses multiple AI providers (Gemini, OpenAI, Anthropic, OpenRouter).
 - Import from `src/services/ai/` (`AIService`, strategies, schemas). Prefer `@/services/ai` over deprecated `features/ai-provider` shims.
-- Prompts: `@/services/prompts` (or legacy re-export `@/services/interview/promptSystem`).
+- Prompts: `@/services/prompts`.
 - Respect `src/types/index.ts` regarding `AIProviderStrategy`, `InterviewContentType`, and `InterviewInteractionMode`.
 - **Graceful Recognition & Fallbacks:** For freeform user parameters, schemas must include recognition flags (`isTargetLanguageRecognized: z.boolean()`) and prompts must specify deterministic fallback behavior (e.g. English) when given gibberish, paired with an actionable UI warning banner.
 

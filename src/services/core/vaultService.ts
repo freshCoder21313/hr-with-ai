@@ -15,6 +15,7 @@ export interface HRVaultMetadata {
     careerFacts: number;
     careerEvidence: number;
     careerNotes: number;
+    skillAssessments: number;
   };
 }
 
@@ -26,7 +27,7 @@ export interface HRVaultPackage {
 
 export const vaultService = {
   /**
-   * Builds a complete vault bundle of all 10 local database tables.
+   * Builds a complete vault bundle of all 11 local database tables.
    */
   createVaultPackage: async (
     options: { includeSensitive?: boolean } = {}
@@ -50,6 +51,7 @@ export const vaultService = {
         careerFacts: fullData.careerFacts?.length || 0,
         careerEvidence: fullData.careerEvidence?.length || 0,
         careerNotes: fullData.careerNotes?.length || 0,
+        skillAssessments: fullData.skillAssessments?.length || 0,
       },
     };
 

@@ -2,19 +2,14 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { AlertCircle, ArrowLeft, Loader2 } from 'lucide-react';
 import { logger } from '@/lib/logger';
 import { notificationService } from '@/services/core/notificationService';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import type { Editor, TLShapeId } from 'tldraw';
 import { useInterview } from '@/features/interview/hooks/useInterview';
 import { useInterviewLoader } from '@/features/interview/hooks/useInterviewLoader';
 import { svgToPngBase64 } from '@/lib/svgUtils';
 import { useInterviewStore } from './interviewStore';
-import {
-  JobRecommendation,
-  resolveInterviewContentType,
-  resolveInterviewInteractionMode,
-} from '@/types';
+import { resolveInterviewContentType, resolveInterviewInteractionMode } from '@/types';
 import SettingsModal from '@/components/shared/SettingsModal';
-import JobRecommendationModal from './JobRecommendationModal';
 import SEO from '@/components/shared/SEO';
 import { isNonEmptyString } from '@/lib/validation';
 import { Button } from '@/components/ui/button';
@@ -34,7 +29,6 @@ import { useInterviewHints } from './hooks/useInterviewHints';
 import { useInterviewRoomBootstrap } from './hooks/useInterviewRoomBootstrap';
 
 const InterviewRoom: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const {
     currentInterview,
@@ -44,24 +38,16 @@ const InterviewRoom: React.FC = () => {
     regenerateLastResponse,
     isLoading: isProcessing,
   } = useInterview();
-  const { setInterview, updateCode, updateWhiteboard } = useInterviewStore();
+  const { updateCode, updateWhiteboard } = useInterviewStore();
   const { isLoading: isInterviewLoading, error: interviewLoadError } = useInterviewLoader();
 
   const [inputValue, setInputValue] = useState('');
   const [isEndingSession, setIsEndingSession] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [showJobRecommendationModal, setShowJobRecommendationModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const {
-    userSettings,
-    setUserSettings,
-    availableResumes,
-    viewMode,
-    setViewMode,
-    autoOpenCode,
-    autoOpenWhiteboard,
-  } = useInterviewRoomBootstrap(currentInterview, showSettings);
+  const { userSettings, setUserSettings, viewMode, setViewMode, autoOpenCode, autoOpenWhiteboard } =
+    useInterviewRoomBootstrap(currentInterview, showSettings);
 
   const tools = useToolHandlers(currentInterview, isSubmitting, setIsSubmitting);
   const { setIsCodeOpen, setIsWhiteboardOpen } = tools;
@@ -145,17 +131,6 @@ const InterviewRoom: React.FC = () => {
     [endSession]
   );
 
-  const handleSelectJob = useCallback(
-    async (job: JobRecommendation, tailoredResumeText: string) => {
-      if (!currentInterview || !id) return;
-      await tools.handleSelectJob(job, tailoredResumeText, parseInt(id, 10), (i) => {
-        if (i) setInterview(i);
-      });
-      setShowJobRecommendationModal(false);
-    },
-    [currentInterview, id, tools, setInterview]
-  );
-
   if (interviewLoadError) {
     return (
       <div
@@ -167,7 +142,10 @@ const InterviewRoom: React.FC = () => {
           <h2 className="text-lg font-semibold text-foreground">Could not open this interview</h2>
           <p className="text-sm text-muted-foreground">{interviewLoadError}</p>
         </div>
-        <Button onClick={() => navigate('/')} className="gap-2">
+        <Button
+          onClick={() => (window.history.length > 1 ? navigate(-1) : navigate('/'))}
+          className="gap-2"
+        >
           <ArrowLeft className="w-4 h-4" />
           Back to Home
         </Button>
@@ -282,15 +260,6 @@ const InterviewRoom: React.FC = () => {
         open={showSettings}
         onOpenChange={setShowSettings}
         onSettingsChanged={setUserSettings}
-      />
-      <JobRecommendationModal
-        isOpen={showJobRecommendationModal}
-        onClose={() => setShowJobRecommendationModal(false)}
-        onSelectJob={handleSelectJob}
-        existingResumeId={currentInterview.resumeId}
-        availableResumes={availableResumes}
-        language={currentInterview.language}
-        currentInterviewId={currentInterview.id}
       />
     </div>
   );

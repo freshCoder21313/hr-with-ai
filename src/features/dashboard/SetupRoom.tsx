@@ -1,5 +1,14 @@
 import React, { useState } from 'react';
-import { Play, ArrowLeft, ArrowRight, Check, Briefcase, FileText, Bot, Sparkles } from 'lucide-react';
+import {
+  Play,
+  ArrowLeft,
+  ArrowRight,
+  Check,
+  Briefcase,
+  FileText,
+  Bot,
+  Sparkles,
+} from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { LoadingButton } from '@/components/ui/loading-button';
@@ -89,7 +98,10 @@ const SetupRoom: React.FC = () => {
                     type="button"
                     onClick={() => {
                       // Allow jumping backward anytime, or jumping forward if basic required fields exist
-                      if (idx <= currentStepIndex || (isNonEmptyString(formData.company) && isNonEmptyString(formData.jobTitle))) {
+                      if (
+                        idx <= currentStepIndex ||
+                        (isNonEmptyString(formData.company) && isNonEmptyString(formData.jobTitle))
+                      ) {
                         setCurrentStep(step.id);
                       }
                     }}
@@ -108,7 +120,11 @@ const SetupRoom: React.FC = () => {
                             : 'bg-muted text-muted-foreground border border-border group-hover:bg-muted/80'
                       )}
                     >
-                      {isCompleted ? <Check className="w-4 h-4" /> : <StepIcon className="w-4 h-4" />}
+                      {isCompleted ? (
+                        <Check className="w-4 h-4" />
+                      ) : (
+                        <StepIcon className="w-4 h-4" />
+                      )}
                     </div>
                     <span
                       className={cn(
@@ -127,10 +143,7 @@ const SetupRoom: React.FC = () => {
               })}
 
               {/* Connecting progress lines */}
-              <div
-                className="absolute top-4 left-6 right-6 h-0.5 bg-muted -z-0"
-                aria-hidden="true"
-              >
+              <div className="absolute top-4 left-6 right-6 h-0.5 bg-muted -z-0" aria-hidden="true">
                 <div
                   className="h-full bg-primary transition-all duration-300"
                   style={{

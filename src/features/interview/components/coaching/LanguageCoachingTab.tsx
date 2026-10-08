@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Languages,
   Sparkles,
@@ -50,6 +50,20 @@ export const LanguageCoachingTab: React.FC<LanguageCoachingTabProps> = ({
     'bilingual'
   );
 
+  const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+        progressIntervalRef.current = null;
+      }
+    };
+  }, []);
+
   // Sync report when interview prop updates or when component remounts on tab switch
   useEffect(() => {
     if (interview.feedback?.communicationCoach) {
@@ -87,7 +101,11 @@ export const LanguageCoachingTab: React.FC<LanguageCoachingTabProps> = ({
     setStageText('Đang trích xuất đối thoại & câu trả lời phỏng vấn...');
 
     // Incremental progress simulation with meaningful milestones
-    const progressInterval = setInterval(() => {
+    if (progressIntervalRef.current) {
+      clearInterval(progressIntervalRef.current);
+    }
+    progressIntervalRef.current = setInterval(() => {
+      if (!isMountedRef.current) return;
       setProgress((prev) => {
         if (prev < 32) {
           setStageText('Đang trích xuất đối thoại & câu trả lời phỏng vấn...');
@@ -110,21 +128,35 @@ export const LanguageCoachingTab: React.FC<LanguageCoachingTabProps> = ({
 
     try {
       const generated = await generateCommunicationReport(interview, activeTargetLanguage);
-      clearInterval(progressInterval);
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+        progressIntervalRef.current = null;
+      }
+      if (!isMountedRef.current) return;
       setProgress(100);
       setStageText('Hoàn tất phân tích!');
       // Brief smooth transition before displaying report
       await new Promise((resolve) => setTimeout(resolve, 300));
+      if (!isMountedRef.current) return;
       setReport(generated);
       onReportUpdated?.(generated);
       toast.success('Communication & language analysis completed!');
     } catch (err) {
-      clearInterval(progressInterval);
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+        progressIntervalRef.current = null;
+      }
+      if (!isMountedRef.current) return;
       toast.error(err instanceof Error ? err.message : 'Failed to generate coaching report');
     } finally {
-      clearInterval(progressInterval);
-      setIsGenerating(false);
-      setProgress(0);
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+        progressIntervalRef.current = null;
+      }
+      if (isMountedRef.current) {
+        setIsGenerating(false);
+        setProgress(0);
+      }
     }
   };
 
@@ -222,31 +254,38 @@ export const LanguageCoachingTab: React.FC<LanguageCoachingTabProps> = ({
                 </div>
 
                 {/* Live Validation / Warning Feedback */}
-                {customLanguage.trim().length > 0 && (() => {
-                  const check = inspectTargetLanguage(customLanguage);
-                  if (!check.isValid) {
+                {customLanguage.trim().length > 0 &&
+                  (() => {
+                    const check = inspectTargetLanguage(customLanguage);
+                    if (!check.isValid) {
+                      return (
+                        <p
+                          role="alert"
+                          className="text-xs text-destructive flex items-center gap-1.5 pt-0.5 font-medium"
+                        >
+                          <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                          {check.warningMessage}
+                        </p>
+                      );
+                    }
+                    if (!check.isRecognized) {
+                      return (
+                        <p
+                          role="alert"
+                          className="text-xs text-warning flex items-center gap-1.5 pt-0.5"
+                        >
+                          <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                          {check.warningMessage}
+                        </p>
+                      );
+                    }
                     return (
-                      <p role="alert" className="text-xs text-destructive flex items-center gap-1.5 pt-0.5 font-medium">
-                        <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
-                        {check.warningMessage}
+                      <p className="text-xs text-success flex items-center gap-1.5 pt-0.5 font-medium">
+                        <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                        Recognized: {check.matchedLanguage}
                       </p>
                     );
-                  }
-                  if (!check.isRecognized) {
-                    return (
-                      <p role="alert" className="text-xs text-warning flex items-center gap-1.5 pt-0.5">
-                        <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
-                        {check.warningMessage}
-                      </p>
-                    );
-                  }
-                  return (
-                    <p className="text-xs text-success flex items-center gap-1.5 pt-0.5 font-medium">
-                      <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
-                      Recognized: {check.matchedLanguage}
-                    </p>
-                  );
-                })()}
+                  })()}
               </div>
             )}
           </div>
@@ -310,7 +349,8 @@ export const LanguageCoachingTab: React.FC<LanguageCoachingTabProps> = ({
             <AlertTriangle className="w-5 h-5 text-warning shrink-0 mt-0.5" />
             <div className="space-y-1.5 flex-1">
               <h4 className="text-sm font-bold text-warning flex items-center gap-2">
-                Không nhận diện được ngôn ngữ: &ldquo;{report.requestedLanguage || 'Tùy chỉnh'}&rdquo;
+                Không nhận diện được ngôn ngữ: &ldquo;{report.requestedLanguage || 'Tùy chỉnh'}
+                &rdquo;
               </h4>
               <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
                 {report.unrecognizedLanguageMessage ||
@@ -687,9 +727,7 @@ export const LanguageCoachingTab: React.FC<LanguageCoachingTabProps> = ({
                   <span className="text-muted-foreground">Pacing Assessment:</span>
                   <Badge
                     variant={
-                      report?.deliveryMetrics.pacingAssessment === 'good'
-                        ? 'default'
-                        : 'secondary'
+                      report?.deliveryMetrics.pacingAssessment === 'good' ? 'default' : 'secondary'
                     }
                     className="capitalize text-xs font-semibold"
                   >
@@ -734,7 +772,10 @@ export const LanguageCoachingTab: React.FC<LanguageCoachingTabProps> = ({
                       <p className="font-semibold text-foreground">Context examples:</p>
                       {report.deliveryMetrics.fillerWords.slice(0, 3).map((item, idx) =>
                         item.contextSnippets.slice(0, 1).map((snippet, sIdx) => (
-                          <p key={`${idx}-${sIdx}`} className="italic pl-2 border-l-2 border-warning/40">
+                          <p
+                            key={`${idx}-${sIdx}`}
+                            className="italic pl-2 border-l-2 border-warning/40"
+                          >
                             {snippet}
                           </p>
                         ))

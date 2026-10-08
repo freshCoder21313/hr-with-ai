@@ -131,4 +131,3 @@ describe('CVPreviewPanel Focus Mode & Toolbar', () => {
     expect(onSetActiveTab).toHaveBeenCalledWith('skills');
   });
 });
-

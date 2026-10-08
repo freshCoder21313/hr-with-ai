@@ -9,9 +9,9 @@ const parsePDF = async (file: File): Promise<string> => {
   // Dynamic import for better performance
   const pdfjsLib = await import('pdfjs-dist');
 
-  // Configure Worker for PDF.js using CDN
-  if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
-    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@5.4.530/build/pdf.worker.min.mjs`;
+  // Configure Worker for PDF.js using CDN matching the library runtime version
+  if (!pdfjsLib.GlobalWorkerOptions.workerSrc || !pdfjsLib.GlobalWorkerOptions.workerSrc.includes(pdfjsLib.version)) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
   }
 
   const arrayBuffer = await file.arrayBuffer();

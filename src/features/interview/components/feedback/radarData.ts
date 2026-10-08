@@ -10,6 +10,8 @@ interface RadarAxis {
 export function buildRadarData(feedback: InterviewFeedback): RadarAxis[] {
   const axes: Array<{ subject: string; value: number | undefined }> = [
     { subject: 'Overall', value: feedback.score },
+    { subject: 'Technical', value: feedback.technicalScore },
+    { subject: 'Communication', value: feedback.communicationScore },
     { subject: 'Culture Fit', value: feedback.cultureFitScore },
     { subject: 'Resilience', value: feedback.resilienceScore },
   ];

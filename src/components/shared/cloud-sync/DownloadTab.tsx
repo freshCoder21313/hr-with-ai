@@ -37,12 +37,10 @@ export const DownloadTab: React.FC<DownloadTabProps> = ({
           <AlertCircle className="h-5 w-5 text-warning" />
         </div>
         <div className="space-y-1.5">
-          <h3 className="text-sm font-bold text-foreground uppercase tracking-tight">
-            Warning
-          </h3>
+          <h3 className="text-sm font-bold text-foreground uppercase tracking-tight">Warning</h3>
           <p className="text-xs text-muted-foreground leading-relaxed">
-            Data will be <span className="font-bold text-foreground">smartly merged</span>. Newer versions from
-            cloud will update local records. Unique local data is preserved.
+            Data will be <span className="font-bold text-foreground">smartly merged</span>. Newer
+            versions from cloud will update local records. Unique local data is preserved.
           </p>
         </div>
       </div>

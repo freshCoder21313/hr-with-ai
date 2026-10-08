@@ -307,6 +307,8 @@ export const quizQuestionSchema = z.object({
 export const quizQuestionsSchema = z.array(quizQuestionSchema);
 
 export const interviewFeedbackSchemaExtended = interviewFeedbackSchema.extend({
+  technicalScore: z.number().min(0).max(10).optional(),
+  communicationScore: z.number().min(0).max(10).optional(),
   resilienceScore: z.number().min(0).max(10).optional(),
   cultureFitScore: z.number().min(0).max(10).optional(),
   badges: z.array(z.string()).optional(),

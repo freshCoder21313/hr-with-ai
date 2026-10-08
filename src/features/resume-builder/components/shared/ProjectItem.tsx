@@ -122,7 +122,10 @@ export const ProjectItem: React.FC<ProjectItemProps> = ({ item, index, onUpdate,
                 aria-label={`Project link: ${item.name || item.url}`}
                 className="ml-2 inline-block"
               >
-                <LinkIcon size={12} className="text-slate-400 hover:text-primary transition-colors" />
+                <LinkIcon
+                  size={12}
+                  className="text-slate-400 hover:text-primary transition-colors"
+                />
               </a>
             )}
           </h4>

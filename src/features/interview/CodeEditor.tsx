@@ -21,7 +21,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
   isHardcore = false,
 }) => {
   return (
-    <div className="h-full w-full border border-slate-700 rounded-xl overflow-hidden shadow-sm bg-[#1e1e1e] relative group">
+    <div className="h-full w-full border border-border rounded-xl overflow-hidden shadow-sm bg-card relative group">
       <Editor
         height="100%"
         defaultLanguage={language}
@@ -50,7 +50,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
           onClick={onRun}
           disabled={isRunning}
           variant="default" // Using default but overriding colors for 'Run' action usually green
-          className="absolute bottom-4 right-4 z-10 gap-2 bg-green-600 hover:bg-green-700 text-white shadow-lg disabled:opacity-50"
+          className="absolute bottom-4 right-4 z-10 gap-2 bg-success hover:bg-success/90 text-success-foreground shadow-lg disabled:opacity-50"
         >
           {isRunning ? (
             <Loader2 size={16} className="animate-spin" />

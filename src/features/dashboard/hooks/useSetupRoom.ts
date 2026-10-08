@@ -38,6 +38,16 @@ export const useSetupRoom = () => {
   const location = useLocation();
   const navigationState = location.state as SkillAssessmentNavigationState | null;
   const [formData, setFormData] = useState<SetupFormData>(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const queryCompany = searchParams.get('company');
+    const queryTitle = searchParams.get('title') || searchParams.get('jobTitle');
+    if (queryCompany || queryTitle) {
+      return {
+        ...DEFAULT_FORM,
+        ...(queryCompany ? { company: queryCompany, companyName: queryCompany } : {}),
+        ...(queryTitle ? { jobTitle: queryTitle } : {}),
+      };
+    }
     if (navigationState?.source === 'skill-assessment') {
       const targetSkill = navigationState.targetSkill?.trim() || 'General';
       const weaknesses = navigationState.weaknesses || [];
@@ -76,6 +86,29 @@ export const useSetupRoom = () => {
         if (cancelled) return;
         setSavedResumes(resumes.sort((a, b) => b.createdAt - a.createdAt));
         setSavedJobs(jobsList.sort((a, b) => b.updatedAt - a.updatedAt));
+
+        const searchParams = new URLSearchParams(location.search);
+        const queryCompany = searchParams.get('company');
+        const queryTitle = searchParams.get('title') || searchParams.get('jobTitle');
+        if (queryCompany || queryTitle) {
+          const matchedJob = jobsList.find(
+            (j) =>
+              (!queryCompany || j.company.toLowerCase() === queryCompany.toLowerCase()) &&
+              (!queryTitle || j.jobTitle.toLowerCase() === queryTitle.toLowerCase())
+          );
+          if (matchedJob) {
+            setFormData((prev) => ({
+              ...prev,
+              company: matchedJob.company,
+              companyName: matchedJob.company,
+              jobTitle: matchedJob.jobTitle,
+              jobDescription: matchedJob.jobDescription || prev.jobDescription,
+              interviewerPersona: matchedJob.interviewerPersona || prev.interviewerPersona,
+              companyStatus: matchedJob.companyStatus || prev.companyStatus,
+              interviewContext: matchedJob.interviewContext || prev.interviewContext,
+            }));
+          }
+        }
       } catch (error) {
         logger.error('Failed to load data:', error);
       }
@@ -83,7 +116,7 @@ export const useSetupRoom = () => {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [location.search]);
 
   const jobs = useSetupJobs(formData, setFormData, loadData, savedJobs);
   const resumes = useSetupResumes(

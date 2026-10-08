@@ -217,7 +217,8 @@ export async function generateCommunicationReport(
         hedgingPhrasesCount:
           aiResponse.deliveryMetrics.hedgingPhrasesCount || localDelivery.hedgingPhrasesCount,
         averageAnswerWordCount: localDelivery.averageAnswerWordCount,
-        pacingAssessment: aiResponse.deliveryMetrics.pacingAssessment || localDelivery.pacingAssessment,
+        pacingAssessment:
+          aiResponse.deliveryMetrics.pacingAssessment || localDelivery.pacingAssessment,
       },
       turnAnalyses: aiResponse.turnAnalyses,
     };

@@ -22,17 +22,30 @@ export function useSetupJobs(
     }
     try {
       const timestamp = Date.now();
-      const baseJobData = {
+      const baseJobData: SavedJob = {
         company: formData.company,
         jobTitle: formData.jobTitle,
+        title: formData.jobTitle,
         jobDescription: formData.jobDescription,
-        interviewerPersona: formData.interviewerPersona,
+        description: formData.jobDescription,
+        interviewerPersona: formData.interviewerPersona || 'Technical Interviewer',
         companyStatus: formData.companyStatus,
         interviewContext: formData.interviewContext,
+        jobUrl: formData.jobUrl,
+        url: formData.jobUrl,
+        customPrompt: '',
+        requirements: formData.requirements
+          ? formData.requirements
+              .split(',')
+              .map((r) => r.trim())
+              .filter(Boolean)
+          : undefined,
+        experienceLevel: formData.experienceLevel,
+        createdAt: timestamp,
         updatedAt: timestamp,
       };
       if (selectedJobId !== 'new') {
-        await db.jobs.update(parseInt(selectedJobId, 10), baseJobData);
+        await db.jobs.update(parseInt(selectedJobId, 10), baseJobData as never);
         await loadData();
         toast.success('Job updated successfully!');
       } else {
@@ -81,11 +94,19 @@ export function useSetupJobs(
         setFormData((prev) => ({
           ...prev,
           company: job.company,
-          jobTitle: job.jobTitle,
-          jobDescription: job.jobDescription,
-          interviewerPersona: job.interviewerPersona,
+          companyName: job.company,
+          jobTitle: job.jobTitle || job.title || '',
+          jobDescription: job.jobDescription || job.description || '',
+          interviewerPersona: job.interviewerPersona || prev.interviewerPersona,
           companyStatus: job.companyStatus || prev.companyStatus,
           interviewContext: job.interviewContext || prev.interviewContext,
+          jobUrl: job.jobUrl || job.url || prev.jobUrl,
+          requirements: Array.isArray(job.requirements)
+            ? job.requirements.join(', ')
+            : typeof job.requirements === 'string'
+              ? job.requirements
+              : prev.requirements,
+          experienceLevel: job.experienceLevel || prev.experienceLevel,
         }));
       }
     },

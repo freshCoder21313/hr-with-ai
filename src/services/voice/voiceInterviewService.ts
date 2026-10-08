@@ -1,3 +1,31 @@
+/**
+ * Strips AI action tags, knowledge-graph brackets, and system control tokens
+ * before speech synthesis so the TTS engine doesn't vocalize raw code or markup.
+ */
+export function stripVoiceControlTokens(text: string): string {
+  if (!text) return '';
+  return text
+    // Strip XML action tags like <ACTION type="CODE" lang="javascript" />
+    .replace(/<ACTION\b[^>]*\/?>/gi, '')
+    // Strip [[END_SESSION]]
+    .replace(/\[\[END_SESSION\]\]/gi, '')
+    // Replace [[Concept]] with just Concept
+    .replace(/\[\[([^\]]+)\]\]/g, '$1')
+    // Replace Markdown search links [Keyword](search:Keyword) with Keyword
+    .replace(/\[([^\]]+)\]\(search:[^)]+\)/g, '$1')
+    // Replace Markdown links [text](url) with text
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    // Remove markdown code blocks and backticks
+    .replace(/```[\s\S]*?```/g, '')
+    .replace(/`([^`]+)`/g, '$1')
+    // Remove markdown bold/italic asterisks
+    .replace(/\*\*([^*]+)\*\*/g, '$1')
+    .replace(/\*([^*]+)\*/g, '$1')
+    // Collapse excess spaces and newlines
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 export class VoiceInterviewService {
   private sentenceBuffer: string = '';
   private onSentence: ((sentence: string) => void) | null = null;
@@ -22,8 +50,10 @@ export class VoiceInterviewService {
   }
 
   public flush() {
-    if (this.sentenceBuffer.trim().length > 0) {
-      if (this.onSentence) this.onSentence(this.sentenceBuffer.trim());
+    const raw = this.sentenceBuffer.trim();
+    if (raw.length > 0) {
+      const cleaned = stripVoiceControlTokens(raw);
+      if (cleaned && this.onSentence) this.onSentence(cleaned);
     }
     this.sentenceBuffer = '';
   }
@@ -70,7 +100,8 @@ export class VoiceInterviewService {
       const sentence = this.sentenceBuffer.slice(0, matchIndex + punctuationLength).trim();
 
       if (sentence) {
-        if (this.onSentence) this.onSentence(sentence);
+        const cleaned = stripVoiceControlTokens(sentence);
+        if (cleaned && this.onSentence) this.onSentence(cleaned);
       }
 
       this.sentenceBuffer = this.sentenceBuffer.slice(matchIndex + punctuationLength);

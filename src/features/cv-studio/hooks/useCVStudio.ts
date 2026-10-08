@@ -2,11 +2,20 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { TemplateType } from '@/types/resume';
 import { useJobStore, Job } from '../stores/useJobStore';
+import { notificationService } from '@/services/core/notificationService';
 import { useCVTailoring } from './useCVTailoring';
 import { useCVResumes } from './useCVResumes';
 import { useCVChat } from './useCVChat';
 
 export type { JobWithStatus } from './useCVTailoring';
+
+const getQuerySearch = () => {
+  if (typeof window === 'undefined') return '';
+  if (window.location.search) return window.location.search;
+  const hash = window.location.hash || '';
+  const qIndex = hash.indexOf('?');
+  return qIndex !== -1 ? hash.slice(qIndex) : '';
+};
 
 export const useCVStudio = () => {
   const [isJobPanelOpen, setIsJobPanelOpen] = useState(true);
@@ -20,6 +29,10 @@ export const useCVStudio = () => {
   const jobs = useJobStore((s) => s.jobs);
   const globalPrompt = useJobStore((s) => s.globalPrompt);
   const jobActions = useJobStore((s) => s.actions);
+
+  useEffect(() => {
+    jobActions.loadJobsFromDB();
+  }, [jobActions]);
 
   const resumeState = useCVResumes();
   const chatState = useCVChat({
@@ -44,6 +57,31 @@ export const useCVStudio = () => {
     if (main?.id) tailoring.setSelectedResumeId(main.id);
     didInitChat.current = true;
   }, [resumeState.isLoading, resumeState.mainCV, resumeState.resumes, chatState, tailoring]);
+
+  const didCheckQueryParams = useRef(false);
+  useEffect(() => {
+    if (didCheckQueryParams.current || jobs.length === 0) return;
+    const querySearch = getQuerySearch();
+    if (!querySearch) return;
+    const searchParams = new URLSearchParams(querySearch);
+    const queryCompany = searchParams.get('company')?.toLowerCase();
+    const queryTitle = (searchParams.get('title') || searchParams.get('jobTitle'))?.toLowerCase();
+    if (queryCompany || queryTitle) {
+      const matched = jobs.find(
+        (j) =>
+          (!queryCompany || (j.company && j.company.toLowerCase() === queryCompany)) &&
+          (!queryTitle ||
+            ((j.jobTitle || j.title) && (j.jobTitle || j.title).toLowerCase() === queryTitle))
+      );
+      if (matched) {
+        if (!tailoring.selectedJobs.has(matched.id)) {
+          tailoring.handleToggleJobSelection(matched.id);
+        }
+        chatState.setContextJobId(matched.id);
+        didCheckQueryParams.current = true;
+      }
+    }
+  }, [jobs, tailoring, chatState]);
 
   const handleChatCVChange = useCallback(
     (id: number) => {
@@ -74,11 +112,25 @@ export const useCVStudio = () => {
   }, [resumeState, chatState]);
 
   const handleAddJob = useCallback(() => {
-    jobActions.addJob({ company: '', title: '', description: '', customPrompt: '' });
+    jobActions.addJob({
+      company: '',
+      title: '',
+      jobTitle: '',
+      description: '',
+      jobDescription: '',
+      customPrompt: '',
+      interviewerPersona: 'Technical Interviewer',
+    });
   }, [jobActions]);
 
   const handleRemoveJob = useCallback(
-    (id: string) => {
+    async (id: string) => {
+      const confirmed = await notificationService.confirm({
+        title: 'Delete Job Target',
+        message: 'Are you sure you want to remove this job description?',
+        variant: 'destructive',
+      });
+      if (!confirmed) return;
       jobActions.deleteJob(id);
     },
     [jobActions]
@@ -87,7 +139,17 @@ export const useCVStudio = () => {
   const updateJob = useCallback(
     (id: string, field: keyof Job, value: string) => {
       const job = jobs.find((j) => j.id === id);
-      if (job) jobActions.updateJob({ ...job, [field]: value });
+      if (!job) return;
+
+      const updated = { ...job, [field]: value };
+      if (field === 'title') updated.jobTitle = value;
+      else if (field === 'jobTitle') updated.title = value;
+      else if (field === 'description') updated.jobDescription = value;
+      else if (field === 'jobDescription') updated.description = value;
+      else if (field === 'url') updated.jobUrl = value;
+      else if (field === 'jobUrl') updated.url = value;
+
+      jobActions.updateJob(updated);
     },
     [jobs, jobActions]
   );
@@ -118,9 +180,16 @@ export const useCVStudio = () => {
           jobActions.importJobs(
             importedJobs.map((j: Partial<Job>) => ({
               company: j.company || '',
-              title: j.title || '',
-              description: j.description || '',
+              title: j.title || j.jobTitle || '',
+              jobTitle: j.jobTitle || j.title || '',
+              description: j.description || j.jobDescription || '',
+              jobDescription: j.jobDescription || j.description || '',
               customPrompt: j.customPrompt || '',
+              url: j.url || j.jobUrl,
+              jobUrl: j.jobUrl || j.url,
+              interviewerPersona: j.interviewerPersona || 'Technical Interviewer',
+              companyStatus: j.companyStatus,
+              interviewContext: j.interviewContext,
             }))
           );
           if (typeof gp === 'string') jobActions.setGlobalPrompt(gp);

@@ -91,7 +91,7 @@ describe('LandingPage (Hybrid Dashboard)', () => {
       isMain: true,
     } as any);
 
-  render(
+    render(
       <MemoryRouter>
         <LandingPage />
       </MemoryRouter>

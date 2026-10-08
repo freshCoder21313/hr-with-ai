@@ -319,10 +319,18 @@ export interface TailoringValidationIssue {
   factId?: string;
 }
 
+export interface ProjectionAttribution {
+  factId: string;
+  /** ResumeData section the fact landed in: work | education | skills | projects | awards | basics. */
+  section: string;
+  /** Index of the projected entity inside that section, after ordering. */
+  index: number;
+}
+
 export interface TailorResumeWithCareerKnowledgeResult {
   success: boolean;
   tailoredResumeData: import('@/types/resume').ResumeData;
-  attributions: import('@/services/careerKnowledge/projection').ProjectionAttribution[];
+  attributions: ProjectionAttribution[];
   usedFactIds: string[];
   fallbackUsed: boolean;
   validationIssues: TailoringValidationIssue[];

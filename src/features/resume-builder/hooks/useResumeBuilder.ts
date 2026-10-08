@@ -34,6 +34,7 @@ export const useResumeBuilder = () => {
   const [showReorderDialog, setShowReorderDialog] = useState(false);
   const [template, setTemplate] = useState<TemplateType>('modern');
   const [isTranslating, setIsTranslating] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const [viewLanguage, setViewLanguage] = useState<'vi' | 'en'>('en');
   const [runTour, setRunTour] = useState(false);
   // Resolved when the tour is armed, so steps whose targets are not on the
@@ -68,7 +69,7 @@ export const useResumeBuilder = () => {
 
       const resumeId = parseInt(id);
       if (isNaN(resumeId)) {
-        navigate('/resumes');
+        navigate('/studio');
         return;
       }
 
@@ -245,16 +246,22 @@ export const useResumeBuilder = () => {
     [id]
   );
 
-  const handleExportPdf = useCallback(async (element: HTMLElement | null, fileName: string) => {
-    if (!element) return;
-    try {
-      const result = await exportElementToPdf(element, fileName);
-      toast.success(result.method === 'download' ? 'PDF downloaded.' : 'PDF ready to share.');
-    } catch (error) {
-      logger.error('PDF export failed:', error);
-      toast.error('Could not export PDF. Please try again.');
-    }
-  }, []);
+  const handleExportPdf = useCallback(
+    async (element: HTMLElement | null, fileName: string) => {
+      if (!element || isExporting) return;
+      setIsExporting(true);
+      try {
+        const result = await exportElementToPdf(element, fileName);
+        toast.success(result.method === 'download' ? 'PDF downloaded.' : 'PDF ready to share.');
+      } catch (error) {
+        logger.error('PDF export failed:', error);
+        toast.error('Could not export PDF. Please try again.');
+      } finally {
+        setIsExporting(false);
+      }
+    },
+    [isExporting]
+  );
 
   const updateSection = useCallback(
     <K extends keyof ResumeData>(section: K, value: ResumeData[K]) => {
@@ -339,6 +346,7 @@ export const useResumeBuilder = () => {
       showReorderDialog,
       template,
       isTranslating,
+      isExporting,
       viewLanguage,
       runTour,
       showStyleEditor,
@@ -358,6 +366,7 @@ export const useResumeBuilder = () => {
       showReorderDialog,
       template,
       isTranslating,
+      isExporting,
       viewLanguage,
       runTour,
       showStyleEditor,

@@ -180,8 +180,7 @@ export const ChangeReviewCard: React.FC<ChangeReviewCardProps> = ({
         const isAdded = !existing;
         const isChanged = existing && JSON.stringify(existing) !== JSON.stringify(itemObj);
 
-        const fieldDiffs =
-          isChanged && existing ? computeItemFieldDiffs(existing, itemObj) : [];
+        const fieldDiffs = isChanged && existing ? computeItemFieldDiffs(existing, itemObj) : [];
 
         return {
           item: itemObj,
@@ -267,7 +266,11 @@ export const ChangeReviewCard: React.FC<ChangeReviewCardProps> = ({
                             : 'border-border text-muted-foreground'
                       }`}
                     >
-                      {status === 'added' ? 'Added' : status === 'changed' ? 'Changed' : 'Unchanged'}
+                      {status === 'added'
+                        ? 'Added'
+                        : status === 'changed'
+                          ? 'Changed'
+                          : 'Unchanged'}
                     </Badge>
                   </div>
 
@@ -430,7 +433,9 @@ export const ChangeReviewCard: React.FC<ChangeReviewCardProps> = ({
                             : 'bg-muted-foreground/60'
                       }`}
                     />
-                    <span className="truncate max-w-[170px] font-medium text-foreground">{title}</span>
+                    <span className="truncate max-w-[170px] font-medium text-foreground">
+                      {title}
+                    </span>
                   </div>
                   {status === 'added' && (
                     <span className="text-[10px] text-success font-medium shrink-0">Added</span>
@@ -480,7 +485,10 @@ export const ChangeReviewCard: React.FC<ChangeReviewCardProps> = ({
             {objectDiffs.map(({ key, status, oldValue, newValue }) => {
               if (status === 'modified') {
                 return (
-                  <div key={key} className="space-y-1 pb-1.5 border-b last:border-0 border-border/40">
+                  <div
+                    key={key}
+                    className="space-y-1 pb-1.5 border-b last:border-0 border-border/40"
+                  >
                     <span className="text-muted-foreground font-semibold uppercase tracking-wider text-[10px] block">
                       {key}:
                     </span>
@@ -503,7 +511,10 @@ export const ChangeReviewCard: React.FC<ChangeReviewCardProps> = ({
               }
               if (status === 'removed') {
                 return (
-                  <div key={key} className="p-1.5 rounded bg-destructive/10 text-destructive line-through text-[11px]">
+                  <div
+                    key={key}
+                    className="p-1.5 rounded bg-destructive/10 text-destructive line-through text-[11px]"
+                  >
                     <span className="font-semibold uppercase text-[10px] mr-1">-{key}:</span>
                     {String(oldValue)}
                   </div>

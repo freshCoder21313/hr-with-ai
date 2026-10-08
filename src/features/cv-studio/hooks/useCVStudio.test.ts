@@ -4,6 +4,7 @@ import { useCVStudio } from './useCVStudio';
 import { useJobStore } from '../stores/useJobStore';
 import type { Mock } from 'vitest';
 import { db } from '@/lib/db';
+import { notificationService } from '@/services/core/notificationService';
 
 vi.mock('@/lib/db', () => ({
   db: {
@@ -78,7 +79,8 @@ describe('useCVStudio', () => {
     expect(result.current.state.jobs).toHaveLength(1);
   });
 
-  it('should remove a job via handleRemoveJob', async () => {
+  it('should remove a job via handleRemoveJob when confirmed', async () => {
+    vi.spyOn(notificationService, 'confirm').mockResolvedValue(true);
     const { result } = await renderReadyCVStudio();
 
     act(() => {
@@ -87,11 +89,28 @@ describe('useCVStudio', () => {
 
     const jobId = result.current.state.jobs[0].id;
 
-    act(() => {
-      result.current.actions.handleRemoveJob(jobId);
+    await act(async () => {
+      await result.current.actions.handleRemoveJob(jobId);
     });
 
     expect(result.current.state.jobs).toHaveLength(0);
+  });
+
+  it('should not remove a job via handleRemoveJob when canceled', async () => {
+    vi.spyOn(notificationService, 'confirm').mockResolvedValue(false);
+    const { result } = await renderReadyCVStudio();
+
+    act(() => {
+      result.current.actions.handleAddJob();
+    });
+
+    const jobId = result.current.state.jobs[0].id;
+
+    await act(async () => {
+      await result.current.actions.handleRemoveJob(jobId);
+    });
+
+    expect(result.current.state.jobs).toHaveLength(1);
   });
 
   it('should toggle job selection', async () => {

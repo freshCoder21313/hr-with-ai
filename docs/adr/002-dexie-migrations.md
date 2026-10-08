@@ -5,7 +5,7 @@
 
 ## Context
 
-`src/lib/db.ts` stacks Dexie versions **2 → 14**. New installs still run the chain; existing users upgrade incrementally.
+`src/lib/db.ts` stacks Dexie versions **2 → 16**. New installs still run the chain; existing users upgrade incrementally.
 
 ## Decision
 
@@ -14,6 +14,13 @@
 3. **Data transforms** (e.g. compress resumes) live in hooks or one-shot upgrade callbacks, not by rewriting history.
 4. **New installs:** Dexie applies all versions in order up to the latest; this is acceptable cost for a client DB.
 5. **Optional future:** if version count becomes painful, introduce a one-time “export → wipe → reimport at v1” tool for power users only — not automatic.
+
+## Schema History
+
+- **Versions 2 → 12:** Core interview, userSettings, resumes, job recommendations, and jobs tables.
+- **Versions 13 → 14:** Resume LZString compression and backfill upgrade.
+- **Version 15:** Career Knowledge (Phase 2) normalized local persistence (`careerProfiles`, `careerFacts`, `careerEvidence`, `factEvidenceLinks`, `careerNotes`) with UUID primary keys and indices.
+- **Version 16:** Skill Assessment history persistence (`skillAssessments: '++id, createdAt, skill, score'`).
 
 ## Resume compression
 

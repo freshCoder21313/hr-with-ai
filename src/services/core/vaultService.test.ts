@@ -13,6 +13,7 @@ describe('vaultService (.hrvault file export & import)', () => {
     await db.careerEvidence.clear();
     await db.factEvidenceLinks.clear();
     await db.careerNotes.clear();
+    await db.skillAssessments.clear();
   });
 
   it('packages full database state into HRVaultPackage format', async () => {
@@ -36,13 +37,22 @@ describe('vaultService (.hrvault file export & import)', () => {
       updatedAt: new Date().toISOString(),
     });
 
+    await db.skillAssessments.add({
+      skill: 'Architecture',
+      score: 95,
+      totalQuestions: 10,
+      createdAt: 12345,
+    });
+
     const vault = await vaultService.createVaultPackage({ includeSensitive: true });
 
     expect(vault.format).toBe('hr-with-ai-vault');
     expect(vault.metadata.vaultVersion).toBe(1);
     expect(vault.metadata.counts.careerProfiles).toBe(1);
     expect(vault.metadata.counts.careerFacts).toBe(1);
+    expect(vault.metadata.counts.skillAssessments).toBe(1);
     expect(vault.payload.careerFacts?.[0].claim).toBe('Led architectural refactor for cloud sync');
+    expect(vault.payload.skillAssessments?.[0].skill).toBe('Architecture');
   });
 
   it('imports .hrvault JSON file content and merges cleanly into local database', async () => {
@@ -62,6 +72,7 @@ describe('vaultService (.hrvault file export & import)', () => {
           careerFacts: 1,
           careerEvidence: 0,
           careerNotes: 0,
+          skillAssessments: 1,
         },
       },
       payload: {
@@ -90,6 +101,15 @@ describe('vaultService (.hrvault file export & import)', () => {
             updatedAt: new Date().toISOString(),
           },
         ],
+        skillAssessments: [
+          {
+            id: 99,
+            skill: 'TypeScript Advanced',
+            score: 100,
+            totalQuestions: 5,
+            createdAt: 99999,
+          },
+        ],
       },
     };
 
@@ -100,6 +120,11 @@ describe('vaultService (.hrvault file export & import)', () => {
     expect(factInDb).toBeDefined();
     expect(factInDb?.subject).toBe('TypeScript');
     expect(factInDb?.claim).toBe('Expert in TypeScript and React architecture');
+
+    const assessmentsInDb = await db.skillAssessments.toArray();
+    expect(assessmentsInDb).toHaveLength(1);
+    expect(assessmentsInDb[0].skill).toBe('TypeScript Advanced');
+    expect(assessmentsInDb[0].score).toBe(100);
   });
 
   it('gracefully rejects invalid vault content', async () => {

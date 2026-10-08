@@ -15,10 +15,13 @@ import {
   Share2,
   ChevronDown,
   BarChart2,
+  Play,
+  User,
+  Sparkles,
 } from 'lucide-react';
 import { db } from '@/lib/db';
 import { logger } from '@/lib/logger';
-import { Interview, SkillAssessmentRecord } from '@/types';
+import { Interview, SkillAssessmentRecord, SavedJob } from '@/types';
 import { notificationService } from '@/services/core/notificationService';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -39,11 +42,13 @@ const SkillRadarChart = React.lazy(() => import('./SkillRadarChart'));
 const PAGE_SIZE = 20;
 
 const HistoryPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'interviews' | 'assessments'>('interviews');
+  const [activeTab, setActiveTab] = useState<'interviews' | 'assessments' | 'jobs'>('interviews');
   const [interviews, setInterviews] = useState<Interview[]>([]);
   const [assessments, setAssessments] = useState<SkillAssessmentRecord[]>([]);
+  const [jobs, setJobs] = useState<SavedJob[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isAssessmentsLoading, setIsAssessmentsLoading] = useState(false);
+  const [isJobsLoading, setIsJobsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [hasMore, setHasMore] = useState(false);
   const [totalCount, setTotalCount] = useState(0);
@@ -86,6 +91,29 @@ const HistoryPage: React.FC = () => {
       fetchAssessments();
     }
   }, [activeTab, fetchAssessments]);
+
+  const fetchJobs = useCallback(async () => {
+    if (!db.jobs?.toArray) return;
+    setIsJobsLoading(true);
+    try {
+      const records = await db.jobs.toArray();
+      setJobs(
+        records.sort(
+          (a, b) => (b.updatedAt || b.createdAt || 0) - (a.updatedAt || a.createdAt || 0)
+        )
+      );
+    } catch (err) {
+      logger.error('Failed to load saved jobs:', err);
+    } finally {
+      setIsJobsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (activeTab === 'jobs') {
+      fetchJobs();
+    }
+  }, [activeTab, fetchJobs]);
 
   const loadMore = useCallback(async () => {
     setIsLoadingMore(true);
@@ -160,6 +188,19 @@ const HistoryPage: React.FC = () => {
     }
   };
 
+  const handleDeleteJob = async (jobId: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const confirmed = await notificationService.confirm({
+      title: 'Delete Saved Job',
+      message: 'Are you sure you want to delete this saved job template?',
+      variant: 'destructive',
+    });
+    if (confirmed) {
+      await db.jobs.delete(jobId);
+      setJobs((prev) => prev.filter((j) => j.id !== jobId));
+    }
+  };
+
   const filteredInterviews = useMemo(() => {
     if (!searchQuery.trim()) return interviews;
     const q = searchQuery.toLowerCase().trim();
@@ -175,6 +216,14 @@ const HistoryPage: React.FC = () => {
     return assessments.filter((record) => record.skill.toLowerCase().includes(q));
   }, [assessments, searchQuery]);
 
+  const filteredJobs = useMemo(() => {
+    if (!searchQuery.trim()) return jobs;
+    const q = searchQuery.toLowerCase().trim();
+    return jobs.filter(
+      (job) => job.company.toLowerCase().includes(q) || job.jobTitle.toLowerCase().includes(q)
+    );
+  }, [jobs, searchQuery]);
+
   return (
     <div className="max-w-6xl w-full mx-auto p-4 md:p-8 pb-24 md:pb-12">
       <SEO
@@ -184,32 +233,50 @@ const HistoryPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground">
-            {activeTab === 'interviews' ? 'Interview History' : 'Skill Assessment History'}
+            {activeTab === 'interviews'
+              ? 'Interview History'
+              : activeTab === 'assessments'
+                ? 'Skill Assessment History'
+                : 'Saved Job Templates'}
           </h1>
           <p className="text-muted-foreground mt-1">
             {activeTab === 'interviews'
               ? 'Track your progress and review past sessions'
-              : 'Review your quiz results and skill proficiencies'}
+              : activeTab === 'assessments'
+                ? 'Review your quiz results and skill proficiencies'
+                : 'Manage your saved target job descriptions and roles'}
           </p>
         </div>
         <Button
-          onClick={() => navigate(activeTab === 'interviews' ? '/setup' : '/skill-assessment')}
+          onClick={() =>
+            navigate(
+              activeTab === 'interviews'
+                ? '/setup'
+                : activeTab === 'assessments'
+                  ? '/skill-assessment'
+                  : '/setup'
+            )
+          }
           className="gap-2"
         >
           <Plus size={16} />
-          {activeTab === 'interviews' ? 'New Session' : 'New Assessment'}
+          {activeTab === 'interviews'
+            ? 'New Session'
+            : activeTab === 'assessments'
+              ? 'New Assessment'
+              : 'Create Job Template'}
         </Button>
       </div>
 
       <Tabs
         value={activeTab}
         onValueChange={(val) => {
-          setActiveTab(val as 'interviews' | 'assessments');
+          setActiveTab(val as 'interviews' | 'assessments' | 'jobs');
           setSearchQuery('');
         }}
         className="w-full"
       >
-        <TabsList className="grid w-full sm:w-auto grid-cols-2 mb-6">
+        <TabsList className="grid w-full sm:w-auto grid-cols-3 mb-6">
           <TabsTrigger value="interviews" className="gap-2">
             <Briefcase className="w-4 h-4" />
             Mock Interviews
@@ -217,6 +284,10 @@ const HistoryPage: React.FC = () => {
           <TabsTrigger value="assessments" className="gap-2">
             <GraduationCap className="w-4 h-4" />
             Skill Assessments
+          </TabsTrigger>
+          <TabsTrigger value="jobs" className="gap-2">
+            <Briefcase className="w-4 h-4" />
+            Saved Jobs
           </TabsTrigger>
         </TabsList>
 
@@ -619,6 +690,137 @@ const HistoryPage: React.FC = () => {
                   </Card>
                 );
               })}
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="jobs" className="space-y-6">
+          {/* Search/Filter Bar for Saved Jobs */}
+          {jobs.length > 0 && (
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Search by company or job title..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9"
+                aria-label="Search saved jobs"
+              />
+            </div>
+          )}
+
+          {isJobsLoading ? (
+            <div className="grid gap-4">
+              <Skeleton className="h-24 w-full" />
+              <Skeleton className="h-24 w-full" />
+              <Skeleton className="h-24 w-full" />
+            </div>
+          ) : jobs.length === 0 ? (
+            <EmptyState
+              icon={
+                <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center">
+                  <Briefcase className="text-muted-foreground" />
+                </div>
+              }
+              title="No saved jobs yet"
+              message="Save job descriptions during interview setup to reuse them across multiple practice sessions."
+              action={
+                <Button variant="outline" onClick={() => navigate('/setup')}>
+                  Create Job Template
+                </Button>
+              }
+            />
+          ) : filteredJobs.length === 0 ? (
+            <div className="text-center py-12 text-muted-foreground">
+              No saved jobs match &ldquo;{searchQuery}&rdquo;.
+            </div>
+          ) : (
+            <div className="grid gap-4">
+              {filteredJobs.map((job) => (
+                <Card
+                  key={job.id}
+                  className="hover:shadow-md transition-all group border-border bg-card"
+                >
+                  <CardContent className="p-6">
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                      <div className="space-y-3 flex-1">
+                        <div className="flex flex-wrap items-center justify-between md:justify-start gap-3">
+                          <h3 className="text-xl font-bold text-foreground">{job.company}</h3>
+                          <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
+                            {job.jobTitle}
+                          </span>
+                        </div>
+
+                        {job.jobDescription && (
+                          <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
+                            {job.jobDescription}
+                          </p>
+                        )}
+
+                        <div className="flex flex-wrap items-center text-muted-foreground gap-4 text-xs">
+                          {job.createdAt && (
+                            <span className="flex items-center bg-muted px-2 py-1 rounded">
+                              <Calendar className="w-3.5 h-3.5 mr-1.5" />
+                              {new Date(job.createdAt).toLocaleDateString()}
+                            </span>
+                          )}
+                          {job.interviewerPersona && (
+                            <span className="flex items-center bg-muted px-2 py-1 rounded max-w-xs md:max-w-md truncate">
+                              <User className="w-3.5 h-3.5 mr-1.5 shrink-0" />
+                              <span className="truncate">{job.interviewerPersona}</span>
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-2 w-full md:w-auto mt-2 md:mt-0 pt-4 md:pt-0 border-t md:border-t-0 border-border">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="gap-2 w-full md:w-auto"
+                          onClick={() =>
+                            navigate(
+                              `/studio?company=${encodeURIComponent(job.company)}&title=${encodeURIComponent(job.jobTitle || job.title || '')}`
+                            )
+                          }
+                        >
+                          <Sparkles size={14} />
+                          Tailor CV
+                        </Button>
+                        <Button
+                          size="sm"
+                          className="gap-2 w-full md:w-auto"
+                          onClick={() =>
+                            navigate(
+                              `/setup?company=${encodeURIComponent(job.company)}&title=${encodeURIComponent(job.jobTitle || job.title || '')}`
+                            )
+                          }
+                        >
+                          <Play size={14} />
+                          Start Interview with this Job
+                        </Button>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              aria-label="Delete saved job"
+                              onClick={(e) => job.id !== undefined && handleDeleteJob(job.id, e)}
+                              className="text-muted-foreground hover:text-destructive shrink-0"
+                            >
+                              <Trash2 size={16} />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Delete Saved Job</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           )}
         </TabsContent>

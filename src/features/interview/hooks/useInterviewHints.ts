@@ -28,7 +28,11 @@ export function useInterviewHints(currentInterview: Interview | null) {
     setIsLoadingHints(true);
     setHints(null);
     try {
-      const context = `Role: ${currentInterview.jobTitle} at ${currentInterview.company}. Persona: ${currentInterview.interviewerPersona}. Language: ${currentInterview.language}`;
+      const recentTurns = currentInterview.messages
+        .slice(-4)
+        .map((m) => `${m.role === 'model' ? 'Interviewer' : 'Candidate'}: ${m.content}`)
+        .join('\n');
+      const context = `Role: ${currentInterview.jobTitle} at ${currentInterview.company}. Persona: ${currentInterview.interviewerPersona}. Language: ${currentInterview.language}.\nRecent Exchanges:\n${recentTurns}`;
       const result = await generateInterviewHints(lastQuestion.content, context, config);
       setHints(result);
     } catch (error) {

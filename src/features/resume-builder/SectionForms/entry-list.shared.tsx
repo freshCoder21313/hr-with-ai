@@ -318,7 +318,7 @@ export const EntryListHeader: React.FC<EntryListHeaderProps> = ({
           {allExpanded ? 'Collapse All' : 'Expand All'}
         </Button>
       )}
-      <Button onClick={onAdd} size="sm" className="gap-1.5 h-8">
+      <Button onClick={onAdd} size="sm" className="gap-1.5 min-h-[44px] md:min-h-0 md:h-9">
         <Plus className="w-4 h-4" /> {addLabel}
       </Button>
     </div>

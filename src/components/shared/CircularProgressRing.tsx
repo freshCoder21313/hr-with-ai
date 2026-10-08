@@ -39,7 +39,10 @@ export const CircularProgressRing: React.FC<CircularProgressRingProps> = ({
       className={cn('flex flex-col items-center justify-center text-center space-y-4', className)}
     >
       {/* Circular Progress Ring */}
-      <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
+      <div
+        className="relative flex items-center justify-center"
+        style={{ width: size, height: size }}
+      >
         <svg
           width={size}
           height={size}
@@ -95,9 +98,7 @@ export const CircularProgressRing: React.FC<CircularProgressRingProps> = ({
             </h3>
           )}
           {subtitle && (
-            <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-              {subtitle}
-            </p>
+            <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">{subtitle}</p>
           )}
         </div>
       )}

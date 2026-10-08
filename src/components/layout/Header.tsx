@@ -90,7 +90,10 @@ const Header: React.FC<HeaderProps> = ({ onOpenSettings }) => {
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-1 sm:gap-1.5" aria-label="Main Navigation">
+          <nav
+            className="hidden md:flex items-center gap-1 sm:gap-1.5"
+            aria-label="Main Navigation"
+          >
             <NavLinks />
           </nav>
 

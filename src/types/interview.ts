@@ -88,10 +88,13 @@ export interface Interview {
   resumeId?: number; // ID of the resume used for this interview
   tailoredResume?: string; // Generated tailored resume text
   isPanel?: boolean; // True if it's a panel interview with multiple personas
+  executedScenarioIds?: string[]; // IDs of hidden scenarios triggered during this session
 }
 
 export interface InterviewFeedback {
   score: number;
+  technicalScore?: number; // 0-10 technical proficiency rating
+  communicationScore?: number; // 0-10 communication and structure rating
   summary: string;
   strengths: string[];
   weaknesses: string[];

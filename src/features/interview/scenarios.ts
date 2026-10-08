@@ -303,29 +303,43 @@ WHAT YOU'RE SECRETLY EVALUATING:
   },
 ];
 
-export const getActiveScenario = (
+export const getActiveScenarioEvent = (
   companyStatus: string | undefined | null,
-  currentTurn: number
-): string | null => {
+  currentTurn: number,
+  executedScenarioIds: string[] = []
+): ScenarioEvent | null => {
   if (!companyStatus || typeof companyStatus !== 'string') return null;
 
   const normalizedStatus = companyStatus.toLowerCase();
+  const executedSet = new Set(executedScenarioIds);
 
   const candidates = HIDDEN_SCENARIOS.filter(
     (s) =>
+      !executedSet.has(s.id) &&
       (s.triggerKeywords.length === 0 ||
         s.triggerKeywords.some((k) => normalizedStatus.includes(k))) &&
       currentTurn >= s.minTurn
   );
 
+  if (candidates.length === 0) return null;
+
   // Shuffle to avoid always triggering the same scenario first
-  const shuffled = candidates.sort(() => Math.random() - 0.5);
+  const shuffled = [...candidates].sort(() => Math.random() - 0.5);
 
   for (const scenario of shuffled) {
     if (Math.random() < scenario.chance) {
-      return scenario.systemInjection;
+      return scenario;
     }
   }
 
   return null;
+};
+
+export const getActiveScenario = (
+  companyStatus: string | undefined | null,
+  currentTurn: number,
+  executedScenarioIds: string[] = []
+): string | null => {
+  const event = getActiveScenarioEvent(companyStatus, currentTurn, executedScenarioIds);
+  return event ? event.systemInjection : null;
 };

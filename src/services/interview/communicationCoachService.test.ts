@@ -16,10 +16,15 @@ vi.mock('@/services/ai/aiConfigService', () => ({
 
 describe('communicationCoachService', () => {
   const sampleMessages: Message[] = [
-    { role: 'model', content: 'Chào bạn, bạn có thể giới thiệu về dự án gần nhất?', timestamp: 1000 },
+    {
+      role: 'model',
+      content: 'Chào bạn, bạn có thể giới thiệu về dự án gần nhất?',
+      timestamp: 1000,
+    },
     {
       role: 'user',
-      content: 'Dạ, ừm, tôi đã làm việc trên hệ thống microservices. Kiểu như tôi dùng Redis để cache.',
+      content:
+        'Dạ, ừm, tôi đã làm việc trên hệ thống microservices. Kiểu như tôi dùng Redis để cache.',
       timestamp: 2000,
     },
     { role: 'model', content: 'Bạn xử lý cache invalidation thế nào?', timestamp: 3000 },

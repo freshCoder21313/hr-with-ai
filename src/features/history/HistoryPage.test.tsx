@@ -5,8 +5,17 @@ import { MemoryRouter } from 'react-router-dom';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { db } from '@/lib/db';
 import { notificationService } from '@/services/core/notificationService';
-import { Interview, InterviewStatus, SkillAssessmentRecord } from '@/types';
+import { Interview, InterviewStatus, SkillAssessmentRecord, SavedJob } from '@/types';
 import HistoryPage from './HistoryPage';
+
+const mockNavigate = vi.fn();
+vi.mock('react-router-dom', async () => {
+  const actual = await vi.importActual('react-router-dom');
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate,
+  };
+});
 
 vi.mock('@/lib/db', () => ({
   db: {
@@ -17,6 +26,10 @@ vi.mock('@/lib/db', () => ({
     },
     skillAssessments: {
       orderBy: vi.fn(),
+      delete: vi.fn(),
+    },
+    jobs: {
+      toArray: vi.fn(),
       delete: vi.fn(),
     },
   },
@@ -104,6 +117,27 @@ const mockSkillAssessments: SkillAssessmentRecord[] = [
   },
 ];
 
+const mockSavedJobs: SavedJob[] = [
+  {
+    id: 201,
+    company: 'Stripe',
+    jobTitle: 'Staff Backend Engineer',
+    jobDescription: 'Build high reliability payment APIs and lead distributed architecture.',
+    interviewerPersona: 'Jordan, Principal Architect',
+    createdAt: 1700003000000,
+    updatedAt: 1700003000000,
+  },
+  {
+    id: 202,
+    company: 'Vercel',
+    jobTitle: 'Frontend Infrastructure Lead',
+    jobDescription: 'Next.js rendering and edge deployment platform.',
+    interviewerPersona: 'Lee, DevRel VP',
+    createdAt: 1700004000000,
+    updatedAt: 1700004000000,
+  },
+];
+
 const renderPage = () =>
   render(
     <MemoryRouter>
@@ -127,6 +161,9 @@ describe('HistoryPage Management', () => {
       reverse: vi.fn().mockReturnValue(reverseMock),
     } as never);
     vi.mocked(db.skillAssessments.delete).mockResolvedValue(undefined as never);
+
+    vi.mocked(db.jobs.toArray).mockResolvedValue([...mockSavedJobs]);
+    vi.mocked(db.jobs.delete).mockResolvedValue(undefined as never);
   });
 
   it('renders interview list and allows filtering by company or job title', async () => {
@@ -252,5 +289,107 @@ describe('HistoryPage Management', () => {
 
     expect(screen.queryByText('React Architecture')).not.toBeInTheDocument();
     expect(screen.getByText('Node.js Performance')).toBeInTheDocument();
+  });
+
+  it('switches to Saved Jobs tab, fetches jobs and displays details', async () => {
+    renderPage();
+
+    const jobsTab = screen.getByRole('tab', { name: /saved jobs/i });
+    fireEvent.click(jobsTab);
+
+    await waitFor(() => {
+      expect(screen.getByText('Stripe')).toBeInTheDocument();
+      expect(screen.getByText('Vercel')).toBeInTheDocument();
+    });
+
+    expect(screen.getByText('Staff Backend Engineer')).toBeInTheDocument();
+    expect(screen.getByText('Frontend Infrastructure Lead')).toBeInTheDocument();
+    expect(screen.getByText(/Build high reliability payment APIs/i)).toBeInTheDocument();
+  });
+
+  it('filters saved jobs by company or job title', async () => {
+    renderPage();
+
+    const jobsTab = screen.getByRole('tab', { name: /saved jobs/i });
+    fireEvent.click(jobsTab);
+
+    await waitFor(() => {
+      expect(screen.getByText('Stripe')).toBeInTheDocument();
+      expect(screen.getByText('Vercel')).toBeInTheDocument();
+    });
+
+    const searchInput = screen.getByPlaceholderText('Search by company or job title...');
+    fireEvent.change(searchInput, { target: { value: 'Stripe' } });
+
+    expect(screen.getByText('Stripe')).toBeInTheDocument();
+    expect(screen.queryByText('Vercel')).not.toBeInTheDocument();
+
+    fireEvent.change(searchInput, { target: { value: 'Infrastructure' } });
+    expect(screen.queryByText('Stripe')).not.toBeInTheDocument();
+    expect(screen.getByText('Vercel')).toBeInTheDocument();
+  });
+
+  it('deletes a saved job upon confirmation', async () => {
+    vi.mocked(notificationService.confirm).mockResolvedValue(true);
+    renderPage();
+
+    const jobsTab = screen.getByRole('tab', { name: /saved jobs/i });
+    fireEvent.click(jobsTab);
+
+    await waitFor(() => {
+      expect(screen.getByText('Stripe')).toBeInTheDocument();
+    });
+
+    const deleteButtons = screen.getAllByLabelText('Delete saved job');
+    // Index 0 is Vercel (newest), Index 1 is Stripe
+    fireEvent.click(deleteButtons[0]);
+
+    expect(notificationService.confirm).toHaveBeenCalledWith({
+      title: 'Delete Saved Job',
+      message: 'Are you sure you want to delete this saved job template?',
+      variant: 'destructive',
+    });
+
+    await waitFor(() => {
+      expect(db.jobs.delete).toHaveBeenCalledWith(202);
+      expect(screen.queryByText('Vercel')).not.toBeInTheDocument();
+    });
+  });
+
+  it('navigates to setup when clicking Start Interview with this Job', async () => {
+    renderPage();
+
+    const jobsTab = screen.getByRole('tab', { name: /saved jobs/i });
+    fireEvent.click(jobsTab);
+
+    await waitFor(() => {
+      expect(screen.getByText('Stripe')).toBeInTheDocument();
+      expect(screen.getByText('Vercel')).toBeInTheDocument();
+    });
+
+    const startButtons = screen.getAllByText('Start Interview with this Job');
+    // Index 1 is Stripe
+    fireEvent.click(startButtons[1]);
+
+    expect(mockNavigate).toHaveBeenCalledWith(
+      '/setup?company=Stripe&title=Staff%20Backend%20Engineer'
+    );
+  });
+
+  it('displays empty state when no saved jobs exist', async () => {
+    vi.mocked(db.jobs.toArray).mockResolvedValue([]);
+    renderPage();
+
+    const jobsTab = screen.getByRole('tab', { name: /saved jobs/i });
+    fireEvent.click(jobsTab);
+
+    await waitFor(() => {
+      expect(screen.getByText('No saved jobs yet')).toBeInTheDocument();
+      expect(screen.getByText(/Save job descriptions during interview setup/i)).toBeInTheDocument();
+    });
+
+    const createBtns = screen.getAllByRole('button', { name: 'Create Job Template' });
+    fireEvent.click(createBtns[createBtns.length - 1]);
+    expect(mockNavigate).toHaveBeenCalledWith('/setup');
   });
 });

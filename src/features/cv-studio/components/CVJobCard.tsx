@@ -47,7 +47,9 @@ export const CVJobCard: React.FC<CVJobCardProps> = ({
   const urlId = useId();
   const descriptionId = useId();
   const customPromptId = useId();
-  const jobLabel = `${job.title || 'Untitled'}${job.company ? ` @ ${job.company}` : ''}`;
+  const personaId = useId();
+  const contextId = useId();
+  const jobLabel = `${job.jobTitle || job.title || 'Untitled'}${job.company ? ` @ ${job.company}` : ''}`;
   const isDone = status.status === 'completed';
   const isRunning = status.status === 'processing';
   const hasError = status.status === 'error';
@@ -149,14 +151,17 @@ export const CVJobCard: React.FC<CVJobCardProps> = ({
             </div>
             <div>
               <Label htmlFor={titleId} className="text-[10px]">
-                Title
+                Job Title
               </Label>
               <Input
                 id={titleId}
                 className="h-10 md:h-7 text-base md:text-xs"
                 placeholder="SWE"
-                value={job.title}
-                onChange={(e) => onChange('title', e.target.value)}
+                value={job.jobTitle || job.title || ''}
+                onChange={(e) => {
+                  onChange('title', e.target.value);
+                  onChange('jobTitle', e.target.value);
+                }}
                 disabled={isProcessing}
               />
             </div>
@@ -170,17 +175,20 @@ export const CVJobCard: React.FC<CVJobCardProps> = ({
                 id={urlId}
                 className="h-10 md:h-7 text-base md:text-xs"
                 placeholder="https://..."
-                value={job.url || ''}
-                onChange={(e) => onChange('url', e.target.value)}
+                value={job.jobUrl || job.url || ''}
+                onChange={(e) => {
+                  onChange('url', e.target.value);
+                  onChange('jobUrl', e.target.value);
+                }}
                 disabled={isProcessing}
               />
-              {job.url && (
+              {(job.jobUrl || job.url) && (
                 <Button
                   type="button"
                   variant="outline"
                   size="icon-sm"
                   className="h-10 md:h-7 w-10 md:w-7 shrink-0 text-muted-foreground hover:text-primary"
-                  onClick={() => window.open(job.url, '_blank', 'noopener,noreferrer')}
+                  onClick={() => window.open(job.jobUrl || job.url, '_blank', 'noopener,noreferrer')}
                   title="Open original job posting"
                   aria-label="Open link in new tab"
                 >
@@ -197,10 +205,41 @@ export const CVJobCard: React.FC<CVJobCardProps> = ({
               id={descriptionId}
               className="min-h-[80px] text-xs font-mono"
               placeholder="Paste JD here..."
-              value={job.description}
-              onChange={(e) => onChange('description', e.target.value)}
+              value={job.jobDescription || job.description || ''}
+              onChange={(e) => {
+                onChange('description', e.target.value);
+                onChange('jobDescription', e.target.value);
+              }}
               disabled={isProcessing}
             />
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <Label htmlFor={personaId} className="text-[10px]">
+                Interviewer Persona (optional)
+              </Label>
+              <Input
+                id={personaId}
+                className="h-10 md:h-7 text-base md:text-xs"
+                placeholder="e.g. Technical Lead"
+                value={job.interviewerPersona || ''}
+                onChange={(e) => onChange('interviewerPersona', e.target.value)}
+                disabled={isProcessing}
+              />
+            </div>
+            <div>
+              <Label htmlFor={contextId} className="text-[10px]">
+                Company / Team Context (optional)
+              </Label>
+              <Input
+                id={contextId}
+                className="h-10 md:h-7 text-base md:text-xs"
+                placeholder="e.g. Fast-paced startup"
+                value={job.interviewContext || ''}
+                onChange={(e) => onChange('interviewContext', e.target.value)}
+                disabled={isProcessing}
+              />
+            </div>
           </div>
           <div>
             <Label htmlFor={customPromptId} className="text-[10px]">
@@ -210,7 +249,7 @@ export const CVJobCard: React.FC<CVJobCardProps> = ({
               id={customPromptId}
               className="min-h-[48px] text-xs"
               placeholder="Emphasize React experience..."
-              value={job.customPrompt}
+              value={job.customPrompt || ''}
               onChange={(e) => onChange('customPrompt', e.target.value)}
               disabled={isProcessing}
             />

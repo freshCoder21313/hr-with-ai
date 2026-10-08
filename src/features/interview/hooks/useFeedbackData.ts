@@ -97,19 +97,40 @@ export function useFeedbackData(id: string | undefined) {
 
         mermaidRef1.current.innerHTML = '';
         mermaidRef2.current.innerHTML = '';
-        const { svg: svg1 } = await mermaid.render('mermaid-chart-1', feedback.mermaidGraphCurrent);
-        mermaidRef1.current.innerHTML = svg1;
-        const { svg: svg2 } = await mermaid.render(
-          'mermaid-chart-2',
-          feedback.mermaidGraphPotential
-        );
-        mermaidRef2.current.innerHTML = svg2;
-      } catch (error) {
-        logger.error('Mermaid rendering failed:', error);
-        if (mermaidRef1.current) {
-          mermaidRef1.current.innerHTML =
-            '<p class="text-destructive text-sm font-medium">Error rendering chart</p>';
+
+        if (feedback.mermaidGraphCurrent) {
+          try {
+            const { svg: svg1 } = await mermaid.render(
+              'mermaid-chart-1',
+              feedback.mermaidGraphCurrent
+            );
+            mermaidRef1.current.innerHTML = svg1;
+          } catch (chart1Error) {
+            logger.error('Mermaid chart 1 rendering failed:', chart1Error);
+            if (mermaidRef1.current) {
+              mermaidRef1.current.innerHTML =
+                '<p class="text-muted-foreground text-xs italic">Unable to render current thinking chart</p>';
+            }
+          }
         }
+
+        if (feedback.mermaidGraphPotential) {
+          try {
+            const { svg: svg2 } = await mermaid.render(
+              'mermaid-chart-2',
+              feedback.mermaidGraphPotential
+            );
+            mermaidRef2.current.innerHTML = svg2;
+          } catch (chart2Error) {
+            logger.error('Mermaid chart 2 rendering failed:', chart2Error);
+            if (mermaidRef2.current) {
+              mermaidRef2.current.innerHTML =
+                '<p class="text-muted-foreground text-xs italic">Unable to render potential thinking chart</p>';
+            }
+          }
+        }
+      } catch (error) {
+        logger.error('Mermaid initialization or loading failed:', error);
       }
     };
     renderCharts();

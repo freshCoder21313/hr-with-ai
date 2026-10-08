@@ -5,7 +5,7 @@ export interface ValidationResult {
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export function isNonEmptyString(value: string | null | undefined): boolean {
+export function isNonEmptyString(value: string | null | undefined): value is string {
   return typeof value === 'string' && value.trim().length > 0;
 }
 

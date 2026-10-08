@@ -19,10 +19,10 @@ export const VoiceMicButton: React.FC<VoiceMicButtonProps> = ({
   return (
     <div className="relative flex items-center justify-center">
       {isListening && (
-        <div className="absolute inset-0 rounded-full animate-ping bg-red-400 opacity-20 scale-150 delay-75 duration-1000" />
+        <div className="absolute inset-0 rounded-full animate-ping bg-destructive opacity-20 scale-150 delay-75 duration-1000" />
       )}
       {isListening && (
-        <div className="absolute inset-0 rounded-full animate-ping bg-red-400 opacity-30 delay-150 duration-1000" />
+        <div className="absolute inset-0 rounded-full animate-ping bg-destructive opacity-30 delay-150 duration-1000" />
       )}
 
       <Button
@@ -31,8 +31,8 @@ export const VoiceMicButton: React.FC<VoiceMicButtonProps> = ({
         className={cn(
           'relative z-10 w-16 h-16 rounded-full transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-lg flex items-center justify-center',
           isListening
-            ? 'bg-red-500 hover:bg-red-600 text-white shadow-red-500/30 ring-4 ring-red-100 dark:ring-red-500/30'
-            : 'bg-primary hover:bg-primary/90 text-white shadow-primary/30',
+            ? 'bg-destructive hover:bg-destructive/90 text-destructive-foreground shadow-destructive/30 ring-4 ring-destructive/20 dark:ring-destructive/30'
+            : 'bg-primary hover:bg-primary/90 text-primary-foreground shadow-primary/30',
           disabled && 'opacity-50 cursor-not-allowed'
         )}
         onClick={isListening ? onStop : onStart}

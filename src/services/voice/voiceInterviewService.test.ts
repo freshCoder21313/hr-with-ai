@@ -101,5 +101,35 @@ describe('VoiceInterviewService', () => {
 
       expect(callback).toHaveBeenCalledWith('Great job!');
     });
+
+    it('should strip action tags and bracket control tokens from spoken sentences', () => {
+      const callback = vi.fn();
+      service.setOnSentenceCallback(callback);
+
+      service.feedStreamChunk('Please implement this in the editor. <ACTION type="CODE" lang="javascript" />');
+      service.flush();
+
+      expect(callback).toHaveBeenCalledWith('Please implement this in the editor.');
+    });
+
+    it('should clean knowledge-graph bracket tokens into natural speech', () => {
+      const callback = vi.fn();
+      service.setOnSentenceCallback(callback);
+
+      service.feedStreamChunk('Tell me about [[React Fiber]] and [[CAP Theorem]].');
+      service.flush();
+
+      expect(callback).toHaveBeenCalledWith('Tell me about React Fiber and CAP Theorem.');
+    });
+
+    it('should strip [[END_SESSION]] token and not speak it', () => {
+      const callback = vi.fn();
+      service.setOnSentenceCallback(callback);
+
+      service.feedStreamChunk('Thank you for your time today. [[END_SESSION]]');
+      service.flush();
+
+      expect(callback).toHaveBeenCalledWith('Thank you for your time today.');
+    });
   });
 });

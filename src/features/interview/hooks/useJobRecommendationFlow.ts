@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { logger } from '@/lib/logger';
 import { Interview, Resume, JobRecommendation } from '@/types';
 import { ResumeData } from '@/types/resume';
@@ -70,6 +70,25 @@ export function useJobRecommendationFlow({
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
+  const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const selectJobTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+        progressIntervalRef.current = null;
+      }
+      if (selectJobTimeoutRef.current) {
+        clearTimeout(selectJobTimeoutRef.current);
+        selectJobTimeoutRef.current = null;
+      }
+    };
+  }, []);
+
   useEffect(() => {
     if (isOpen && existingResumeId && availableResumes.length > 0) {
       const resume = availableResumes.find((r) => r.id === existingResumeId);
@@ -87,9 +106,14 @@ export function useJobRecommendationFlow({
     setIsGenerating(true);
     setError(null);
 
-    const progressInterval = setInterval(() => {
+    if (progressIntervalRef.current) {
+      clearInterval(progressIntervalRef.current);
+    }
+    progressIntervalRef.current = setInterval(() => {
+      if (!isMountedRef.current) return;
       setProgress((prev) => (prev >= 90 ? 90 : prev + 10));
     }, 200);
+
     try {
       const config = getStoredAIConfig();
       if (!config.apiKey) throw new Error('Please configure your API key in settings');
@@ -101,15 +125,30 @@ export function useJobRecommendationFlow({
         selectedResume.id
       );
 
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+        progressIntervalRef.current = null;
+      }
+      if (!isMountedRef.current) return;
       setJobs(generatedJobs);
       setProgress(100);
     } catch (err) {
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+        progressIntervalRef.current = null;
+      }
+      if (!isMountedRef.current) return;
       logger.error('Error generating jobs:', err);
       setError(err instanceof Error ? err.message : 'Failed to generate job recommendations');
       setStep('select-resume');
     } finally {
-      clearInterval(progressInterval);
-      setIsGenerating(false);
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+        progressIntervalRef.current = null;
+      }
+      if (isMountedRef.current) {
+        setIsGenerating(false);
+      }
     }
   }, [selectedResume, language]);
 
@@ -129,11 +168,16 @@ export function useJobRecommendationFlow({
         );
         const tailoredText = tailoredDataToText(job, tailoredData);
 
-        setTimeout(() => {
+        if (selectJobTimeoutRef.current) {
+          clearTimeout(selectJobTimeoutRef.current);
+        }
+        selectJobTimeoutRef.current = setTimeout(() => {
+          if (!isMountedRef.current) return;
           onSelectJob(job, tailoredText, tailoredData);
           onClose();
         }, 2000);
       } catch (err) {
+        if (!isMountedRef.current) return;
         logger.error('Error generating tailored resume:', err);
         setError('Failed to generate tailored resume. Please try selecting another job.');
         setStep('results');

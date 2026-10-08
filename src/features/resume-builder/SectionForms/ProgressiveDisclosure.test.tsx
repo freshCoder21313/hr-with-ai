@@ -95,9 +95,7 @@ describe('Progressive Disclosure in Section Forms', () => {
       // Entry 1 is collapsed: summary textarea is NOT rendered, but header & subtitle are rendered
       expect(screen.queryByDisplayValue('Early stage work')).not.toBeInTheDocument();
       expect(screen.getByText('Startup Inc')).toBeInTheDocument();
-      expect(
-        screen.getByText('Software Engineer • 2020-01 - 2021-12')
-      ).toBeInTheDocument();
+      expect(screen.getByText('Software Engineer • 2020-01 - 2021-12')).toBeInTheDocument();
 
       // Click entry 1 to expand it
       fireEvent.click(screen.getByText('Startup Inc'));

@@ -26,6 +26,7 @@ interface PreviewViewProps {
   template: TemplateType;
   viewLanguage: 'vi' | 'en';
   isTranslating: boolean;
+  isExporting?: boolean;
   onUpdate: (data: ResumeData) => void;
   onSetTemplate: (template: TemplateType) => void;
   onThemeColorChange: (color: string) => void;
@@ -59,6 +60,7 @@ const PreviewViewBase: React.FC<PreviewViewProps> = ({
   template,
   viewLanguage,
   isTranslating,
+  isExporting = false,
   onUpdate,
   onSetTemplate,
   onThemeColorChange,
@@ -75,7 +77,7 @@ const PreviewViewBase: React.FC<PreviewViewProps> = ({
           variant="ghost"
           size="icon"
           onClick={onShowReorder}
-          className="h-9 w-9 rounded-full"
+          className="h-11 w-11 md:h-9 md:w-9 rounded-full"
           aria-label="Arrange sections"
         >
           <List className="w-5 h-5" />
@@ -86,7 +88,7 @@ const PreviewViewBase: React.FC<PreviewViewProps> = ({
             <Button
               variant="ghost"
               size="icon"
-              className="h-9 w-9 rounded-full tour-layout-switch"
+              className="h-11 w-11 md:h-9 md:w-9 rounded-full tour-layout-switch"
               aria-label="Switch template"
             >
               <LayoutTemplate className="w-5 h-5" />
@@ -106,7 +108,7 @@ const PreviewViewBase: React.FC<PreviewViewProps> = ({
             <Button
               variant="ghost"
               size="icon"
-              className="h-9 w-9 rounded-full relative overflow-hidden group"
+              className="h-11 w-11 md:h-9 md:w-9 rounded-full relative overflow-hidden group"
               aria-label="Change accent color"
             >
               <Palette className="w-5 h-5 z-10" />
@@ -138,7 +140,7 @@ const PreviewViewBase: React.FC<PreviewViewProps> = ({
           size="icon"
           onClick={onTranslate}
           disabled={isTranslating}
-          className="h-9 w-9 rounded-full relative tour-translate"
+          className="h-11 w-11 md:h-9 md:w-9 rounded-full relative tour-translate"
           aria-label={`Translate (current: ${viewLanguage === 'en' ? 'English' : 'Vietnamese'})`}
         >
           {isTranslating ? (
@@ -155,10 +157,15 @@ const PreviewViewBase: React.FC<PreviewViewProps> = ({
           variant="ghost"
           size="icon"
           onClick={onPrint}
-          className="h-9 w-9 rounded-full text-primary"
+          className="h-11 w-11 md:h-9 md:w-9 rounded-full text-primary"
           aria-label="Export PDF"
+          disabled={isExporting}
         >
-          <Printer className="w-5 h-5" />
+          {isExporting ? (
+            <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" />
+          ) : (
+            <Printer className="w-5 h-5" aria-hidden="true" />
+          )}
         </Button>
       </div>
 
@@ -354,9 +361,14 @@ const PreviewViewBase: React.FC<PreviewViewProps> = ({
               size="icon"
               onClick={onPrint}
               aria-label="Export PDF"
+              disabled={isExporting}
               className="rounded-full bg-background text-primary border-primary/20 hover:bg-primary/5 shadow-sm hover:shadow-md transition-all"
             >
-              <Printer className="w-5 h-5" />
+              {isExporting ? (
+                <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" />
+              ) : (
+                <Printer className="w-5 h-5" aria-hidden="true" />
+              )}
             </Button>
           </TooltipTrigger>
           <TooltipContent side="left">

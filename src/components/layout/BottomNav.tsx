@@ -29,7 +29,7 @@ export const BottomNav: React.FC = () => {
   // Hide bottom nav in focused workspaces where screen estate is critical
   const isFullScreenRoom =
     location.pathname.startsWith('/interview/') ||
-    location.pathname.includes('/resumes/') && location.pathname.endsWith('/edit');
+    (location.pathname.includes('/resumes/') && location.pathname.endsWith('/edit'));
 
   if (isFullScreenRoom) {
     return null;

@@ -158,6 +158,7 @@ const ResumeBuilder: React.FC = () => {
               template={template}
               viewLanguage={state.viewLanguage}
               isTranslating={state.isTranslating}
+              isExporting={state.isExporting}
               onUpdate={actions.handleDirectUpdate}
               onSetTemplate={actions.setTemplate}
               onThemeColorChange={actions.handleThemeColorChange}

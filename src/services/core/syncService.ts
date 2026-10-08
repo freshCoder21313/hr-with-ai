@@ -1,5 +1,5 @@
 import { db } from '@/lib/db';
-import { Interview, UserSettings, Resume, SavedJob } from '@/types';
+import { Interview, UserSettings, Resume, SavedJob, SkillAssessmentRecord } from '@/types';
 import { DBJobRecommendation } from '@/types';
 import LZString from 'lz-string';
 import axios from 'axios';
@@ -47,6 +47,8 @@ export interface SyncData {
   careerEvidence?: CareerEvidence[];
   factEvidenceLinks?: FactEvidenceLink[];
   careerNotes?: CareerNote[];
+  /** Optional: absent in backups taken before skill assessments were synced. */
+  skillAssessments?: SkillAssessmentRecord[];
 }
 
 interface CompressedSyncData {
@@ -103,6 +105,7 @@ export const syncService = {
     const resumes = db.resumes ? await db.resumes.toArray() : [];
     const jobs = db.jobs ? await db.jobs.toArray() : [];
     const jobRecommendations = db.job_recommendations ? await db.job_recommendations.toArray() : [];
+    const skillAssessments = db.skillAssessments ? await db.skillAssessments.toArray() : [];
 
     // Strip sensitive fields unless explicitly requested
     const safeSettings = userSettings.map((s) => {
@@ -139,6 +142,7 @@ export const syncService = {
         resumes,
         jobs,
         jobRecommendations,
+        skillAssessments,
       };
     }
     const careerProfiles = db.careerProfiles ? await db.careerProfiles.toArray() : [];
@@ -159,6 +163,7 @@ export const syncService = {
       careerEvidence,
       factEvidenceLinks,
       careerNotes,
+      skillAssessments,
     };
   },
 
@@ -175,6 +180,7 @@ export const syncService = {
       db.careerEvidence,
       db.factEvidenceLinks,
       db.careerNotes,
+      db.skillAssessments,
     ].filter(Boolean);
 
     await db.transaction('rw', tablesToLock, async () => {
@@ -432,6 +438,25 @@ export const syncService = {
                 await db.careerNotes.put(remoteNote);
               }
             }
+          }
+        }
+      }
+
+      // 7. Merge Skill Assessments
+      if (
+        cloudData.skillAssessments &&
+        cloudData.skillAssessments.length > 0 &&
+        db.skillAssessments
+      ) {
+        const localAssessments = db.skillAssessments.toArray
+          ? await db.skillAssessments.toArray()
+          : [];
+        for (const record of cloudData.skillAssessments) {
+          const localMatch = localAssessments.find(
+            (l) => l.createdAt === record.createdAt && l.skill === record.skill
+          );
+          if (!localMatch) {
+            await db.skillAssessments.add(omitId(record));
           }
         }
       }

@@ -104,9 +104,7 @@ describe('SetupRoom (3-Step Wizard & Presets)', () => {
 
     // Inspection dialog displays full sample job details
     expect(screen.getByText(/Review the pre-configured parameters/i)).toBeInTheDocument();
-    expect(
-      screen.getByText(/Alex, Senior Engineering Manager at Google/i)
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Alex, Senior Engineering Manager at Google/i)).toBeInTheDocument();
     expect(screen.getByText(/Sample Job Description/i)).toBeInTheDocument();
 
     // Click confirm apply button

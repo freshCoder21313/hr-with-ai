@@ -38,35 +38,130 @@ interface CatalogEntry {
 }
 
 const EXTENDED_CATALOG: CatalogEntry[] = [
-  { canonicalName: 'English (US / International)', aliases: ['en', 'en-us', 'en-gb', 'english', 'tiếng anh', 'tieng anh', 'anh'] },
-  { canonicalName: 'Tiếng Việt (Vietnamese)', aliases: ['vi', 'vi-vn', 'vietnamese', 'tiếng việt', 'tieng viet', 'việt nam'] },
-  { canonicalName: '日本語 (Japanese)', aliases: ['ja', 'ja-jp', 'japanese', 'nihongo', 'tiếng nhật', 'tieng nhat', 'nhật bản', 'nhật'] },
-  { canonicalName: '한국어 (Korean)', aliases: ['ko', 'ko-kr', 'korean', 'hangul', 'tiếng hàn', 'tieng han', 'hàn quốc', 'hàn'] },
-  { canonicalName: '中文 (Mandarin Chinese)', aliases: ['zh', 'zh-cn', 'chinese', 'mandarin', 'tiếng trung', 'tieng trung', 'tiếng hoa', 'trung quốc'] },
-  { canonicalName: 'Français (French)', aliases: ['fr', 'fr-fr', 'french', 'tiếng pháp', 'tieng phap', 'pháp'] },
-  { canonicalName: 'Deutsch (German)', aliases: ['de', 'de-de', 'german', 'tiếng đức', 'tieng duc', 'đức'] },
-  { canonicalName: 'Español (Spanish)', aliases: ['es', 'es-es', 'spanish', 'castellano', 'tiếng tây ban nha', 'tay ban nha'] },
-  { canonicalName: 'Russian (Русский)', aliases: ['ru', 'rus', 'russian', 'tiếng nga', 'tieng nga', 'nga', 'русский'] },
-  { canonicalName: 'Italian (Italiano)', aliases: ['it', 'ita', 'italian', 'italiano', 'tiếng ý', 'tieng y', 'ý'] },
-  { canonicalName: 'Portuguese (Português)', aliases: ['pt', 'por', 'portuguese', 'português', 'tiếng bồ đào nha', 'bồ đào nha'] },
-  { canonicalName: 'Swedish (Svenska)', aliases: ['sv', 'swe', 'swedish', 'svenska', 'tiếng thụy điển', 'thụy điển'] },
-  { canonicalName: 'Thai (ภาษาไทย)', aliases: ['th', 'tha', 'thai', 'tiếng thái', 'tieng thai', 'thái lan', 'thái'] },
-  { canonicalName: 'Dutch (Nederlands)', aliases: ['nl', 'nld', 'dutch', 'nederlands', 'tiếng hà lan', 'hà lan'] },
-  { canonicalName: 'Arabic (العربية)', aliases: ['ar', 'ara', 'arabic', 'tiếng ả rập', 'ả rập', 'tieng a rap'] },
-  { canonicalName: 'Polish (Polski)', aliases: ['pl', 'pol', 'polish', 'polski', 'tiếng ba lan', 'ba lan'] },
-  { canonicalName: 'Turkish (Türkçe)', aliases: ['tr', 'tur', 'turkish', 'türkçe', 'tiếng thổ nhĩ kỳ', 'thổ nhĩ kỳ'] },
+  {
+    canonicalName: 'English (US / International)',
+    aliases: ['en', 'en-us', 'en-gb', 'english', 'tiếng anh', 'tieng anh', 'anh'],
+  },
+  {
+    canonicalName: 'Tiếng Việt (Vietnamese)',
+    aliases: ['vi', 'vi-vn', 'vietnamese', 'tiếng việt', 'tieng viet', 'việt nam'],
+  },
+  {
+    canonicalName: '日本語 (Japanese)',
+    aliases: ['ja', 'ja-jp', 'japanese', 'nihongo', 'tiếng nhật', 'tieng nhat', 'nhật bản', 'nhật'],
+  },
+  {
+    canonicalName: '한국어 (Korean)',
+    aliases: ['ko', 'ko-kr', 'korean', 'hangul', 'tiếng hàn', 'tieng han', 'hàn quốc', 'hàn'],
+  },
+  {
+    canonicalName: '中文 (Mandarin Chinese)',
+    aliases: [
+      'zh',
+      'zh-cn',
+      'chinese',
+      'mandarin',
+      'tiếng trung',
+      'tieng trung',
+      'tiếng hoa',
+      'trung quốc',
+    ],
+  },
+  {
+    canonicalName: 'Français (French)',
+    aliases: ['fr', 'fr-fr', 'french', 'tiếng pháp', 'tieng phap', 'pháp'],
+  },
+  {
+    canonicalName: 'Deutsch (German)',
+    aliases: ['de', 'de-de', 'german', 'tiếng đức', 'tieng duc', 'đức'],
+  },
+  {
+    canonicalName: 'Español (Spanish)',
+    aliases: ['es', 'es-es', 'spanish', 'castellano', 'tiếng tây ban nha', 'tay ban nha'],
+  },
+  {
+    canonicalName: 'Russian (Русский)',
+    aliases: ['ru', 'rus', 'russian', 'tiếng nga', 'tieng nga', 'nga', 'русский'],
+  },
+  {
+    canonicalName: 'Italian (Italiano)',
+    aliases: ['it', 'ita', 'italian', 'italiano', 'tiếng ý', 'tieng y', 'ý'],
+  },
+  {
+    canonicalName: 'Portuguese (Português)',
+    aliases: ['pt', 'por', 'portuguese', 'português', 'tiếng bồ đào nha', 'bồ đào nha'],
+  },
+  {
+    canonicalName: 'Swedish (Svenska)',
+    aliases: ['sv', 'swe', 'swedish', 'svenska', 'tiếng thụy điển', 'thụy điển'],
+  },
+  {
+    canonicalName: 'Thai (ภาษาไทย)',
+    aliases: ['th', 'tha', 'thai', 'tiếng thái', 'tieng thai', 'thái lan', 'thái'],
+  },
+  {
+    canonicalName: 'Dutch (Nederlands)',
+    aliases: ['nl', 'nld', 'dutch', 'nederlands', 'tiếng hà lan', 'hà lan'],
+  },
+  {
+    canonicalName: 'Arabic (العربية)',
+    aliases: ['ar', 'ara', 'arabic', 'tiếng ả rập', 'ả rập', 'tieng a rap'],
+  },
+  {
+    canonicalName: 'Polish (Polski)',
+    aliases: ['pl', 'pol', 'polish', 'polski', 'tiếng ba lan', 'ba lan'],
+  },
+  {
+    canonicalName: 'Turkish (Türkçe)',
+    aliases: ['tr', 'tur', 'turkish', 'türkçe', 'tiếng thổ nhĩ kỳ', 'thổ nhĩ kỳ'],
+  },
   { canonicalName: 'Hindi (हिन्दी)', aliases: ['hi', 'hin', 'hindi', 'tiếng hindi'] },
-  { canonicalName: 'Indonesian (Bahasa)', aliases: ['id', 'ind', 'indonesian', 'bahasa indonesia', 'tiếng indonesia', 'tiếng indo', 'indo'] },
+  {
+    canonicalName: 'Indonesian (Bahasa)',
+    aliases: [
+      'id',
+      'ind',
+      'indonesian',
+      'bahasa indonesia',
+      'tiếng indonesia',
+      'tiếng indo',
+      'indo',
+    ],
+  },
   { canonicalName: 'Greek (Ελληνικά)', aliases: ['el', 'ell', 'greek', 'tiếng hy lạp', 'hy lạp'] },
-  { canonicalName: 'Danish (Dansk)', aliases: ['da', 'dan', 'danish', 'dansk', 'tiếng đan mạch', 'đan mạch'] },
-  { canonicalName: 'Norwegian (Norsk)', aliases: ['no', 'nor', 'norwegian', 'norsk', 'tiếng na uy', 'na uy'] },
-  { canonicalName: 'Finnish (Suomi)', aliases: ['fi', 'fin', 'finnish', 'suomi', 'tiếng phần lan', 'phần lan'] },
-  { canonicalName: 'Czech (Čeština)', aliases: ['cs', 'ces', 'czech', 'čeština', 'tiếng séc', 'séc'] },
-  { canonicalName: 'Ukrainian (Українська)', aliases: ['uk', 'ukr', 'ukrainian', 'tiếng ukraina', 'ukraina'] },
+  {
+    canonicalName: 'Danish (Dansk)',
+    aliases: ['da', 'dan', 'danish', 'dansk', 'tiếng đan mạch', 'đan mạch'],
+  },
+  {
+    canonicalName: 'Norwegian (Norsk)',
+    aliases: ['no', 'nor', 'norwegian', 'norsk', 'tiếng na uy', 'na uy'],
+  },
+  {
+    canonicalName: 'Finnish (Suomi)',
+    aliases: ['fi', 'fin', 'finnish', 'suomi', 'tiếng phần lan', 'phần lan'],
+  },
+  {
+    canonicalName: 'Czech (Čeština)',
+    aliases: ['cs', 'ces', 'czech', 'čeština', 'tiếng séc', 'séc'],
+  },
+  {
+    canonicalName: 'Ukrainian (Українська)',
+    aliases: ['uk', 'ukr', 'ukrainian', 'tiếng ukraina', 'ukraina'],
+  },
   { canonicalName: 'Hebrew (עברית)', aliases: ['he', 'heb', 'hebrew', 'tiếng do thái', 'do thái'] },
-  { canonicalName: 'Hungarian (Magyar)', aliases: ['hu', 'hun', 'hungarian', 'magyar', 'tiếng hungary', 'hungary'] },
-  { canonicalName: 'Malay (Bahasa Melayu)', aliases: ['ms', 'msa', 'malay', 'tiếng mã lai', 'mã lai'] },
-  { canonicalName: 'Tagalog / Filipino', aliases: ['tl', 'fil', 'tagalog', 'filipino', 'tiếng philippines'] },
+  {
+    canonicalName: 'Hungarian (Magyar)',
+    aliases: ['hu', 'hun', 'hungarian', 'magyar', 'tiếng hungary', 'hungary'],
+  },
+  {
+    canonicalName: 'Malay (Bahasa Melayu)',
+    aliases: ['ms', 'msa', 'malay', 'tiếng mã lai', 'mã lai'],
+  },
+  {
+    canonicalName: 'Tagalog / Filipino',
+    aliases: ['tl', 'fil', 'tagalog', 'filipino', 'tiếng philippines'],
+  },
   { canonicalName: 'Latin', aliases: ['la', 'lat', 'latin', 'tiếng la-tinh', 'tiếng latin'] },
   { canonicalName: 'Esperanto', aliases: ['eo', 'epo', 'esperanto'] },
 ];
@@ -113,7 +208,8 @@ export function inspectTargetLanguage(rawInput: string | undefined): TargetLangu
       cleanInput: clean,
       isValid: false,
       isRecognized: false,
-      warningMessage: 'Tên ngôn ngữ không hợp lệ. Vui lòng nhập bằng chữ (ví dụ: Swedish, Tiếng Nga, Tiếng Ý...).',
+      warningMessage:
+        'Tên ngôn ngữ không hợp lệ. Vui lòng nhập bằng chữ (ví dụ: Swedish, Tiếng Nga, Tiếng Ý...).',
     };
   }
 
@@ -129,7 +225,8 @@ export function inspectTargetLanguage(rawInput: string | undefined): TargetLangu
 
   // Check exact preset match
   const presetMatch = COACHING_LANGUAGES.find(
-    (l) => l.code.toLowerCase() === clean.toLowerCase() || l.label.toLowerCase() === clean.toLowerCase()
+    (l) =>
+      l.code.toLowerCase() === clean.toLowerCase() || l.label.toLowerCase() === clean.toLowerCase()
   );
   if (presetMatch) {
     return {
@@ -159,7 +256,8 @@ export function inspectTargetLanguage(rawInput: string | undefined): TargetLangu
   }
 
   // Check if input has standard linguistic indicators (e.g. "Tiếng ...", "... language", "... dialect")
-  const hasLinguisticKeywords = /(?:^|\s)(?:tiếng|ngôn ngữ|language|dialect|idioma|langue|sprache)(?:$|\s)/i.test(clean);
+  const hasLinguisticKeywords =
+    /(?:^|\s)(?:tiếng|ngôn ngữ|language|dialect|idioma|langue|sprache)(?:$|\s)/i.test(clean);
   if (hasLinguisticKeywords) {
     return {
       rawInput,

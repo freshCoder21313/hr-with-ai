@@ -27,7 +27,9 @@ describe('CircularProgressRing', () => {
   });
 
   it('provides accessible progressbar semantics and live region', () => {
-    render(<CircularProgressRing progress={65} title="Analyzing interview" subtitle="Extracting turns" />);
+    render(
+      <CircularProgressRing progress={65} title="Analyzing interview" subtitle="Extracting turns" />
+    );
     const progressbar = screen.getByRole('progressbar');
     expect(progressbar).toBeInTheDocument();
     expect(progressbar).toHaveAttribute('aria-valuenow', '65');

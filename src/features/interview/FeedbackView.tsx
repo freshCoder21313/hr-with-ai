@@ -65,7 +65,10 @@ const FeedbackView: React.FC = () => {
           <h2 className="text-lg font-semibold text-foreground">Feedback unavailable</h2>
           <p className="text-sm text-muted-foreground">{error ?? 'Error loading feedback'}</p>
         </div>
-        <Button onClick={() => navigate('/')} className="gap-2">
+        <Button
+          onClick={() => (window.history.length > 1 ? navigate(-1) : navigate('/'))}
+          className="gap-2"
+        >
           <ArrowLeft className="w-4 h-4" />
           Back to Home
         </Button>
@@ -129,9 +132,7 @@ const FeedbackView: React.FC = () => {
           <LanguageCoachingTab
             interview={currentInterview}
             onReportUpdated={(updatedReport) => {
-              setFeedback((prev) =>
-                prev ? { ...prev, communicationCoach: updatedReport } : prev
-              );
+              setFeedback((prev) => (prev ? { ...prev, communicationCoach: updatedReport } : prev));
               setInterview((prev) =>
                 prev
                   ? {

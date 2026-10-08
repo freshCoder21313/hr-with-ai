@@ -89,9 +89,17 @@ export const SmartJDImportModal: React.FC<SmartJDImportModalProps> = ({
     const jobData: Omit<Job, 'id'> = {
       company: company.trim() || 'Target Company',
       title: trimmedTitle,
+      jobTitle: trimmedTitle,
       description: description.trim(),
+      jobDescription: description.trim(),
       customPrompt: customPrompt.trim(),
-      ...(url.trim() ? { url: url.trim() } : {}),
+      interviewerPersona: parsedData?.experienceLevel
+        ? `${parsedData.experienceLevel.charAt(0).toUpperCase() + parsedData.experienceLevel.slice(1)} Interviewer`
+        : 'Technical Interviewer',
+      requirements: parsedData?.requirements || [],
+      responsibilities: parsedData?.responsibilities || [],
+      experienceLevel: parsedData?.experienceLevel,
+      ...(url.trim() ? { url: url.trim(), jobUrl: url.trim() } : {}),
     };
 
     useJobStore.getState().actions.addJob(jobData);

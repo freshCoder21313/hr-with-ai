@@ -27,6 +27,7 @@ import {
   Type as TypeIcon,
   List,
   Printer,
+  Loader2,
   ExternalLink,
   User,
   Briefcase,
@@ -58,6 +59,7 @@ interface CVPreviewPanelProps {
   previewViewMode: 'preview' | 'form' | 'split';
   activeTab: string;
   mainCV: Resume | null;
+  isExporting?: boolean;
   onSetPreviewViewMode: (mode: 'preview' | 'form' | 'split') => void;
   onSetTemplate: (template: TemplateType) => void;
   onSetActiveTab: (tab: string) => void;
@@ -73,6 +75,7 @@ export const CVPreviewPanel: React.FC<CVPreviewPanelProps> = ({
   previewViewMode,
   activeTab,
   mainCV,
+  isExporting = false,
   onSetPreviewViewMode,
   onSetTemplate,
   onSetActiveTab,
@@ -409,10 +412,14 @@ export const CVPreviewPanel: React.FC<CVPreviewPanelProps> = ({
                 size="icon-sm"
                 className="text-primary"
                 onClick={onPrint}
-                disabled={!previewData}
+                disabled={!previewData || isExporting}
                 aria-label="Export PDF"
               >
-                <Printer className="w-4 h-4" aria-hidden="true" />
+                {isExporting ? (
+                  <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
+                ) : (
+                  <Printer className="w-4 h-4" aria-hidden="true" />
+                )}
               </Button>
             </TooltipTrigger>
             <TooltipContent>Export PDF</TooltipContent>

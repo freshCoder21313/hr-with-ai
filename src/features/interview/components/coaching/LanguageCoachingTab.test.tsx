@@ -75,7 +75,8 @@ describe('LanguageCoachingTab component', () => {
         vocabularyUpgrades: [
           {
             casualWord: 'giảm re-render',
-            professionalAlternative: 'tối ưu hóa chu kỳ render và ngăn ngừa redundant re-computations',
+            professionalAlternative:
+              'tối ưu hóa chu kỳ render và ngăn ngừa redundant re-computations',
             reason: 'Sử dụng thuật ngữ kỹ thuật chính xác.',
           },
         ],
@@ -158,9 +159,7 @@ describe('LanguageCoachingTab component', () => {
     fireEvent.click(screen.getByRole('tab', { name: /Grammar & Word Choices/i }));
     expect(screen.getByText(/Grammar & Syntax Adjustments/i)).toBeInTheDocument();
     expect(screen.getByText('kiểu như vậy')).toBeInTheDocument();
-    expect(
-      screen.getByText('nhằm hạn chế tối đa các lần tính toán dư thừa')
-    ).toBeInTheDocument();
+    expect(screen.getByText('nhằm hạn chế tối đa các lần tính toán dư thừa')).toBeInTheDocument();
 
     // Switch to Sub-tab 3: Delivery & Filler Words
     fireEvent.click(screen.getByRole('tab', { name: /Delivery & Filler Words/i }));
@@ -169,26 +168,20 @@ describe('LanguageCoachingTab component', () => {
   });
 
   it('triggers report generation and updates report state when button is clicked', async () => {
-    const { generateCommunicationReport } = await import(
-      '@/services/interview/communicationCoachService'
-    );
+    const { generateCommunicationReport } =
+      await import('@/services/interview/communicationCoachService');
     (generateCommunicationReport as unknown as ReturnType<typeof vi.fn>).mockResolvedValue(
       mockReport
     );
 
     const onReportUpdated = vi.fn();
-    render(
-      <LanguageCoachingTab interview={mockInterview} onReportUpdated={onReportUpdated} />
-    );
+    render(<LanguageCoachingTab interview={mockInterview} onReportUpdated={onReportUpdated} />);
 
     const analyzeBtn = screen.getByText(/Analyze Language & Communication/i);
     fireEvent.click(analyzeBtn);
 
     await waitFor(() => {
-      expect(generateCommunicationReport).toHaveBeenCalledWith(
-        mockInterview,
-        'en-US'
-      );
+      expect(generateCommunicationReport).toHaveBeenCalledWith(mockInterview, 'en-US');
     });
 
     await waitFor(() => {
@@ -197,9 +190,8 @@ describe('LanguageCoachingTab component', () => {
   });
 
   it('shows live validation warning and blocks submit for invalid custom language', async () => {
-    const { generateCommunicationReport } = await import(
-      '@/services/interview/communicationCoachService'
-    );
+    const { generateCommunicationReport } =
+      await import('@/services/interview/communicationCoachService');
     const mockFn = vi.fn();
     (generateCommunicationReport as unknown as ReturnType<typeof vi.fn>).mockImplementation(mockFn);
 
@@ -250,15 +242,12 @@ describe('LanguageCoachingTab component', () => {
     expect(
       screen.getByText(/Không nhận diện được ngôn ngữ: “AlienDialect99”/i)
     ).toBeInTheDocument();
-    expect(
-      screen.getByText(/Không thể nhận diện ngôn ngữ AlienDialect99/i)
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Không thể nhận diện ngôn ngữ AlienDialect99/i)).toBeInTheDocument();
   });
 
   it('displays incremental circular progress ring with stage text during generation', async () => {
-    const { generateCommunicationReport } = await import(
-      '@/services/interview/communicationCoachService'
-    );
+    const { generateCommunicationReport } =
+      await import('@/services/interview/communicationCoachService');
     let resolveGen: (value: CommunicationCoachingReport) => void;
     const promise = new Promise<CommunicationCoachingReport>((resolve) => {
       resolveGen = resolve;
@@ -313,5 +302,43 @@ describe('LanguageCoachingTab component', () => {
       expect(screen.getByText('8.5')).toBeInTheDocument();
     });
   });
-});
 
+  it('cleans up progress interval and prevents updates if unmounted during generation', async () => {
+    const { generateCommunicationReport } =
+      await import('@/services/interview/communicationCoachService');
+    const clearIntervalSpy = vi.spyOn(window, 'clearInterval');
+
+    let resolveGen: (value: CommunicationCoachingReport) => void;
+    const pendingPromise = new Promise<CommunicationCoachingReport>((resolve) => {
+      resolveGen = resolve;
+    });
+    (generateCommunicationReport as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
+      pendingPromise
+    );
+
+    const onReportUpdated = vi.fn();
+    const { unmount } = render(
+      <LanguageCoachingTab interview={mockInterview} onReportUpdated={onReportUpdated} />
+    );
+
+    fireEvent.click(screen.getByText(/Analyze Language & Communication/i));
+
+    // Component is generating
+    expect(screen.getByText(/Đang phân tích phản hồi & ngôn ngữ.../i)).toBeInTheDocument();
+
+    // Now unmount before completion
+    unmount();
+
+    // Verify clearInterval was called upon unmount
+    expect(clearIntervalSpy).toHaveBeenCalled();
+
+    // Resolve the promise after unmount
+    resolveGen!(mockReport);
+
+    // Wait a tick to ensure no late state update throws or fires callback
+    await new Promise((r) => setTimeout(r, 50));
+    expect(onReportUpdated).not.toHaveBeenCalled();
+
+    clearIntervalSpy.mockRestore();
+  });
+});

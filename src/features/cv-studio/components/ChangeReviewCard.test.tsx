@@ -136,4 +136,3 @@ describe('ChangeReviewCard while a change is being persisted', () => {
     expect(screen.getByText(/This section will be removed from your resume/i)).toBeInTheDocument();
   });
 });
-
