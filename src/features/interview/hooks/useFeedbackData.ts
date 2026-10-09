@@ -57,7 +57,14 @@ export function useFeedbackData(id: string | undefined) {
       }
       try {
         const aiConfig = getStoredAIConfig();
-        const newFeedback = await generateInterviewFeedback(data, aiConfig);
+        const settings = await db.userSettings.orderBy('id').first();
+        const deepAudit =
+          data.deepEvaluationAuditEnabled ?? settings?.deepEvaluationAuditEnabled ?? false;
+        const newFeedback = await generateInterviewFeedback(
+          { ...data, deepEvaluationAuditEnabled: deepAudit },
+          aiConfig,
+          { deepAudit }
+        );
         await db.interviews.update(parseInt(id, 10), { feedback: newFeedback });
         setFeedback(newFeedback);
         setError(null);

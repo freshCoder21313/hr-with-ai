@@ -53,6 +53,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
     hintsEnabled: false,
     autoFinishEnabled: false,
     forceToolsEnabled: false,
+    dynamicScenariosEnabled: false,
     apiKey: '',
     baseUrl: '',
     modelId: '',
@@ -203,6 +204,42 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                       id="forcetools-mode"
                       checked={settings.forceToolsEnabled === true}
                       onCheckedChange={(c) => setSettings((s) => ({ ...s, forceToolsEnabled: c }))}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between space-x-2">
+                    <div className="flex flex-col space-y-1">
+                      <Label htmlFor="dynamic-scenarios-mode" className="font-medium text-sm">
+                        Dynamic Scenarios
+                      </Label>
+                      <span className="text-[11px] text-muted-foreground">
+                        Allow AI to introduce realistic workplace challenges or requirement changes to test adaptability.
+                      </span>
+                    </div>
+                    <Switch
+                      id="dynamic-scenarios-mode"
+                      checked={settings.dynamicScenariosEnabled === true}
+                      onCheckedChange={(c) =>
+                        setSettings((s) => ({ ...s, dynamicScenariosEnabled: c }))
+                      }
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between space-x-2">
+                    <div className="flex flex-col space-y-1">
+                      <Label htmlFor="deep-audit-mode" className="font-medium text-sm">
+                        Deep Evaluation Audit (2-pass Review)
+                      </Label>
+                      <span className="text-[11px] text-muted-foreground">
+                        Use a secondary Reviewer Agent to audit final evaluation: eliminate phantom penalties, ensure score consistency, and respect candidate project authority.
+                      </span>
+                    </div>
+                    <Switch
+                      id="deep-audit-mode"
+                      checked={settings.deepEvaluationAuditEnabled === true}
+                      onCheckedChange={(c) =>
+                        setSettings((s) => ({ ...s, deepEvaluationAuditEnabled: c }))
+                      }
                     />
                   </div>
 

@@ -7,15 +7,15 @@ describe('CircularProgressRing', () => {
     render(
       <CircularProgressRing
         progress={45}
-        title="Đang phân tích phản hồi"
-        subtitle="Vui lòng chờ trong giây lát"
+        title="Analyzing responses"
+        subtitle="Please wait a moment"
       />
     );
 
     expect(screen.getByText('45')).toBeInTheDocument();
     expect(screen.getByText('%')).toBeInTheDocument();
-    expect(screen.getByText('Đang phân tích phản hồi')).toBeInTheDocument();
-    expect(screen.getByText('Vui lòng chờ trong giây lát')).toBeInTheDocument();
+    expect(screen.getByText('Analyzing responses')).toBeInTheDocument();
+    expect(screen.getByText('Please wait a moment')).toBeInTheDocument();
   });
 
   it('clamps progress between 0 and 100', () => {

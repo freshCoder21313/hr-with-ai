@@ -3,6 +3,7 @@ import {
   getSystemPrompt,
   getStartPrompt,
   getFeedbackPrompt,
+  getFeedbackAuditPrompt,
   getHintPrompt,
 } from '@/services/prompts';
 import { ChatMessage } from '@/types';
@@ -94,7 +95,9 @@ export async function* streamInterviewMessage(
     let systemPrompt = getSystemPrompt(
       interviewContext,
       autoFinishEnabled || false,
-      forceToolsEnabled || false
+      forceToolsEnabled || false,
+      undefined,
+      interviewContext.dynamicScenariosEnabled
     );
     if (codeContext) {
       systemPrompt += `\n\n${codeContext}\n\n`;
@@ -163,25 +166,42 @@ export async function* streamInterviewMessage(
   }
 }
 
-export const generateInterviewFeedback = async (
+export const auditInterviewFeedback = async (
   interview: Interview,
-  configInput: AIConfigInput
+  draftFeedback: InterviewFeedback,
+  configInput: AIConfigInput,
+  conversationHistory?: string,
+  codeContext?: string
 ): Promise<InterviewFeedback> => {
   const service = await getService(configInput);
 
-  const conversationHistory = normalizeAIHistory(interview.messages)
-    .map((m) => `${m.role === 'user' ? 'Candidate' : 'Interviewer'}: ${m.content}`)
-    .join('\n');
+  const history =
+    conversationHistory ??
+    normalizeAIHistory(interview.messages)
+      .map((m) => `${m.role === 'user' ? 'Candidate' : 'Interviewer'}: ${m.content}`)
+      .join('\n');
 
-  let codeContext = '';
-  if (interview.code) {
-    codeContext = `
-      Code written by candidate:
+  let codeInfo = codeContext;
+  if (!codeInfo) {
+    const DEFAULT_CODE_PLACEHOLDER = '// Write your solution here...';
+    const hasUserCode =
+      typeof interview.code === 'string' &&
+      interview.code.trim().length > 0 &&
+      interview.code.trim() !== DEFAULT_CODE_PLACEHOLDER.trim();
+
+    codeInfo = hasUserCode
+      ? `
+      CODE SUBMITTED BY CANDIDATE IN EDITOR:
+      \`\`\`
       ${interview.code}
-      `;
+      \`\`\`
+    `
+      : `
+      CODE SUBMISSION: None. No code editor challenge was assigned or submitted in this session. Do NOT evaluate, mention, or penalize for missing code.
+    `;
   }
 
-  const prompt = getFeedbackPrompt(interview, conversationHistory, codeContext);
+  const prompt = getFeedbackAuditPrompt(interview, history, codeInfo, draftFeedback);
 
   try {
     return await service.generateStructured(
@@ -189,9 +209,72 @@ export const generateInterviewFeedback = async (
       interviewFeedbackSchemaExtended
     );
   } catch (error) {
+    logger.error('Error auditing feedback:', error);
+    throw error;
+  }
+};
+
+export const generateInterviewFeedback = async (
+  interview: Interview,
+  configInput: AIConfigInput,
+  options?: { deepAudit?: boolean }
+): Promise<InterviewFeedback> => {
+  const service = await getService(configInput);
+
+  const conversationHistory = normalizeAIHistory(interview.messages)
+    .map((m) => `${m.role === 'user' ? 'Candidate' : 'Interviewer'}: ${m.content}`)
+    .join('\n');
+
+  const DEFAULT_CODE_PLACEHOLDER = '// Write your solution here...';
+  const hasUserCode =
+    typeof interview.code === 'string' &&
+    interview.code.trim().length > 0 &&
+    interview.code.trim() !== DEFAULT_CODE_PLACEHOLDER.trim();
+
+  let codeContext = '';
+  if (hasUserCode) {
+    codeContext = `
+      CODE SUBMITTED BY CANDIDATE IN EDITOR:
+      \`\`\`
+      ${interview.code}
+      \`\`\`
+    `;
+  } else {
+    codeContext = `
+      CODE SUBMISSION: None. No code editor challenge was assigned or submitted in this session. Do NOT evaluate, mention, or penalize for missing code.
+    `;
+  }
+
+  const prompt = getFeedbackPrompt(interview, conversationHistory, codeContext);
+
+  let draftFeedback: InterviewFeedback;
+  try {
+    draftFeedback = await service.generateStructured(
+      [{ role: 'user', content: prompt }],
+      interviewFeedbackSchemaExtended
+    );
+  } catch (error) {
     logger.error('Error generating feedback:', error);
     throw error;
   }
+
+  const shouldAudit = options?.deepAudit ?? interview.deepEvaluationAuditEnabled ?? false;
+  if (shouldAudit) {
+    try {
+      return await auditInterviewFeedback(
+        interview,
+        draftFeedback,
+        configInput,
+        conversationHistory,
+        codeContext
+      );
+    } catch (auditError) {
+      logger.warn('Deep evaluation audit failed, falling back to draft feedback:', auditError);
+      return draftFeedback;
+    }
+  }
+
+  return draftFeedback;
 };
 
 export interface InterviewHints {

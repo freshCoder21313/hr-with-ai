@@ -88,6 +88,8 @@ export interface Interview {
   resumeId?: number; // ID of the resume used for this interview
   tailoredResume?: string; // Generated tailored resume text
   isPanel?: boolean; // True if it's a panel interview with multiple personas
+  dynamicScenariosEnabled?: boolean; // Whether unexpected workplace scenarios can trigger
+  deepEvaluationAuditEnabled?: boolean; // Whether 2-pass feedback review/audit agent is enabled
   executedScenarioIds?: string[]; // IDs of hidden scenarios triggered during this session
 }
 

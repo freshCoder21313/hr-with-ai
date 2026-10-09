@@ -143,6 +143,35 @@ describe('interviewAIService', () => {
       expect(callArgs?.systemInstruction).toContain('HIDDEN SCENARIO');
     });
 
+    it('should inject ADAPTIVE WORKPLACE CHALLENGE PROTOCOL when dynamicScenariosEnabled is true', async () => {
+      vi.mocked(resolveConfig).mockReturnValue({
+        apiKey: 'test-key',
+        provider: 'openai',
+        baseUrl: 'https://api.openai.com',
+      });
+      const mockStream = (async function* () {
+        yield 'Chunk';
+      })();
+      vi.mocked(mockAIServiceInstance.streamText).mockReturnValue(mockStream as any);
+
+      const dynamicInterview: Interview = {
+        ...mockInterview,
+        dynamicScenariosEnabled: true,
+      };
+
+      const generator = streamInterviewMessage(
+        [],
+        'Hello',
+        dynamicInterview,
+        'test-key'
+      );
+
+      await generator.next();
+
+      const callArgs = vi.mocked(mockAIServiceInstance.streamText).mock.calls[0][1];
+      expect(callArgs?.systemInstruction).toContain('ADAPTIVE WORKPLACE CHALLENGE PROTOCOL');
+    });
+
     it('should throw error on failure', async () => {
       vi.mocked(mockAIServiceInstance.streamText).mockImplementation(() => {
         throw new Error('Stream Error');
@@ -155,7 +184,7 @@ describe('interviewAIService', () => {
   });
 
   describe('generateInterviewFeedback', () => {
-    it('should generate structured feedback', async () => {
+    it('should generate structured feedback with submitted code', async () => {
       const mockFeedback = { score: 90, summary: 'Excellent' };
       vi.mocked(mockAIServiceInstance.generateStructured).mockResolvedValue(mockFeedback);
 
@@ -164,6 +193,66 @@ describe('interviewAIService', () => {
 
       expect(feedback).toEqual(mockFeedback);
       expect(mockAIServiceInstance.generateStructured).toHaveBeenCalled();
+      const prompt = vi.mocked(mockAIServiceInstance.generateStructured).mock.calls[0][0][0].content;
+      expect(prompt).toContain('CODE SUBMITTED BY CANDIDATE IN EDITOR');
+      expect(prompt).toContain('console.log("test")');
+    });
+
+    it('should ignore default code placeholder and instruct evaluator not to penalize', async () => {
+      const mockFeedback = { score: 85, summary: 'Good' };
+      vi.mocked(mockAIServiceInstance.generateStructured).mockResolvedValue(mockFeedback);
+
+      const interviewWithPlaceholder = {
+        ...mockInterview,
+        code: '// Write your solution here...',
+      };
+      await generateInterviewFeedback(interviewWithPlaceholder, 'test-key');
+
+      const prompt = vi.mocked(mockAIServiceInstance.generateStructured).mock.calls[0][0][0].content;
+      expect(prompt).toContain('CODE SUBMISSION: None');
+      expect(prompt).toContain('Do NOT evaluate, mention, or penalize for missing code');
+      expect(prompt).not.toContain('CODE SUBMITTED BY CANDIDATE IN EDITOR');
+    });
+
+    it('should perform 2-pass review when deepEvaluationAuditEnabled is true', async () => {
+      const draftFeedback = { score: 6.0, summary: 'Draft feedback' };
+      const auditedFeedback = { score: 8.0, summary: 'Audited and calibrated feedback' };
+
+      vi.mocked(mockAIServiceInstance.generateStructured)
+        .mockResolvedValueOnce(draftFeedback)
+        .mockResolvedValueOnce(auditedFeedback);
+
+      const interviewWithAudit = {
+        ...mockInterview,
+        deepEvaluationAuditEnabled: true,
+      };
+
+      const result = await generateInterviewFeedback(interviewWithAudit, 'test-key');
+
+      expect(result).toEqual(auditedFeedback);
+      expect(mockAIServiceInstance.generateStructured).toHaveBeenCalledTimes(2);
+
+      const auditPrompt = vi.mocked(mockAIServiceInstance.generateStructured).mock.calls[1][0][0].content;
+      expect(auditPrompt).toContain('Executive Interview Evaluation Auditor');
+      expect(auditPrompt).toContain('"Draft feedback"');
+    });
+
+    it('should fall back gracefully to draft feedback if audit step fails', async () => {
+      const draftFeedback = { score: 7.0, summary: 'Draft feedback' };
+
+      vi.mocked(mockAIServiceInstance.generateStructured)
+        .mockResolvedValueOnce(draftFeedback)
+        .mockRejectedValueOnce(new Error('Audit provider timeout'));
+
+      const interviewWithAudit = {
+        ...mockInterview,
+        deepEvaluationAuditEnabled: true,
+      };
+
+      const result = await generateInterviewFeedback(interviewWithAudit, 'test-key');
+
+      expect(result).toEqual(draftFeedback);
+      expect(mockAIServiceInstance.generateStructured).toHaveBeenCalledTimes(2);
     });
   });
 

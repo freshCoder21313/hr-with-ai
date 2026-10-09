@@ -10,7 +10,6 @@ import {
 import { getStoredAIConfig } from '@/services/ai/aiConfigService';
 import { db } from '@/lib/db';
 import { InterviewStatus, SetupFormData, Interview, Message } from '@/types';
-import { getActiveScenarioEvent } from '@/features/interview/scenarios';
 import { openApiKeyModal } from '@/events/apiKeyEvents';
 import { isNonEmptyString, validateInterviewSetup } from '@/lib/validation';
 import { createStreamPersistence } from '@/features/interview/hooks/interviewStreamPersistence';
@@ -113,6 +112,9 @@ export const useInterview = () => {
 
         // 1. Get first message from AI
         const settings = await db.userSettings.orderBy('id').first();
+        newInterview.dynamicScenariosEnabled = settings?.dynamicScenariosEnabled ?? false;
+        newInterview.deepEvaluationAuditEnabled = settings?.deepEvaluationAuditEnabled ?? false;
+
         const firstMessageContent = await startInterviewSession(
           newInterview,
           config,
@@ -159,7 +161,16 @@ export const useInterview = () => {
       updateStatus(InterviewStatus.COMPLETED);
 
       const config = getStoredAIConfig();
-      const feedback = await generateInterviewFeedback(currentInterview, config);
+      const settings = await db.userSettings.orderBy('id').first();
+      const deepAudit =
+        currentInterview.deepEvaluationAuditEnabled ??
+        settings?.deepEvaluationAuditEnabled ??
+        false;
+      const feedback = await generateInterviewFeedback(
+        { ...currentInterview, deepEvaluationAuditEnabled: deepAudit },
+        config,
+        { deepAudit }
+      );
 
       // Update DB with feedback and status
       await db.interviews.update(currentInterview.id, {
@@ -234,37 +245,21 @@ export const useInterview = () => {
         // Get Auto-Finish Setting
         let autoFinish = false;
         let forceTools = false;
+        let dynamicScenarios = false;
         try {
           const settings = await db.userSettings.orderBy('id').first();
           if (settings?.autoFinishEnabled) autoFinish = true;
           if (settings?.forceToolsEnabled) forceTools = true;
+          if (settings?.dynamicScenariosEnabled) dynamicScenarios = true;
         } catch {
           // Settings load failed, using defaults
         }
 
-        // --- HIDDEN SCENARIO CHECK ---
-        let systemInjection: string | null = null;
-        if (latestInterview.companyStatus) {
-          const turnCount = Math.floor(latestInterview.messages.length / 2);
-          const scenarioEvent = getActiveScenarioEvent(
-            latestInterview.companyStatus,
-            turnCount,
-            latestInterview.executedScenarioIds || []
-          );
-          if (scenarioEvent) {
-            systemInjection = scenarioEvent.systemInjection;
-            const updatedExecuted = [
-              ...(latestInterview.executedScenarioIds || []),
-              scenarioEvent.id,
-            ];
-            latestInterview.executedScenarioIds = updatedExecuted;
-            if (latestInterview.id) {
-              db.interviews
-                .update(latestInterview.id, { executedScenarioIds: updatedExecuted })
-                .catch((err) => logger.error('Failed to persist executed scenario:', err));
-            }
-          }
-        }
+        latestInterview.dynamicScenariosEnabled = dynamicScenarios;
+
+        // Dynamic scenarios are orchestrated adaptively by the AI model via the
+        // ADAPTIVE WORKPLACE CHALLENGE PROTOCOL in getSystemPrompt when enabled.
+        const systemInjection: string | null = null;
 
         // The provider opens the stream under a 30s AbortController but clears
         // it once headers arrive, so a connection that opens and then stalls

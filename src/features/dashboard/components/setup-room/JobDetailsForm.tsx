@@ -410,7 +410,7 @@ export const JobDetailsForm: React.FC<JobDetailsFormProps> = ({
                 onChange={onChange}
               >
                 <option value="en-US">English (US)</option>
-                <option value="vi-VN">Tiếng Việt</option>
+                <option value="vi-VN">Vietnamese</option>
               </NativeSelect>
             </div>
             <div className="space-y-2 md:space-y-3">

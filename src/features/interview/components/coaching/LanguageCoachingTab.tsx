@@ -45,7 +45,7 @@ export const LanguageCoachingTab: React.FC<LanguageCoachingTabProps> = ({
   const [isCustomMode, setIsCustomMode] = useState<boolean>(false);
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [progress, setProgress] = useState<number>(0);
-  const [stageText, setStageText] = useState<string>('Bắt đầu phân tích...');
+  const [stageText, setStageText] = useState<string>('Starting analysis...');
   const [coachingSubTab, setCoachingSubTab] = useState<'bilingual' | 'grammar' | 'fluency'>(
     'bilingual'
   );
@@ -92,13 +92,13 @@ export const LanguageCoachingTab: React.FC<LanguageCoachingTabProps> = ({
 
   const handleGenerate = async () => {
     if (!targetInspection.isValid) {
-      toast.error(targetInspection.warningMessage || 'Vui lòng nhập tên ngôn ngữ đích hợp lệ.');
+      toast.error(targetInspection.warningMessage || 'Please enter a valid target language.');
       return;
     }
 
     setIsGenerating(true);
     setProgress(12);
-    setStageText('Đang trích xuất đối thoại & câu trả lời phỏng vấn...');
+    setStageText('Extracting transcript & interview responses...');
 
     // Incremental progress simulation with meaningful milestones
     if (progressIntervalRef.current) {
@@ -108,18 +108,18 @@ export const LanguageCoachingTab: React.FC<LanguageCoachingTabProps> = ({
       if (!isMountedRef.current) return;
       setProgress((prev) => {
         if (prev < 32) {
-          setStageText('Đang trích xuất đối thoại & câu trả lời phỏng vấn...');
+          setStageText('Extracting transcript & interview responses...');
           return prev + 6;
         } else if (prev < 58) {
-          setStageText('Đang phát hiện từ đệm & đo lường nhịp điệu phát biểu...');
+          setStageText('Detecting filler words & measuring speech pacing...');
           return prev + 4;
         } else if (prev < 82) {
           setStageText(
-            `Đang chuyển đổi câu trả lời theo chuẩn STAR & nâng cấp từ vựng (${activeTargetLanguage})...`
+            `Transforming answers to STAR format & upgrading vocabulary (${activeTargetLanguage})...`
           );
           return prev + 3;
         } else if (prev < 94) {
-          setStageText('Đang tổng hợp báo cáo ngôn ngữ & hoàn thiện đánh giá...');
+          setStageText('Synthesizing language report & finalizing evaluation...');
           return prev + 1;
         }
         return prev;
@@ -134,7 +134,7 @@ export const LanguageCoachingTab: React.FC<LanguageCoachingTabProps> = ({
       }
       if (!isMountedRef.current) return;
       setProgress(100);
-      setStageText('Hoàn tất phân tích!');
+      setStageText('Analysis complete!');
       // Brief smooth transition before displaying report
       await new Promise((resolve) => setTimeout(resolve, 300));
       if (!isMountedRef.current) return;
@@ -323,7 +323,7 @@ export const LanguageCoachingTab: React.FC<LanguageCoachingTabProps> = ({
           progress={progress}
           size={148}
           strokeWidth={10}
-          title="Đang phân tích phản hồi & ngôn ngữ..."
+          title="Analyzing responses & language..."
           subtitle={stageText}
           badge={
             <Badge
@@ -331,7 +331,7 @@ export const LanguageCoachingTab: React.FC<LanguageCoachingTabProps> = ({
               className="gap-1.5 px-3 py-1 text-xs border-primary/30 text-primary bg-primary/5 mb-1"
             >
               <Sparkles className="w-3.5 h-3.5 animate-pulse" />
-              Ngôn ngữ thực hành: {activeTargetLanguage}
+              Target Practice: {activeTargetLanguage}
             </Badge>
           }
         />
@@ -349,12 +349,12 @@ export const LanguageCoachingTab: React.FC<LanguageCoachingTabProps> = ({
             <AlertTriangle className="w-5 h-5 text-warning shrink-0 mt-0.5" />
             <div className="space-y-1.5 flex-1">
               <h4 className="text-sm font-bold text-warning flex items-center gap-2">
-                Không nhận diện được ngôn ngữ: &ldquo;{report.requestedLanguage || 'Tùy chỉnh'}
+                Unrecognized Language: &ldquo;{report.requestedLanguage || 'Custom'}
                 &rdquo;
               </h4>
               <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
                 {report.unrecognizedLanguageMessage ||
-                  'Ngôn ngữ bạn yêu cầu không nằm trong các ngôn ngữ tự nhiên hợp lệ. Hệ thống đã tự động chuyển đổi sang Tiếng Anh (English - US / International) làm ngôn ngữ thực hành thay thế.'}
+                  'The requested language is not recognized as a valid natural language. The system has automatically fallen back to English (US / International) as the practice language.'}
               </p>
               <div className="pt-1">
                 <Button
@@ -364,7 +364,7 @@ export const LanguageCoachingTab: React.FC<LanguageCoachingTabProps> = ({
                   className="gap-1.5 text-xs h-8 border-warning/40 hover:bg-warning/20 text-warning"
                 >
                   <RefreshCw className="w-3.5 h-3.5" />
-                  Chọn lại ngôn ngữ khác
+                  Select Different Language
                 </Button>
               </div>
             </div>

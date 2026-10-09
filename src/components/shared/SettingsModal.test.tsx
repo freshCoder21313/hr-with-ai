@@ -40,6 +40,8 @@ describe('SettingsModal', () => {
 
     expect(screen.getByText('AI Auto-Finish')).toBeDefined();
     expect(screen.getByText('Force AI Tools (Code/Draw)')).toBeDefined();
+    expect(screen.getByText('Dynamic Scenarios')).toBeDefined();
+    expect(screen.getByText('Deep Evaluation Audit (2-pass Review)')).toBeDefined();
 
     fireEvent.click(screen.getByText(/Retry Settings/));
 

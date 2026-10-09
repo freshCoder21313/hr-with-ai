@@ -1,5 +1,6 @@
 export { getSystemPrompt, getStartPrompt, getHintPrompt } from './interview';
 export { getFeedbackPrompt } from './feedback';
+export { getFeedbackAuditPrompt } from './feedbackAudit';
 export {
   getParseResumePrompt,
   getResumeAnalysisPrompt,

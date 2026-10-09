@@ -204,7 +204,7 @@ describe('LanguageCoachingTab component', () => {
     // Enter purely numbers
     fireEvent.change(input, { target: { value: '123456' } });
 
-    expect(screen.getByText(/Tên ngôn ngữ không hợp lệ/i)).toBeInTheDocument();
+    expect(screen.getByText(/Invalid language name/i)).toBeInTheDocument();
 
     // Click Analyze
     const analyzeBtn = screen.getByText(/Analyze Language & Communication/i);
@@ -219,7 +219,7 @@ describe('LanguageCoachingTab component', () => {
       ...mockReport,
       isTargetLanguageRecognized: false,
       requestedLanguage: 'AlienDialect99',
-      unrecognizedLanguageMessage: 'Không thể nhận diện ngôn ngữ AlienDialect99.',
+      unrecognizedLanguageMessage: 'Unable to recognize language AlienDialect99.',
     };
 
     const interviewWithUnrecognizedReport = {
@@ -240,9 +240,9 @@ describe('LanguageCoachingTab component', () => {
     render(<LanguageCoachingTab interview={interviewWithUnrecognizedReport} />);
 
     expect(
-      screen.getByText(/Không nhận diện được ngôn ngữ: “AlienDialect99”/i)
+      screen.getByText(/Unrecognized Language: “AlienDialect99”/i)
     ).toBeInTheDocument();
-    expect(screen.getByText(/Không thể nhận diện ngôn ngữ AlienDialect99/i)).toBeInTheDocument();
+    expect(screen.getByText(/Unable to recognize language AlienDialect99/i)).toBeInTheDocument();
   });
 
   it('displays incremental circular progress ring with stage text during generation', async () => {
@@ -260,11 +260,11 @@ describe('LanguageCoachingTab component', () => {
     fireEvent.click(screen.getByText(/Analyze Language & Communication/i));
 
     // Progress loading ring should be visible
-    expect(screen.getByText(/Đang phân tích phản hồi & ngôn ngữ.../i)).toBeInTheDocument();
+    expect(screen.getByText(/Analyzing responses & language.../i)).toBeInTheDocument();
     expect(
-      screen.getByText(/Đang trích xuất đối thoại & câu trả lời phỏng vấn.../i)
+      screen.getByText(/Extracting transcript & interview responses.../i)
     ).toBeInTheDocument();
-    expect(screen.getByText(/Ngôn ngữ thực hành: en-US/i)).toBeInTheDocument();
+    expect(screen.getByText(/Target Practice: en-US/i)).toBeInTheDocument();
 
     // Resolve generation
     resolveGen!(mockReport);
@@ -324,7 +324,7 @@ describe('LanguageCoachingTab component', () => {
     fireEvent.click(screen.getByText(/Analyze Language & Communication/i));
 
     // Component is generating
-    expect(screen.getByText(/Đang phân tích phản hồi & ngôn ngữ.../i)).toBeInTheDocument();
+    expect(screen.getByText(/Analyzing responses & language.../i)).toBeInTheDocument();
 
     // Now unmount before completion
     unmount();

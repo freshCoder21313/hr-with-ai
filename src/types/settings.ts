@@ -23,6 +23,8 @@ export interface UserSettings {
   hintsEnabled?: boolean;
   autoFinishEnabled?: boolean;
   forceToolsEnabled?: boolean;
+  dynamicScenariosEnabled?: boolean;
+  deepEvaluationAuditEnabled?: boolean;
   baseUrl?: string;
   modelId?: string;
   provider?: AIModelProvider;

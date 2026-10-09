@@ -13,32 +13,21 @@ export const HIDDEN_SCENARIOS: ScenarioEvent[] = [
   {
     id: 'startup_pivot',
     triggerKeywords: ['startup', 'urgent', 'gấp', 'nhanh', 'fast', 'growth'],
-    minTurn: 3,
-    chance: 0.3,
+    minTurn: 4,
+    chance: 0.25,
     systemInjection: `
 [HIDDEN SCENARIO: SUDDEN PIVOT — Testing adaptability]
 
-Introduce a sudden change in direction that feels like a REAL thing happening at the company — NOT a quiz or simulation. Never say "let's simulate", "hypothetically", or "this is a test". It should feel like you're casually sharing real company context.
+Introduce a realistic workplace priority shift at the target company.
+CRITICAL RULES:
+1. EXCLUSIVE TURN (NO DOUBLE QUESTIONS): This turn must contain EXACTLY ONE question/challenge. DO NOT ask a follow-up question on their previous point AND introduce this pivot in the same turn.
+2. CONTEXTUAL ANCHORING: If the candidate was speaking about their past CV history or a personal pet project, DO NOT invent a founder overriding their personal project. The pivot must apply strictly to the target role and company challenges.
+3. NO CLICHÉ BRIDGES: NEVER say "À, mà nhân tiện...", "Speaking of which...". Acknowledge their point in one brief sentence, then present the constraint naturally.
 
 HOW TO EXECUTE:
-1. Listen to whatever tech stack, architecture, or approach the candidate just mentioned.
-2. Organically drop a pivot that contradicts or complicates what they just proposed. Pick ONE angle (or invent your own based on the conversation):
-
-   - PLATFORM SHIFT: "Oh actually — I should mention, there's been talk about expanding to [mobile / desktop / embedded]. If we went that direction, how would what you just described hold up?"
-   - SCALE SHOCK: "One thing I forgot to mention — we're expecting a 10x traffic spike in [Q2 / after a partnership / due to a viral campaign]. Does your approach still work at that scale?"
-   - TECH SWAP: "Funny you mention [X], because the team has been debating moving away from it to [Y]. What's your take — would you fight for [X] or embrace the switch?"
-   - REQUIREMENT FLIP: "So the founder actually just changed their mind last week on this exact feature. The whole direction is different now. How do you usually handle that kind of whiplash?"
-   - BUDGET CUT: "What if I told you we just lost our [cloud credits / contractor budget / third-party service] — how would you rebuild this on a shoestring?"
-
-3. DO NOT stick to the examples above if the conversation naturally suggests something better. The key is: it must connect to what the candidate JUST said.
-
-4. After their response, follow up naturally — ask about trade-offs, how they'd communicate the change to teammates, or what they'd sacrifice first.
-
-WHAT YOU'RE SECRETLY EVALUATING:
-- Do they panic or stay composed when plans are disrupted?
-- Is their thinking structured (prioritize → evaluate → decide) or scattered?
-- Do they consider human factors (team morale, communication, stakeholder buy-in)?
-- Can they think on their feet or do they freeze?
+- Listen to the technical architecture or workflow they just proposed for this role.
+- Introduce ONE realistic curveball (e.g., unexpected 10x traffic spike, client requirement change, or mobile expansion).
+- Ask how their proposed approach adapts to this new constraint.
     `,
   },
   {
@@ -50,6 +39,10 @@ WHAT YOU'RE SECRETLY EVALUATING:
 [HIDDEN SCENARIO: PRODUCTION INCIDENT — Testing crisis response]
 
 Create a production emergency scenario. Frame it as a REAL story from the company — something that happened recently, or something you're worried could happen. Never frame it as a test.
+CRITICAL RULES:
+1. EXCLUSIVE TURN (NO DOUBLE QUESTIONS): Ask ONLY ONE question. Do not combine with a follow-up on their previous point.
+2. CONTEXTUAL ANCHORING: The incident must be grounded strictly in the target company (${'${interview.company}'}) and the technology they proposed. Never disrupt personal background stories.
+3. NO CLICHÉ BRIDGES: NEVER use "À mà nhân tiện...", "Speaking of which...". Present the incident with professional urgency.
 
 HOW TO EXECUTE:
 1. Tie the incident to whatever technology or architecture the candidate has been discussing. Pick ONE framing (or create your own):
@@ -83,12 +76,16 @@ WHAT YOU'RE SECRETLY EVALUATING:
   {
     id: 'corp_bureaucracy',
     triggerKeywords: ['corporation', 'big', 'standard', 'lớn', 'ổn định', 'stable'],
-    minTurn: 3,
-    chance: 0.3,
+    minTurn: 4,
+    chance: 0.25,
     systemInjection: `
 [HIDDEN SCENARIO: COMPLIANCE / PROCESS BLOCKER — Testing ability to work within constraints]
 
-Introduce a organizational constraint that blocks or complicates the candidate's proposed solution. Present it as a normal reality of the company — not as a trick question.
+Introduce an organizational constraint that blocks or complicates the candidate's proposed solution.
+CRITICAL RULES:
+1. EXCLUSIVE TURN (NO DOUBLE QUESTIONS): Ask ONLY ONE question. Do not combine with a follow-up on their previous point.
+2. CONTEXTUAL ANCHORING: The constraint must belong to the target company (${'${interview.company}'}), never disrupting personal background stories.
+3. NO CLICHÉ BRIDGES: NEVER use "À mà nhân tiện...", "Speaking of which...". Present the company reality naturally.
 
 HOW TO EXECUTE:
 1. Wait for the candidate to propose a technical solution, then introduce a friction. Pick ONE angle (or invent your own):
@@ -124,6 +121,10 @@ WHAT YOU'RE SECRETLY EVALUATING:
 [HIDDEN SCENARIO: STAKEHOLDER CONFLICT — Testing negotiation and communication]
 
 Roleplay a disagreement with a stakeholder. You'll temporarily play a character (PM, Tech Lead, or business stakeholder) who pushes back against the candidate's technical position.
+CRITICAL RULES:
+1. EXCLUSIVE TURN (NO DOUBLE QUESTIONS): Ask ONLY ONE question. Do not combine with a follow-up on their previous point.
+2. CONTEXTUAL ANCHORING: The conflict must belong to the target company (${'${interview.company}'}) and role. Never disrupt personal background stories.
+3. NO CLICHÉ BRIDGES: NEVER use "À mà nhân tiện...", "Speaking of which...". Present the company reality naturally.
 
 HOW TO EXECUTE:
 1. Transition naturally from the current topic. Pick ONE conflict type (or create your own):
@@ -195,12 +196,16 @@ WHAT YOU'RE SECRETLY EVALUATING:
   {
     id: 'general_depth_probe',
     triggerKeywords: [],
-    minTurn: 3,
+    minTurn: 4,
     chance: 0.15,
     systemInjection: `
 [HIDDEN SCENARIO: DEPTH PROBE — Testing real understanding vs buzzword knowledge]
 
 The candidate just mentioned a technology, pattern, or concept. Dig DEEP into that exact thing to see if they truly understand it or are just name-dropping.
+CRITICAL RULES:
+1. EXCLUSIVE TURN (NO DOUBLE QUESTIONS): Ask ONLY ONE question. Do not combine with a follow-up on their previous point.
+2. CONTEXTUAL ANCHORING: Dig into the technology they proposed for the target company (${'${interview.company}'}) without interrupting personal background stories.
+3. NO CLICHÉ BRIDGES: NEVER use "À mà nhân tiện...", "Speaking of which...". Probe naturally as a curious senior engineer.
 
 HOW TO EXECUTE:
 1. Pick the thing they seemed MOST confident about — that's where the gap between real knowledge and surface knowledge shows most clearly.
@@ -309,6 +314,12 @@ export const getActiveScenarioEvent = (
   executedScenarioIds: string[] = []
 ): ScenarioEvent | null => {
   if (!companyStatus || typeof companyStatus !== 'string') return null;
+
+  // Max 1 scenario per entire interview session
+  if (executedScenarioIds.length > 0) return null;
+
+  // Only allow after initial warm-up phase (turn 4+)
+  if (currentTurn < 4) return null;
 
   const normalizedStatus = companyStatus.toLowerCase();
   const executedSet = new Set(executedScenarioIds);

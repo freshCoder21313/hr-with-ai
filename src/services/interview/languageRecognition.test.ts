@@ -16,17 +16,17 @@ describe('languageRecognition', () => {
     it('returns invalid for numbers and symbols without any letters', () => {
       const numbers = inspectTargetLanguage('123456');
       expect(numbers.isValid).toBe(false);
-      expect(numbers.warningMessage).toContain('không hợp lệ');
+      expect(numbers.warningMessage).toContain('Invalid language name');
 
       const symbols = inspectTargetLanguage('!@#$%^&*()');
       expect(symbols.isValid).toBe(false);
-      expect(symbols.warningMessage).toContain('không hợp lệ');
+      expect(symbols.warningMessage).toContain('Invalid language name');
     });
 
     it('returns invalid for input with fewer than 2 letters', () => {
       const singleLetter = inspectTargetLanguage('a');
       expect(singleLetter.isValid).toBe(false);
-      expect(singleLetter.warningMessage).toContain('quá ngắn');
+      expect(singleLetter.warningMessage).toContain('too short');
     });
 
     it('recognizes preset language codes and labels', () => {
@@ -73,7 +73,7 @@ describe('languageRecognition', () => {
       const rareLang = inspectTargetLanguage('XylophonicDialect');
       expect(rareLang.isValid).toBe(true);
       expect(rareLang.isRecognized).toBe(false);
-      expect(rareLang.warningMessage).toContain('chưa có trong danh mục');
+      expect(rareLang.warningMessage).toContain('not in the standard catalog');
     });
   });
 

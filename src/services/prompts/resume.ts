@@ -88,7 +88,7 @@ OUTPUT FORMAT:
 Return a valid JSON object (NO MARKDOWN, NO \`\`\`json wrappers) matching exactly this schema:
 {
   "matchScore": number, // 0-100
-  "summary": "String. A brutally honest but constructive 2-3 sentence summary of the fit.",
+  "summary": "String. An objective, professional, and constructive 2-3 sentence summary of the fit.",
   "missingKeywords": ["String", "String", "String"], // Top 5 missing critical skills/terms
   "improvements": ["String", "String", "String"] // Top 3 specific actionable advice to edit the resume
 }

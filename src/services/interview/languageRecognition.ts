@@ -6,13 +6,13 @@ export interface CoachingLanguageOption {
 
 export const COACHING_LANGUAGES: CoachingLanguageOption[] = [
   { code: 'en-US', label: 'English (US / International)', flag: '🇺🇸' },
-  { code: 'vi-VN', label: 'Tiếng Việt (Vietnamese)', flag: '🇻🇳' },
-  { code: 'ja-JP', label: '日本語 (Japanese)', flag: '🇯🇵' },
-  { code: 'ko-KR', label: '한국어 (Korean)', flag: '🇰🇷' },
-  { code: 'zh-CN', label: '中文 (Mandarin Chinese)', flag: '🇨🇳' },
-  { code: 'fr-FR', label: 'Français (French)', flag: '🇫🇷' },
-  { code: 'de-DE', label: 'Deutsch (German)', flag: '🇩🇪' },
-  { code: 'es-ES', label: 'Español (Spanish)', flag: '🇪🇸' },
+  { code: 'vi-VN', label: 'Vietnamese', flag: '🇻🇳' },
+  { code: 'ja-JP', label: 'Japanese', flag: '🇯🇵' },
+  { code: 'ko-KR', label: 'Korean', flag: '🇰🇷' },
+  { code: 'zh-CN', label: 'Mandarin Chinese', flag: '🇨🇳' },
+  { code: 'fr-FR', label: 'French', flag: '🇫🇷' },
+  { code: 'de-DE', label: 'German', flag: '🇩🇪' },
+  { code: 'es-ES', label: 'Spanish', flag: '🇪🇸' },
 ];
 
 export interface PopularCustomLanguage {
@@ -22,14 +22,14 @@ export interface PopularCustomLanguage {
 }
 
 export const POPULAR_CUSTOM_LANGUAGES: PopularCustomLanguage[] = [
-  { label: 'Tiếng Nga', code: 'Russian', flag: '🇷🇺' },
-  { label: 'Tiếng Ý', code: 'Italian', flag: '🇮🇹' },
-  { label: 'Bồ Đào Nha', code: 'Portuguese', flag: '🇵🇹' },
-  { label: 'Thụy Điển', code: 'Swedish', flag: '🇸🇪' },
-  { label: 'Tiếng Thái', code: 'Thai', flag: '🇹🇭' },
-  { label: 'Hà Lan', code: 'Dutch', flag: '🇳🇱' },
-  { label: 'Ả Rập', code: 'Arabic', flag: '🇸🇦' },
-  { label: 'Ba Lan', code: 'Polish', flag: '🇵🇱' },
+  { label: 'Russian', code: 'Russian', flag: '🇷🇺' },
+  { label: 'Italian', code: 'Italian', flag: '🇮🇹' },
+  { label: 'Portuguese', code: 'Portuguese', flag: '🇵🇹' },
+  { label: 'Swedish', code: 'Swedish', flag: '🇸🇪' },
+  { label: 'Thai', code: 'Thai', flag: '🇹🇭' },
+  { label: 'Dutch', code: 'Dutch', flag: '🇳🇱' },
+  { label: 'Arabic', code: 'Arabic', flag: '🇸🇦' },
+  { label: 'Polish', code: 'Polish', flag: '🇵🇱' },
 ];
 
 interface CatalogEntry {
@@ -185,7 +185,7 @@ export function inspectTargetLanguage(rawInput: string | undefined): TargetLangu
       cleanInput: '',
       isValid: false,
       isRecognized: false,
-      warningMessage: 'Vui lòng chọn hoặc nhập ngôn ngữ đích mà bạn muốn thực hành.',
+      warningMessage: 'Please select or enter the target language you want to practice.',
     };
   }
 
@@ -196,7 +196,7 @@ export function inspectTargetLanguage(rawInput: string | undefined): TargetLangu
       cleanInput: '',
       isValid: false,
       isRecognized: false,
-      warningMessage: 'Vui lòng chọn hoặc nhập ngôn ngữ đích mà bạn muốn thực hành.',
+      warningMessage: 'Please select or enter the target language you want to practice.',
     };
   }
 
@@ -209,7 +209,7 @@ export function inspectTargetLanguage(rawInput: string | undefined): TargetLangu
       isValid: false,
       isRecognized: false,
       warningMessage:
-        'Tên ngôn ngữ không hợp lệ. Vui lòng nhập bằng chữ (ví dụ: Swedish, Tiếng Nga, Tiếng Ý...).',
+        'Invalid language name. Please enter text (e.g., Swedish, Russian, Italian...).',
     };
   }
 
@@ -219,7 +219,7 @@ export function inspectTargetLanguage(rawInput: string | undefined): TargetLangu
       cleanInput: clean,
       isValid: false,
       isRecognized: false,
-      warningMessage: 'Tên ngôn ngữ quá ngắn (tối thiểu 2 ký tự, ví dụ: ru, Tiếng Ý).',
+      warningMessage: 'Language name is too short (minimum 2 characters, e.g., ru, Italian).',
     };
   }
 
@@ -276,7 +276,7 @@ export function inspectTargetLanguage(rawInput: string | undefined): TargetLangu
     isValid: true,
     isRecognized: false,
     matchedLanguage: clean,
-    warningMessage: `Ngôn ngữ "${clean}" chưa có trong danh mục nhận diện phổ biến. AI sẽ kiểm tra tính hợp lệ; nếu không thể nhận diện, hệ thống sẽ tự động dùng Tiếng Anh thay thế.`,
+    warningMessage: `Language "${clean}" is not in the standard catalog. AI will verify validity; if unrecognized, English will be used as fallback.`,
   };
 }
 
