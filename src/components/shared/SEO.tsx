@@ -15,7 +15,7 @@ const SEO: React.FC<SEOProps> = ({
   description,
   name = 'HR With AI',
   type = 'website',
-  image,
+  image = '/logo512.png',
   url,
 }) => {
   return (
@@ -23,6 +23,9 @@ const SEO: React.FC<SEOProps> = ({
       {/* Standard metadata tags */}
       <title>{title}</title>
       <meta name="description" content={description} />
+      <link rel="icon" type="image/png" href="/logo.png" />
+      <link rel="shortcut icon" href="/favicon.ico" />
+      <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
       {/* Facebook tags */}
       <meta property="og:type" content={type} />

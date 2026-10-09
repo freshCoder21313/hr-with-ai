@@ -1,6 +1,6 @@
 import { forwardRef } from 'react';
 import { Interview } from '@/types';
-import { Trophy, Briefcase, Building, Calendar, Star, CheckCircle } from 'lucide-react';
+import { Trophy, Briefcase, Building, Calendar, CheckCircle } from 'lucide-react';
 
 interface ShareableResultCardProps {
   interview: Interview;
@@ -127,9 +127,7 @@ const ShareableResultCard = forwardRef<HTMLDivElement, ShareableResultCardProps>
               <span>{date}</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
-                <Star size={14} className="text-white fill-white" />
-              </div>
+              <img src="/logo.png" alt="HR With AI" className="w-6 h-6 rounded-md object-contain" />
               <span className="font-bold text-sm tracking-wide">HR With AI</span>
             </div>
           </div>

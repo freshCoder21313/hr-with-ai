@@ -83,9 +83,19 @@ const Header: React.FC<HeaderProps> = ({ onOpenSettings }) => {
         <div className="max-w-6xl w-full mx-auto px-4 md:px-8 h-16 flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center gap-2 font-bold text-xl">
-            <Link to="/" aria-label="HR With AI home" className="flex items-center gap-2">
-              <span className="bg-primary text-primary-foreground p-1 rounded-lg">HR</span>
-              <span className="hidden sm:inline-block">With-AI</span>
+            <Link
+              to="/"
+              aria-label="HR With AI home"
+              className="flex items-center gap-2.5 group transition-opacity hover:opacity-90"
+            >
+              <img
+                src="/logo.png"
+                alt="HR With AI Logo"
+                className="w-8 h-8 rounded-lg object-contain"
+              />
+              <span className="hidden sm:inline-block font-bold tracking-tight">
+                HR <span className="text-primary">With-AI</span>
+              </span>
             </Link>
           </div>
 
