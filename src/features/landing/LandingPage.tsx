@@ -143,8 +143,8 @@ export const LandingPage: React.FC = () => {
         /* RETURNING USER: HYBRID COMMAND DASHBOARD */
         <div className="max-w-6xl w-full mx-auto space-y-8 pt-6">
           {/* Welcome & Overview */}
-          <div className="tour-landing-welcome flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border pb-6">
-            <div>
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border pb-6">
+            <div className="tour-landing-welcome">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary mb-2">
                 <Sparkles className="w-3.5 h-3.5" />
                 AI Career Copilot Ready

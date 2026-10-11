@@ -39,7 +39,7 @@ export const TourHelpButton: React.FC<TourHelpButtonProps> = ({ className }) => 
         </Button>
       </TooltipTrigger>
       <TooltipContent>
-        <p>Tour Guide (Hướng dẫn sử dụng)</p>
+        <p>Tour Guide</p>
       </TooltipContent>
     </Tooltip>
   );

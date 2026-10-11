@@ -239,27 +239,27 @@ body {
 }
 
 /* Driver.js popover styling aligned with theme tokens */
+.driver-overlay {
+  z-index: 1000000000 !important;
+}
+
+.driver-active-element {
+  z-index: 1000000001 !important;
+}
+
 .driver-popover {
   background-color: hsl(var(--card)) !important;
   color: hsl(var(--card-foreground)) !important;
   border: 1px solid hsl(var(--border)) !important;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.15) !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.25), 0 8px 10px -6px rgba(0, 0, 0, 0.2) !important;
   border-radius: var(--radius-lg, 0.5rem) !important;
   padding: 1rem !important;
   max-width: min(380px, calc(100vw - 2rem)) !important;
   margin: 0.5rem !important;
   margin-bottom: max(0.5rem, calc(var(--safe-bottom, 0px) + 0.5rem)) !important;
   box-sizing: border-box !important;
-  z-index: 1000000000 !important;
+  z-index: 1000000002 !important; /* Ensure popover sits on top of highlighted element and overlay */
   touch-action: pan-y !important;
-}
-
-.driver-overlay {
-  z-index: 1000000000 !important;
-}
-
-.driver-active-element {
-  z-index: 1000000000 !important;
 }
 
 .driver-popover-title {

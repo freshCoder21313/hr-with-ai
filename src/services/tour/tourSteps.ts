@@ -71,7 +71,7 @@ export const TOUR_LANDING_STEPS: TourStepWithMeta[] = [
       description:
         'Your AI-powered career co-pilot for resume building, mock interviews, and skill coaching.',
       side: 'bottom',
-      align: 'center',
+      align: 'start',
     },
   },
   {
