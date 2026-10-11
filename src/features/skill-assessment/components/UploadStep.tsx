@@ -256,7 +256,7 @@ export const UploadStep: React.FC = () => {
         <ExtractionModeToggle value={extractionMode} onValueChange={setExtractionMode} />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="tour-skill-upload grid grid-cols-1 lg:grid-cols-2 gap-8">
         <FileUploadZone
           isLoading={isLoading}
           isExtracting={isExtracting}

@@ -93,7 +93,7 @@ export const SelectSkillStep: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Column: Skill Selection */}
         <div className="lg:col-span-2 space-y-6">
-          <Card className="h-full border-border/50 shadow-sm">
+          <Card className="tour-skill-select h-full border-border/50 shadow-sm">
             <CardHeader className="pb-4">
               <CardTitle className="text-xl flex items-center gap-2">
                 <Code2 className="w-5 h-5 text-primary" />
@@ -269,7 +269,7 @@ export const SelectSkillStep: React.FC = () => {
               {/* Action Button */}
               <div className="pt-4 border-t mt-4">
                 <Button
-                  className="w-full h-12 text-base font-medium shadow-md transition-all hover:scale-[1.02]"
+                  className="tour-skill-start w-full h-12 text-base font-medium shadow-md transition-all hover:scale-[1.02]"
                   onClick={handleStartAssessment}
                   disabled={!selectedSkill || isLoading}
                 >

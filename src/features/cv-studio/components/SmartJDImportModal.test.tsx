@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { SmartJDImportModal } from './SmartJDImportModal';
 import { useJobStore } from '../stores/useJobStore';
+import { useTourStore } from '@/services/tour/tourStore';
 
 const sampleJD = `
 # Senior React Engineer
@@ -162,5 +163,27 @@ Requirements:
         url: 'https://cloudscale.io/careers/staff-devops-v2',
       })
     );
+  });
+
+  it('renders Help button and launches tour_modal_smart_jd with required selector classes', () => {
+    useTourStore.getState().resetAllTours();
+    render(<SmartJDImportModal isOpen={true} onClose={vi.fn()} />);
+
+    // Check header Help button
+    const helpBtn = screen.getByRole('button', { name: /Smart JD Tour Guide/i });
+    expect(helpBtn).toBeInTheDocument();
+
+    // Verify selector classes exist in DOM
+    expect(document.querySelector('.tour-smart-jd-input')).toBeInTheDocument();
+    expect(document.querySelector('.tour-smart-jd-parse-btn')).toBeInTheDocument();
+    expect(document.querySelector('.tour-smart-jd-fields')).toBeInTheDocument();
+    expect(document.querySelector('.tour-smart-jd-save')).toBeInTheDocument();
+
+    // Click help button to launch micro-tour
+    fireEvent.click(helpBtn);
+
+    const tourState = useTourStore.getState();
+    expect(tourState.isRunning).toBe(true);
+    expect(tourState.activeTourId).toBe('tour_modal_smart_jd');
   });
 });

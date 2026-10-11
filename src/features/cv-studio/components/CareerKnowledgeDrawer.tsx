@@ -8,7 +8,9 @@ import {
 } from '@/components/ui/sheet';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Loader2, BookOpen, CheckSquare, Layers, ShieldCheck, HelpCircle } from 'lucide-react';
+import { useTourStore } from '@/services/tour/tourStore';
 import { careerKnowledgeAppService } from '@/services/careerKnowledge/careerKnowledgeAppService';
 import { CareerOverviewTab } from '@/features/career-knowledge/tabs/CareerOverviewTab';
 import { CandidateReviewTab } from '@/features/career-knowledge/tabs/CandidateReviewTab';
@@ -84,6 +86,19 @@ export const CareerKnowledgeDrawer: React.FC<CareerKnowledgeDrawerProps> = ({
     }
   }, [initialTab]);
 
+  useEffect(() => {
+    const handleTourDrawerTab = (e: Event) => {
+      const customEvent = e as CustomEvent<{ tab: string }>;
+      if (customEvent.detail?.tab) {
+        setActiveTab(customEvent.detail.tab);
+      }
+    };
+    window.addEventListener('tour:switch-drawer-tab', handleTourDrawerTab);
+    return () => {
+      window.removeEventListener('tour:switch-drawer-tab', handleTourDrawerTab);
+    };
+  }, []);
+
   const handleSelectProfile = (id: string) => {
     careerKnowledgeAppService.setActiveProfileId(id);
     setActiveProfileId(id);
@@ -137,6 +152,19 @@ export const CareerKnowledgeDrawer: React.FC<CareerKnowledgeDrawerProps> = ({
                   </SheetDescription>
                 </div>
               </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-muted-foreground hover:text-foreground shrink-0"
+                onClick={() =>
+                  useTourStore.getState().startTour('tour_drawer_career_knowledge', true)
+                }
+                aria-label="Career Knowledge Tour Guide"
+                title="Career Knowledge Tour Guide"
+              >
+                <HelpCircle className="w-4 h-4" />
+              </Button>
             </div>
           </SheetHeader>
 
@@ -183,7 +211,7 @@ export const CareerKnowledgeDrawer: React.FC<CareerKnowledgeDrawerProps> = ({
                     <span>Facts ({facts.length})</span>
                   </TabsTrigger>
 
-                  <TabsTrigger value="evidence" className="text-xs py-1.5 gap-1">
+                  <TabsTrigger value="evidence" className="text-xs py-1.5 gap-1 tour-career-evidence">
                     <ShieldCheck className="w-3.5 h-3.5" aria-hidden="true" />
                     <span>Evidence ({evidence.length})</span>
                   </TabsTrigger>

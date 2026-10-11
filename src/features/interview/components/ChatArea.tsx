@@ -93,7 +93,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
   };
 
   return (
-    <div className="flex-1 overflow-hidden relative flex flex-col bg-muted/30">
+    <div className="tour-interview-chat flex-1 overflow-hidden relative flex flex-col bg-muted/30">
       <div
         ref={scrollRef}
         onScroll={handleScroll}

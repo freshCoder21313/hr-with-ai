@@ -134,7 +134,7 @@ export const InterviewHeader: React.FC<InterviewHeaderProps> = ({
           size="sm"
           onClick={() => onEndSession()}
           aria-label="End session"
-          className="gap-2 h-11 px-4 text-xs"
+          className="tour-interview-end gap-2 h-11 px-4 text-xs"
         >
           <StopCircle className="w-3 h-3" aria-hidden="true" />
           <span className="hidden md:inline">End Session</span>

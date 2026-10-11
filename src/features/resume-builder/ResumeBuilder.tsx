@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Loader2, FileQuestion } from 'lucide-react';
-import Joyride from 'react-joyride';
 import SEO from '@/components/shared/SEO';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -16,7 +15,7 @@ import { ChevronLeft } from 'lucide-react';
 const ResumeBuilder: React.FC = () => {
   const { state, actions } = useResumeBuilder();
   const { data, template } = state;
-  const { navigate, setShowReorderDialog, handleTourDismiss, handleTourCallback } = actions;
+  const { navigate, setShowReorderDialog } = actions;
   // The export host renders a full copy of the preview, including every
   // inline-edit trigger. `inert` keeps that copy out of the tab order and the
   // a11y tree; it is set from a callback ref because the host only mounts once
@@ -34,18 +33,6 @@ const ResumeBuilder: React.FC = () => {
   useEffect(() => {
     exportHost?.setAttribute('inert', '');
   }, [exportHost]);
-
-  // Joyride only handles Escape while a step is in its TOOLTIP lifecycle, so a
-  // step whose target never mounted leaves the tour open behind a
-  // click-swallowing overlay. This listener closes it unconditionally.
-  useEffect(() => {
-    if (!state.runTour) return;
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') handleTourDismiss();
-    };
-    document.addEventListener('keydown', onKeyDown);
-    return () => document.removeEventListener('keydown', onKeyDown);
-  }, [state.runTour, handleTourDismiss]);
 
   const closeReorder = useCallback(() => setShowReorderDialog(false), [setShowReorderDialog]);
   const openReorder = useCallback(() => setShowReorderDialog(true), [setShowReorderDialog]);
@@ -114,16 +101,6 @@ const ResumeBuilder: React.FC = () => {
         onClose={closeReorder}
         data={reorderData!}
         onSave={actions.handleOrderSave}
-      />
-
-      <Joyride
-        steps={state.tourSteps}
-        run={state.runTour}
-        continuous
-        showSkipButton
-        showProgress
-        styles={{ options: { primaryColor: '#2563eb' } }}
-        callback={(d) => handleTourCallback(d.status)}
       />
 
       <div

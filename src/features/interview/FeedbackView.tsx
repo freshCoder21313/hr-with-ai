@@ -85,7 +85,7 @@ const FeedbackView: React.FC = () => {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 print:hidden">
           <div className="w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
-            <TabsList className="bg-muted p-1 w-full sm:w-auto inline-flex justify-start sm:justify-center">
+            <TabsList className="tour-feedback-tabs bg-muted p-1 w-full sm:w-auto inline-flex justify-start sm:justify-center">
               <TabsTrigger value="analysis" className="gap-2 text-xs sm:text-sm">
                 <BarChart2 className="w-4 h-4" />
                 Analysis
@@ -106,7 +106,7 @@ const FeedbackView: React.FC = () => {
               <Button
                 variant="outline"
                 size="sm"
-                className="gap-2 self-end sm:self-auto shrink-0"
+                className="tour-feedback-print gap-2 self-end sm:self-auto shrink-0"
                 onClick={() => window.print()}
               >
                 <Printer className="w-4 h-4" />
@@ -128,7 +128,7 @@ const FeedbackView: React.FC = () => {
           />
         </TabsContent>
 
-        <TabsContent value="coaching">
+        <TabsContent value="coaching" className="tour-feedback-coaching">
           <LanguageCoachingTab
             interview={currentInterview}
             onReportUpdated={(updatedReport) => {

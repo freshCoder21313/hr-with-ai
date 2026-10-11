@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@import 'driver.js/dist/driver.css';
 @config "../tailwind.config.js";
 /* Tailwind v4 does not read `darkMode` from the JS config that `@config` loads, so the
    `dark` variant would fall back to `prefers-color-scheme` and ignore the `.dark`
@@ -234,6 +235,154 @@ body {
     display: flex;
     flex-direction: column;
     min-height: 0;
+  }
+}
+
+/* Driver.js popover styling aligned with theme tokens */
+.driver-popover {
+  background-color: hsl(var(--card)) !important;
+  color: hsl(var(--card-foreground)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.15) !important;
+  border-radius: var(--radius-lg, 0.5rem) !important;
+  padding: 1rem !important;
+  max-width: min(380px, calc(100vw - 2rem)) !important;
+  margin: 0.5rem !important;
+  margin-bottom: max(0.5rem, calc(var(--safe-bottom, 0px) + 0.5rem)) !important;
+  box-sizing: border-box !important;
+  z-index: 1000000000 !important;
+  touch-action: pan-y !important;
+}
+
+.driver-overlay {
+  z-index: 1000000000 !important;
+}
+
+.driver-active-element {
+  z-index: 1000000000 !important;
+}
+
+.driver-popover-title {
+  color: hsl(var(--foreground)) !important;
+  font-size: 0.9375rem !important; /* 15px */
+  font-weight: 600 !important;
+  line-height: 1.35 !important;
+  margin-bottom: 0.375rem !important;
+  padding-right: 2rem !important;
+}
+
+.driver-popover-description {
+  color: hsl(var(--muted-foreground)) !important;
+  font-size: 0.8125rem !important; /* 13px */
+  line-height: 1.5 !important;
+  margin-top: 0.25rem !important;
+}
+
+.driver-popover-close-btn {
+  color: hsl(var(--muted-foreground)) !important;
+  top: 0.5rem !important;
+  right: 0.5rem !important;
+  width: 2.25rem !important; /* 36px comfortable mobile tap target */
+  height: 2.25rem !important;
+  min-width: 36px !important;
+  min-height: 36px !important;
+  font-size: 1.25rem !important;
+  line-height: 1 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: var(--radius-sm, 0.25rem) !important;
+  transition: color 0.15s ease, background-color 0.15s ease !important;
+  touch-action: manipulation !important;
+  user-select: none !important;
+}
+
+.driver-popover-close-btn:hover,
+.driver-popover-close-btn:focus {
+  color: hsl(var(--foreground)) !important;
+  background-color: hsl(var(--muted)) !important;
+}
+
+.driver-popover-footer {
+  margin-top: 1rem !important;
+  padding-top: 0.625rem !important;
+  border-top: 1px solid hsl(var(--border) / 0.6) !important;
+  gap: 0.5rem !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.driver-popover-progress-text {
+  color: hsl(var(--muted-foreground)) !important;
+  font-size: 0.75rem !important;
+  font-weight: 500 !important;
+}
+
+.driver-popover-footer-btn {
+  font-size: 0.8125rem !important;
+  font-weight: 500 !important;
+  padding: 0.5rem 0.875rem !important;
+  min-height: 38px !important; /* Comfortable mobile touch target */
+  box-sizing: border-box !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: var(--radius-md, 0.375rem) !important;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, opacity 0.15s ease !important;
+  touch-action: manipulation !important;
+  user-select: none !important;
+}
+
+.driver-popover-prev-btn {
+  background-color: transparent !important;
+  color: hsl(var(--foreground)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+}
+
+.driver-popover-prev-btn:hover,
+.driver-popover-prev-btn:focus {
+  background-color: hsl(var(--muted)) !important;
+}
+
+.driver-popover-next-btn {
+  background-color: hsl(var(--primary)) !important;
+  color: hsl(var(--primary-foreground)) !important;
+  border: 1px solid transparent !important;
+}
+
+.driver-popover-next-btn:hover,
+.driver-popover-next-btn:focus {
+  opacity: 0.9 !important;
+}
+
+.driver-popover-arrow-side-left {
+  border-left-color: hsl(var(--card)) !important;
+}
+
+.driver-popover-arrow-side-right {
+  border-right-color: hsl(var(--card)) !important;
+}
+
+.driver-popover-arrow-side-top {
+  border-top-color: hsl(var(--card)) !important;
+}
+
+.driver-popover-arrow-side-bottom {
+  border-bottom-color: hsl(var(--card)) !important;
+}
+
+/* Narrow mobile viewports (<= 480px) */
+@media (max-width: 480px) {
+  .driver-popover {
+    max-width: calc(100vw - 1.5rem) !important;
+    left: 0.75rem !important;
+    right: 0.75rem !important;
+    padding: 0.875rem !important;
+  }
+
+  .driver-popover-footer-btn {
+    min-height: 40px !important;
+    padding: 0.5rem 1rem !important;
   }
 }
 

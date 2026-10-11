@@ -14,7 +14,6 @@ vi.mock('@/services/resume/resumeAIService');
 vi.mock('@/components/shared/SEO', () => ({
   default: () => <></>,
 }));
-vi.mock('react-joyride', () => ({ default: () => <></> }));
 
 const mockResume: Resume = {
   id: 1,

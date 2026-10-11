@@ -21,9 +21,11 @@ import {
   CheckCircle2,
   RotateCcw,
   Link2,
+  HelpCircle,
 } from 'lucide-react';
 import { parseRawJobDescription, ParsedJobData } from '@/services/jobs/jdParser';
 import { useJobStore, Job } from '../stores/useJobStore';
+import { useTourStore } from '@/services/tour/tourStore';
 import { toast } from 'sonner';
 
 export interface SmartJDImportModalProps {
@@ -113,17 +115,30 @@ export const SmartJDImportModal: React.FC<SmartJDImportModalProps> = ({
     <Dialog open={isOpen} onOpenChange={(open) => (!open ? handleClose() : null)}>
       <DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col p-0 overflow-hidden">
         <DialogHeader className="p-6 pb-2 border-b border-border">
-          <div className="flex items-center gap-2">
-            <div className="p-2 rounded-lg bg-primary/10 text-primary">
-              <Sparkles className="w-5 h-5" />
+          <div className="flex items-center justify-between pr-6">
+            <div className="flex items-center gap-2">
+              <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                <Sparkles className="w-5 h-5" />
+              </div>
+              <div>
+                <DialogTitle className="text-xl font-bold">Auto-fill from Raw JD</DialogTitle>
+                <DialogDescription className="text-xs text-muted-foreground mt-0.5">
+                  Paste raw Job Description text to automatically extract company, title,
+                  requirements, and custom tailoring prompt.
+                </DialogDescription>
+              </div>
             </div>
-            <div>
-              <DialogTitle className="text-xl font-bold">Auto-fill from Raw JD</DialogTitle>
-              <DialogDescription className="text-xs text-muted-foreground mt-0.5">
-                Paste raw Job Description text to automatically extract company, title,
-                requirements, and custom tailoring prompt.
-              </DialogDescription>
-            </div>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-muted-foreground hover:text-foreground shrink-0"
+              onClick={() => useTourStore.getState().startTour('tour_modal_smart_jd', true)}
+              aria-label="Smart JD Tour Guide"
+              title="Smart JD Tour Guide"
+            >
+              <HelpCircle className="w-4 h-4" />
+            </Button>
           </div>
         </DialogHeader>
 
@@ -156,14 +171,14 @@ export const SmartJDImportModal: React.FC<SmartJDImportModalProps> = ({
               onChange={(e) => setRawText(e.target.value)}
               placeholder="Paste raw JD here (e.g. from LinkedIn, TopCV, Indeed, email, or PDF)..."
               rows={7}
-              className="font-mono text-xs resize-y"
+              className="font-mono text-xs resize-y tour-smart-jd-input"
             />
             <div className="flex justify-end pt-1">
               <Button
                 type="button"
                 onClick={handleParse}
                 disabled={!rawText.trim()}
-                className="gap-2"
+                className="gap-2 tour-smart-jd-parse-btn"
               >
                 <Sparkles className="w-4 h-4" />
                 Parse &amp; Extract
@@ -172,8 +187,12 @@ export const SmartJDImportModal: React.FC<SmartJDImportModalProps> = ({
           </div>
 
           {/* Step 2: Extracted Preview Section */}
-          {isParsed && (
-            <div className="space-y-4 pt-4 border-t border-border animate-in fade-in duration-200">
+          {!isParsed ? (
+            <div className="tour-smart-jd-fields p-4 rounded-lg border border-dashed border-border/80 text-center text-xs text-muted-foreground bg-muted/20">
+              Extracted fields (Company, Role, Skills, Requirements) will appear here after parsing.
+            </div>
+          ) : (
+            <div className="tour-smart-jd-fields space-y-4 pt-4 border-t border-border animate-in fade-in duration-200">
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
                   <CheckCircle2 className="w-4 h-4 text-success" />
@@ -332,7 +351,7 @@ export const SmartJDImportModal: React.FC<SmartJDImportModalProps> = ({
             type="button"
             onClick={handleAddJob}
             disabled={!isParsed || !title.trim()}
-            className="gap-2"
+            className="gap-2 tour-smart-jd-save"
           >
             <Sparkles className="w-4 h-4" />
             Add to Target Jobs

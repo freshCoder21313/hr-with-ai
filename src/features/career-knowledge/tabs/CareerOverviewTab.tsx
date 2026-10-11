@@ -166,7 +166,7 @@ export const CareerOverviewTab: React.FC<CareerOverviewTabProps> = ({
           </CardContent>
         </Card>
 
-        <Card className="bg-info/10 border-info/20 col-span-2 sm:col-span-1">
+        <Card className="bg-info/10 border-info/20 col-span-2 sm:col-span-1 tour-career-evidence">
           <CardContent className="p-4">
             <div className="flex items-center justify-between text-info">
               <span className="text-xs font-semibold uppercase tracking-wider">Evidence</span>
@@ -180,7 +180,7 @@ export const CareerOverviewTab: React.FC<CareerOverviewTabProps> = ({
 
       {/* Quick Action Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="hover:border-primary/50 transition-colors">
+        <Card className="hover:border-primary/50 transition-colors tour-career-add-fact">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-bold flex items-center gap-2">
               <FileText className="w-4 h-4 text-primary" /> Resume Migration
@@ -267,7 +267,7 @@ export const CareerOverviewTab: React.FC<CareerOverviewTabProps> = ({
       </div>
 
       {/* Recent Knowledge Activity */}
-      <Card>
+      <Card className="tour-career-facts-list">
         <CardHeader className="pb-3 flex flex-row items-center justify-between">
           <div>
             <CardTitle className="text-base font-bold">Recent Knowledge Activity</CardTitle>

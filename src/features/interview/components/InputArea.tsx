@@ -136,7 +136,7 @@ export const InputArea: React.FC<InputAreaProps> = ({
                   // Both breakpoints are set deliberately: tailwind-merge
                   // would keep `md:h-10` from `size="icon"` and invert the
                   // two sizes.
-                  'h-[44px] w-[44px] md:h-[50px] md:w-[50px] rounded-xl shrink-0 border-warning/40 bg-warning/10 text-warning hover:bg-warning/20',
+                  'tour-interview-hints h-[44px] w-[44px] md:h-[50px] md:w-[50px] rounded-xl shrink-0 border-warning/40 bg-warning/10 text-warning hover:bg-warning/20',
                   isLoadingHints ? 'animate-pulse' : ''
                 )}
               >
@@ -151,7 +151,7 @@ export const InputArea: React.FC<InputAreaProps> = ({
 
         {/* Tools Group (only relevant for coding / system-design interviews) */}
         {showTools && (
-          <div className="flex gap-1 mr-1">
+          <div className="tour-interview-tools flex gap-1 mr-1">
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
@@ -196,7 +196,7 @@ export const InputArea: React.FC<InputAreaProps> = ({
           </div>
         )}
 
-        <div className="relative flex-1">
+        <div className="tour-interview-input relative flex-1">
           <Textarea
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}

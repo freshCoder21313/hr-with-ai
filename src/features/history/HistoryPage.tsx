@@ -291,7 +291,7 @@ const HistoryPage: React.FC = () => {
         }}
         className="w-full"
       >
-        <TabsList className="grid w-full sm:w-auto grid-cols-3 mb-6">
+        <TabsList className="tour-history-tabs grid w-full sm:w-auto grid-cols-3 mb-6">
           <TabsTrigger value="interviews" className="gap-2">
             <Briefcase className="w-4 h-4" />
             Mock Interviews
@@ -358,7 +358,7 @@ const HistoryPage: React.FC = () => {
                   variant="outline"
                   size="sm"
                   onClick={() => setShowCharts((prev) => !prev)}
-                  className="gap-2 text-xs text-muted-foreground hover:text-foreground border-border hover:border-primary/40 transition-colors"
+                  className="tour-history-charts-toggle gap-2 text-xs text-muted-foreground hover:text-foreground border-border hover:border-primary/40 transition-colors"
                   aria-expanded={showCharts}
                 >
                   <BarChart2 className="w-3.5 h-3.5 text-primary" />
@@ -402,7 +402,7 @@ const HistoryPage: React.FC = () => {
 
           {/* Search/Filter Bar */}
           {interviews.length > 0 && (
-            <div className="relative">
+            <div className="tour-history-search relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 type="text"
@@ -441,7 +441,7 @@ const HistoryPage: React.FC = () => {
               No interviews match &ldquo;{searchQuery}&rdquo;.
             </div>
           ) : (
-            <div className="grid gap-4">
+            <div className="tour-history-list grid gap-4">
               {filteredInterviews.map((interview) => (
                 <Card
                   key={interview.id}

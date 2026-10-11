@@ -3,6 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import SettingsModal from './SettingsModal';
 import * as settingsService from '@/services/core/settingsService';
 import { UserSettings } from '@/types';
+import { useTourStore } from '@/services/tour/tourStore';
 
 vi.mock('@/services/core/settingsService', () => ({
   loadUserSettings: vi.fn(),
@@ -133,5 +134,46 @@ describe('SettingsModal', () => {
     await waitFor(() => {
       expect(screen.getByText(/Keys stay/i)).toBeDefined();
     });
+  });
+
+  it('renders Help button and launches tour_modal_settings with required tour selector classes', async () => {
+    useTourStore.getState().resetAllTours();
+    vi.mocked(settingsService.loadUserSettings).mockResolvedValue({
+      ...storedSettings,
+      aiProfiles: [
+        {
+          id: 'profile-1',
+          name: 'Default Profile',
+          provider: 'google',
+          apiKey: 'test-key',
+          modelIds: ['gemini-1.5-pro'],
+          enabled: true,
+        },
+      ],
+      activeAIProfileId: 'profile-1',
+    });
+
+    render(<SettingsModal open onOpenChange={vi.fn()} />);
+
+    const helpBtn = await screen.findByRole('button', { name: /Settings Tour Guide/i });
+    expect(helpBtn).toBeInTheDocument();
+
+    // Verify general tab selectors
+    expect(document.querySelector('.tour-settings-tabs')).toBeInTheDocument();
+    expect(document.querySelector('.tour-settings-reset-tours')).toBeInTheDocument();
+
+    // Switch to ai-profiles tab via custom event
+    fireEvent(window, new CustomEvent('tour:switch-settings-tab', { detail: { tab: 'ai-profiles' } }));
+
+    await waitFor(() => {
+      expect(document.querySelector('.tour-settings-provider-select')).toBeInTheDocument();
+      expect(document.querySelector('.tour-settings-api-key')).toBeInTheDocument();
+    });
+
+    // Click help button to launch micro-tour
+    fireEvent.click(helpBtn);
+    const tourState = useTourStore.getState();
+    expect(tourState.isRunning).toBe(true);
+    expect(tourState.activeTourId).toBe('tour_modal_settings');
   });
 });

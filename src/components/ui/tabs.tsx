@@ -139,8 +139,8 @@ TabsTrigger.displayName = 'TabsTrigger';
 
 const TabsContent = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement> & { value: string }
->(({ className, value, ...props }, ref): React.ReactElement | null => {
+  React.HTMLAttributes<HTMLDivElement> & { value: string; forceMount?: boolean }
+>(({ className, value, forceMount, ...props }, ref): React.ReactElement | null => {
   const context = React.useContext(TabsContext);
   const { registerPanel } = context ?? {};
 
@@ -149,15 +149,18 @@ const TabsContent = React.forwardRef<
     return () => registerPanel?.(value, false);
   }, [registerPanel, value]);
 
-  if (context?.value !== value) return null;
+  const isHidden = context?.value !== value;
+  if (isHidden && !forceMount) return null;
 
   return (
     <div
       ref={ref}
       role="tabpanel"
       tabIndex={0}
+      hidden={isHidden}
       className={cn(
         'mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+        isHidden && 'hidden',
         className
       )}
       {...props}

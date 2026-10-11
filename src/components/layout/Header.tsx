@@ -13,6 +13,7 @@ import {
 import { ThemeToggle } from '@/components/shared/theme-toggle';
 import { CloudSyncModal } from '@/components/shared/CloudSyncModal';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { TourHelpButton } from '@/components/tour/TourHelpButton';
 import { cn } from '@/lib/utils';
 
 const NavLinks = ({ mobile = false, closeMenu }: { mobile?: boolean; closeMenu?: () => void }) => {
@@ -145,6 +146,8 @@ const Header: React.FC<HeaderProps> = ({ onOpenSettings }) => {
               </TooltipContent>
             </Tooltip>
 
+            <TourHelpButton className="hidden sm:flex" />
+
             <ThemeToggle />
 
             {/* Mobile Menu Trigger */}
@@ -174,6 +177,7 @@ const Header: React.FC<HeaderProps> = ({ onOpenSettings }) => {
                       >
                         <Cloud className="w-4 h-4" /> Cloud Sync
                       </Button>
+                      <TourHelpButton className="justify-start gap-2 w-full text-foreground" />
                       <Button
                         variant="ghost"
                         onClick={handleOpenSettings}

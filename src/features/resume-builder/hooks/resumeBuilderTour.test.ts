@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import type { Step } from 'react-joyride';
+import type { DriveStep } from 'driver.js';
 import {
   buildTourSteps,
   isTerminalTourStatus,
@@ -16,16 +16,16 @@ describe('buildTourSteps', () => {
     document.body.innerHTML = '';
   });
 
-  it('keeps only steps whose target exists, always keeping the intro', () => {
+  it('keeps only steps whose target exists, always keeping body step', () => {
     document.body.innerHTML = `<div class="tour-preview-toggle"></div>`;
-    const steps: Step[] = [
-      { target: 'body', content: 'intro' },
-      { target: '.tour-magic-format', content: 'magic' },
-      { target: '.tour-preview-toggle', content: 'preview' },
-      { target: '.tour-fab', content: 'fab' },
+    const steps: DriveStep[] = [
+      { element: 'body', popover: { title: 'intro' } },
+      { element: '.tour-magic-format', popover: { title: 'magic' } },
+      { element: '.tour-preview-toggle', popover: { title: 'preview' } },
+      { element: '.tour-fab', popover: { title: 'fab' } },
     ];
 
-    expect(buildTourSteps(steps).map((step) => step.target)).toEqual([
+    expect(buildTourSteps(steps).map((step) => step.element)).toEqual([
       'body',
       '.tour-preview-toggle',
     ]);
@@ -38,14 +38,14 @@ describe('buildTourSteps', () => {
 
     expect(resolved.length).toBeGreaterThan(1);
     resolved.slice(1).forEach((step) => {
-      expect(document.querySelector(step.target as string)).not.toBeNull();
+      expect(document.querySelector(step.element as string)).not.toBeNull();
     });
   });
 
   it('drops a step whose selector is invalid instead of throwing', () => {
-    const steps: Step[] = [
-      { target: 'body', content: 'intro' },
-      { target: '::::', content: 'broken' },
+    const steps: DriveStep[] = [
+      { element: 'body', popover: { title: 'intro' } },
+      { element: '::::', popover: { title: 'broken' } },
     ];
 
     expect(buildTourSteps(steps)).toHaveLength(1);
@@ -54,7 +54,7 @@ describe('buildTourSteps', () => {
 
 describe('isTerminalTourStatus', () => {
   it('treats every way out of the tour as completion', () => {
-    ['finished', 'skipped', 'error', 'close'].forEach((status) => {
+    ['finished', 'skipped', 'error', 'close', 'destroyed'].forEach((status) => {
       expect(isTerminalTourStatus(status)).toBe(true);
     });
   });

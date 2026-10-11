@@ -5,6 +5,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { db } from '@/lib/db';
 import { CareerKnowledgeDrawer } from './CareerKnowledgeDrawer';
 import { careerKnowledgeRepository } from '@/services/careerKnowledge/repository';
+import { useTourStore } from '@/services/tour/tourStore';
 
 describe('CareerKnowledgeDrawer inside CV Studio', () => {
   beforeEach(async () => {
@@ -166,5 +167,39 @@ describe('CareerKnowledgeDrawer inside CV Studio', () => {
     expect(
       screen.queryByRole('heading', { level: 2, name: /Career Knowledge/i })
     ).not.toBeInTheDocument();
+  });
+
+  it('renders Help button and launches tour_drawer_career_knowledge with required tour classes', async () => {
+    useTourStore.getState().resetAllTours();
+    await careerKnowledgeRepository.createProfile();
+
+    renderDrawer({
+      isOpen: true,
+      onClose: vi.fn(),
+    });
+
+    const helpBtn = await screen.findByRole('button', { name: /Career Knowledge Tour Guide/i });
+    expect(helpBtn).toBeInTheDocument();
+
+    // Wait for drawer content to finish loading
+    await screen.findByRole('tab', { name: /^Overview/i });
+
+    // Verify overview tab elements
+    expect(document.querySelector('.tour-career-facts-list')).toBeInTheDocument();
+    expect(document.querySelector('.tour-career-add-fact')).toBeInTheDocument();
+    expect(document.querySelector('.tour-career-evidence')).toBeInTheDocument();
+
+    // Switch to facts tab via custom event
+    fireEvent(window, new CustomEvent('tour:switch-drawer-tab', { detail: { tab: 'facts' } }));
+
+    await waitFor(() => {
+      expect(document.querySelector('.tour-career-category-filter')).toBeInTheDocument();
+    });
+
+    // Click help button to start tour
+    fireEvent.click(helpBtn);
+    const tourState = useTourStore.getState();
+    expect(tourState.isRunning).toBe(true);
+    expect(tourState.activeTourId).toBe('tour_drawer_career_knowledge');
   });
 });

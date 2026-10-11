@@ -69,4 +69,41 @@ describe('CVStudioPage UI & Career Knowledge Integration', () => {
       await screen.findByRole('heading', { level: 2, name: /Career Knowledge/i })
     ).toBeInTheDocument();
   });
+
+  it('switches active mobile tab when receiving tour:switch-mobile-tab event', async () => {
+    renderComponent();
+
+    // Default mobile tab is 'chat'
+    expect(await screen.findByRole('tab', { name: /^chat$/i })).toHaveAttribute(
+      'aria-pressed',
+      'true'
+    );
+    expect(screen.getByRole('tab', { name: /^jobs$/i })).toHaveAttribute('aria-pressed', 'false');
+
+    // Dispatch tour event to switch to 'jobs' tab
+    fireEvent(
+      window,
+      new CustomEvent('tour:switch-mobile-tab', {
+        detail: { tab: 'jobs' },
+      })
+    );
+
+    // Jobs tab button should now be pressed/active
+    expect(screen.getByRole('tab', { name: /^jobs$/i })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('tab', { name: /^chat$/i })).toHaveAttribute('aria-pressed', 'false');
+
+    // Dispatch tour event to switch to 'preview' tab
+    fireEvent(
+      window,
+      new CustomEvent('tour:switch-mobile-tab', {
+        detail: { tab: 'preview' },
+      })
+    );
+
+    expect(screen.getByRole('tab', { name: /^preview$/i })).toHaveAttribute(
+      'aria-pressed',
+      'true'
+    );
+    expect(screen.getByRole('tab', { name: /^jobs$/i })).toHaveAttribute('aria-pressed', 'false');
+  });
 });

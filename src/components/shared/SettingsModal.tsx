@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { logger } from '@/lib/logger';
+import { cn } from '@/lib/utils';
 import {
   Dialog,
   DialogContent,
@@ -16,7 +17,8 @@ import { loadUserSettings, saveUserSettings } from '@/services/core/settingsServ
 import { UserSettings } from '@/types';
 import { CollapsibleSection } from '@/components/ui/collapsible-section';
 import { toast } from 'sonner';
-import { Settings2, Sparkles, RotateCcw } from 'lucide-react';
+import { Settings2, Sparkles, RotateCcw, HelpCircle } from 'lucide-react';
+import { useTourStore } from '@/services/tour/tourStore';
 
 import { AIProviderProfilesEditor } from '@/features/settings/AIProviderProfilesEditor';
 import { emitSettingsChanged } from '@/events/settingsEvents';
@@ -93,6 +95,19 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
     }
   }, [open, resolvedDefaultTab]);
 
+  useEffect(() => {
+    const handleTourSettingsTab = (e: Event) => {
+      const customEvent = e as CustomEvent<{ tab: string }>;
+      if (customEvent.detail?.tab) {
+        setActiveTab(customEvent.detail.tab);
+      }
+    };
+    window.addEventListener('tour:switch-settings-tab', handleTourSettingsTab);
+    return () => {
+      window.removeEventListener('tour:switch-settings-tab', handleTourSettingsTab);
+    };
+  }, []);
+
   const handleSave = async () => {
     try {
       const settingsToSave: UserSettings = {
@@ -134,10 +149,25 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
         }}
       >
         <DialogHeader>
-          <DialogTitle>Settings</DialogTitle>
-          <DialogDescription>
-            Configure interview behavior, retry policy, and AI provider profiles.
-          </DialogDescription>
+          <div className="flex items-center justify-between pr-6">
+            <div>
+              <DialogTitle>Settings</DialogTitle>
+              <DialogDescription>
+                Configure interview behavior, retry policy, and AI provider profiles.
+              </DialogDescription>
+            </div>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-muted-foreground hover:text-foreground shrink-0"
+              onClick={() => useTourStore.getState().startTour('tour_modal_settings', true)}
+              aria-label="Settings Tour Guide"
+              title="Settings Tour Guide"
+            >
+              <HelpCircle className="w-4 h-4" />
+            </Button>
+          </div>
         </DialogHeader>
 
         {isLoading ? (
@@ -146,7 +176,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
           </div>
         ) : (
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-2 tour-settings-tabs">
               <TabsTrigger value="general" className="gap-2">
                 <Settings2 className="w-4 h-4" /> General
               </TabsTrigger>
@@ -322,6 +352,29 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                       </div>
                     </div>
                   </CollapsibleSection>
+
+                  <div className="pt-2 border-t border-border flex items-center justify-between">
+                    <div className="flex flex-col space-y-0.5">
+                      <Label className="text-xs font-medium flex items-center gap-1.5 text-foreground">
+                        <HelpCircle className="w-3.5 h-3.5 text-primary" /> Feature Guided Tours
+                      </Label>
+                      <span className="text-[11px] text-muted-foreground">
+                        Reset all feature walkthroughs so they display again when visiting pages.
+                      </span>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="text-xs h-7 px-2.5 shrink-0 tour-settings-reset-tours"
+                      onClick={() => {
+                        useTourStore.getState().resetAllTours();
+                        toast.success('All feature tours have been reset.');
+                      }}
+                    >
+                      Reset Tours
+                    </Button>
+                  </div>
                 </div>
 
                 {/* API Configuration Button */}
@@ -354,7 +407,11 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                 </Button>
               </TabsContent>
 
-              <TabsContent value="ai-profiles" className="mt-0">
+              <TabsContent
+                value="ai-profiles"
+                forceMount
+                className={cn('mt-0', activeTab !== 'ai-profiles' && 'hidden')}
+              >
                 <AIProviderProfilesEditor
                   onSave={(saved) => {
                     if (onSettingsChanged) onSettingsChanged(saved);

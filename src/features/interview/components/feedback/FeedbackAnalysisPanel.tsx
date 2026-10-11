@@ -66,7 +66,7 @@ export const FeedbackAnalysisPanel: React.FC<FeedbackAnalysisPanelProps> = ({
         <FeedbackScoreHeader interview={interview} feedback={feedback} />
       </Suspense>
 
-      <Card className="bg-card border-border">
+      <Card className="tour-feedback-summary bg-card border-border">
         <CardHeader>
           <CardTitle>Executive Summary</CardTitle>
         </CardHeader>

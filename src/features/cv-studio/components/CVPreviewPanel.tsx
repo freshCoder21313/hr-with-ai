@@ -244,7 +244,7 @@ export const CVPreviewPanel: React.FC<CVPreviewPanelProps> = ({
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-muted/20">
       <div className="h-12 px-3 sm:px-4 border-b border-border bg-background flex items-center justify-between shrink-0 gap-2">
-        <div className="flex bg-muted p-1 rounded-lg shrink-0">
+        <div className="tour-studio-preview-mode flex bg-muted p-1 rounded-lg shrink-0">
           <Button
             variant="ghost"
             size="sm"
@@ -410,7 +410,7 @@ export const CVPreviewPanel: React.FC<CVPreviewPanelProps> = ({
               <Button
                 variant="ghost"
                 size="icon-sm"
-                className="text-primary"
+                className="tour-studio-export-pdf text-primary hover:bg-primary/10"
                 onClick={onPrint}
                 disabled={!previewData || isExporting}
                 aria-label="Export PDF"

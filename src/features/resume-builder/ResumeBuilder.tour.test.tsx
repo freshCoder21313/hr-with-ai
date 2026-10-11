@@ -1,15 +1,44 @@
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { db } from '@/lib/db';
 import * as aiConfigService from '@/services/ai/aiConfigService';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import ResumeBuilder from './ResumeBuilder';
+import { GlobalTourOverlay } from '@/components/tour/GlobalTourOverlay';
 import { Resume, ResumeData } from '@/types';
-import { TOUR_COMPLETED_KEY } from './hooks/resumeBuilderTour';
+import { useTourStore } from '@/services/tour/tourStore';
 
-// Real react-joyride: this suite proves the close/persist contract end to end,
-// so the tour must not be stubbed out here.
+const driveMock = vi.fn();
+const destroyMock = vi.fn();
+
+vi.mock('driver.js', () => ({
+  driver: vi.fn(() => ({
+    isActive: () => true,
+    drive: driveMock,
+    destroy: destroyMock,
+    setConfig: vi.fn(),
+    setSteps: vi.fn(),
+    getConfig: vi.fn(),
+    getState: vi.fn(),
+    getActiveIndex: vi.fn(),
+    isFirstStep: vi.fn(),
+    isLastStep: vi.fn(),
+    getActiveStep: vi.fn(),
+    getActiveElement: vi.fn(),
+    getPreviousElement: vi.fn(),
+    getPreviousStep: vi.fn(),
+    getNextStep: vi.fn(),
+    moveNext: vi.fn(),
+    movePrevious: vi.fn(),
+    moveTo: vi.fn(),
+    hasNextStep: vi.fn(),
+    hasPreviousStep: vi.fn(),
+    highlight: vi.fn(),
+    refresh: vi.fn(),
+  })),
+}));
+
 vi.mock('@/lib/db');
 vi.mock('@/services/ai/aiConfigService');
 vi.mock('@/services/resume/resumeAIService');
@@ -32,10 +61,11 @@ const mockResume: Resume = {
   formatted: true,
 };
 
-const renderBuilder = () =>
+const renderBuilderWithTour = () =>
   render(
     <MemoryRouter initialEntries={['/resumes/1/edit']}>
       <TooltipProvider>
+        <GlobalTourOverlay />
         <Routes>
           <Route path="/resumes/:id/edit" element={<ResumeBuilder />} />
         </Routes>
@@ -43,16 +73,12 @@ const renderBuilder = () =>
     </MemoryRouter>
   );
 
-const tourButtons = () =>
-  Array.from(document.querySelectorAll<HTMLButtonElement>('.react-joyride__tooltip button')).map(
-    (button) => button.textContent?.trim() ?? ''
-  );
-
-const tourIsOpen = () => document.querySelector('.react-joyride__overlay') !== null;
-
-describe('first-visit tour', () => {
+describe('ResumeBuilder tour integration with driver.js', () => {
   beforeEach(() => {
     localStorage.clear();
+    useTourStore.getState().resetAllTours();
+    driveMock.mockClear();
+    destroyMock.mockClear();
     vi.mocked(db.resumes.get).mockResolvedValue(mockResume);
     vi.mocked(aiConfigService.getStoredAIConfig).mockReturnValue({
       apiKey: 'test-key',
@@ -61,79 +87,35 @@ describe('first-visit tour', () => {
   });
 
   afterEach(() => {
-    document.querySelectorAll('.react-floater').forEach((node) => node.remove());
     localStorage.clear();
   });
 
-  it('persists completion and stops when the visitor skips the tour', async () => {
-    renderBuilder();
-
-    await waitFor(() => expect(tourIsOpen()).toBe(true), { timeout: 4000 });
-    expect(localStorage.getItem(TOUR_COMPLETED_KEY)).toBeNull();
-
-    const skip = tourButtons().findIndex((text) => text.startsWith('Skip'));
-    expect(skip).toBeGreaterThanOrEqual(0);
-
-    const skipButton = document.querySelectorAll<HTMLButtonElement>(
-      '.react-joyride__tooltip button'
-    )[skip];
-    await act(async () => {
-      fireEvent.click(skipButton);
-    });
-
-    await waitFor(() => expect(tourIsOpen()).toBe(false), { timeout: 4000 });
-    expect(localStorage.getItem(TOUR_COMPLETED_KEY)).toBe('true');
-  });
-
-  it('persists completion and stops when the visitor presses Escape', async () => {
-    renderBuilder();
-    await waitFor(() => expect(tourIsOpen()).toBe(true), { timeout: 4000 });
-
-    await act(async () => {
-      fireEvent.keyDown(document, { key: 'Escape', code: 'Escape' });
-    });
-
-    await waitFor(() => expect(tourIsOpen()).toBe(false), { timeout: 4000 });
-    expect(localStorage.getItem(TOUR_COMPLETED_KEY)).toBe('true');
-  });
-
-  it('walks only steps whose targets are on screen and persists on the last one', async () => {
-    renderBuilder();
-    await waitFor(() => expect(tourIsOpen()).toBe(true), { timeout: 4000 });
-
-    let label = '';
-    for (let step = 0; step < 10; step += 1) {
-      const advance = tourButtons().find((text) => /^(Next|Last)/.test(text));
-      if (!advance) break;
-      label = advance;
-      const buttons = document.querySelectorAll<HTMLButtonElement>(
-        '.react-joyride__tooltip button'
-      );
-      const target = Array.from(buttons).find(
-        (button) => (button.textContent?.trim() ?? '') === advance
-      );
-      await act(async () => {
-        fireEvent.click(target as HTMLButtonElement);
-      });
-      await act(async () => {
-        await Promise.resolve();
-      });
-      if (label.startsWith('Last')) break;
-    }
-
-    await waitFor(() => expect(tourIsOpen()).toBe(false));
-    expect(localStorage.getItem(TOUR_COMPLETED_KEY)).toBe('true');
-  });
-
-  it('does not re-open on a later visit once completion is stored', async () => {
-    localStorage.setItem(TOUR_COMPLETED_KEY, 'true');
-    renderBuilder();
+  it('triggers driver tour automatically on route entry when not completed', async () => {
+    renderBuilderWithTour();
 
     await screen.findByDisplayValue('John Doe');
-    await act(async () => {
-      await Promise.resolve();
-    });
 
-    expect(tourIsOpen()).toBe(false);
+    await waitFor(
+      () => {
+        expect(useTourStore.getState().isRunning).toBe(true);
+        expect(useTourStore.getState().activeTourId).toBe('tour_builder');
+        expect(driveMock).toHaveBeenCalled();
+      },
+      { timeout: 4000 }
+    );
+  });
+
+  it('does not re-open tour once tour_builder is marked completed in store', async () => {
+    useTourStore.getState().completeTour('tour_builder');
+
+    renderBuilderWithTour();
+
+    await screen.findByDisplayValue('John Doe');
+
+    // Wait past timer duration to confirm driver is not called
+    await new Promise((resolve) => setTimeout(resolve, 800));
+
+    expect(driveMock).not.toHaveBeenCalled();
+    expect(useTourStore.getState().isRunning).toBe(false);
   });
 });

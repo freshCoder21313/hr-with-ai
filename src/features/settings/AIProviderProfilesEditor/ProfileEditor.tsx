@@ -94,7 +94,10 @@ export const ProfileEditor: React.FC<ProfileEditorProps> = ({
             value={profile.provider}
             onValueChange={(v) => onUpdateProfile(profile.id, { provider: v as AIModelProvider })}
           >
-            <SelectTrigger id={`profile-provider-${profile.id}`}>
+            <SelectTrigger
+              id={`profile-provider-${profile.id}`}
+              className="tour-settings-provider-select"
+            >
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -133,6 +136,7 @@ export const ProfileEditor: React.FC<ProfileEditorProps> = ({
           value={profile.apiKey}
           onChange={(e) => onUpdateProfile(profile.id, { apiKey: e.target.value })}
           placeholder={profile.provider === 'google' ? 'AIzaSy...' : 'sk-...'}
+          className="tour-settings-api-key"
         />
       </div>
 

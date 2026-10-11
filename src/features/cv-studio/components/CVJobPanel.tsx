@@ -235,7 +235,7 @@ export const CVJobPanel: React.FC<CVJobPanelProps> = ({
             )}
           </div>
 
-          <div className="flex items-center gap-1 px-3 py-1.5 border-b border-border flex-wrap">
+          <div className="tour-studio-job-add flex items-center gap-1 px-3 py-1.5 border-b border-border flex-wrap">
             <Tooltip delayDuration={0}>
               <TooltipTrigger asChild>
                 <Button variant="outline" size="icon-sm" onClick={onAddJob} aria-label="Add job">
@@ -328,7 +328,7 @@ export const CVJobPanel: React.FC<CVJobPanelProps> = ({
             )}
           </div>
 
-          <div className="p-3 border-t border-border space-y-2">
+          <div className="tour-studio-tailoring p-3 border-t border-border space-y-2">
             {isProcessing && (
               <div className="space-y-1">
                 <div className="flex justify-between text-xs text-muted-foreground">

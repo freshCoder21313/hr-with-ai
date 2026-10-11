@@ -57,6 +57,21 @@ const CVStudioPage: React.FC = () => {
     };
   }, []);
 
+  // Listen to global tour events to switch mobile tab automatically
+  useEffect(() => {
+    const handleTourMobileTab = (e: Event) => {
+      const customEvent = e as CustomEvent<{ tab: 'jobs' | 'chat' | 'preview' }>;
+      if (customEvent.detail?.tab) {
+        setMobileTab(customEvent.detail.tab);
+      }
+    };
+
+    window.addEventListener('tour:switch-mobile-tab', handleTourMobileTab);
+    return () => {
+      window.removeEventListener('tour:switch-mobile-tab', handleTourMobileTab);
+    };
+  }, []);
+
   const handleViewResult = useCallback(
     (id: number) => {
       navigate(`/resumes/${id}/edit`);
@@ -98,11 +113,16 @@ const CVStudioPage: React.FC = () => {
           description="Unified CV editing, tailoring, and AI chat."
         />
 
-        <div className="flex md:hidden border-b border-border shrink-0 items-stretch bg-card">
+        <div
+          role="tablist"
+          aria-label="Mobile workspace tabs"
+          className="flex md:hidden border-b border-border shrink-0 items-stretch bg-card"
+        >
           <div className="flex flex-1">
             {(['jobs', 'chat', 'preview'] as const).map((tab) => (
               <button
                 key={tab}
+                role="tab"
                 type="button"
                 onClick={() => setMobileTab(tab)}
                 aria-pressed={mobileTab === tab}
@@ -137,7 +157,7 @@ const CVStudioPage: React.FC = () => {
           </Button>
         </div>
 
-        <div className="flex flex-1 overflow-hidden min-h-0">
+        <div className="tour-studio-intro flex flex-1 overflow-hidden min-h-0">
           <div
             className={cn(mobileTab === 'jobs' ? 'flex flex-1 min-w-0' : 'hidden', 'md:contents')}
           >

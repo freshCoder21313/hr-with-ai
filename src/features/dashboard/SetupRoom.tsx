@@ -180,20 +180,22 @@ const SetupRoom: React.FC = () => {
                 </div>
 
                 {/* Target Company & Job Details */}
-                <JobDetailsForm
-                  section="role"
-                  formData={formData}
-                  selectedJobId={state.selectedJobId}
-                  savedJobs={state.savedJobs}
-                  isResearching={state.isResearching}
-                  onSelectSavedJob={actions.handleSelectSavedJob}
-                  onSaveJob={actions.handleSaveJob}
-                  onDeleteJob={actions.handleDeleteJob}
-                  onResearchCompany={actions.handleResearchCompany}
-                  onTogglePanel={actions.handleTogglePanel}
-                  onChange={actions.handleChange}
-                  onAutoFillFromRawJD={actions.handleAutoFillFromRawJD}
-                />
+                <div className="tour-setup-role">
+                  <JobDetailsForm
+                    section="role"
+                    formData={formData}
+                    selectedJobId={state.selectedJobId}
+                    savedJobs={state.savedJobs}
+                    isResearching={state.isResearching}
+                    onSelectSavedJob={actions.handleSelectSavedJob}
+                    onSaveJob={actions.handleSaveJob}
+                    onDeleteJob={actions.handleDeleteJob}
+                    onResearchCompany={actions.handleResearchCompany}
+                    onTogglePanel={actions.handleTogglePanel}
+                    onChange={actions.handleChange}
+                    onAutoFillFromRawJD={actions.handleAutoFillFromRawJD}
+                  />
+                </div>
 
                 {/* Job Description Textarea */}
                 <JDInput
@@ -240,24 +242,26 @@ const SetupRoom: React.FC = () => {
                 </div>
 
                 {/* Resume Selector & Tailor Controls */}
-                <ResumeSelector
-                  savedResumes={state.savedResumes}
-                  selectedResumeId={state.selectedResumeId}
-                  resumeText={formData.resumeText}
-                  jobDescription={formData.jobDescription}
-                  isParsing={state.isParsing}
-                  isAnalyzing={state.isAnalyzing}
-                  resumeAnalysis={state.resumeAnalysis}
-                  onFileUpload={actions.handleFileUpload}
-                  onResumeSelect={actions.handleResumeSelect}
-                  onDeleteResume={actions.handleDeleteResume}
-                  onTailorClick={actions.handleTailorClick}
-                  onToggleMain={actions.handleToggleMain}
-                  onRefresh={actions.loadData}
-                  onChange={actions.handleChange}
-                  onAnalyzeResume={actions.handleAnalyzeResume}
-                  onFindJobClick={() => actions.setIsJobModalOpen(true)}
-                />
+                <div className="tour-setup-resume">
+                  <ResumeSelector
+                    savedResumes={state.savedResumes}
+                    selectedResumeId={state.selectedResumeId}
+                    resumeText={formData.resumeText}
+                    jobDescription={formData.jobDescription}
+                    isParsing={state.isParsing}
+                    isAnalyzing={state.isAnalyzing}
+                    resumeAnalysis={state.resumeAnalysis}
+                    onFileUpload={actions.handleFileUpload}
+                    onResumeSelect={actions.handleResumeSelect}
+                    onDeleteResume={actions.handleDeleteResume}
+                    onTailorClick={actions.handleTailorClick}
+                    onToggleMain={actions.handleToggleMain}
+                    onRefresh={actions.loadData}
+                    onChange={actions.handleChange}
+                    onAnalyzeResume={actions.handleAnalyzeResume}
+                    onFindJobClick={() => actions.setIsJobModalOpen(true)}
+                  />
+                </div>
 
                 {/* Step 2 Actions */}
                 <div className="flex items-center justify-between pt-4 border-t border-border">
@@ -285,20 +289,22 @@ const SetupRoom: React.FC = () => {
             {currentStep === 'persona' && (
               <div className="space-y-6 animate-in fade-in-50 duration-200">
                 {/* Persona & Interview Configuration Form */}
-                <JobDetailsForm
-                  section="persona"
-                  formData={formData}
-                  selectedJobId={state.selectedJobId}
-                  savedJobs={state.savedJobs}
-                  isResearching={state.isResearching}
-                  onSelectSavedJob={actions.handleSelectSavedJob}
-                  onSaveJob={actions.handleSaveJob}
-                  onDeleteJob={actions.handleDeleteJob}
-                  onResearchCompany={actions.handleResearchCompany}
-                  onTogglePanel={actions.handleTogglePanel}
-                  onChange={actions.handleChange}
-                  onAutoFillFromRawJD={actions.handleAutoFillFromRawJD}
-                />
+                <div className="tour-setup-config">
+                  <JobDetailsForm
+                    section="persona"
+                    formData={formData}
+                    selectedJobId={state.selectedJobId}
+                    savedJobs={state.savedJobs}
+                    isResearching={state.isResearching}
+                    onSelectSavedJob={actions.handleSelectSavedJob}
+                    onSaveJob={actions.handleSaveJob}
+                    onDeleteJob={actions.handleDeleteJob}
+                    onResearchCompany={actions.handleResearchCompany}
+                    onTogglePanel={actions.handleTogglePanel}
+                    onChange={actions.handleChange}
+                    onAutoFillFromRawJD={actions.handleAutoFillFromRawJD}
+                  />
+                </div>
 
                 {/* Summary Review Card */}
                 <div className="p-4 rounded-xl bg-card border border-border space-y-2">
@@ -349,7 +355,7 @@ const SetupRoom: React.FC = () => {
                     disabled={state.isStarting}
                     isLoading={state.isStarting}
                     loadingText="Setting up Room..."
-                    className="h-12 px-6 text-base bg-primary hover:bg-primary/90 shadow-md font-medium"
+                    className="tour-setup-start h-12 px-6 text-base bg-primary hover:bg-primary/90 shadow-md font-medium"
                   >
                     Enter Interview Room <Play className="ml-2 h-4 w-4 fill-current" />
                   </LoadingButton>

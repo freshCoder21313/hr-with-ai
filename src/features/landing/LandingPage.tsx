@@ -143,7 +143,7 @@ export const LandingPage: React.FC = () => {
         /* RETURNING USER: HYBRID COMMAND DASHBOARD */
         <div className="max-w-6xl w-full mx-auto space-y-8 pt-6">
           {/* Welcome & Overview */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border pb-6">
+          <div className="tour-landing-welcome flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border pb-6">
             <div>
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary mb-2">
                 <Sparkles className="w-3.5 h-3.5" />
@@ -158,11 +158,11 @@ export const LandingPage: React.FC = () => {
             </div>
 
             <div className="flex items-center gap-3">
-              <Button onClick={() => navigate('/setup')} className="gap-2 shadow-sm font-medium">
+              <Button onClick={() => navigate('/setup')} className="tour-landing-practice gap-2 shadow-sm font-medium">
                 <Play className="w-4 h-4 fill-current" />
                 New Practice
               </Button>
-              <Button variant="outline" onClick={() => navigate('/studio')} className="gap-2">
+              <Button variant="outline" onClick={() => navigate('/studio')} className="tour-landing-studio gap-2">
                 <FileText className="w-4 h-4" />
                 CV Studio
               </Button>
@@ -170,7 +170,7 @@ export const LandingPage: React.FC = () => {
           </div>
 
           {/* Metric Stats Cards */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="tour-landing-stats grid grid-cols-2 lg:grid-cols-4 gap-4">
             <Card className="bg-card/70 backdrop-blur-sm border-border">
               <CardContent className="p-4 flex items-center justify-between">
                 <div>
@@ -445,7 +445,7 @@ export const LandingPage: React.FC = () => {
         /* FIRST-TIME USER: ENGAGING HERO & FEATURE WALKTHROUGH */
         <div className="max-w-6xl w-full mx-auto space-y-16 pt-10 flex flex-col items-center">
           {/* Hero Section */}
-          <div className="text-center space-y-6 max-w-3xl">
+          <div className="tour-landing-welcome text-center space-y-6 max-w-3xl">
             <button
               type="button"
               className="inline-flex items-center gap-2 rounded-full border px-3.5 py-1 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring border-primary/20 bg-primary/10 text-primary cursor-pointer hover:bg-primary/20"
@@ -472,7 +472,7 @@ export const LandingPage: React.FC = () => {
               <Button
                 size="lg"
                 onClick={() => navigate('/setup')}
-                className="w-full sm:w-auto px-8 py-3.5 rounded-full shadow-md text-base font-medium motion-safe:hover:scale-105 transition-all"
+                className="tour-landing-practice w-full sm:w-auto px-8 py-3.5 rounded-full shadow-md text-base font-medium motion-safe:hover:scale-105 transition-all"
               >
                 Start Practice Now
                 <ArrowRight className="ml-2 h-5 w-5" />
@@ -481,7 +481,7 @@ export const LandingPage: React.FC = () => {
                 size="lg"
                 variant="outline"
                 onClick={() => navigate('/studio')}
-                className="w-full sm:w-auto px-8 py-3.5 rounded-full shadow-sm text-base font-medium transition-all"
+                className="tour-landing-studio w-full sm:w-auto px-8 py-3.5 rounded-full shadow-sm text-base font-medium transition-all"
               >
                 Open CV Studio
               </Button>
@@ -497,7 +497,7 @@ export const LandingPage: React.FC = () => {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="tour-landing-stats grid grid-cols-1 md:grid-cols-3 gap-6">
               <Card className="bg-card/60 backdrop-blur-sm border-border">
                 <CardHeader>
                   <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold mb-2">

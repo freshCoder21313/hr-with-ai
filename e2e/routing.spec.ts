@@ -28,6 +28,7 @@ test.describe('Automated Route Crawl', () => {
       await page.addInitScript(() => {
         localStorage.setItem('ai_active_profile_id', 'e2e_profile');
         localStorage.setItem('ai_setup_banner_dismissed', 'true');
+        localStorage.setItem('has_seen_initial_sync_modal', 'true');
       });
 
       // 1. Register page-error listener (uncaught rejections/exceptions)
@@ -53,7 +54,7 @@ test.describe('Automated Route Crawl', () => {
       expect(bodyText).not.toContain('Unexpected Application Error');
 
       // 7. Assert that the app shell/header is rendered
-      await expect(page.locator('header')).toBeVisible({ timeout: 5000 });
+      await expect(page.locator('header.sticky')).toBeVisible({ timeout: 5000 });
     });
   }
 });

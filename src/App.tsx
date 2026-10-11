@@ -20,6 +20,7 @@ import { subscribeToSettingsChanged } from '@/events/settingsEvents';
 import { Button } from '@/components/ui/button';
 import { Alert } from '@/components/ui/alert';
 import BottomNav from '@/components/layout/BottomNav';
+import { GlobalTourOverlay } from '@/components/tour/GlobalTourOverlay';
 const SetupRoom = lazy(() => import('@/features/dashboard/SetupRoom'));
 const InterviewRoom = lazy(() => import('@/features/interview/InterviewRoom'));
 const FeedbackView = lazy(() => import('@/features/interview/FeedbackView'));
@@ -53,6 +54,10 @@ const App: React.FC = () => {
   const handleCloseInitialSync = () => {
     localStorage.setItem('has_seen_initial_sync_modal', 'true');
     setIsInitialSyncOpen(false);
+    // After user dismisses initial onboarding modal, gently trigger route tour if appropriate
+    setTimeout(() => {
+      window.dispatchEvent(new CustomEvent('tour:check-auto-start'));
+    }, 400);
   };
 
   const [showConfigBanner, setShowConfigBanner] = useState(() => {
@@ -126,6 +131,7 @@ const App: React.FC = () => {
                     restoreFocusTarget={settingsFocus.triggerRef.current}
                   />
                   <Header onOpenSettings={openSettings} />
+                  <GlobalTourOverlay />
 
                   {showConfigBanner && (
                     <div className="max-w-6xl w-full mx-auto px-4 md:px-8 pt-3 print:hidden">

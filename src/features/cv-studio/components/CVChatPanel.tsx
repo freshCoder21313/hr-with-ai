@@ -144,7 +144,7 @@ export const CVChatPanel: React.FC<CVChatPanelProps> = ({
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-7 text-xs gap-1.5 relative font-medium text-foreground hover:text-primary hover:border-primary/40"
+                  className="tour-studio-career-knowledge h-7 text-xs gap-1.5 relative font-medium text-foreground hover:text-primary hover:border-primary/40"
                   onClick={onOpenCareerKnowledge}
                   aria-label="Career Knowledge"
                 >
@@ -254,7 +254,7 @@ export const CVChatPanel: React.FC<CVChatPanelProps> = ({
           </Tooltip>
         </div>
 
-        <div className="grid grid-cols-2 gap-2">
+        <div className="tour-studio-chat-context grid grid-cols-2 gap-2">
           <div className="relative flex items-center group">
             <div className="absolute left-2.5 text-warning opacity-70 group-focus-within:opacity-100 transition-opacity pointer-events-none">
               <FileSearch className="w-3.5 h-3.5" />
@@ -352,15 +352,17 @@ export const CVChatPanel: React.FC<CVChatPanelProps> = ({
         </div>
       )}
 
-      <SimpleInputArea
-        onSendMessage={onSendMessage}
-        disabled={isTyping || !mainCV}
-        placeholder={
-          mainCV
-            ? "Ask AI to update your CV... (e.g. 'Add TypeScript to skills')"
-            : 'No CV selected'
-        }
-      />
+      <div className="tour-studio-chat-input">
+        <SimpleInputArea
+          onSendMessage={onSendMessage}
+          disabled={isTyping || !mainCV}
+          placeholder={
+            mainCV
+              ? "Ask AI to update your CV... (e.g. 'Add TypeScript to skills')"
+              : 'No CV selected'
+          }
+        />
+      </div>
 
       <Dialog open={renameOpen} onOpenChange={setRenameOpen}>
         <DialogContent className="sm:max-w-sm">

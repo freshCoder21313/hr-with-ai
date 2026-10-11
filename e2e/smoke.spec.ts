@@ -5,10 +5,11 @@ import { test, expect } from '@playwright/test';
  */
 test.describe('smoke journeys', () => {
   test('landing page loads with primary CTA', async ({ page }) => {
-    // Pre-seed localStorage to bypass onboarding ApiKeyModal dialog
+    // Pre-seed localStorage to bypass onboarding ApiKeyModal and CloudSyncModal dialogs
     await page.addInitScript(() => {
       localStorage.setItem('ai_active_profile_id', 'e2e_profile');
       localStorage.setItem('ai_setup_banner_dismissed', 'true');
+      localStorage.setItem('has_seen_initial_sync_modal', 'true');
     });
 
     await page.goto('/#/');
@@ -41,6 +42,7 @@ test.describe('smoke journeys', () => {
     await page.addInitScript(() => {
       localStorage.setItem('ai_active_profile_id', 'e2e_profile');
       localStorage.setItem('ai_setup_banner_dismissed', 'true');
+      localStorage.setItem('has_seen_initial_sync_modal', 'true');
     });
 
     await page.goto('/#/');
