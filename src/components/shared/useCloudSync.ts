@@ -6,8 +6,10 @@ import { vaultService } from '@/services/core/vaultService';
 
 const STORAGE_ACCOUNT_ID = 'career_sync_id';
 
-export function useCloudSync() {
-  const [activeTab, setActiveTab] = useState<'upload' | 'download' | 'offline'>('upload');
+export type CloudSyncTab = 'upload' | 'download' | 'offline';
+
+export function useCloudSync(initialTab: CloudSyncTab = 'upload') {
+  const [activeTab, setActiveTab] = useState<CloudSyncTab>(initialTab);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -126,6 +128,7 @@ export function useCloudSync() {
       const result = await syncService.downloadFromCloud(downloadId, downloadPassword);
 
       if (result.success && result.data) {
+        localStorage.setItem('has_seen_initial_sync_modal', 'true');
         await syncService.importData(result.data);
         setSuccess('Data restored from cloud successfully! The page will reload momentarily.');
         setTimeout(() => window.location.reload(), 2000);
@@ -176,6 +179,7 @@ export function useCloudSync() {
       const res = await vaultService.importVault(fileText);
 
       if (res.success) {
+        localStorage.setItem('has_seen_initial_sync_modal', 'true');
         setSuccess(
           'Vault restored and merged into local database successfully! The page will reload momentarily.'
         );

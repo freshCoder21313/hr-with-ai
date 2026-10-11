@@ -3,6 +3,7 @@ import { logger } from '@/lib/logger';
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import ApiKeyModal from '@/features/settings/ApiKeyModal';
+import { CloudSyncModal } from '@/components/shared/CloudSyncModal';
 import { Loader2, AlertCircle, X } from 'lucide-react';
 import { ThemeProvider } from '@/components/shared/theme-provider';
 import SettingsModal from '@/components/shared/SettingsModal';
@@ -44,6 +45,15 @@ const App: React.FC = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [settingsDefaultTab, setSettingsDefaultTab] = useState('general');
   const settingsFocus = useFocusReturn();
+
+  const [isInitialSyncOpen, setIsInitialSyncOpen] = useState(() => {
+    return localStorage.getItem('has_seen_initial_sync_modal') !== 'true';
+  });
+
+  const handleCloseInitialSync = () => {
+    localStorage.setItem('has_seen_initial_sync_modal', 'true');
+    setIsInitialSyncOpen(false);
+  };
 
   const [showConfigBanner, setShowConfigBanner] = useState(() => {
     const dismissed = localStorage.getItem('ai_setup_banner_dismissed') === 'true';
@@ -104,6 +114,11 @@ const App: React.FC = () => {
               <ErrorBoundary>
                 <div className="app-shell min-h-[100dvh] flex flex-col bg-background text-foreground pt-[var(--safe-top)] pb-[var(--safe-bottom)] pl-[var(--safe-left)] pr-[var(--safe-right)] print:block print:bg-white print:min-h-0">
                   <ApiKeyModal />
+                  <CloudSyncModal
+                    isOpen={isInitialSyncOpen}
+                    onClose={handleCloseInitialSync}
+                    defaultTab="offline"
+                  />
                   <SettingsModal
                     open={isSettingsOpen}
                     onOpenChange={handleSettingsOpenChange}

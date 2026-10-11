@@ -10,12 +10,7 @@ import {
 import { AIProviderProfilesEditor } from './AIProviderProfilesEditor';
 
 const ApiKeyModal: React.FC = () => {
-  const [isOpen, setIsOpen] = useState(() => {
-    // Initial check: if no legacy key and no active profile, open modal
-    const hasLegacyKey = !!localStorage.getItem('gemini_api_key');
-    const hasActiveProfile = !!localStorage.getItem('ai_active_profile_id');
-    return !hasLegacyKey && !hasActiveProfile;
-  });
+  const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
     // Subscribe to global open event

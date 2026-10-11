@@ -13,8 +13,12 @@ vi.mock('@/components/shared/theme-toggle', () => ({
   ThemeToggle: () => null,
 }));
 
+const mockCloudSyncModal = vi.fn();
 vi.mock('@/components/shared/CloudSyncModal', () => ({
-  CloudSyncModal: () => null,
+  CloudSyncModal: (props: unknown) => {
+    mockCloudSyncModal(props);
+    return null;
+  },
 }));
 
 vi.mock('@/services/core/settingsService', () => ({
@@ -103,5 +107,27 @@ describe('App settings access', () => {
 
     await waitFor(() => expect(screen.getByText('AI Provider Profiles')).toBeDefined());
     expect(screen.getByRole('button', { name: 'Manage AI Profiles' })).toBeDefined();
+  });
+
+  it('opens CloudSyncModal with offline tab on first launch', async () => {
+    render(<App />);
+
+    expect(mockCloudSyncModal).toHaveBeenCalledWith(
+      expect.objectContaining({
+        isOpen: true,
+        defaultTab: 'offline',
+      })
+    );
+  });
+
+  it('does not open CloudSyncModal when has_seen_initial_sync_modal is set', async () => {
+    localStorage.setItem('has_seen_initial_sync_modal', 'true');
+    render(<App />);
+
+    expect(mockCloudSyncModal).toHaveBeenCalledWith(
+      expect.objectContaining({
+        isOpen: false,
+      })
+    );
   });
 });

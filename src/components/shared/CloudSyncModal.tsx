@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Cloud } from 'lucide-react';
-import { useCloudSync } from './useCloudSync';
+import { CloudSyncTab, useCloudSync } from './useCloudSync';
 import { SyncStatusBanner } from './cloud-sync/SyncStatusBanner';
 import { UploadTab } from './cloud-sync/UploadTab';
 import { DownloadTab } from './cloud-sync/DownloadTab';
@@ -17,10 +17,15 @@ import { OfflineTab } from './cloud-sync/OfflineTab';
 interface CloudSyncModalProps {
   isOpen: boolean;
   onClose: () => void;
+  defaultTab?: CloudSyncTab;
 }
 
-export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({ isOpen, onClose }) => {
-  const { state, actions } = useCloudSync();
+export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({
+  isOpen,
+  onClose,
+  defaultTab = 'upload',
+}) => {
+  const { state, actions } = useCloudSync(defaultTab);
   const {
     activeTab,
     isLoading,
@@ -87,7 +92,7 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({ isOpen, onClose 
         <Tabs
           value={activeTab}
           onValueChange={(v: string) => {
-            setActiveTab(v as 'upload' | 'download');
+            setActiveTab(v as CloudSyncTab);
             resetStatus();
           }}
           className="w-full"
