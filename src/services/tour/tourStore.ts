@@ -73,6 +73,7 @@ export const useTourStore = create<TourState>((set, get) => ({
   stopTour: () => {
     set({
       isRunning: false,
+      activeTourId: null,
       stepIndex: 0,
     });
   },
@@ -94,6 +95,7 @@ export const useTourStore = create<TourState>((set, get) => ({
     set({
       preferences: updated,
       isRunning: false,
+      activeTourId: null,
       stepIndex: 0,
     });
   },
@@ -108,6 +110,7 @@ export const useTourStore = create<TourState>((set, get) => ({
     set({
       preferences: updated,
       isRunning: false,
+      activeTourId: null,
       stepIndex: 0,
     });
   },

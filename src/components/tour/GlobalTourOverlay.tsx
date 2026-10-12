@@ -24,7 +24,8 @@ export const GlobalTourOverlay: React.FC = () => {
 
   // Auto-start tour on route entry if applicable
   useEffect(() => {
-    const checkAndStartTour = () => {
+    let retryTimer: ReturnType<typeof setTimeout> | undefined;
+    const checkAndStartTour = (isRetry = false) => {
       const tourId = getTourIdForRoute(location.pathname);
       if (!tourId) return;
 
@@ -35,17 +36,22 @@ export const GlobalTourOverlay: React.FC = () => {
 
       if (!hasOpenDialog) {
         startTour(tourId, false);
+      } else if (!isRetry) {
+        // A dialog (config banner, job modal, sheet) may just be briefly open
+        // at the 600ms mark. Retry once so this visit's tour isn't lost.
+        retryTimer = setTimeout(() => checkAndStartTour(true), 2000);
       }
     };
 
     // Delay slightly so route components mount and DOM elements are rendered
-    const timer = setTimeout(checkAndStartTour, 600);
+    const timer = setTimeout(() => checkAndStartTour(false), 600);
 
-    const handleCheckEvent = () => checkAndStartTour();
+    const handleCheckEvent = () => checkAndStartTour(false);
     window.addEventListener('tour:check-auto-start', handleCheckEvent);
 
     return () => {
       clearTimeout(timer);
+      if (retryTimer) clearTimeout(retryTimer);
       window.removeEventListener('tour:check-auto-start', handleCheckEvent);
     };
   }, [location.pathname, startTour]);
@@ -79,6 +85,7 @@ export const GlobalTourOverlay: React.FC = () => {
         showProgress: true,
         allowClose: true,
         allowScroll: true,
+        overlayClickBehavior: 'none',
         stagePadding: 8,
         popoverOffset: 12,
         nextBtnText: 'Next',
@@ -112,13 +119,16 @@ export const GlobalTourOverlay: React.FC = () => {
           }
         },
         onDestroyStarted: () => {
-          // Triggered when close button is clicked, overlay is clicked, or destroy() is called
+          // driver.js fires this and then SKIPS its internal teardown, so we
+          // must destroy explicitly. The store update alone only tears down
+          // via the effect cleanup on re-render (implicit + timing-dependent).
           const id = activeTourIdRef.current;
           if (id) {
             completeTour(id);
           } else {
             stopTour();
           }
+          driverInstanceRef.current?.destroy();
         },
         onDestroyed: () => {
           driverInstanceRef.current = null;
