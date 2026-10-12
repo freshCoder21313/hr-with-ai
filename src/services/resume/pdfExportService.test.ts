@@ -40,15 +40,30 @@ describe('pdfExportService', () => {
     getImageProperties.mockReturnValue({ width: 794, height: 1000 });
   });
 
-  it('downloads on web and sanitizes the file name', async () => {
+  it('downloads on web, compresses output, and restores original styling', async () => {
     isNativePlatform.mockReturnValue(false);
     const el = document.createElement('div');
+    el.style.position = 'fixed';
+    el.style.left = '-10000px';
 
     const result = await exportElementToPdf(el, 'Jane Doe / CV');
 
     expect(result).toEqual({ method: 'download', fileName: 'Jane_Doe_CV.pdf' });
     expect(save).toHaveBeenCalledWith('Jane_Doe_CV.pdf');
     expect(writeFile).not.toHaveBeenCalled();
+    expect(addImage).toHaveBeenCalledWith(
+      expect.any(String),
+      'PNG',
+      0,
+      0,
+      expect.any(Number),
+      expect.any(Number),
+      undefined,
+      'FAST'
+    );
+    // Element styles must be restored
+    expect(el.style.position).toBe('fixed');
+    expect(el.style.left).toBe('-10000px');
   });
 
   it('paginates tall content across multiple A4 pages', async () => {

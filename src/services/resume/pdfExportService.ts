@@ -36,15 +36,37 @@ function toPdfFileName(base: string): string {
 }
 
 async function renderToPdf(element: HTMLElement): Promise<jsPDF> {
-  // html-to-image (SVG foreignObject) handles modern CSS colors (oklch/lab)
-  // that html2canvas cannot; it is already the repo's rasterizer (ShareModal).
-  const dataUrl = await toPng(element, {
-    pixelRatio: 2,
-    cacheBust: true,
-    backgroundColor: '#ffffff',
-  });
+  // If the capture element is positioned far off-screen (e.g. -left-[10000px]),
+  // browsers optimize away the paint or render blank foreignObjects onto canvas.
+  // Temporarily bring it into view behind the viewport while rasterizing.
+  const prevPosition = element.style.position;
+  const prevLeft = element.style.left;
+  const prevTop = element.style.top;
+  const prevZIndex = element.style.zIndex;
+  const prevOpacity = element.style.opacity;
 
-  const pdf = new jsPDF({ unit: 'pt', format: 'a4' });
+  element.style.position = 'fixed';
+  element.style.left = '0px';
+  element.style.top = '0px';
+  element.style.zIndex = '-9999';
+  element.style.opacity = '1';
+
+  let dataUrl: string;
+  try {
+    dataUrl = await toPng(element, {
+      pixelRatio: 2,
+      cacheBust: true,
+      backgroundColor: '#ffffff',
+    });
+  } finally {
+    element.style.position = prevPosition;
+    element.style.left = prevLeft;
+    element.style.top = prevTop;
+    element.style.zIndex = prevZIndex;
+    element.style.opacity = prevOpacity;
+  }
+
+  const pdf = new jsPDF({ unit: 'pt', format: 'a4', compress: true });
   const { width, height } = pdf.getImageProperties(dataUrl);
   const renderWidth = A4_WIDTH_PT;
   const renderHeight = (height / width) * renderWidth;
@@ -52,12 +74,12 @@ async function renderToPdf(element: HTMLElement): Promise<jsPDF> {
   // Slice the tall capture across A4 pages by shifting the same image up.
   let heightLeft = renderHeight;
   let position = 0;
-  pdf.addImage(dataUrl, 'PNG', 0, position, renderWidth, renderHeight);
+  pdf.addImage(dataUrl, 'PNG', 0, position, renderWidth, renderHeight, undefined, 'FAST');
   heightLeft -= A4_HEIGHT_PT;
   while (heightLeft > 0) {
     position -= A4_HEIGHT_PT;
     pdf.addPage();
-    pdf.addImage(dataUrl, 'PNG', 0, position, renderWidth, renderHeight);
+    pdf.addImage(dataUrl, 'PNG', 0, position, renderWidth, renderHeight, undefined, 'FAST');
     heightLeft -= A4_HEIGHT_PT;
   }
   return pdf;

@@ -247,9 +247,11 @@ const CVStudioPage: React.FC = () => {
                 if (!exportRef.current || isExporting) return;
                 setIsExporting(true);
                 try {
+                  const exportFileName =
+                    state.selectedResumeName ?? state.mainCV?.fileName ?? 'CV';
                   const result = await exportElementToPdf(
                     exportRef.current,
-                    state.mainCV?.fileName ?? 'CV'
+                    exportFileName
                   );
                   toast.success(
                     result.method === 'download' ? 'PDF downloaded.' : 'PDF ready to share.'
